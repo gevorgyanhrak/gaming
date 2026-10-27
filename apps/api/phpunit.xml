@@ -30,6 +30,7 @@
         <env name="REGISTRATION_ENABLED" value="true"/>
         <env name="PHONE_ALLOWED_COUNTRIES" value=""/>
         <env name="ADMIN_MFA_REQUIRED" value="false"/>
+        <env name="GAME_STATE_STORE" value="array"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
         <!-- Docker Compose injects DB_* as real environment variables, which Laravel reads from $_SERVER

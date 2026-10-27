@@ -84,6 +84,13 @@ return [
             'lock_connection' => env('REDIS_CACHE_LOCK_CONNECTION', 'default'),
         ],
 
+        // Live game state, room locks and matchmaking queues (see config/gameplay.php).
+        'game' => [
+            'driver' => 'redis',
+            'connection' => 'game',
+            'lock_connection' => 'game',
+        ],
+
         'dynamodb' => [
             'driver' => 'dynamodb',
             'key' => env('AWS_ACCESS_KEY_ID'),
