@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Middleware\EnsureAccountIsActive;
 use App\Http\Middleware\SetLocaleFromRequest;
+use App\Http\Middleware\TouchLastActive;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,6 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Cookie-based (session) authentication for requests coming from the SPA origin.
         $middleware->statefulApi();
         $middleware->api(append: [SetLocaleFromRequest::class]);
+        $middleware->alias([
+            'active' => EnsureAccountIsActive::class,
+            'touch-last-active' => TouchLastActive::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

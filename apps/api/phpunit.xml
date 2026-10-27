@@ -21,6 +21,14 @@
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
+        <!-- Cheap Argon2id parameters keep the suite fast; production uses the secure defaults. -->
+        <env name="ARGON_MEMORY" value="1024"/>
+        <env name="ARGON_TIME" value="1"/>
+        <env name="SMS_DRIVER" value="log"/>
+        <env name="FRONTEND_URL" value="http://localhost:5175"/>
+        <env name="SANCTUM_STATEFUL_DOMAINS" value="localhost:5175"/>
+        <env name="REGISTRATION_ENABLED" value="true"/>
+        <env name="PHONE_ALLOWED_COUNTRIES" value=""/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
         <!-- Docker Compose injects DB_* as real environment variables, which Laravel reads from $_SERVER

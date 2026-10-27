@@ -1,0 +1,10 @@
+<?php
+
+namespace App\Enums;
+
+enum UserStatus: string
+{
+    case Active = 'active';
+    case Deactivated = 'deactivated';
+    case Banned = 'banned';
+}

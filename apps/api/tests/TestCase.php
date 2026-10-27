@@ -12,6 +12,18 @@ abstract class TestCase extends BaseTestCase
     // a class's own methods take precedence over trait methods, inherited ones do not.
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Requests come from the SPA origin, like in production: this is what makes Sanctum
+        // run its stateful (session cookie) pipeline, including AuthenticateSession.
+        $this->withHeaders([
+            'Origin' => 'http://localhost:5175',
+            'Referer' => 'http://localhost:5175/',
+        ]);
+    }
+
     /**
      * Guard against wiping a real database: RefreshDatabase drops every table, so it
      * may only ever run against the dedicated test database.

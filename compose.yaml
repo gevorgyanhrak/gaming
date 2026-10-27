@@ -47,6 +47,8 @@ services:
     volumes:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - ./apps/api/public:/var/www/api/public:ro
+      # Target of the public/storage symlink (user uploads such as avatars).
+      - ./apps/api/storage/app/public:/var/www/api/storage/app/public:ro
     depends_on:
       - api
     restart: unless-stopped

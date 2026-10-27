@@ -1,8 +1,20 @@
 <?php
 
 use App\Http\Controllers\Api\HealthController;
+use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
+use App\Http\Controllers\Api\V1\Auth\RegisterController;
+use App\Http\Controllers\Api\V1\Auth\SessionController;
+use App\Http\Controllers\Api\V1\Auth\UsernameAvailabilityController;
+use App\Http\Controllers\Api\V1\Auth\VerificationController;
 use App\Http\Controllers\Api\V1\ConfigController;
 use App\Http\Controllers\Api\V1\GameController;
+use App\Http\Controllers\Api\V1\Me\AvatarController;
+use App\Http\Controllers\Api\V1\Me\ContactController;
+use App\Http\Controllers\Api\V1\Me\MeController;
+use App\Http\Controllers\Api\V1\Me\PasswordController;
+use App\Http\Controllers\Api\V1\Me\ProfileController;
+use App\Http\Controllers\Api\V1\Me\SettingsController;
+use App\Http\Controllers\Api\V1\PublicProfileController;
 use Illuminate\Support\Facades\Route;
 
 // Unversioned infrastructure endpoints. Liveness is Laravel's built-in GET /up.
@@ -13,4 +25,42 @@ Route::prefix('v1')->name('v1.')->group(function () {
 
     Route::get('games', [GameController::class, 'index'])->name('games.index');
     Route::get('games/{slug}', [GameController::class, 'show'])->name('games.show');
+
+    Route::get('users/{username}', [PublicProfileController::class, 'show'])
+        ->middleware('throttle:lookups')
+        ->name('users.show');
+
+    Route::prefix('auth')->name('auth.')->group(function () {
+        Route::middleware('throttle:auth')->group(function () {
+            Route::post('register', RegisterController::class)->name('register');
+            Route::post('login', [SessionController::class, 'store'])->name('login');
+            Route::post('password/forgot', [PasswordResetController::class, 'forgot'])->name('password.forgot');
+            Route::post('password/reset', [PasswordResetController::class, 'reset'])->name('password.reset');
+        });
+
+        Route::get('username-available', UsernameAvailabilityController::class)
+            ->middleware('throttle:lookups')
+            ->name('username-available');
+
+        Route::post('logout', [SessionController::class, 'destroy'])->middleware('auth:sanctum')->name('logout');
+
+        Route::middleware(['auth:sanctum', 'active', 'throttle:verification'])->group(function () {
+            Route::post('verification/send', [VerificationController::class, 'send'])->name('verification.send');
+            Route::post('verification/verify', [VerificationController::class, 'verify'])->name('verification.verify');
+        });
+    });
+
+    Route::middleware(['auth:sanctum', 'active', 'touch-last-active', 'throttle:account'])
+        ->prefix('me')
+        ->name('me.')
+        ->group(function () {
+            Route::get('/', [MeController::class, 'show'])->name('show');
+            Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
+            Route::post('avatar', [AvatarController::class, 'store'])->middleware('throttle:uploads')->name('avatar.store');
+            Route::delete('avatar', [AvatarController::class, 'destroy'])->name('avatar.destroy');
+            Route::patch('settings', [SettingsController::class, 'update'])->name('settings.update');
+            Route::put('password', [PasswordController::class, 'update'])->name('password.update');
+            Route::post('contact', [ContactController::class, 'store'])->middleware('throttle:verification')->name('contact.store');
+            Route::post('contact/verify', [ContactController::class, 'verify'])->middleware('throttle:verification')->name('contact.verify');
+        });
 });

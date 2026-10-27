@@ -23,6 +23,16 @@ class ConfigController extends Controller
                 'default_locale' => config('app.fallback_locale'),
                 /** @var list<string> */
                 'supported_locales' => config('platform.supported_locales'),
+                'registration' => [
+                    /** @var bool */
+                    'enabled' => config('platform.registration.enabled'),
+                    /** @var list<'email'|'phone'> */
+                    'methods' => ['email', 'phone'],
+                    /** @var bool */
+                    'require_email_verification' => config('platform.registration.require_email_verification'),
+                    /** @var bool */
+                    'require_phone_verification' => config('platform.registration.require_phone_verification'),
+                ],
             ],
         ]);
     }

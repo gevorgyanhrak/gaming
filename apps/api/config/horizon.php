@@ -199,7 +199,8 @@ return [
     'defaults' => [
         'supervisor-1' => [
             'connection' => 'redis',
-            'queue' => ['default'],
+            // "notifications" carries verification emails and SMS; game queues are added in Phase 5.
+            'queue' => ['default', 'notifications'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,

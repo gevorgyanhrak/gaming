@@ -4,6 +4,24 @@
  */
 
 export interface paths {
+    "/v1/me/avatar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload a new avatar (JPEG, PNG or WebP). It is cropped to a square and re-encoded */
+        post: operations["v1.me.avatar.store"];
+        /** Remove the avatar */
+        delete: operations["v1.me.avatar.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/config": {
         parameters: {
             query?: never;
@@ -19,6 +37,43 @@ export interface paths {
         get: operations["v1.config"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/contact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start adding or changing the email address or phone number: a code is sent to the new one.
+         *     The account is not changed until the code is confirmed
+         */
+        post: operations["v1.me.contact.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/contact/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm the new email address or phone number; it replaces the previous one and is verified */
+        post: operations["v1.me.contact.verify"];
         delete?: never;
         options?: never;
         head?: never;
@@ -85,10 +140,258 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The authenticated user's account */
+        get: operations["v1.me.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Change the password. This session stays signed in; other sessions are signed out
+         *     on their next request and API tokens are revoked
+         */
+        put: operations["v1.me.password.update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/password/forgot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send a password reset code to an email address or phone number
+         * @description The response is identical whether or not an account exists.
+         */
+        post: operations["v1.auth.password.forgot"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/password/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set a new password using the code that was sent
+         * @description Other sessions are signed out on their next request (their stored password hash no
+         *     longer matches) and API tokens are revoked.
+         */
+        post: operations["v1.auth.password.reset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update display name, bio and country */
+        patch: operations["v1.me.profile.update"];
+        trace?: never;
+    };
+    "/v1/users/{username}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A player's public profile. Banned and deactivated accounts are not shown */
+        get: operations["v1.users.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create an account with an email address or a phone number, log in, and send a verification code */
+        post: operations["v1.auth.register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Log in with an email address or phone number and a password */
+        post: operations["v1.auth.login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Log out of the current session */
+        post: operations["v1.auth.logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update language and preferences */
+        patch: operations["v1.me.settings.update"];
+        trace?: never;
+    };
+    "/v1/auth/username-available": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Whether a username can be registered (valid format, not reserved, not taken) */
+        get: operations["v1.auth.username-available"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/verification/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send a verification code to the account's email address or phone number */
+        post: operations["v1.auth.verification.send"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/verification/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm the email address or phone number with the code that was sent to it */
+        post: operations["v1.auth.verification.verify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ChangeContactRequest */
+        ChangeContactRequest: {
+            channel: components["schemas"]["ContactChannel"];
+            /** Format: email */
+            email: string;
+            phone: string;
+        };
+        /**
+         * ContactChannel
+         * @description A way to reach a user: an email address or a phone number (delivered by SMS).
+         * @enum {string}
+         */
+        ContactChannel: "email" | "phone";
+        /** ForgotPasswordRequest */
+        ForgotPasswordRequest: {
+            login: string;
+        };
         /** GameDetailResource */
         GameDetailResource: {
             slug: string;
@@ -113,8 +416,136 @@ export interface components {
             max_players: number;
             is_playable: boolean;
         };
+        /** LoginRequest */
+        LoginRequest: {
+            login: string;
+            password: string;
+            remember?: boolean;
+        };
+        /** PublicUserResource */
+        PublicUserResource: {
+            username: string;
+            display_name: string | null;
+            avatar_url: string | null;
+            bio: string | null;
+            country: string | null;
+            created_at: string;
+            last_active_at: string | null;
+        };
+        /** RegisterRequest */
+        RegisterRequest: {
+            /** @description Only the identifier for the chosen method is required (and accepted). */
+            method: components["schemas"]["ContactChannel"];
+            /** Format: email */
+            email: string;
+            phone: string;
+            username: string;
+            password: string;
+            password_confirmation: string;
+        };
+        /** ResetPasswordRequest */
+        ResetPasswordRequest: {
+            login: string;
+            code: string;
+            password: string;
+            password_confirmation: string;
+        };
+        /** SendVerificationRequest */
+        SendVerificationRequest: {
+            channel: components["schemas"]["ContactChannel"];
+        };
+        /** UpdateAvatarRequest */
+        UpdateAvatarRequest: {
+            /**
+             * Format: binary
+             * @description Maximum file size: 2048 kilobytes.
+             */
+            avatar: string;
+        };
+        /** UpdatePasswordRequest */
+        UpdatePasswordRequest: {
+            /** @description Accounts without a password (future social login) may set one without it. */
+            current_password?: string;
+            password: string;
+            password_confirmation: string;
+        };
+        /** UpdateProfileRequest */
+        UpdateProfileRequest: {
+            display_name?: string | null;
+            bio?: string | null;
+            /**
+             * @description ISO 3166-1 alpha-2, from libphonenumber's region list.
+             * @enum {string|null}
+             */
+            country?: "US" | "AG" | "AI" | "AS" | "BB" | "BM" | "BS" | "CA" | "DM" | "DO" | "GD" | "GU" | "JM" | "KN" | "KY" | "LC" | "MP" | "MS" | "PR" | "SX" | "TC" | "TT" | "VC" | "VG" | "VI" | "RU" | "KZ" | "EG" | "ZA" | "GR" | "NL" | "BE" | "FR" | "ES" | "HU" | "IT" | "VA" | "RO" | "CH" | "AT" | "GB" | "GG" | "IM" | "JE" | "DK" | "SE" | "NO" | "SJ" | "PL" | "DE" | "PE" | "MX" | "CU" | "AR" | "BR" | "CL" | "CO" | "VE" | "MY" | "AU" | "CC" | "CX" | "ID" | "PH" | "NZ" | "SG" | "TH" | "JP" | "KR" | "VN" | "CN" | "TR" | "IN" | "PK" | "AF" | "LK" | "MM" | "IR" | "SS" | "MA" | "EH" | "DZ" | "TN" | "LY" | "GM" | "SN" | "MR" | "ML" | "GN" | "CI" | "BF" | "NE" | "TG" | "BJ" | "MU" | "LR" | "SL" | "GH" | "NG" | "TD" | "CF" | "CM" | "CV" | "ST" | "GQ" | "GA" | "CG" | "CD" | "AO" | "GW" | "IO" | "AC" | "SC" | "SD" | "RW" | "ET" | "SO" | "DJ" | "KE" | "TZ" | "UG" | "BI" | "MZ" | "ZM" | "MG" | "RE" | "YT" | "ZW" | "NA" | "MW" | "LS" | "BW" | "SZ" | "KM" | "SH" | "TA" | "ER" | "AW" | "FO" | "GL" | "GI" | "PT" | "LU" | "IE" | "IS" | "AL" | "MT" | "CY" | "FI" | "AX" | "BG" | "LT" | "LV" | "EE" | "MD" | "AM" | "BY" | "AD" | "MC" | "SM" | "UA" | "RS" | "ME" | "XK" | "HR" | "SI" | "BA" | "MK" | "CZ" | "SK" | "LI" | "FK" | "BZ" | "GT" | "SV" | "HN" | "NI" | "CR" | "PA" | "PM" | "HT" | "GP" | "BL" | "MF" | "BO" | "GY" | "EC" | "GF" | "PY" | "MQ" | "SR" | "UY" | "CW" | "BQ" | "TL" | "NF" | "BN" | "NR" | "PG" | "TO" | "SB" | "VU" | "FJ" | "PW" | "WF" | "CK" | "NU" | "WS" | "KI" | "NC" | "TV" | "PF" | "TK" | "FM" | "MH" | "KP" | "HK" | "MO" | "KH" | "LA" | "BD" | "TW" | "MV" | "LB" | "JO" | "SY" | "IQ" | "KW" | "SA" | "YE" | "OM" | "PS" | "AE" | "IL" | "BH" | "QA" | "BT" | "MN" | "NP" | "TJ" | "TM" | "AZ" | "GE" | "KG" | "UZ" | null;
+        };
+        /** UpdateSettingsRequest */
+        UpdateSettingsRequest: {
+            /** @enum {string|null} */
+            locale?: "en" | "ru" | "hy" | null;
+            preferences?: {
+                sound?: boolean;
+            };
+        };
+        /** UserResource */
+        UserResource: {
+            id: number;
+            username: string;
+            email: string | null;
+            phone: string | null;
+            email_verified: boolean;
+            phone_verified: boolean;
+            has_password: boolean;
+            locale: string | null;
+            created_at: string;
+            last_active_at: string | null;
+            can_access_admin: boolean;
+            profile: {
+                display_name: string | null;
+                avatar_url: string | null;
+                bio: string | null;
+                country: string | null;
+                preferences: {
+                    sound: boolean;
+                };
+            };
+        };
+        /** VerifyCodeRequest */
+        VerifyCodeRequest: {
+            channel: components["schemas"]["ContactChannel"];
+            code: string;
+        };
     };
-    responses: never;
+    responses: {
+        /** @description Validation error */
+        ValidationException: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    /** @description Errors overview. */
+                    message: string;
+                    /** @description A detailed description of each field that failed validation. */
+                    errors: {
+                        [key: string]: string[];
+                    };
+                };
+            };
+        };
+        /** @description Unauthenticated */
+        AuthenticationException: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    /** @description Error overview. */
+                    message: string;
+                };
+            };
+        };
+    };
     parameters: never;
     requestBodies: never;
     headers: never;
@@ -122,6 +553,57 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    "v1.me.avatar.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["UpdateAvatarRequest"];
+            };
+        };
+        responses: {
+            /** @description `UserResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["UserResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.me.avatar.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `UserResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["UserResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
     "v1.config": {
         parameters: {
             query?: never;
@@ -141,10 +623,84 @@ export interface operations {
                             name: string;
                             default_locale: string;
                             supported_locales: string[];
+                            registration: {
+                                enabled: boolean;
+                                methods: ("email" | "phone")[];
+                                require_email_verification: boolean;
+                                require_phone_verification: boolean;
+                            };
                         };
                     };
                 };
             };
+        };
+    };
+    "v1.me.contact.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeContactRequest"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        message: "We sent you a code.";
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
+        };
+    };
+    "v1.me.contact.verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyCodeRequest"];
+            };
+        };
+        responses: {
+            /** @description `UserResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["UserResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "v1.games.index": {
@@ -210,6 +766,393 @@ export interface operations {
                     "application/json": string;
                 };
             };
+        };
+    };
+    "v1.me.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `UserResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["UserResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.me.password.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.auth.password.forgot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForgotPasswordRequest"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        message: "If an account exists for that email or phone, we sent it a code.";
+                    };
+                };
+            };
+            422: components["responses"]["ValidationException"];
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
+        };
+    };
+    "v1.auth.password.reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetPasswordRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        message: "Your password has been reset. You can now log in.";
+                    };
+                };
+            };
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.me.profile.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateProfileRequest"];
+            };
+        };
+        responses: {
+            /** @description `UserResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["UserResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.users.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                username: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `PublicUserResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PublicUserResource"];
+                    };
+                };
+            };
+        };
+    };
+    "v1.auth.register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterRequest"];
+            };
+        };
+        responses: {
+            /** @description `UserResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["UserResource"];
+                    };
+                };
+            };
+            /** @description An error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Error overview.
+                         * @example Registration is currently closed.
+                         */
+                        message: string;
+                    };
+                };
+            };
+            422: components["responses"]["ValidationException"];
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
+        };
+    };
+    "v1.auth.login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description `UserResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["UserResource"];
+                    };
+                };
+            };
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.auth.logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.me.settings.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateSettingsRequest"];
+            };
+        };
+        responses: {
+            /** @description `UserResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["UserResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.auth.username-available": {
+        parameters: {
+            query: {
+                username: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            available: string;
+                        };
+                    };
+                };
+            };
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.auth.verification.send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendVerificationRequest"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        message: "We sent you a code.";
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
+        };
+    };
+    "v1.auth.verification.verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyCodeRequest"];
+            };
+        };
+        responses: {
+            /** @description `UserResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["UserResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
 }

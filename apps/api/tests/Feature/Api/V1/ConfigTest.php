@@ -5,6 +5,9 @@ it('returns the public platform configuration', function () {
         'app.name' => 'Test Platform',
         'app.fallback_locale' => 'en',
         'platform.supported_locales' => ['en', 'ru', 'hy'],
+        'platform.registration.enabled' => true,
+        'platform.registration.require_email_verification' => true,
+        'platform.registration.require_phone_verification' => false,
     ]);
 
     $this->getJson('/api/v1/config')
@@ -14,6 +17,12 @@ it('returns the public platform configuration', function () {
                 'name' => 'Test Platform',
                 'default_locale' => 'en',
                 'supported_locales' => ['en', 'ru', 'hy'],
+                'registration' => [
+                    'enabled' => true,
+                    'methods' => ['email', 'phone'],
+                    'require_email_verification' => true,
+                    'require_phone_verification' => false,
+                ],
             ],
         ]);
 });

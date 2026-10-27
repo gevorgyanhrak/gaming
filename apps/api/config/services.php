@@ -18,6 +18,11 @@ return [
         'key' => env('POSTMARK_API_KEY'),
     ],
 
+    // One-time codes by SMS. Only "log" (development) exists until a provider is chosen; see App\Platform\Sms\SmsGateway.
+    'sms' => [
+        'driver' => env('SMS_DRIVER', 'log'),
+    ],
+
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],
