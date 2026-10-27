@@ -1,8 +1,9 @@
 <?php
 
+use App\Models\AuditLog;
+use App\Models\Game;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
-use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\Models\Role;
 
 beforeEach(fn () => $this->seed(RoleSeeder::class));
@@ -36,11 +37,13 @@ it('limits moderators to their permissions', function () {
         ->and($moderator->can('manage settings'))->toBeFalse();
 });
 
-it('lets super admins pass every check', function () {
-    Gate::define('anything', fn () => false);
+it('gives super admins every permission without bypassing rules that hold for everyone', function () {
     $root = User::factory()->create()->assignRole('super_admin');
 
-    expect($root->can('anything'))->toBeTrue();
+    expect($root->can('manage settings'))->toBeTrue()
+        ->and($root->can('view audit log'))->toBeTrue()
+        ->and($root->can('update', AuditLog::query()->create(['action' => 'x'])))->toBeFalse()
+        ->and($root->can('delete', Game::factory()->create()))->toBeFalse();
 });
 
 it('grants and revokes roles from the command line', function () {

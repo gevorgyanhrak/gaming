@@ -19,6 +19,7 @@ class GameDetailResource extends GameResource
             ...parent::toArray($request),
             // Paragraphs separated by blank lines.
             'rules' => $this->rules,
+            'modes' => GameModeResource::collection($this->whenLoaded('modes')),
         ];
     }
 }

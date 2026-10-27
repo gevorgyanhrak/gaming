@@ -10,7 +10,7 @@ use Spatie\Permission\PermissionRegistrar;
 /**
  * Administrative roles and permissions. Idempotent.
  *
- * Regular players have no role. super_admin passes every check (see AppServiceProvider).
+ * Regular players have no role. super_admin holds every permission (see AppServiceProvider).
  */
 class RoleSeeder extends Seeder
 {
@@ -21,12 +21,21 @@ class RoleSeeder extends Seeder
         'moderator' => ['access admin', 'manage users', 'view audit log'],
     ];
 
+    /**
+     * @return list<string>
+     */
+    public static function permissions(): array
+    {
+        return collect(self::ROLES)->flatten()->unique()->values()->all();
+    }
+
     public function run(): void
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        $permissions = collect(self::ROLES)->flatten()->unique();
-        $permissions->each(fn (string $name) => Permission::findOrCreate($name, 'web'));
+        foreach (self::permissions() as $name) {
+            Permission::findOrCreate($name, 'web');
+        }
 
         foreach (self::ROLES as $role => $granted) {
             Role::findOrCreate($role, 'web')->syncPermissions($granted);

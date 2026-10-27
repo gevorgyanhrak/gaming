@@ -20,6 +20,9 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             GameSeeder::class,
+            GameModeSeeder::class,
+            BotSeeder::class,
+            ContentPageSeeder::class,
         ]);
     }
 }

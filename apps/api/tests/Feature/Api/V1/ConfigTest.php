@@ -15,14 +15,19 @@ it('returns the public platform configuration', function () {
         ->assertExactJson([
             'data' => [
                 'name' => 'Test Platform',
+                'logo_url' => null,
+                'favicon_url' => null,
                 'default_locale' => 'en',
                 'supported_locales' => ['en', 'ru', 'hy'],
+                'maintenance' => ['enabled' => false, 'message' => null],
                 'registration' => [
                     'enabled' => true,
                     'methods' => ['email', 'phone'],
                     'require_email_verification' => true,
                     'require_phone_verification' => false,
+                    'requires_terms' => false,
                 ],
+                'pages' => [],
             ],
         ]);
 });

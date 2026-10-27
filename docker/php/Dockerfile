@@ -24,6 +24,8 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-in
 
 COPY apps/api/ ./
 RUN composer dump-autoload --optimize --classmap-authoritative --no-dev \
+    # Admin panel CSS/JS/fonts are generated (gitignored); composer scripts are skipped above.
+    && php artisan filament:assets \
     && rm -f .env \
     && chown -R www-data:www-data storage bootstrap/cache
 

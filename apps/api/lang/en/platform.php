@@ -43,4 +43,16 @@ return [
         'ignore' => 'If you did not request this, you can ignore this message.',
         'sms' => ':app code: :code',
     ],
+    'settings' => [
+        'default_locale_supported' => 'The default language must be one of the supported languages.',
+    ],
+    'maintenance' => [
+        'default_message' => 'We are doing some maintenance. Please check back soon.',
+    ],
+    'moderation' => [
+        'not_yourself' => 'You cannot moderate your own account.',
+        'super_admin_only' => 'Only super admins can do this for staff accounts.',
+        'keep_own_super_admin' => 'You cannot remove your own super admin role.',
+        'use_unban' => 'This account is banned. Unban it instead.',
+    ],
 ];

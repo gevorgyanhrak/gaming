@@ -47,6 +47,13 @@ return [
         'max_upload_kb' => 2048,
     ],
 
+    'admin' => [
+        // Serve the admin panel on its own host (e.g. admin.example.com). Null: same host as the API.
+        'domain' => env('ADMIN_DOMAIN') ?: null,
+        // Require two-factor authentication (authenticator app) for admin sign-in.
+        'mfa_required' => (bool) env('ADMIN_MFA_REQUIRED', true),
+    ],
+
     // last_active_at is written at most once per interval per user.
     'last_active_interval_minutes' => 5,
 

@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Enums\VerificationPurpose;
+use App\Platform\Settings\Settings;
 use App\Platform\Sms\SmsChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -40,7 +41,7 @@ class VerificationCodeNotification extends Notification implements ShouldQueue
         $minutes = config('platform.verification.code_ttl_minutes');
 
         return (new MailMessage)
-            ->subject(__("platform.codes.{$this->purpose->value}.subject", ['app' => config('app.name')]))
+            ->subject(__("platform.codes.{$this->purpose->value}.subject", ['app' => app(Settings::class)->get('general.platform_name')]))
             ->line(__("platform.codes.{$this->purpose->value}.intro"))
             ->line(__('platform.codes.code_line', ['code' => $this->code]))
             ->line(__('platform.codes.expires', ['minutes' => $minutes]))
@@ -49,6 +50,6 @@ class VerificationCodeNotification extends Notification implements ShouldQueue
 
     public function toSms(object $notifiable): string
     {
-        return __('platform.codes.sms', ['app' => config('app.name'), 'code' => $this->code]);
+        return __('platform.codes.sms', ['app' => app(Settings::class)->get('general.platform_name'), 'code' => $this->code]);
     }
 }

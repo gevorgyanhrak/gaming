@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Enums\ContactChannel;
 use App\Enums\VerificationPurpose;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -23,7 +25,19 @@ use Illuminate\Support\Carbon;
 #[Fillable(['channel', 'destination', 'purpose', 'code_hash', 'expires_at'])]
 class VerificationCode extends Model
 {
+    use MassPrunable;
+
     public const UPDATED_AT = null;
+
+    /**
+     * Codes are useless a day after expiry; the scheduler deletes them (model:prune).
+     *
+     * @return Builder<static>
+     */
+    public function prunable(): Builder
+    {
+        return static::query()->where('expires_at', '<', now()->subDay());
+    }
 
     /**
      * @return array<string, string>

@@ -2,6 +2,7 @@
 
 namespace App\Platform\Auth;
 
+use App\Platform\Settings\Settings;
 use Propaganistas\LaravelPhone\PhoneNumber;
 use Throwable;
 
@@ -26,7 +27,7 @@ final class Phones
     public static function isAllowedCountry(string $e164): bool
     {
         /** @var list<string> $allowed */
-        $allowed = config('platform.phone.allowed_countries');
+        $allowed = app(Settings::class)->get('access.phone_allowed_countries');
 
         return $allowed === [] || (new PhoneNumber($e164))->isOfCountry($allowed);
     }

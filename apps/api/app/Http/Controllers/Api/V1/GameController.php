@@ -26,7 +26,9 @@ class GameController extends Controller
     public function show(string $slug): GameDetailResource
     {
         return new GameDetailResource(
-            Game::query()->visible()->where('slug', $slug)->firstOrFail(),
+            Game::query()->visible()->where('slug', $slug)
+                ->with(['modes' => fn ($query) => $query->enabled()])
+                ->firstOrFail(),
         );
     }
 }

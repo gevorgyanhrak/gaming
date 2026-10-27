@@ -20,8 +20,6 @@ class RegisterController extends Controller
      */
     public function __invoke(RegisterRequest $request, VerificationCodes $codes): JsonResponse
     {
-        abort_unless(config('platform.registration.enabled'), 403, __('platform.auth.registration_closed'));
-
         $channel = $request->channel();
         $destination = $request->string($channel->column())->toString();
 
@@ -32,6 +30,9 @@ class RegisterController extends Controller
                 'password' => $request->validated('password'),
                 'locale' => app()->getLocale(),
             ]);
+            if ($request->requiresTerms()) {
+                $user->forceFill(['terms_accepted_at' => now()])->save();
+            }
             $user->profile()->create();
 
             return $user;

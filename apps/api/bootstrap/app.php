@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Middleware\ApplyRuntimeSettings;
 use App\Http\Middleware\EnsureAccountIsActive;
+use App\Http\Middleware\EnsureNotInMaintenance;
 use App\Http\Middleware\SetLocaleFromRequest;
 use App\Http\Middleware\TouchLastActive;
 use Illuminate\Foundation\Application;
@@ -18,12 +20,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Admin-managed framework settings (session lifetime, platform name), before sessions start.
+        $middleware->prepend(ApplyRuntimeSettings::class);
         // Cookie-based (session) authentication for requests coming from the SPA origin.
         $middleware->statefulApi();
         $middleware->api(append: [SetLocaleFromRequest::class]);
         $middleware->alias([
             'active' => EnsureAccountIsActive::class,
             'touch-last-active' => TouchLastActive::class,
+            'maintenance' => EnsureNotInMaintenance::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -1,6 +1,9 @@
 <?php
 
+use App\Models\User;
 use App\Notifications\VerificationCodeNotification;
+use Database\Seeders\RoleSeeder;
+use Filament\Facades\Filament;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -52,4 +55,23 @@ function codeSentTo(string $destination): string
 function wrongCode(string $code): string
 {
     return str_pad((string) (((int) $code + 1) % 1_000_000), 6, '0', STR_PAD_LEFT);
+}
+
+/**
+ * A staff account with the given role (roles are seeded on demand), signed in to the admin panel.
+ * Pass null for a regular player.
+ */
+function signInToAdmin(?string $role = 'super_admin', array $attributes = []): User
+{
+    test()->seed(RoleSeeder::class);
+
+    $user = User::factory()->create($attributes);
+    if ($role !== null) {
+        $user->assignRole($role);
+    }
+
+    test()->actingAs($user, 'admin');
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+    return $user;
 }

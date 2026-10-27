@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Platform\Settings\Settings;
 use App\Platform\Sms\LogSmsGateway;
 use App\Platform\Sms\SmsGateway;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -17,6 +19,9 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // One instance per request (or job), so settings are read once and never leak between requests.
+        $this->app->scoped(Settings::class);
+
         $this->app->singleton(SmsGateway::class, fn () => match (config('services.sms.driver')) {
             'log' => new LogSmsGateway,
             default => throw new InvalidArgumentException('Unsupported SMS driver ['.config('services.sms.driver').'].'),
@@ -32,8 +37,9 @@ class AppServiceProvider extends ServiceProvider
             return $this->app->runningUnitTests() ? $rule : $rule->uncompromised();
         });
 
-        // Super admins pass every authorization check.
-        Gate::before(fn (User $user) => $user->hasRole('super_admin') ? true : null);
+        // Super admins hold every permission. Only permission checks are bypassed: policy rules that
+        // are false for everyone (e.g. editing the audit log, deleting games) still apply.
+        Gate::before(fn (User $user, string $ability) => in_array($ability, RoleSeeder::permissions(), true) && $user->hasRole('super_admin') ? true : null);
 
         $this->configureRateLimiting();
     }

@@ -5,6 +5,13 @@ namespace App\Models;
 use App\Enums\ContactChannel;
 use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
+use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthentication;
+use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthenticationRecovery;
+use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
+use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthenticationRecovery;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasName;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -28,15 +35,22 @@ use Spatie\Permission\Traits\HasRoles;
  * @property UserStatus $status
  * @property string|null $locale
  * @property Carbon|null $last_active_at
+ * @property Carbon|null $terms_accepted_at
  * @property Carbon $created_at
  * @property-read UserProfile $profile
  */
 #[Fillable(['username', 'email', 'phone', 'password', 'locale'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasName
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, HasRoles, Notifiable;
+    use HasApiTokens, HasFactory, HasRoles, InteractsWithAppAuthentication, InteractsWithAppAuthenticationRecovery, Notifiable;
+
+    /**
+     * Roles and permissions always belong to the "web" guard, also while the admin panel ("admin"
+     * guard) is the default guard; otherwise permission checks would look up the wrong guard.
+     */
+    protected string $guard_name = 'web';
 
     /**
      * Mirrors the column default, so a freshly created model is consistent before reloading.
@@ -56,6 +70,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'phone_verified_at' => 'datetime',
             'last_active_at' => 'datetime',
+            'terms_accepted_at' => 'datetime',
             'password' => 'hashed',
             'status' => UserStatus::class,
         ];
@@ -77,6 +92,14 @@ class User extends Authenticatable
     public function profile(): HasOne
     {
         return $this->hasOne(UserProfile::class)->withDefault();
+    }
+
+    /**
+     * @return HasMany<UserBan, $this>
+     */
+    public function bans(): HasMany
+    {
+        return $this->hasMany(UserBan::class)->latest('id');
     }
 
     /**
@@ -105,6 +128,19 @@ class User extends Authenticatable
     public function canAccessAdmin(): bool
     {
         return $this->can('access admin');
+    }
+
+    /**
+     * Admin panel access: active staff accounts with an email address (the admin login uses email).
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->isActive() && $this->email !== null && $this->canAccessAdmin();
+    }
+
+    public function getFilamentName(): string
+    {
+        return $this->username;
     }
 
     /**
