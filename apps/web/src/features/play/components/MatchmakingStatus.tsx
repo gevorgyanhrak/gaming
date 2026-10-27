@@ -68,6 +68,9 @@ export function MatchmakingStatus() {
   return (
     <div className="space-y-3 rounded-xl border border-accent/40 bg-accent/10 p-4" role="status">
       <p className="font-medium">{t('play.searching')}</p>
+      {(status.data?.waiting ?? 0) > 1 ? (
+        <p className="text-sm">{t('play.tableWaiting', { count: status.data?.waiting ?? 0 })}</p>
+      ) : null}
       {ticket.status === 'bot_offered' ? (
         <p className="text-sm">{t('play.botOffer')}</p>
       ) : botIn !== null && botIn > 0 ? (

@@ -212,7 +212,11 @@
     "playersCount_one": "{{count}} игрок",
     "playersCount_few": "{{count}} игрока",
     "playersCount_many": "{{count}} игроков",
-    "playersCount_other": "{{count}} игрока"
+    "playersCount_other": "{{count}} игрока",
+    "tableWaiting_one": "Ждёт {{count}} игрок, стол скоро начнётся.",
+    "tableWaiting_few": "Ждут {{count}} игрока, стол скоро начнётся.",
+    "tableWaiting_many": "Ждут {{count}} игроков, стол скоро начнётся.",
+    "tableWaiting_other": "Ждут {{count}} игрока, стол скоро начнётся."
   },
   "room": {
     "players": "Игроки",

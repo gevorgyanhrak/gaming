@@ -46,18 +46,12 @@ class RoomController extends Controller
             $opponents = $request->integer('opponents', 1);
             $this->ensurePlayers($mode, 1 + $opponents, 'opponents');
 
-            $players = [$user];
-            $picked = [];
-            for ($i = 0; $i < $opponents; $i++) {
-                try {
-                    $bot = $bots->pick($mode->game, $difficulty, array_map(fn (BotProfile $b) => $b->id, $picked));
-                } catch (InvalidArgumentException) {
-                    // Fewer bots than seats: the same bots sit at the table more than once.
-                    $bot = $picked[$i % max(1, count($picked))] ?? throw ValidationException::withMessages(['bot_difficulty' => __('platform.play.no_bot')]);
-                }
-                $picked[] = $bot;
-                $players[] = ['bot' => $bot, 'difficulty' => $difficulty];
+            try {
+                $picked = $bots->pickMany($mode->game, $difficulty, $opponents);
+            } catch (InvalidArgumentException) {
+                throw ValidationException::withMessages(['bot_difficulty' => __('platform.play.no_bot')]);
             }
+            $players = [$user, ...array_map(fn (BotProfile $bot) => ['bot' => $bot, 'difficulty' => $difficulty], $picked)];
 
             $room = $rooms->createStarted($mode, RoomType::Bot, $players, $user);
         } else {

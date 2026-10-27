@@ -28,6 +28,28 @@ class BotSelector
     }
 
     /**
+     * $count bots for one table, all different while there are enough; with fewer bots than seats the
+     * same bots sit down more than once.
+     *
+     * @return list<BotProfile>
+     *
+     * @throws InvalidArgumentException when no bot plays the game at this difficulty
+     */
+    public function pickMany(Game $game, BotDifficulty $difficulty, int $count): array
+    {
+        $picked = [];
+        for ($i = 0; $i < $count; $i++) {
+            try {
+                $picked[] = $this->pick($game, $difficulty, array_map(fn (BotProfile $b) => $b->id, $picked));
+            } catch (InvalidArgumentException $e) {
+                $picked[] = $picked[$i % max(1, count($picked))] ?? throw $e;
+            }
+        }
+
+        return $picked;
+    }
+
+    /**
      * Difficulties at least one enabled bot plays for the game.
      *
      * @return list<BotDifficulty>

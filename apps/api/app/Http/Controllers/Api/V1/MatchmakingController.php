@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\BotDifficulty;
 use App\Gameplay\Matchmaking\Matchmaker;
+use App\Gameplay\Matchmaking\Ticket;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TicketResource;
 use App\Models\GameMode;
@@ -28,7 +29,7 @@ class MatchmakingController extends Controller
 
         $result = $matchmaker->join($user, GameMode::query()->with('game')->findOrFail($request->integer('game_mode_id')));
 
-        return $this->respond($result instanceof GameRoom ? null : $result, $result instanceof GameRoom ? $result->public_id : null, 201);
+        return $this->respond($matchmaker, $result instanceof GameRoom ? null : $result, $result instanceof GameRoom ? $result->public_id : null, 201);
     }
 
     public function show(Request $request, Matchmaker $matchmaker): JsonResponse
@@ -36,7 +37,7 @@ class MatchmakingController extends Controller
         /** @var User $user */
         $user = $request->user();
 
-        return $this->respond($matchmaker->ticket($user), $matchmaker->matchedRoom($user));
+        return $this->respond($matchmaker, $matchmaker->ticket($user), $matchmaker->matchedRoom($user));
     }
 
     /** Called every ~15 s while the matchmaking screen is open. */
@@ -45,7 +46,7 @@ class MatchmakingController extends Controller
         /** @var User $user */
         $user = $request->user();
 
-        return $this->respond($matchmaker->heartbeat($user), $matchmaker->matchedRoom($user));
+        return $this->respond($matchmaker, $matchmaker->heartbeat($user), $matchmaker->matchedRoom($user));
     }
 
     public function destroy(Request $request, Matchmaker $matchmaker): JsonResponse
@@ -69,14 +70,16 @@ class MatchmakingController extends Controller
             throw ValidationException::withMessages(['ticket' => __('platform.play.no_bot_offer')]);
         }
 
-        return $this->respond(null, $room->public_id, 201);
+        return $this->respond($matchmaker, null, $room->public_id, 201);
     }
 
-    private function respond(mixed $ticket, ?string $room, int $status = 200): JsonResponse
+    private function respond(Matchmaker $matchmaker, ?Ticket $ticket, ?string $room, int $status = 200): JsonResponse
     {
         return response()->json(['data' => [
             /** @var array<string, mixed>|null */
             'ticket' => $ticket === null ? null : new TicketResource($ticket),
+            /** Players in the same queue, the searching player included (null when not searching). */
+            'waiting' => $ticket === null ? null : $matchmaker->waiting($ticket->modeId),
             /** @var string|null */
             'room' => $room,
         ]], $status);

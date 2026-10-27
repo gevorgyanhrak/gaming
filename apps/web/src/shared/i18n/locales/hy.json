@@ -206,7 +206,9 @@
     "cancelSearch": "Չեղարկել",
     "players": "Խաղացողներ",
     "playersCount_one": "{{count}} խաղացող",
-    "playersCount_other": "{{count}} խաղացող"
+    "playersCount_other": "{{count}} խաղացող",
+    "tableWaiting_one": "Սպասում է {{count}} խաղացող, սեղանը շուտով կսկսվի։",
+    "tableWaiting_other": "Սպասում են {{count}} խաղացող, սեղանը շուտով կսկսվի։"
   },
   "room": {
     "players": "Խաղացողներ",

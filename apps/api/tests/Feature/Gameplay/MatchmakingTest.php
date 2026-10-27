@@ -6,9 +6,12 @@ use App\Enums\RoomType;
 use App\Gameplay\Matchmaking\Matchmaker;
 use App\Gameplay\Matchmaking\MatchmakingEvent;
 use App\Models\BotProfile;
+use App\Models\Game;
 use App\Models\GameMode;
 use App\Models\GameRoom;
 use App\Models\User;
+use Database\Seeders\GameModeSeeder;
+use Database\Seeders\GameSeeder;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 
@@ -156,4 +159,78 @@ it('shows game history and statistics', function () {
     $this->getJson('/api/v1/users/alice')->assertJsonPath('data.stats.0.played', 1);
 
     $this->getJson('/api/v1/stats/online')->assertOk()->assertJsonPath('data.online', 1);
+});
+
+/** The seeded poker mode (2–6 players, tables wait 20 s for more players). */
+function pokerQueue(): GameMode
+{
+    test()->seed([GameSeeder::class, GameModeSeeder::class]);
+
+    return Game::query()->where('slug', 'poker')->sole()->modes()->sole();
+}
+
+it('waits for more players at bigger tables, then seats everyone waiting', function () {
+    $mode = pokerQueue();
+    $players = User::factory()->count(4)->create();
+
+    foreach ($players as $player) {
+        $this->actingAs($player)->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id])
+            ->assertCreated()->assertJsonPath('data.room', null);
+    }
+    $this->getJson('/api/v1/matchmaking')->assertJsonPath('data.waiting', 4);
+
+    app(Matchmaker::class)->sweep();
+    expect(GameRoom::query()->count())->toBe(0);
+
+    $this->travel(21)->seconds();
+    app(Matchmaker::class)->sweep();
+
+    $room = GameRoom::query()->sole();
+    expect($room->seats)->toBe(4)
+        ->and($room->type)->toBe(RoomType::Matchmaking)
+        ->and($room->participants()->pluck('user_id')->sort()->values()->all())->toBe($players->pluck('id')->sort()->values()->all());
+    foreach ($players as $player) {
+        Event::assertDispatched(MatchmakingEvent::class, fn ($e) => $e->userId === $player->id && $e->name === 'matched');
+    }
+});
+
+it('starts a full table at once and queues the next player for another', function () {
+    $mode = pokerQueue();
+    $players = User::factory()->count(7)->create();
+
+    foreach ($players->take(6) as $player) {
+        $result = $this->actingAs($player)->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id])->json('data');
+    }
+    expect($result['room'])->not->toBeNull()
+        ->and(GameRoom::query()->sole()->seats)->toBe(6);
+
+    $this->actingAs($players->last())->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id])
+        ->assertJsonPath('data.room', null)
+        ->assertJsonPath('data.waiting', 1);
+});
+
+it('never starts a bigger table with a single player', function () {
+    $mode = pokerQueue();
+    $mode->game->update(['bots_enabled' => false]);
+    $this->actingAs(User::factory()->create())->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id]);
+
+    $this->travel(30)->seconds();
+    $this->postJson('/api/v1/matchmaking/heartbeat');
+    app(Matchmaker::class)->sweep();
+
+    expect(GameRoom::query()->count())->toBe(0);
+});
+
+it('falls back to a table of bots for bigger tables', function () {
+    $mode = pokerQueue();
+    withBots($mode);
+    $mode->game->update(['bot_fallback_timeout_seconds' => 25]);
+    $this->actingAs(User::factory()->create())->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id]);
+
+    $this->travel(26)->seconds();
+    $this->postJson('/api/v1/matchmaking/heartbeat');
+    app(Matchmaker::class)->sweep();
+    $room = $this->postJson('/api/v1/matchmaking/accept-bot')->assertCreated()->json('data.room');
+
+    expect(GameRoom::query()->where('public_id', $room)->sole()->participants()->count())->toBe(Matchmaker::BOT_TABLE_SIZE);
 });

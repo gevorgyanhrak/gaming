@@ -787,6 +787,7 @@ export interface components {
             client_action_id: string;
             /** @description The version the client saw; a different current version means its view is outdated. */
             expected_version: number;
+            /** @description Game-specific fields are checked by the engine; here only their shape: a few flat values. */
             action: {
                 type: string;
             };
@@ -1317,6 +1318,8 @@ export interface operations {
                             ticket: {
                                 [key: string]: unknown;
                             } | null;
+                            /** @description Players in the same queue, the searching player included (null when not searching). */
+                            waiting: number | null;
                             room: string | null;
                         };
                     };
@@ -1350,6 +1353,8 @@ export interface operations {
                             ticket: {
                                 [key: string]: unknown;
                             } | null;
+                            /** @description Players in the same queue, the searching player included (null when not searching). */
+                            waiting: number | null;
                             room: string | null;
                         };
                     };
@@ -1397,6 +1402,8 @@ export interface operations {
                             ticket: {
                                 [key: string]: unknown;
                             } | null;
+                            /** @description Players in the same queue, the searching player included (null when not searching). */
+                            waiting: number | null;
                             room: string | null;
                         };
                     };
@@ -1430,6 +1437,8 @@ export interface operations {
                             ticket: {
                                 [key: string]: unknown;
                             } | null;
+                            /** @description Players in the same queue, the searching player included (null when not searching). */
+                            waiting: number | null;
                             room: string | null;
                         };
                     };

@@ -206,7 +206,9 @@
     "cancelSearch": "Cancel",
     "players": "Table size",
     "playersCount_one": "{{count}} player",
-    "playersCount_other": "{{count}} players"
+    "playersCount_other": "{{count}} players",
+    "tableWaiting_one": "{{count}} player is waiting; the table starts soon.",
+    "tableWaiting_other": "{{count}} players are waiting; the table starts soon."
   },
   "room": {
     "players": "Players",

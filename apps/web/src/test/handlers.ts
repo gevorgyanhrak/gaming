@@ -80,7 +80,9 @@ export const handlers = [
   http.get('*/sanctum/csrf-cookie', () => new HttpResponse(null, { status: 204 })),
   http.get('*/api/v1/me/rooms', () => HttpResponse.json({ data: [] })),
   http.get('*/api/v1/me/stats', () => HttpResponse.json({ data: [] })),
-  http.get('*/api/v1/matchmaking', () => HttpResponse.json({ data: { ticket: null, room: null } })),
+  http.get('*/api/v1/matchmaking', () =>
+    HttpResponse.json({ data: { ticket: null, room: null, waiting: null } }),
+  ),
   http.get('*/api/v1/config', () => HttpResponse.json({ data: configFixture })),
   http.get('*/api/v1/games', () => HttpResponse.json({ data: [summaryOf(gameFixture())] })),
 ]

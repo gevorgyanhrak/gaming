@@ -73,7 +73,7 @@ class GameModeSeeder extends Seeder
                 'name' => ['en' => "No-Limit Hold'em", 'ru' => 'Безлимитный холдем', 'hy' => 'Անսահմանափակ հոլդեմ'],
                 'description' => ['en' => 'Up to 6 players. Play chips only.', 'ru' => 'До 6 игроков. Только игровые фишки.', 'hy' => 'Մինչև 6 խաղացող։ Միայն խաղային ժետոններ։'],
                 'min_players' => 2, 'max_players' => 6,
-                'config' => ['starting_chips' => 1000, 'small_blind' => 5, 'big_blind' => 10, 'turn_seconds' => 30],
+                'config' => ['starting_chips' => 1000, 'small_blind' => 5, 'big_blind' => 10, 'turn_seconds' => 30, 'table_wait_seconds' => 20],
             ]],
         ];
     }

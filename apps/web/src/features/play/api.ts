@@ -15,6 +15,8 @@ export interface Matchmaking {
     bot_offer_at: string | null
   } | null
   room: string | null
+  /** Players in the same queue, you included (bigger tables wait for several). */
+  waiting?: number | null
 }
 export type GameStat = Schemas['GameStatResource']
 export type GameAction = { type: string } & Record<string, unknown>

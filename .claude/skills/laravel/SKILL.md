@@ -77,6 +77,10 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
   the mode's lock (no double matches); `app:matchmaking-sweep` (every 5 s) drops tickets without a
   heartbeat for 45 s and applies the game's bot fallback (offer / auto / off, game timeout or the platform
   default). Events `matchmaking.matched` / `matchmaking.bot_offered` on `private-user.{id}`.
+- Bigger tables (min_players < max_players): a full table starts at once; otherwise everyone waiting sits
+  down once the oldest ticket waited the mode's `table_wait_seconds` (default `Matchmaker::TABLE_WAIT_SECONDS`).
+  Bot fallback seats `BOT_TABLE_SIZE` there; `BotSelector::pickMany` reuses bots when there are too few.
+  Status responses include `waiting` (queue size).
 - HTTP: `/api/v1/matchmaking` (POST join, GET status, POST heartbeat, POST accept-bot, DELETE leave),
   `/api/v1/rooms` (bot | private), `rooms/join`, `rooms/{room}` (+ `/state`, `/actions`, `/leave`),
   `me/rooms`, `me/games` (history, paginated), `me/stats`, `stats/online`. Engine exceptions map to 422 (IllegalAction) and 409 (RoomNotActive, VersionConflict with

@@ -113,6 +113,7 @@ describe('Playing a game', () => {
         bot_offer_at: null,
       },
       room: null,
+      waiting: 3,
     }
     server.use(
       signedInAs(userFixture({ id: 1 })),
@@ -123,6 +124,7 @@ describe('Playing a game', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'Find an opponent' }))
     expect(await screen.findByText('Looking for an opponent…')).toBeInTheDocument()
+    expect(screen.getByText('3 players are waiting; the table starts soon.')).toBeInTheDocument()
 
     emit('user.1', 'matchmaking.matched', { room: 'room-9' })
 

@@ -8,6 +8,7 @@ use App\Enums\RoomType;
 use App\Gameplay\Bots\BotSelector;
 use App\Gameplay\Rooms\PlayRules;
 use App\Gameplay\Rooms\RoomService;
+use App\Models\BotProfile;
 use App\Models\GameMode;
 use App\Models\GameRoom;
 use App\Models\User;
@@ -25,13 +26,20 @@ use Throwable;
  *
  * Queues live in the game store; every change to a mode's queue happens under that mode's lock, so a
  * ticket can be matched only once (e.g. a human match and a bot acceptance can't both win).
- * Rooms are formed from min_players tickets (heads-up for poker); bigger tables are private rooms or bot
- * tables (see RoomController::store).
+ * Two-player modes pair the two oldest tickets. Modes for bigger tables (poker) start a full table at
+ * once, or sit down everyone waiting (at least min_players) once the oldest ticket has waited the mode's
+ * `table_wait_seconds`; the bot fallback seats a table of TABLE_SIZE with bots.
  */
 class Matchmaker
 {
     /** Tickets whose browser stopped sending heartbeats for this long are dropped. */
     public const HEARTBEAT_TIMEOUT = 45;
+
+    /** How long a bigger table waits for more players when the mode doesn't say. */
+    public const TABLE_WAIT_SECONDS = 20;
+
+    /** Seats at a bot-fallback table in modes for more than two players (as offered in the UI). */
+    public const BOT_TABLE_SIZE = 4;
 
     public function __construct(
         private readonly RoomService $rooms,
@@ -84,6 +92,12 @@ class Matchmaker
         $modeId = $this->store()->get($this->userKey($user->id));
 
         return is_int($modeId) ? ($this->queue($modeId)[$user->id] ?? null) : null;
+    }
+
+    /** How many players wait in the mode's queue. */
+    public function waiting(int $modeId): int
+    {
+        return count($this->queue($modeId));
     }
 
     /** The room a recent match placed the player in (for clients that missed the event). */
@@ -203,9 +217,21 @@ class Matchmaker
     {
         $room = null;
         uasort($queue, fn (Ticket $a, Ticket $b) => $a->joinedAt <=> $b->joinedAt);
+        $wait = $this->tableWait($mode);
 
         while (count($queue) >= $mode->min_players) {
-            $tickets = array_slice($queue, 0, $mode->min_players, true);
+            $oldest = reset($queue);
+            $size = match (true) {
+                count($queue) >= $mode->max_players => $mode->max_players,
+                // Not full: start with whoever is here once the oldest has waited long enough.
+                $wait === null || $oldest->joinedAt <= now()->getTimestamp() - $wait => count($queue),
+                default => 0,
+            };
+            if ($size === 0) {
+                break;
+            }
+
+            $tickets = array_slice($queue, 0, $size, true);
             $players = User::query()->whereIn('id', array_keys($tickets))->get()->sortBy(fn (User $u) => $tickets[$u->id]->joinedAt)->values()->all();
 
             foreach (array_keys($tickets) as $userId) {
@@ -224,19 +250,31 @@ class Matchmaker
         return [$queue, $room];
     }
 
+    /** Seconds a table that isn't full waits for more players; null for fixed-size modes. */
+    private function tableWait(GameMode $mode): ?int
+    {
+        if ($mode->max_players <= $mode->min_players) {
+            return null;
+        }
+
+        return (int) ($mode->config['table_wait_seconds'] ?? self::TABLE_WAIT_SECONDS);
+    }
+
     private function botRoom(GameMode $mode, User $user, BotDifficulty $difficulty): ?GameRoom
     {
+        $seats = $mode->max_players > 2 ? max($mode->min_players, min(self::BOT_TABLE_SIZE, $mode->max_players)) : $mode->min_players;
+
         try {
-            $bot = $this->bots->pick($mode->game, $difficulty);
+            $bots = $this->bots->pickMany($mode->game, $difficulty, $seats - 1);
         } catch (Throwable) {
             $available = $this->bots->difficulties($mode->game);
             if ($available === []) {
                 return null;
             }
-            $bot = $this->bots->pick($mode->game, $difficulty = $available[0]);
+            $bots = $this->bots->pickMany($mode->game, $difficulty = $available[0], $seats - 1);
         }
 
-        return $this->rooms->createStarted($mode, RoomType::Bot, [$user, ['bot' => $bot, 'difficulty' => $difficulty]], $user);
+        return $this->rooms->createStarted($mode, RoomType::Bot, [$user, ...array_map(fn (BotProfile $bot) => ['bot' => $bot, 'difficulty' => $difficulty], $bots)], $user);
     }
 
     private function botAt(GameMode $mode, int $now): ?int
