@@ -67,7 +67,7 @@ game-platform/
 ├── docs/            this file, ADRs
 ├── compose.yaml     local development stack
 ├── Makefile         developer commands
-└── .gitlab-ci.yml   per-app CI pipelines
+└── .github/workflows/  per-app CI (GitHub Actions: api.yml, web.yml)
 ```
 
 ### Backend structure (`apps/api/app`)

@@ -1,0 +1,95 @@
+name: API
+
+on:
+  push:
+    branches: [main]
+    paths: ['apps/api/**', 'docker/**', '.github/workflows/api.yml']
+  pull_request:
+    paths: ['apps/api/**', 'docker/**', '.github/workflows/api.yml']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: apps/api
+
+env:
+  PHP_EXTENSIONS: pdo_mysql, redis, intl, zip, pcntl, bcmath, gd
+
+jobs:
+  lint:
+    name: Lint & static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          coverage: none
+          tools: composer:v2
+      - uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: composer-${{ hashFiles('apps/api/composer.lock') }}
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: composer lint
+      - run: composer analyse
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: testing
+          MYSQL_USER: game
+          MYSQL_PASSWORD: secret
+          MYSQL_ROOT_PASSWORD: root-secret
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot-secret --silent"
+          --health-interval=5s --health-timeout=5s --health-retries=30
+      redis:
+        image: redis:7.4-alpine
+        ports: ['6379:6379']
+        options: --health-cmd="redis-cli ping" --health-interval=5s --health-timeout=3s --health-retries=20
+    env:
+      DB_HOST: 127.0.0.1
+      DB_USERNAME: game
+      DB_PASSWORD: secret
+      REDIS_HOST: 127.0.0.1
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          coverage: none
+          tools: composer:v2
+      - uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: composer-${{ hashFiles('apps/api/composer.lock') }}
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: cp .env.example .env && php artisan key:generate --no-interaction
+      - run: php artisan test
+
+  image:
+    name: Production image
+    if: github.event_name == 'push'
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v5
+      # Pushing to a registry is added with deployment (Phase 8).
+      - run: docker build --target prod -f docker/php/Dockerfile -t game-platform-api:${{ github.sha }} .

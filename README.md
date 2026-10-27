@@ -78,7 +78,7 @@ docker/         PHP image (dev and prod targets), nginx and MySQL configuration
 docs/           architecture and ADRs
 compose.yaml    local development stack
 Makefile        developer commands
-.gitlab-ci.yml  CI: lint, test and build each app independently
+.github/      CI (GitHub Actions): lint, test and build each app independently
 ```
 
 ## Configuration
