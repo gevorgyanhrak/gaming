@@ -9,6 +9,7 @@ use App\Platform\Sms\LogSmsGateway;
 use App\Platform\Sms\SmsGateway;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -34,6 +35,11 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $proxies = (string) config('platform.trusted_proxies');
+        if ($proxies !== '') {
+            TrustProxies::at($proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)));
+        }
+
         Password::defaults(function () {
             $rule = Password::min(8)->max(128)->letters()->numbers();
 

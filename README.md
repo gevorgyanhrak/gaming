@@ -7,7 +7,7 @@ played in real time against other people or against bots. Recreational play only
 - **Frontend:** React 19 SPA (`apps/web`): Vite, TypeScript, TanStack Query, Tailwind CSS
 - **Infrastructure:** MySQL 8.4, Redis, Laravel Reverb (WebSockets), Horizon (queues)
 
-Architecture and decisions: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/adr/`](docs/adr/README.md).
+Architecture and decisions: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/adr/`](docs/adr/README.md). Running it in production: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
 ## Status
 
@@ -111,10 +111,12 @@ http://localhost:8000/admin, a separate login from the player app (same accounts
 ## Accounts and roles (local development)
 
 - **Verification and reset codes by email** arrive in Mailpit: http://localhost:8025.
+- **Players for trying things out:** `docker compose exec api php artisan db:seed --class=LocalPlayersSeeder` creates `player1@example.test` and `player2@example.test` (password `password`), verified and ready to play. It refuses to run outside the local environment.
+- **After changing PHP code**, restart the long-running processes so they load it: `docker compose restart horizon reverb scheduler` (bots and timers run in Horizon).
 - **Codes by SMS** use the development `log` driver, which writes them to `apps/api/storage/logs/laravel.log`. It refuses to run in production: a real SMS provider still has to be chosen and added (`App\Platform\Sms\SmsGateway`) before phone sign-up can be offered publicly.
 - **Roles** are granted with `make artisan cmd="app:role you@example.com super_admin"` (add `--revoke` to remove), or by a super admin in the admin panel.
 
-Not enforced yet, by design: the "verification required" settings are exposed now and enforced on gameplay routes from Phase 5.
+The "verification required" settings are enforced on gameplay routes: an unverified account can browse but not play.
 
 ## Testing
 
@@ -129,10 +131,12 @@ with the frontend. After changing an API response, run `make types` and commit t
 
 ## Production builds
 
+See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the full setup (processes, configuration, release steps, security, monitoring and backups).
+
 - **API:** `docker build --target prod -f docker/php/Dockerfile .` produces an image with code and an optimized autoloader. It runs as `www-data` and contains no `.env` or tests. The same image runs php-fpm, `php artisan reverb:start`, `php artisan horizon` and `php artisan schedule:work`, with all configuration supplied through environment variables.
 - **Web:** `cd apps/web && VITE_API_BASE_URL=https://api.example.com npm run build` produces static files in `apps/web/dist`, to be served by any static host or CDN with an SPA fallback to `index.html`.
 
-Production requirements (documented in full in Phase 8): separate Redis instances for game state
+Production requirements, in short: separate Redis instances for game state
 (`noeviction`) and cache, `APP_DEBUG=false`, HTTPS with `SESSION_SECURE_COOKIE=true`, and
 `SESSION_DOMAIN`, `SANCTUM_STATEFUL_DOMAINS` and `FRONTEND_URL` set for the real domains.
 

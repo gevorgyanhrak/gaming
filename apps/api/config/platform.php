@@ -8,6 +8,13 @@
 return [
 
     /*
+    | Proxies (load balancer, TLS terminator) whose X-Forwarded-* headers are trusted, so client IPs,
+    | HTTPS detection and secure cookies are right: comma-separated IPs/CIDRs, or "*" behind a proxy
+    | that strips client-sent forwarding headers. Empty: trust none.
+    */
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
+
+    /*
     | Locales the API can respond in. The request locale is negotiated from the
     | Accept-Language header; anything unsupported falls back to app.fallback_locale.
     */
