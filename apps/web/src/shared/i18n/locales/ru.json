@@ -373,7 +373,13 @@
       "passed": "пас",
       "out": "вышел",
       "left": "покинул стол"
-    }
+    },
+    "pass": "Пас",
+    "discardPile": "Бито",
+    "discarded_one": "Бито: {{count}}",
+    "discarded_few": "Бито: {{count}}",
+    "discarded_many": "Бито: {{count}}",
+    "discarded_other": "Бито: {{count}}"
   },
   "cards": {
     "card": "{{rank}} {{suit}}",

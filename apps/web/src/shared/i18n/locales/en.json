@@ -357,7 +357,11 @@
       "passed": "passed",
       "out": "out",
       "left": "left"
-    }
+    },
+    "pass": "Pass",
+    "discardPile": "Discard pile",
+    "discarded_one": "Discarded: {{count}}",
+    "discarded_other": "Discarded: {{count}}"
   },
   "cards": {
     "card": "{{rank}} of {{suit}}",

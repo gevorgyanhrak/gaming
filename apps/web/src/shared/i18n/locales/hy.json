@@ -357,7 +357,11 @@
       "passed": "պաս",
       "out": "դուրս է",
       "left": "լքել է"
-    }
+    },
+    "pass": "Պաս",
+    "discardPile": "Բիտա",
+    "discarded_one": "Բիտա՝ {{count}}",
+    "discarded_other": "Բիտա՝ {{count}}"
   },
   "cards": {
     "card": "{{rank}} {{suit}}",
