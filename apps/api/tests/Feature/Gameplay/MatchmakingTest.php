@@ -12,6 +12,7 @@ use App\Models\GameRoom;
 use App\Models\User;
 use Database\Seeders\GameModeSeeder;
 use Database\Seeders\GameSeeder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 
@@ -233,4 +234,17 @@ it('falls back to a table of bots for bigger tables', function () {
     $room = $this->postJson('/api/v1/matchmaking/accept-bot')->assertCreated()->json('data.room');
 
     expect(GameRoom::query()->where('public_id', $room)->sole()->participants()->count())->toBe(Matchmaker::BOT_TABLE_SIZE);
+});
+
+it('finds the player’s ticket when the store returns the queue id as a string, as Redis does', function () {
+    $mode = ticTacToe();
+    $alice = User::factory()->create();
+    $this->actingAs($alice)->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id]);
+    Cache::store(config('gameplay.state_store'))->forever("mm:user:{$alice->id}", (string) $mode->id);
+
+    $this->getJson('/api/v1/matchmaking')->assertJsonPath('data.ticket.status', 'queued');
+    $this->postJson('/api/v1/matchmaking/heartbeat')->assertJsonPath('data.ticket.status', 'queued');
+    $this->deleteJson('/api/v1/matchmaking')->assertNoContent();
+
+    expect(app(Matchmaker::class)->waiting($mode->id))->toBe(0);
 });

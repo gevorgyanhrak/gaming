@@ -74,9 +74,9 @@ class Matchmaker
 
     public function leave(User $user): void
     {
-        $modeId = $this->store()->get($this->userKey($user->id));
+        $modeId = $this->modeOf($user->id);
 
-        if (is_int($modeId)) {
+        if ($modeId !== null) {
             $this->withQueue($modeId, function (array $queue) use ($user) {
                 unset($queue[$user->id]);
 
@@ -89,9 +89,9 @@ class Matchmaker
 
     public function ticket(User $user): ?Ticket
     {
-        $modeId = $this->store()->get($this->userKey($user->id));
+        $modeId = $this->modeOf($user->id);
 
-        return is_int($modeId) ? ($this->queue($modeId)[$user->id] ?? null) : null;
+        return $modeId !== null ? ($this->queue($modeId)[$user->id] ?? null) : null;
     }
 
     /** How many players wait in the mode's queue. */
@@ -110,9 +110,9 @@ class Matchmaker
 
     public function heartbeat(User $user): ?Ticket
     {
-        $modeId = $this->store()->get($this->userKey($user->id));
+        $modeId = $this->modeOf($user->id);
 
-        if (! is_int($modeId)) {
+        if ($modeId === null) {
             return null;
         }
 
@@ -132,8 +132,8 @@ class Matchmaker
      */
     public function acceptBot(User $user, BotDifficulty $difficulty): ?GameRoom
     {
-        $modeId = $this->store()->get($this->userKey($user->id));
-        $mode = is_int($modeId) ? GameMode::query()->with('game')->find($modeId) : null;
+        $modeId = $this->modeOf($user->id);
+        $mode = $modeId !== null ? GameMode::query()->with('game')->find($modeId) : null;
 
         if ($mode === null) {
             return null;
@@ -352,6 +352,17 @@ class Matchmaker
             $modes = $hasTickets ? array_values(array_unique([...$modes, $modeId])) : array_values(array_diff($modes, [$modeId]));
             $this->store()->forever('mm:modes', $modes);
         });
+    }
+
+    /**
+     * The mode whose queue the player is in. Redis stores plain numbers unserialized, so the id comes
+     * back as a string there (and as an int from other stores).
+     */
+    private function modeOf(int $userId): ?int
+    {
+        $modeId = $this->store()->get($this->userKey($userId));
+
+        return is_numeric($modeId) ? (int) $modeId : null;
     }
 
     private function userKey(int $userId): string

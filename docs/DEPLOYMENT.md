@@ -83,6 +83,9 @@ php artisan reverb:restart
 # restart the scheduler container
 ```
 
+If matchmaking stalls right after a restart, a killed run may still hold its overlap lock (they expire
+after a minute); `php artisan schedule:clear-cache` releases them at once.
+
 Workers that keep running old code are the most common deployment bug: a game added in a release is
 unknown to an old worker, and its bots never move. Always terminate Horizon and restart Reverb after a
 release.
