@@ -316,5 +316,39 @@
       "bishop": "Փիղ",
       "knight": "Ձի"
     }
+  },
+  "durak": {
+    "card": "{{rank}} {{suit}}",
+    "suit": {
+      "spades": "ղառ",
+      "hearts": "սիրտ",
+      "diamonds": "քյափ",
+      "clubs": "խաչ"
+    },
+    "rank": {
+      "jack": "Վալետ",
+      "queen": "Դամա",
+      "king": "Արքա",
+      "ace": "Թուզ"
+    },
+    "trump": "Կոզր",
+    "trumpCard": "Կոզր քարտը՝ {{card}}",
+    "deck_one": "Կապուկում {{count}} քարտ",
+    "deck_other": "Կապուկում {{count}} քարտ",
+    "opponentCards_one": "Մրցակիցն ունի {{count}} քարտ",
+    "opponentCards_other": "Մրցակիցն ունի {{count}} քարտ",
+    "table": "Սեղան",
+    "emptyTable": "Սեղանը դատարկ է։",
+    "beatenBy": "ծածկված՝ {{card}}",
+    "yourHand": "Ձեր քարտերը",
+    "take": "Վերցնել",
+    "done": "Բիտա",
+    "letTake": "Թող վերցնի",
+    "lead": "Ձեր գրոհն է՝ դրեք քարտ։",
+    "throwIn": "Գցեք սեղանին եղած արժեքի քարտ կամ ավարտեք։",
+    "throwInBeforeTake": "Մրցակիցը վերցնում է՝ գցեք ևս կամ թողեք վերցնի։",
+    "defend": "Ծածկեք քարտը կամ վերցրեք։",
+    "youTake": "Դուք վերցնում եք քարտերը։",
+    "waiting": "Մրցակցի քայլն է։"
   }
 }

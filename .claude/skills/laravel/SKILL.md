@@ -108,6 +108,11 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
   `ChessEngine` applies checkmate/stalemate/insufficient material/threefold/fifty-move automatically and
   implements `DecidesTimeouts`. Action `{type:'move', from, to, promotion?}`. `ChessBot`: alpha-beta +
   quiescence + Michniewski PSTs; easy depth 1 (misses mates), medium 2, hard 3 (~1 s per move).
+  **Durak** (podkidnoy, 2 players): strictly sequential bout — attacker leads/throws in (`attack`
+  {card}), defender `defend` {card} (beats the last unbeaten card) or `take`, attacker `done`; the bout
+  ends by itself when the attacker has nothing to throw. Limit: 6 and the defender's hand at bout start.
+  Hidden information: `viewFor` returns only the seat's own hand, counts, table and the face-up trump —
+  tests assert no other card leaks into the view JSON. Shuffle = Fisher–Yates over `RandomSource`.
 - Test helper functions are global in Pest: prefix them per game (`draughtsSteps`, not `play`).
 - Engine tests: unit tests on the engine with `ReplayRandom` for fixed dice, a seeded fuzz of whole
   games with invariants (checker conservation), bots legal at every level and medium beats random; one

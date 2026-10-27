@@ -316,5 +316,39 @@
       "bishop": "Bishop",
       "knight": "Knight"
     }
+  },
+  "durak": {
+    "card": "{{rank}} of {{suit}}",
+    "suit": {
+      "spades": "spades",
+      "hearts": "hearts",
+      "diamonds": "diamonds",
+      "clubs": "clubs"
+    },
+    "rank": {
+      "jack": "Jack",
+      "queen": "Queen",
+      "king": "King",
+      "ace": "Ace"
+    },
+    "trump": "Trump",
+    "trumpCard": "Trump card: {{card}}",
+    "deck_one": "{{count}} card in the deck",
+    "deck_other": "{{count}} cards in the deck",
+    "opponentCards_one": "Opponent has {{count}} card",
+    "opponentCards_other": "Opponent has {{count}} cards",
+    "table": "Table",
+    "emptyTable": "The table is empty.",
+    "beatenBy": "beaten by {{card}}",
+    "yourHand": "Your cards",
+    "take": "Take",
+    "done": "Done",
+    "letTake": "Let them take",
+    "lead": "Your attack: lead a card.",
+    "throwIn": "Throw in a card of a rank on the table, or finish the bout.",
+    "throwInBeforeTake": "They are taking: throw in more, or let them take.",
+    "defend": "Beat the card or take.",
+    "youTake": "You are taking the cards.",
+    "waiting": "Waiting for the other player."
   }
 }

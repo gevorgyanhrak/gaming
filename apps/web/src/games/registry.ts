@@ -18,4 +18,5 @@ export const boards: Partial<Record<string, LazyExoticComponent<ComponentType<Bo
   nardi: lazy(() => import('./nardi/NardiBoard')),
   checkers: lazy(() => import('./checkers/CheckersBoard')),
   chess: lazy(() => import('./chess/ChessBoard')),
+  durak: lazy(() => import('./durak/DurakBoard')),
 }

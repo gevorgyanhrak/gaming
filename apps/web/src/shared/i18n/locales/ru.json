@@ -324,5 +324,43 @@
       "bishop": "Слон",
       "knight": "Конь"
     }
+  },
+  "durak": {
+    "card": "{{rank}} {{suit}}",
+    "suit": {
+      "spades": "пик",
+      "hearts": "червей",
+      "diamonds": "бубен",
+      "clubs": "треф"
+    },
+    "rank": {
+      "jack": "Валет",
+      "queen": "Дама",
+      "king": "Король",
+      "ace": "Туз"
+    },
+    "trump": "Козырь",
+    "trumpCard": "Козырная карта: {{card}}",
+    "deck_one": "В колоде {{count}} карта",
+    "deck_few": "В колоде {{count}} карты",
+    "deck_many": "В колоде {{count}} карт",
+    "deck_other": "В колоде {{count}} карты",
+    "opponentCards_one": "У соперника {{count}} карта",
+    "opponentCards_few": "У соперника {{count}} карты",
+    "opponentCards_many": "У соперника {{count}} карт",
+    "opponentCards_other": "У соперника {{count}} карты",
+    "table": "Стол",
+    "emptyTable": "Стол пуст.",
+    "beatenBy": "побита: {{card}}",
+    "yourHand": "Ваши карты",
+    "take": "Беру",
+    "done": "Бито",
+    "letTake": "Пусть берёт",
+    "lead": "Ваш ход: заходите с карты.",
+    "throwIn": "Подкиньте карту того же достоинства или завершите кон.",
+    "throwInBeforeTake": "Соперник берёт: подкиньте ещё или отдайте.",
+    "defend": "Отбейтесь или возьмите.",
+    "youTake": "Вы берёте карты.",
+    "waiting": "Ход соперника."
   }
 }
