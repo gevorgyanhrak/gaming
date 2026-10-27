@@ -16,7 +16,8 @@ approved phases (see the roadmap there); stay within the current phase's scope.
 - The backend is the only rules authority. Never implement game rules, legal-move logic or outcome calculation in the frontend.
 - Game engines in `app/Games/*/Engine` stay free of Laravel, DB and Redis dependencies.
 - Shared infrastructure (`app/Gameplay`, `app/Platform`) must not depend on a specific game.
-- Never expose settings that aren't explicitly marked public; never return raw models from controllers (use API Resources).
+- Admin-managed values are read through `App\Platform\Settings\Settings`, never `config()` (ADR 0013); never expose settings that aren't marked public; never return raw models from controllers (use API Resources).
+- Admin actions are audited; moderation goes through `UserModeration`, never direct status updates.
 - No mock or fixture data in production code; test fixtures live under `tests/` and `apps/web/src/test/`.
 - Don't present a feature as implemented when only its UI exists.
 

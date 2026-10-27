@@ -5,6 +5,7 @@ import { PlayerCount } from '@/features/catalog/components/PlayerCount'
 import { useGame } from '@/features/catalog/queries'
 import { isApiError } from '@/shared/api/errors'
 import { Badge } from '@/shared/ui/Badge'
+import { splitParagraphs } from '@/shared/lib/paragraphs'
 import { Container } from '@/shared/ui/Container'
 import { Skeleton } from '@/shared/ui/Skeleton'
 import { EmptyState, QueryErrorState } from '@/shared/ui/States'
@@ -58,6 +59,25 @@ export function GamePage() {
               </p>
             )}
 
+            {game.data.modes && game.data.modes.length > 0 ? (
+              <section className="mt-10">
+                <h2 className="text-xl font-semibold">{t('game.modes')}</h2>
+                <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {game.data.modes.map((mode) => (
+                    <li key={mode.slug} className="rounded-xl border border-border bg-surface p-4">
+                      <p className="font-medium">{mode.name}</p>
+                      {mode.description ? (
+                        <p className="mt-1 text-sm text-muted">{mode.description}</p>
+                      ) : null}
+                      <p className="mt-2 text-xs font-medium tracking-wide text-muted uppercase">
+                        <PlayerCount game={mode} />
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+
             <section className="mt-10 max-w-3xl">
               <h2 className="text-xl font-semibold">{t('game.rules')}</h2>
               <div className="mt-4 space-y-4 leading-relaxed text-fg/90">
@@ -71,11 +91,4 @@ export function GamePage() {
       </div>
     </Container>
   )
-}
-
-function splitParagraphs(text: string): string[] {
-  return text
-    .split(/\n\s*\n/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean)
 }

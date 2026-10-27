@@ -21,7 +21,10 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
 - `app/Http/Resources` — every response goes through an API Resource (`{ data: … }`). Never return models.
   Add `/** @var type */` PHPDoc on array items Scramble can't infer (nullable URLs, lists, unions), then
   regenerate frontend types (`make types`).
-- `app/Platform/*` — cross-cutting services (Auth, Sms, Settings, Audit, Presence).
+- `app/Platform/*` — cross-cutting services: `Auth`, `Sms`, `Settings` (admin-managed settings),
+  `Audit` (`AuditLogger`), `Moderation` (`UserModeration`: bans, status, roles).
+- `app/Filament` — admin panel (Filament 5): `Resources/<Plural>/{<Model>Resource, Pages, Schemas, Tables,
+  RelationManagers}`, `Pages/ManageSettings`, `Widgets`, `Support` (translatable fields helpers).
 - `app/Gameplay/*` — shared, rule-agnostic game infrastructure. `app/Games/<Game>/Engine` — **pure PHP**,
   no Laravel/DB/Redis dependencies.
 - Enums in `app/Enums` (backed string enums, cast on models).
@@ -36,12 +39,36 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
   exception rendering (JSON for `api/*`, generic 404 body).
 - Named rate limiters in `AppServiceProvider` (`auth`, `lookups`, `verification`, `account`, `uploads`).
 
+## Admin-managed settings (ADR 0013)
+- Read admin-managed values with `app(Settings::class)->get('group.key')` (or inject `Settings`), never
+  `config()`; `config/platform.php` only supplies defaults. Add new keys to `SettingsCatalog`, a field in
+  `ManageSettings`, and (if the SPA needs it, `public: true`) a field in `ConfigController`.
+- Never read settings at boot (service providers): artisan and image builds run without a database.
+  Framework values are applied per request by `ApplyRuntimeSettings`.
+- Secrets are never settings; they stay in the environment.
+
+## Admin panel (Filament 5)
+- Guard `admin` (ADR 0014). In code running in the panel use `auth('admin')->user()`.
+- Authorization through model policies in `app/Policies` (auto-discovered) calling permission checks.
+  `Gate::before` grants super admins *permissions only*; policy methods returning a hard `false`
+  (e.g. editing audit logs, creating games) still hold for them.
+- Business actions (ban, roles, settings) go through services that audit; config models are audited by
+  `#[ObservedBy(AdminChangeObserver::class)]` (only when an admin is acting).
+- Translatable models: form fields via `Translatable::input()/textarea()`, pages use the
+  `HandlesTranslations` trait, relation-manager actions `TranslationData::fill()/clean()`.
+- Uploads: raster images only (`png/jpeg/webp`, favicon also `ico`) — never SVG, which would be served
+  from the API origin and can carry scripts.
+- Filament assets are generated (gitignored); the prod Dockerfile runs `php artisan filament:assets`.
+- Custom page with a form: `form()` with `statePath('data')` + `content()` returning
+  `Form::make([EmbeddedSchema::make('form')])->livewireSubmitHandler('save')` (see `ManageSettings`).
+
 ## Auth & authorization
 - Sanctum **SPA cookie** auth (stateful). Session-based; `AuthenticateSession` signs out other sessions
   when the password hash changes — don't build a separate mechanism.
 - Guard is `web`; routes use `auth:sanctum` + `active` (banned/deactivated → 403 and logout).
-- Roles/permissions: spatie/laravel-permission. `super_admin` passes all gates (`Gate::before`).
-  Use policies/gates (`$user->can('manage users')`), never role-name string checks in controllers.
+- Roles/permissions: spatie/laravel-permission, always on the `web` guard (`User::$guard_name`, needed
+  because `actingAs($u, 'admin')` and the panel switch the default guard). Use policies/permission checks
+  (`$user->can('manage users')`), never role-name string checks, except super-admin-only actions.
 - Never reveal whether an account exists (forgot-password returns the same 202; throttle before lookup).
 
 ## Database (MySQL 8.4 — see docs/adr/0008-mysql.md)
@@ -50,6 +77,7 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
 - No cascading FK actions on columns used in a CHECK constraint (MySQL forbids it).
 - BIGINT keys internally; ULID `public_id` when an id is exposed in URLs/channels.
 - JSON columns for translations/config/payloads; translatable fields via spatie/laravel-translatable.
+  MySQL's JSON type **does not preserve object key order** — compare decoded JSON with `toEqual`, not `toBe`.
 - Critical writes: `DB::transaction(fn () => …, attempts: 3)`; `lockForUpdate()` where races matter.
 - Seeders must be idempotent and must not overwrite admin edits (`firstOrCreate`, not `updateOrCreate`).
 - Never edit a migration that is already on `main`; add a new migration. (Phase 3 rewrote the initial
@@ -58,6 +86,8 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
 ## Queues, notifications, real time
 - Redis queues processed by Horizon; queue names: `default`, `notifications` (Phase 5 adds game queues —
   update `config/horizon.php` supervisors when adding one).
+- Scheduler (`routes/console.php`): `app:lift-expired-bans` every minute, `model:prune` daily
+  (`VerificationCode` is `MassPrunable`).
 - Notifications that send mail/SMS implement `ShouldQueue` and `onQueue('notifications')`.
 - SMS goes through `App\Platform\Sms\SmsGateway` (driver from `services.sms.driver`); the `log` driver
   refuses to run in production.
@@ -76,6 +106,12 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
 - When a second request in one test must resolve the user from the session, call
   `$this->app['auth']->forgetGuards()` first.
 - Datasets (`->with([...])`) for validation matrices. Test behaviour through HTTP, not internals.
+- Admin panel: `signInToAdmin('moderator')` (tests/Pest.php) seeds roles, signs in on the `admin` guard
+  and sets the Filament panel; then `Livewire::test(ViewUser::class, ['record' => $id])->callAction('ban',
+  data: [...])`, `->fillForm([...])->call('save')->assertHasNoFormErrors()`, `->assertNotified()`.
+  `ADMIN_MFA_REQUIRED=false` in phpunit.xml.
+- `JsonResource` answers 201 for a model with `wasRecentlyCreated`; in multi-request tests call
+  `$this->app['auth']->forgetGuards()` so the next request reloads the user.
 
 ## Quality gates (all must pass)
 `make lint-api` (Pint `laravel` preset + Larastan level 6) and `make test-api`.

@@ -24,7 +24,8 @@ report results honestly.
 ```
 apps/api/   Laravel 13, PHP 8.5 (runs only in Docker)
   app/Http/{Controllers/Api/V1,Requests,Resources,Middleware}
-  app/Platform/{Auth,Sms,…}   cross-cutting services
+  app/Platform/{Auth,Sms,Settings,Audit,Moderation}   cross-cutting services
+  app/Filament                Filament 5 admin panel (/admin, "admin" guard)
   app/Gameplay/…              shared game infrastructure (Phase 5) — knows no game rules
   app/Games/<Game>/{Engine,Bot} pure-PHP engines (Phase 6+)
   app/Models, app/Enums, database/{migrations,factories,seeders}, lang/{en,ru,hy}, tests/Feature
@@ -45,6 +46,8 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   Duplicate/racing moves are stopped by room lock + `expected_version` + `client_action_id` + DB uniques.
 - Bots use the same `GameActionService` path as humans and see only their seat's redacted view.
 - Hidden information (cards, deck order) never goes to shared channels.
+- Admin-managed values are read through `Settings` (backend) and `/config` (frontend), never hardcoded
+  or read from `config()` directly (ADR 0013). Secrets never become settings.
 - Never expose non-public settings; never return raw models; never put personal data in URLs
   (e.g. password reset passes the login in router state, not the query string).
 - No mock data in production code; fixtures live only in `apps/api/tests` and `apps/web/src/test`.
@@ -69,6 +72,9 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
 - Forms: react-hook-form + zod; zod messages are i18n keys; map API errors with `applyServerErrors`.
 - Auth redirects belong to the `AuthRoute`/`GuestRoute` layout guards; pass a post-sign-in destination
   through `setCurrentUser(user, redirectTo)` instead of navigating from a guarded page.
+- Platform branding, languages, maintenance, registration rules and published pages come from
+  `GET /api/v1/config` (`usePublicConfig`); never hardcode values an admin can change. Maintenance mode
+  shows `MaintenanceScreen` to players; staff (`can_access_admin`) keep using the app.
 - Every visible string goes through i18next with keys in **en, ru and hy** (translations reviewed later by
   native speakers). Use `Intl` for dates, languages and countries.
 - Every data view handles loading, empty and error states. Accessible markup: labels, `aria-invalid`,

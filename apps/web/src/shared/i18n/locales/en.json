@@ -29,7 +29,8 @@
     "back": "All games",
     "rules": "Rules",
     "notPlayable": "This game isn't available to play yet. Check back soon.",
-    "notFound": "We couldn't find that game."
+    "notFound": "We couldn't find that game.",
+    "modes": "Modes"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",
@@ -41,7 +42,8 @@
   },
   "footer": {
     "language": "Language",
-    "copyright": "© {{year}} {{name}}"
+    "copyright": "© {{year}} {{name}}",
+    "pages": "Legal"
   },
   "auth": {
     "loginTitle": "Log in",
@@ -91,7 +93,8 @@
     "newPassword": "New password",
     "resetSubmit": "Reset password",
     "resetDone": "Your password has been reset. Log in with your new password.",
-    "logout": "Log out"
+    "logout": "Log out",
+    "acceptTerms": "I accept the <terms>terms of service</terms>"
   },
   "channels": {
     "email": "email address",
@@ -108,7 +111,8 @@
     "passwordMismatch": "Passwords don't match.",
     "code": "Enter the 6-digit code.",
     "max40": "Use at most 40 characters.",
-    "max500": "Use at most 500 characters."
+    "max500": "Use at most 500 characters.",
+    "acceptTerms": "Please accept the terms of service."
   },
   "verifyBanner": {
     "message": "Please verify your {{channel}}.",
@@ -162,5 +166,12 @@
     "codeSentTo": "Enter the code we sent to {{destination}}.",
     "confirm": "Confirm",
     "cancel": "Cancel"
+  },
+  "maintenance": {
+    "title": "We'll be right back",
+    "body": "We are doing some maintenance. Please check back soon."
+  },
+  "content": {
+    "updated": "Last updated {{date}}"
   }
 }

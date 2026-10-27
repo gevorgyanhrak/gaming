@@ -17,7 +17,7 @@ Architecture and decisions: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [
 | Public layout, game catalog, game info pages (en/ru/hy) | ✅ Done; reads real data from the API |
 | Health checks, public config endpoint, OpenAPI docs | ✅ Done |
 | Registration and login by email or phone, verification codes, password reset, profiles, avatars, settings, roles | ✅ Done (Phase 3). The SMS provider is not chosen yet (see below). |
-| Admin panel | ⏳ Phase 4 |
+| Admin panel: users and moderation, games and modes, bots, settings, content pages, audit log, dashboard | ✅ Done (Phase 4). Game statistics join the dashboard with gameplay. |
 | Matchmaking, rooms, WebSocket gameplay | ⏳ Phase 5 (Reverb runs, but no channels are used yet) |
 | Playable games | ⏳ Nardi in Phase 6, then the others. All games are listed as "Coming soon" until their engine exists. |
 
@@ -45,6 +45,7 @@ seeders never overwrite data that already exists.
 |---|---|---|
 | Web (Vite) | http://localhost:5175 | Proxies `/api`, `/sanctum` and `/broadcasting` to the API |
 | API (nginx + php-fpm) | http://localhost:8000 | `/up`, `/api/health/ready`, `/api/v1/...` |
+| Admin panel | http://localhost:8000/admin | See "Admin panel" below |
 | API docs | http://localhost:8000/docs/api | OpenAPI UI (local environment only) |
 | Reverb (WebSocket) | ws://localhost:8080 | |
 | Mailpit | http://localhost:8025 | Catches all outgoing email locally |
@@ -92,18 +93,28 @@ Makefile        developer commands
 `.env` files are git-ignored. Never commit real credentials. The example values are for local
 development only.
 
+## Admin panel
+
+http://localhost:8000/admin, a separate login from the player app (same accounts).
+
+1. Register a normal account in the app (with an email address: the admin login uses email).
+2. Grant it a role: `make artisan cmd="app:role you@example.com super_admin"` (or `admin`, `moderator`).
+3. Sign in at `/admin`.
+
+- **Two-factor authentication** (authenticator app) is required for admins by default (`ADMIN_MFA_REQUIRED=true`). The local `.env` turns it off for convenience; keep it on everywhere else.
+- **What each role can do:** moderators manage users and read the audit log; admins also manage games, bots, settings and pages; super admins can do everything, including changing roles and moderating staff.
+- **Platform settings** (name, logo, languages, maintenance mode, registration, verification, matchmaking defaults, session lifetime) live in the database and override the environment defaults. Secrets never go there: they stay in environment variables.
+- **Maintenance mode** shows players a maintenance screen; staff can still sign in and use the app.
+- **Privacy policy and terms of service** are created as unpublished drafts. Write and review them in Content → Pages before publishing. Once the terms are published, new players must accept them to register.
+- To serve the panel on its own host, set `ADMIN_DOMAIN` (e.g. `admin.example.com`).
+
 ## Accounts and roles (local development)
 
 - **Verification and reset codes by email** arrive in Mailpit: http://localhost:8025.
 - **Codes by SMS** use the development `log` driver, which writes them to `apps/api/storage/logs/laravel.log`. It refuses to run in production: a real SMS provider still has to be chosen and added (`App\Platform\Sms\SmsGateway`) before phone sign-up can be offered publicly.
-- **Admin roles** (`super_admin`, `admin`, `moderator`) are granted from the command line until the admin panel exists:
+- **Roles** are granted with `make artisan cmd="app:role you@example.com super_admin"` (add `--revoke` to remove), or by a super admin in the admin panel.
 
-  ```sh
-  make artisan cmd="app:role you@example.com super_admin"
-  make artisan cmd="app:role you@example.com super_admin --revoke"
-  ```
-
-Not enforced yet, by design: the "verification required" settings are exposed to the frontend now and enforced on gameplay routes from Phase 5. Accepting the terms of service at registration comes with the admin-editable content pages in Phase 4.
+Not enforced yet, by design: the "verification required" settings are exposed now and enforced on gameplay routes from Phase 5.
 
 ## Testing
 

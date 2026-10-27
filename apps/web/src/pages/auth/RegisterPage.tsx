@@ -1,8 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { z } from 'zod'
 import { isUsernameAvailable, register as registerAccount, type Channel } from '@/features/auth/api'
@@ -22,31 +22,44 @@ import { Button } from '@/shared/ui/Button'
 import { TextField } from '@/shared/ui/Field'
 import { Skeleton } from '@/shared/ui/Skeleton'
 
-const schema = z
-  .object({
-    method: z.enum(['email', 'phone']),
-    email: z.string(),
-    phone: z.string(),
-    username: usernameField,
-    password: passwordField,
-    password_confirmation: z.string(),
-  })
-  .superRefine((value, ctx) => {
-    // Only the identifier for the chosen method is validated (and sent).
-    const field = value.method === 'email' ? emailField : phoneField
-    const result = field.safeParse(value[value.method])
-    if (!result.success) {
-      ctx.addIssue({
-        code: 'custom',
-        path: [value.method],
-        message: result.error.issues[0]?.message,
-      })
-    }
-    confirmed(value, ctx)
-  })
+function registrationSchema(requiresTerms: boolean) {
+  return z
+    .object({
+      method: z.enum(['email', 'phone']),
+      email: z.string(),
+      phone: z.string(),
+      username: usernameField,
+      password: passwordField,
+      password_confirmation: z.string(),
+      accept_terms: z.boolean(),
+    })
+    .superRefine((value, ctx) => {
+      // Only the identifier for the chosen method is validated (and sent).
+      const field = value.method === 'email' ? emailField : phoneField
+      const result = field.safeParse(value[value.method])
+      if (!result.success) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [value.method],
+          message: result.error.issues[0]?.message,
+        })
+      }
+      confirmed(value, ctx)
+      if (requiresTerms && !value.accept_terms) {
+        ctx.addIssue({ code: 'custom', path: ['accept_terms'], message: 'validation.acceptTerms' })
+      }
+    })
+}
 
-type Values = z.infer<typeof schema>
-const fields = ['email', 'phone', 'username', 'password', 'password_confirmation'] as const
+type Values = z.infer<ReturnType<typeof registrationSchema>>
+const fields = [
+  'email',
+  'phone',
+  'username',
+  'password',
+  'password_confirmation',
+  'accept_terms',
+] as const
 
 export function RegisterPage() {
   const { t } = useTranslation()
@@ -55,6 +68,9 @@ export function RegisterPage() {
   const setCurrentUser = useSetCurrentUser()
   const [formError, setFormError] = useState<string | null>(null)
   const [usernameHint, setUsernameHint] = useState<'available' | 'taken' | null>(null)
+
+  const requiresTerms = config.data?.registration.requires_terms ?? false
+  const schema = useMemo(() => registrationSchema(requiresTerms), [requiresTerms])
 
   const form = useForm<Values>({
     resolver: zodResolver(schema),
@@ -65,6 +81,7 @@ export function RegisterPage() {
       username: '',
       password: '',
       password_confirmation: '',
+      accept_terms: false,
     },
   })
   const method = useWatch({ control: form.control, name: 'method' })
@@ -190,6 +207,36 @@ export function RegisterPage() {
           error={errors.password_confirmation?.message}
           {...form.register('password_confirmation')}
         />
+
+        {requiresTerms ? (
+          <div className="space-y-1.5">
+            <label className="flex items-start gap-2.5 text-sm">
+              <input
+                type="checkbox"
+                className="mt-0.5 size-4 accent-accent"
+                aria-invalid={errors.accept_terms ? true : undefined}
+                {...form.register('accept_terms')}
+              />
+              <span>
+                <Trans
+                  i18nKey="auth.acceptTerms"
+                  components={{
+                    terms: (
+                      <Link
+                        to="/pages/terms"
+                        target="_blank"
+                        className="font-medium text-accent-text hover:underline"
+                      />
+                    ),
+                  }}
+                />
+              </span>
+            </label>
+            {errors.accept_terms?.message ? (
+              <p className="text-sm text-danger">{message(errors.accept_terms.message)}</p>
+            ) : null}
+          </div>
+        ) : null}
 
         <Button type="submit" className="w-full" disabled={mutation.isPending}>
           {t('auth.register')}

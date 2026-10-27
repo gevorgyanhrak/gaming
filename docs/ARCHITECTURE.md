@@ -130,14 +130,14 @@ channel names, CHECK constraints added through `DB::statement` in migrations.
 | `games` | slug UNIQUE; translatable name/description/rules (JSON); player counts with CHECK; `is_enabled` (playable) and `is_visible` (listed) | 2 ✅ |
 | `users` | username UNIQUE, email UNIQUE NULL, phone (E.164) UNIQUE NULL, nullable password (future social login), verification timestamps, status, locale, last_active_at. CHECK email or phone present | 3 |
 | `user_profiles` | display name, avatar, bio, preferences JSON | 3 |
-| `user_bans` | ban history (by, reason, expires, revoked); `users.status` is the fast copy | 4 (with ban management) |
+| `user_bans` | ban history (by, reason, expires, revoked); `users.status` is the fast copy | 4 ✅ |
 | `verification_codes` | channel, destination, purpose, code hash, attempts, expiry | 3 |
 | roles / permissions | spatie/laravel-permission | 3 |
-| `platform_settings` | key, JSON value, type, group, `is_public` allowlist, `is_encrypted` | 4 |
-| `content_pages` | privacy, terms (translatable, admin-editable) | 4 |
-| `audit_logs` | actor, action, subject, before/after changes, ip, user agent | 4 |
-| `game_modes` | per game: slug, config JSON, matchmaking/private/bot flags. UNIQUE(game_id, slug) | 4 |
-| `bot_profiles`, `bot_game_profiles` | unique bot names, avatars; which games and difficulties each bot plays | 4 |
+| `platform_settings` | key → JSON value overrides; keys, types, defaults, validation and public visibility are defined in code (`SettingsCatalog`); no secrets | 4 ✅ |
+| `content_pages` | privacy, terms and other pages (translatable, publish flag) | 4 ✅ |
+| `audit_logs` | actor, action, subject, before/after changes, ip, user agent (append-only) | 4 ✅ |
+| `game_modes` | per game: slug, translatable name, player counts, config JSON, matchmaking/private/bot flags. UNIQUE(game_id, slug) | 4 ✅ |
+| `bot_profiles`, `bot_game_profiles` | unique bot names, avatars; which games and difficulties each bot plays | 4 ✅ |
 | `game_rooms` | public ULID, type, status, invite code, `state_version`, final state, end reason | 5 |
 | `game_participants` | seat, user **or** bot (CHECK exactly one), result, placement. UNIQUE(room, seat), UNIQUE(room, user). FKs on user/bot use RESTRICT (MySQL forbids cascades on CHECK columns) | 5 |
 | `game_moves` | append-only: seq, type, payload JSON, `client_action_id`. **UNIQUE(room, seq) and UNIQUE(room, client_action_id)** | 5 |
@@ -156,7 +156,7 @@ Critical writes use `DB::transaction(..., attempts: 3)` to retry InnoDB deadlock
 |---|---|---|
 | Infra | `GET /up` (liveness), `GET /api/health/ready` (readiness: DB and Redis decide the status; queue and WebSocket are reported) | 2 ✅ |
 | Public | `GET /config`, `GET /games`, `GET /games/{slug}` | 2 ✅ |
-| Public | `GET /pages/{slug}`, `GET /stats/online`, `GET /users/{username}` | 3–5 |
+| Public | `GET /pages/{slug}` ✅, `GET /users/{username}` ✅, `GET /stats/online` | 3–5 |
 | Auth | `POST /auth/register`, `/login`, `/logout`, `/verification/send`, `/verification/verify`, `/password/forgot`, `/password/reset`; `GET /auth/username-available` | 3 |
 | Me | `GET /me`, `PATCH /me/profile`, `POST\|DELETE /me/avatar`, `PATCH /me/settings`, `PUT /me/password`, `POST /me/contact`, `GET /me/games`, `GET /me/stats`, `GET /me/active-room` | 3–5 |
 | Matchmaking | `POST /matchmaking/tickets`, `GET\|DELETE /matchmaking/tickets/current`, `POST /matchmaking/tickets/current/accept-bot` | 5 |
@@ -201,10 +201,26 @@ badge.
 
 ## 9. Admin panel
 
-Filament in the Laravel app (`admin.` host, own session, MFA). Modules: dashboard (cached,
-indexed counts), users (search, filters, ban/unban, history), games and modes (validated
-config), bots, settings (grouped; secret values encrypted and never public), content pages,
-audit log. Maintenance mode is a setting enforced by middleware, so admins keep access.
+Filament 5 at `/admin` (optionally `ADMIN_DOMAIN`), on the **`admin` session guard**: same `users`
+table, separate login state from the SPA's `web` guard (ADR 0014). Access: `User::canAccessPanel`
+(active, has an email, `access admin` permission). Two-factor authentication with an authenticator
+app, required unless `ADMIN_MFA_REQUIRED=false` (local development only).
+
+| Module | Contents | Permission |
+|---|---|---|
+| Dashboard | user counts (cached 60 s), recent registrations. Game statistics arrive with gameplay. | manage users |
+| Users | search, filters, profile, ban history; ban/unban (reason, optional expiry), deactivate/activate, roles (super admins only) via `UserModeration` | manage users |
+| Games | translated catalog text, images, visibility, order, bot fallback; modes (relation manager). "Playable" unlocks when an engine ships. Games are seeded, never created or deleted here. | manage games |
+| Bots | names, avatars, game + difficulty assignments | manage games |
+| Settings | `SettingsCatalog` keys (ADR 0013) | manage settings |
+| Pages | privacy, terms, others; translations; publish flag | manage settings |
+| Audit log | read-only | view audit log |
+
+Super admins hold every permission, but rules that are false for everyone still apply (the audit
+log can't be edited, games can't be created or deleted). Every admin action is audited:
+explicitly (moderation, settings) or through `AdminChangeObserver` (games, modes, bots, pages).
+Maintenance mode is a setting enforced by middleware on the API (config, pages, login and `/me`
+stay available); staff bypass it.
 
 ## 10. Roadmap
 
@@ -213,8 +229,8 @@ audit log. Maintenance mode is a setting enforced by middleware, so admins keep 
 | 1 | Architecture and plan | ✅ |
 | 2 | Project setup, tooling, CI, layout, catalog slice | ✅ |
 | 3 | Authentication and user management | ✅ |
-| 4 | Admin panel (Filament) | next |
-| 5 | Gaming infrastructure (built against a test-only TicTacToe engine) | |
+| 4 | Admin panel (Filament) | ✅ |
+| 5 | Gaming infrastructure (built against a test-only TicTacToe engine) | next |
 | 6 | Nardi (short nardi first), end to end | MVP |
 | 7 | Checkers (Russian draughts) → Chess → Durak (podkidnoy, 2 players first) → Poker (NL Hold'em, play chips per table session) | v1.0 |
 | 8 | Hardening, performance, monitoring, deployment | |

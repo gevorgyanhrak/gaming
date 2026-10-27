@@ -17,3 +17,5 @@ Records are immutable once accepted; a changed decision gets a new record that s
 | [0010](0010-filament-admin.md) | Admin panel in Filament | Accepted |
 | [0011](0011-toolchain-versions.md) | Toolchain versions and compatibility pins | Accepted |
 | [0012](0012-one-time-codes-for-both-channels.md) | One-time codes for both channels | Accepted |
+| [0013](0013-admin-managed-settings.md) | Admin-managed platform settings | Accepted |
+| [0014](0014-separate-admin-guard.md) | Separate session guard for the admin panel | Accepted |

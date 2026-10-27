@@ -7,14 +7,19 @@ import type { PublicConfig } from '@/features/platform/usePublicConfig'
 
 export const configFixture: PublicConfig = {
   name: 'Test Platform',
+  logo_url: null,
+  favicon_url: null,
   default_locale: 'en',
   supported_locales: ['en', 'ru', 'hy'],
+  maintenance: { enabled: false, message: null },
   registration: {
     enabled: true,
     methods: ['email', 'phone'],
     require_email_verification: true,
     require_phone_verification: true,
+    requires_terms: false,
   },
+  pages: [],
 }
 
 export function gameFixture(overrides: Partial<GameDetail> = {}): GameDetail {
@@ -28,11 +33,12 @@ export function gameFixture(overrides: Partial<GameDetail> = {}): GameDetail {
     max_players: 2,
     is_playable: false,
     rules: 'First paragraph.\n\nSecond paragraph.',
+    modes: [],
     ...overrides,
   }
 }
 
-export function summaryOf({ rules, ...summary }: GameDetail): GameSummary {
+export function summaryOf({ rules, modes, ...summary }: GameDetail): GameSummary {
   return summary
 }
 

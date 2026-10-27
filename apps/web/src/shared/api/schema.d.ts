@@ -31,8 +31,7 @@ export interface paths {
         };
         /**
          * Public platform configuration for the SPA
-         * @description Only values that are safe to expose belong here. Phase 4 sources these from
-         *     admin-managed platform settings (allowlisted with is_public).
+         * @description Only settings marked public in the SettingsCatalog may appear here.
          */
         get: operations["v1.config"];
         put?: never;
@@ -74,6 +73,23 @@ export interface paths {
         put?: never;
         /** Confirm the new email address or phone number; it replaces the previous one and is verified */
         post: operations["v1.me.contact.verify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/pages/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A published content page (e.g. privacy policy, terms of service) */
+        get: operations["v1.pages.show"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -388,6 +404,14 @@ export interface components {
          * @enum {string}
          */
         ContactChannel: "email" | "phone";
+        /** ContentPageResource */
+        ContentPageResource: {
+            slug: string;
+            title: string;
+            /** @description Paragraphs separated by blank lines. */
+            body: string;
+            updated_at: string;
+        };
         /** ForgotPasswordRequest */
         ForgotPasswordRequest: {
             login: string;
@@ -404,6 +428,15 @@ export interface components {
             is_playable: boolean;
             /** @description Paragraphs separated by blank lines. */
             rules: string;
+            modes?: components["schemas"]["GameModeResource"][];
+        };
+        /** GameModeResource */
+        GameModeResource: {
+            slug: string;
+            name: string;
+            description: string | null;
+            min_players: number;
+            max_players: number;
         };
         /** GameResource */
         GameResource: {
@@ -441,6 +474,8 @@ export interface components {
             phone: string;
             username: string;
             password: string;
+            /** @description Required once a terms of service page is published. */
+            accept_terms?: boolean;
             password_confirmation: string;
         };
         /** ResetPasswordRequest */
@@ -545,6 +580,18 @@ export interface components {
                 };
             };
         };
+        /** @description Authorization error */
+        AuthorizationException: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    /** @description Error overview. */
+                    message: string;
+                };
+            };
+        };
     };
     parameters: never;
     requestBodies: never;
@@ -621,14 +668,25 @@ export interface operations {
                     "application/json": {
                         data: {
                             name: string;
+                            logo_url: string | null;
+                            favicon_url: string | null;
                             default_locale: string;
                             supported_locales: string[];
+                            maintenance: {
+                                enabled: boolean;
+                                message: string | null;
+                            };
                             registration: {
                                 enabled: boolean;
                                 methods: ("email" | "phone")[];
                                 require_email_verification: boolean;
                                 require_phone_verification: boolean;
+                                requires_terms: boolean;
                             };
+                            pages: {
+                                slug: string;
+                                title: string;
+                            }[];
                         };
                     };
                 };
@@ -701,6 +759,30 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.pages.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `ContentPageResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ContentPageResource"];
+                    };
+                };
+            };
         };
     };
     "v1.games.index": {
@@ -957,21 +1039,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description An error */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /**
-                         * @description Error overview.
-                         * @example Registration is currently closed.
-                         */
-                        message: string;
-                    };
-                };
-            };
+            403: components["responses"]["AuthorizationException"];
             422: components["responses"]["ValidationException"];
             /** @description Too many requests */
             429: {
