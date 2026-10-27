@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   gameFixture,
   roomFixture,
@@ -64,6 +64,43 @@ describe('Playing a game', () => {
     await screen.findByText('Your turn')
     expect(router.state.location.pathname).toBe('/rooms/room-9')
     expect(body).toEqual({ game_mode_id: 7, type: 'bot', bot_difficulty: 'hard' })
+  })
+
+  it('lets you choose the table size for games with more than two players', async () => {
+    const poker = gameFixture({
+      slug: 'tictactoe',
+      is_playable: true,
+      modes: [
+        {
+          id: 8,
+          slug: 'holdem',
+          name: 'Holdem',
+          description: null,
+          min_players: 2,
+          max_players: 6,
+        },
+      ],
+    })
+    const bodies: unknown[] = []
+    server.use(
+      signedInAs(),
+      http.get('*/api/v1/games/tictactoe', () => HttpResponse.json({ data: poker })),
+      http.post('*/api/v1/rooms', async ({ request }) => {
+        bodies.push(await request.json())
+        return HttpResponse.json({ error: 'stop here' }, { status: 500 })
+      }),
+    )
+    renderRoute('/games/tictactoe')
+
+    const size = await screen.findByLabelText('Table size')
+    expect(size).toHaveValue('4')
+    await userEvent.selectOptions(size, '3')
+    await userEvent.click(screen.getByRole('button', { name: 'Play against a bot' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Play with a friend' }))
+
+    await vi.waitFor(() => expect(bodies).toHaveLength(2))
+    expect(bodies[0]).toMatchObject({ type: 'bot', opponents: 2 })
+    expect(bodies[1]).toEqual({ game_mode_id: 8, type: 'private', seats: 3 })
   })
 
   it('searches for an opponent and goes to the room when matched', async () => {

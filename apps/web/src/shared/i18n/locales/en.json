@@ -203,7 +203,10 @@
     "botIn_one": "A bot game will be offered in {{count}} second.",
     "botIn_other": "A bot game will be offered in {{count}} seconds.",
     "acceptBot": "Play against a bot",
-    "cancelSearch": "Cancel"
+    "cancelSearch": "Cancel",
+    "players": "Table size",
+    "playersCount_one": "{{count}} player",
+    "playersCount_other": "{{count}} players"
   },
   "room": {
     "players": "Players",
@@ -248,7 +251,8 @@
       "finished": "Finished",
       "aborted": "Closed"
     },
-    "clock": "Time left: {{time}}"
+    "clock": "Time left: {{time}}",
+    "leftTable": "You left this table. The game goes on for the others."
   },
   "history": {
     "title": "Game history",
@@ -318,19 +322,6 @@
     }
   },
   "durak": {
-    "card": "{{rank}} of {{suit}}",
-    "suit": {
-      "spades": "spades",
-      "hearts": "hearts",
-      "diamonds": "diamonds",
-      "clubs": "clubs"
-    },
-    "rank": {
-      "jack": "Jack",
-      "queen": "Queen",
-      "king": "King",
-      "ace": "Ace"
-    },
     "trump": "Trump",
     "trumpCard": "Trump card: {{card}}",
     "deck_one": "{{count}} card in the deck",
@@ -350,5 +341,63 @@
     "defend": "Beat the card or take.",
     "youTake": "You are taking the cards.",
     "waiting": "Waiting for the other player."
+  },
+  "cards": {
+    "card": "{{rank}} of {{suit}}",
+    "suit": {
+      "spades": "spades",
+      "hearts": "hearts",
+      "diamonds": "diamonds",
+      "clubs": "clubs"
+    },
+    "rank": {
+      "jack": "Jack",
+      "queen": "Queen",
+      "king": "King",
+      "ace": "Ace"
+    }
+  },
+  "poker": {
+    "you": "You",
+    "seat": "Seat {{seat}}",
+    "seats": "Players",
+    "dealer": "Dealer",
+    "chips_one": "{{count}} chip",
+    "chips_other": "{{count}} chips",
+    "out": "Out",
+    "folded": "Folded",
+    "bet": "Bet {{amount}}",
+    "allInStatus": "All-in",
+    "board": "Board",
+    "potAmount_one": "Pot: {{count}} chip",
+    "potAmount_other": "Pot: {{count}} chips",
+    "handInfo": "Hand {{hand}} · blinds {{small}}/{{big}}",
+    "yourCards": "Your cards",
+    "fold": "Fold",
+    "check": "Check",
+    "call": "Call {{amount}}",
+    "betTo": "Bet {{amount}}",
+    "raiseTo": "Raise to {{amount}}",
+    "allInAmount": "All-in {{amount}}",
+    "amount": "Bet amount",
+    "halfPot": "½ pot",
+    "pot": "Pot",
+    "allIn": "All-in",
+    "waitingFor": "Waiting for {{name}}.",
+    "lastHand": "Last hand",
+    "lastHandTitle": "Hand {{hand}}",
+    "won_one": "{{names}} won {{count}} chip",
+    "won_other": "{{names}} won {{count}} chips",
+    "hand": {
+      "highCard": "high card",
+      "pair": "a pair",
+      "twoPair": "two pair",
+      "threeOfAKind": "three of a kind",
+      "straight": "a straight",
+      "flush": "a flush",
+      "fullHouse": "a full house",
+      "fourOfAKind": "four of a kind",
+      "straightFlush": "a straight flush"
+    }
   }
 }

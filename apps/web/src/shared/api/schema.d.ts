@@ -650,6 +650,9 @@ export interface components {
              */
             type: "bot" | "private";
             bot_difficulty: components["schemas"]["BotDifficulty"];
+            /** @description Tables for more than two (poker): bots to play against, or seats in a private room. */
+            opponents?: number | null;
+            seats?: number | null;
         };
         /** ForgotPasswordRequest */
         ForgotPasswordRequest: {

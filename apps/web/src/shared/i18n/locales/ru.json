@@ -207,7 +207,12 @@
     "botIn_many": "Игра с ботом будет предложена через {{count}} секунд.",
     "botIn_other": "Игра с ботом будет предложена через {{count}} секунды.",
     "acceptBot": "Играть с ботом",
-    "cancelSearch": "Отмена"
+    "cancelSearch": "Отмена",
+    "players": "Игроков за столом",
+    "playersCount_one": "{{count}} игрок",
+    "playersCount_few": "{{count}} игрока",
+    "playersCount_many": "{{count}} игроков",
+    "playersCount_other": "{{count}} игрока"
   },
   "room": {
     "players": "Игроки",
@@ -254,7 +259,8 @@
       "finished": "Завершена",
       "aborted": "Закрыта"
     },
-    "clock": "Осталось времени: {{time}}"
+    "clock": "Осталось времени: {{time}}",
+    "leftTable": "Вы покинули стол. Остальные продолжают игру."
   },
   "history": {
     "title": "История игр",
@@ -326,19 +332,6 @@
     }
   },
   "durak": {
-    "card": "{{rank}} {{suit}}",
-    "suit": {
-      "spades": "пик",
-      "hearts": "червей",
-      "diamonds": "бубен",
-      "clubs": "треф"
-    },
-    "rank": {
-      "jack": "Валет",
-      "queen": "Дама",
-      "king": "Король",
-      "ace": "Туз"
-    },
     "trump": "Козырь",
     "trumpCard": "Козырная карта: {{card}}",
     "deck_one": "В колоде {{count}} карта",
@@ -362,5 +355,69 @@
     "defend": "Отбейтесь или возьмите.",
     "youTake": "Вы берёте карты.",
     "waiting": "Ход соперника."
+  },
+  "cards": {
+    "card": "{{rank}} {{suit}}",
+    "suit": {
+      "spades": "пик",
+      "hearts": "червей",
+      "diamonds": "бубен",
+      "clubs": "треф"
+    },
+    "rank": {
+      "jack": "Валет",
+      "queen": "Дама",
+      "king": "Король",
+      "ace": "Туз"
+    }
+  },
+  "poker": {
+    "you": "Вы",
+    "seat": "Место {{seat}}",
+    "seats": "Игроки",
+    "dealer": "Дилер",
+    "chips_one": "{{count}} фишка",
+    "chips_few": "{{count}} фишки",
+    "chips_many": "{{count}} фишек",
+    "chips_other": "{{count}} фишки",
+    "out": "Выбыл",
+    "folded": "Сбросил",
+    "bet": "Ставка {{amount}}",
+    "allInStatus": "Олл-ин",
+    "board": "Стол",
+    "potAmount_one": "Банк: {{count}} фишка",
+    "potAmount_few": "Банк: {{count}} фишки",
+    "potAmount_many": "Банк: {{count}} фишек",
+    "potAmount_other": "Банк: {{count}} фишки",
+    "handInfo": "Раздача {{hand}} · блайнды {{small}}/{{big}}",
+    "yourCards": "Ваши карты",
+    "fold": "Пас",
+    "check": "Чек",
+    "call": "Колл {{amount}}",
+    "betTo": "Ставка {{amount}}",
+    "raiseTo": "Рейз до {{amount}}",
+    "allInAmount": "Олл-ин {{amount}}",
+    "amount": "Размер ставки",
+    "halfPot": "½ банка",
+    "pot": "Банк",
+    "allIn": "Олл-ин",
+    "waitingFor": "Ждём: {{name}}.",
+    "lastHand": "Прошлая раздача",
+    "lastHandTitle": "Раздача {{hand}}",
+    "won_one": "{{names}}: выигрыш {{count}} фишка",
+    "won_few": "{{names}}: выигрыш {{count}} фишки",
+    "won_many": "{{names}}: выигрыш {{count}} фишек",
+    "won_other": "{{names}}: выигрыш {{count}} фишки",
+    "hand": {
+      "highCard": "старшая карта",
+      "pair": "пара",
+      "twoPair": "две пары",
+      "threeOfAKind": "сет",
+      "straight": "стрит",
+      "flush": "флеш",
+      "fullHouse": "фулл-хаус",
+      "fourOfAKind": "каре",
+      "straightFlush": "стрит-флеш"
+    }
   }
 }

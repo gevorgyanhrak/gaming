@@ -34,6 +34,16 @@ export function PlayPanel({ game }: { game: GameDetail }) {
   const [difficulty, setDifficulty] = useState<BotDifficulty>('medium')
   const [code, setCode] = useState('')
   const mode = modes.find((m) => m.slug === modeSlug)
+  // Tables for more than two (poker): how many sit down, you included.
+  const tableSizes = mode
+    ? Array.from(
+        { length: mode.max_players - mode.min_players + 1 },
+        (_, i) => mode.min_players + i,
+      )
+    : []
+  const [players, setPlayers] = useState<number | null>(null)
+  const tableSize =
+    tableSizes.length > 1 ? (players ?? Math.min(4, mode?.max_players ?? 2)) : undefined
 
   const toRoom = (room: { id: string }) => void navigate(`/rooms/${room.id}`)
   const search = useMutation({
@@ -44,11 +54,11 @@ export function PlayPanel({ game }: { game: GameDetail }) {
     },
   })
   const bot = useMutation({
-    mutationFn: (id: number) => createBotRoom(id, difficulty),
+    mutationFn: (id: number) => createBotRoom(id, difficulty, tableSize),
     onSuccess: toRoom,
   })
   const friend = useMutation({
-    mutationFn: (id: number) => createPrivateRoom(id),
+    mutationFn: (id: number) => createPrivateRoom(id, tableSize),
     onSuccess: toRoom,
   })
   const join = useMutation({ mutationFn: () => joinRoom(code.trim()), onSuccess: toRoom })
@@ -86,6 +96,22 @@ export function PlayPanel({ game }: { game: GameDetail }) {
               </option>
             ))}
           </SelectField>
+        ) : null}
+
+        {tableSize !== undefined ? (
+          <div className="w-44">
+            <SelectField
+              label={t('play.players')}
+              value={String(tableSize)}
+              onChange={(e) => setPlayers(Number(e.target.value))}
+            >
+              {tableSizes.map((n) => (
+                <option key={n} value={n}>
+                  {t('play.playersCount', { count: n })}
+                </option>
+              ))}
+            </SelectField>
+          </div>
         ) : null}
 
         {error ? (

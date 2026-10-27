@@ -18,6 +18,9 @@ class CreateRoomRequest extends FormRequest
             // Matchmaking rooms are created by the matchmaker, not by players.
             'type' => ['required', Rule::in(['bot', 'private'])],
             'bot_difficulty' => ['exclude_unless:type,bot', 'required', Rule::enum(BotDifficulty::class)],
+            // Tables for more than two (poker): bots to play against, or seats in a private room.
+            'opponents' => ['exclude_unless:type,bot', 'nullable', 'integer', 'min:1', 'max:9'],
+            'seats' => ['exclude_unless:type,private', 'nullable', 'integer', 'min:2', 'max:10'],
         ];
     }
 }

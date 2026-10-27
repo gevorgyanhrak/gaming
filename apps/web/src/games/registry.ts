@@ -9,6 +9,8 @@ export interface BoardProps {
   state: RoomState
   onAction: (action: GameAction) => void
   pending: boolean
+  /** Display names by seat, for boards that show the players (poker). */
+  players?: Partial<Record<number, string>>
 }
 
 /**
@@ -19,4 +21,5 @@ export const boards: Partial<Record<string, LazyExoticComponent<ComponentType<Bo
   checkers: lazy(() => import('./checkers/CheckersBoard')),
   chess: lazy(() => import('./chess/ChessBoard')),
   durak: lazy(() => import('./durak/DurakBoard')),
+  poker: lazy(() => import('./poker/PokerBoard')),
 }

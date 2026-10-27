@@ -25,7 +25,8 @@ use Throwable;
  *
  * Queues live in the game store; every change to a mode's queue happens under that mode's lock, so a
  * ticket can be matched only once (e.g. a human match and a bot acceptance can't both win).
- * Rooms are formed from min_players tickets; filling larger tables (poker) comes with those games.
+ * Rooms are formed from min_players tickets (heads-up for poker); bigger tables are private rooms or bot
+ * tables (see RoomController::store).
  */
 class Matchmaker
 {

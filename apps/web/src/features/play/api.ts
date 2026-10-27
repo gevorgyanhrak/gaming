@@ -25,16 +25,22 @@ export const matchmakingKey = ['matchmaking'] as const
 type RoomResponse = { data: Room }
 const unwrap = <T>(r: { data: T }) => r.data
 
-export const createBotRoom = (gameModeId: number, difficulty: BotDifficulty) =>
+/** `players` (tables for more than two): everyone at the table, you included. */
+export const createBotRoom = (gameModeId: number, difficulty: BotDifficulty, players = 2) =>
   apiRequest<RoomResponse>('/api/v1/rooms', {
     method: 'POST',
-    body: { game_mode_id: gameModeId, type: 'bot', bot_difficulty: difficulty },
+    body: {
+      game_mode_id: gameModeId,
+      type: 'bot',
+      bot_difficulty: difficulty,
+      ...(players > 2 ? { opponents: players - 1 } : {}),
+    },
   }).then(unwrap)
 
-export const createPrivateRoom = (gameModeId: number) =>
+export const createPrivateRoom = (gameModeId: number, players?: number) =>
   apiRequest<RoomResponse>('/api/v1/rooms', {
     method: 'POST',
-    body: { game_mode_id: gameModeId, type: 'private' },
+    body: { game_mode_id: gameModeId, type: 'private', ...(players ? { seats: players } : {}) },
   }).then(unwrap)
 
 export const joinRoom = (inviteCode: string) =>

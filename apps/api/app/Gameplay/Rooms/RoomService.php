@@ -57,10 +57,10 @@ class RoomService
     /**
      * Create a room that waits for more players (private rooms); the creator takes seat 0.
      */
-    public function createWaiting(GameMode $mode, User $creator, string $inviteCode): GameRoom
+    public function createWaiting(GameMode $mode, User $creator, string $inviteCode, ?int $seats = null): GameRoom
     {
-        return DB::transaction(function () use ($mode, $creator, $inviteCode) {
-            $room = $this->createRoom($mode, RoomType::Private, $mode->max_players, $creator, $inviteCode);
+        return DB::transaction(function () use ($mode, $creator, $inviteCode, $seats) {
+            $room = $this->createRoom($mode, RoomType::Private, $seats ?? $mode->max_players, $creator, $inviteCode);
             $this->seat($room, 0, $creator);
 
             return $room;

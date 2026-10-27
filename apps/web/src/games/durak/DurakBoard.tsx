@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
+import { suitSymbols, useCardLabel, type Suit } from '../cards/cards'
+import { PlayingCard as Card } from '../cards/PlayingCard'
 import type { BoardProps } from '../registry'
-
-type Suit = 'S' | 'H' | 'D' | 'C'
 
 interface DurakView {
   hand: string[]
@@ -17,39 +17,6 @@ interface DurakView {
 
 type DurakAction = { type: 'attack' | 'defend'; card: string } | { type: 'take' | 'done' }
 
-const suitSymbols: Record<Suit, string> = { S: '♠', H: '♥', D: '♦', C: '♣' }
-const suitKeys = {
-  S: 'durak.suit.spades',
-  H: 'durak.suit.hearts',
-  D: 'durak.suit.diamonds',
-  C: 'durak.suit.clubs',
-} as const
-const rankKeys = {
-  J: 'durak.rank.jack',
-  Q: 'durak.rank.queen',
-  K: 'durak.rank.king',
-  A: 'durak.rank.ace',
-} as const
-
-const rankText = (card: string) => (card[0] === 'T' ? '10' : (card[0] ?? ''))
-const suitOf = (card: string) => (card[1] ?? 'S') as Suit
-
-function Card({ card, label, small = false }: { card: string; label: string; small?: boolean }) {
-  const red = suitOf(card) === 'H' || suitOf(card) === 'D'
-  return (
-    <span
-      role="img"
-      aria-label={label}
-      className={`flex flex-col items-center justify-center rounded-lg border border-black/20 bg-white font-bold shadow ${
-        small ? 'h-16 w-11 text-base' : 'h-24 w-16 text-xl'
-      } ${red ? 'text-red-600' : 'text-neutral-900'}`}
-    >
-      <span>{rankText(card)}</span>
-      <span aria-hidden="true">{suitSymbols[suitOf(card)]}</span>
-    </span>
-  )
-}
-
 /**
  * Durak table: the opponent's card count, deck and trump, the bout on the table and your hand.
  * Offers exactly the server's legal actions: cards to lead, throw in or beat with, "take" and "done".
@@ -61,11 +28,8 @@ export default function DurakBoard({ state, onAction, pending }: BoardProps) {
   const actions = state.legal_actions as unknown as DurakAction[]
   const myTurn = state.seats_to_act.includes(me)
 
-  const cardLabel = (card: string) => {
-    const rank = card[0] ?? ''
-    const rankName = rank in rankKeys ? t(rankKeys[rank as keyof typeof rankKeys]) : rankText(card)
-    return t('durak.card', { rank: rankName, suit: t(suitKeys[suitOf(card)]) })
-  }
+  const labels = useCardLabel()
+  const cardLabel = labels.card
   const actionFor = (card: string) => actions.find((a) => 'card' in a && a.card === card)
   const canTake = actions.some((a) => a.type === 'take')
   const canFinish = actions.some((a) => a.type === 'done')
@@ -111,7 +75,7 @@ export default function DurakBoard({ state, onAction, pending }: BoardProps) {
             <p className="text-muted">
               {t('durak.trump')}:{' '}
               <span className={view.trump === 'H' || view.trump === 'D' ? 'text-red-500' : ''}>
-                {suitSymbols[view.trump]} {t(suitKeys[view.trump])}
+                {suitSymbols[view.trump]} {labels.suit(view.trump)}
               </span>
             </p>
           </div>

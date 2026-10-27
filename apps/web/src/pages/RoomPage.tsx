@@ -63,6 +63,9 @@ export function RoomPage() {
   const myResult =
     view?.seat != null ? data.participants.find((p) => p.seat === view.seat)?.result : null
 
+  // Left a multi-player game that goes on without you.
+  const leftTable = data.status === 'active' && myResult != null
+
   return (
     <Container className="space-y-6 py-8">
       <title>{data.game.name}</title>
@@ -123,13 +126,19 @@ export function RoomPage() {
         </Alert>
       ) : null}
       {data.status === 'aborted' ? <Alert tone="info">{t('room.aborted')}</Alert> : null}
+      {leftTable ? <Alert tone="info">{t('room.leftTable')}</Alert> : null}
 
       {act.error ? <Alert tone="danger">{message(act.error.message)}</Alert> : null}
 
       {view && data.status !== 'waiting' ? (
         Board ? (
           <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-            <Board state={view} onAction={(action) => act.mutate(action)} pending={act.isPending} />
+            <Board
+              state={view}
+              onAction={(action) => act.mutate(action)}
+              pending={act.isPending}
+              players={Object.fromEntries(data.participants.map((p) => [p.seat, p.name ?? '']))}
+            />
           </Suspense>
         ) : (
           <EmptyState title={t('room.boardUnavailable')} />
@@ -137,7 +146,7 @@ export function RoomPage() {
       ) : null}
 
       <footer className="flex flex-wrap gap-3">
-        {data.status === 'active' ? (
+        {data.status === 'active' && !leftTable ? (
           confirmResign ? (
             <>
               <Button

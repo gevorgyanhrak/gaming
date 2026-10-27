@@ -4,6 +4,7 @@ use App\Games\Checkers\CheckersServiceProvider;
 use App\Games\Chess\ChessServiceProvider;
 use App\Games\Durak\DurakServiceProvider;
 use App\Games\Nardi\NardiServiceProvider;
+use App\Games\Poker\PokerServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\HorizonServiceProvider;
@@ -15,6 +16,7 @@ return [
     CheckersServiceProvider::class,
     ChessServiceProvider::class,
     DurakServiceProvider::class,
+    PokerServiceProvider::class,
     AdminPanelProvider::class,
     HorizonServiceProvider::class,
 ];

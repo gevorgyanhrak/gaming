@@ -113,6 +113,16 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
   ends by itself when the attacker has nothing to throw. Limit: 6 and the defender's hand at bout start.
   Hidden information: `viewFor` returns only the seat's own hand, counts, table and the face-up trump —
   tests assert no other card leaks into the view JSON. Shuffle = Fisher–Yates over `RandomSource`.
+  **Poker** (NL hold'em sit-and-go, 2–10 seats, play chips that exist only inside the game): one action
+  per decision — fold / check / call / raise {amount: total bet this street}; `legalActions` describes the
+  raise as {min, max} and the engine implements `ValidatesActions::isLegal`. Side pots, odd chip left of
+  the button, blinds double every `level_hands`. `HandlesTimeouts` (check/fold) and `HandlesDepartures`
+  (a leaver loses, is taken out, the table plays on while another human remains). `PokerBot`: Monte Carlo
+  equity vs pot odds. Feature tests: tests/Feature/Games/PokerTableTest.php.
+- Optional engine contracts: `ValidatesActions` (range actions), `HandlesTimeouts` (default move instead
+  of losing), `HandlesDepartures` (multi-player leave; recorded as RESIGN with payload.departed and
+  replayed with its rng), `DecidesTimeouts` (chess). Bot tables: POST /rooms `opponents` (bots reused when
+  there are fewer bots than seats); private rooms: `seats`.
 - Test helper functions are global in Pest: prefix them per game (`draughtsSteps`, not `play`).
 - Engine tests: unit tests on the engine with `ReplayRandom` for fixed dice, a seeded fuzz of whole
   games with invariants (checker conservation), bots legal at every level and medium beats random; one

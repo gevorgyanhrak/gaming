@@ -203,7 +203,10 @@
     "botIn_one": "Բոտի հետ խաղ կառաջարկվի {{count}} վայրկյանից։",
     "botIn_other": "Բոտի հետ խաղ կառաջարկվի {{count}} վայրկյանից։",
     "acceptBot": "Խաղալ բոտի դեմ",
-    "cancelSearch": "Չեղարկել"
+    "cancelSearch": "Չեղարկել",
+    "players": "Խաղացողներ",
+    "playersCount_one": "{{count}} խաղացող",
+    "playersCount_other": "{{count}} խաղացող"
   },
   "room": {
     "players": "Խաղացողներ",
@@ -248,7 +251,8 @@
       "finished": "Ավարտված",
       "aborted": "Փակված"
     },
-    "clock": "Մնացած ժամանակ՝ {{time}}"
+    "clock": "Մնացած ժամանակ՝ {{time}}",
+    "leftTable": "Դուք լքեցիք սեղանը։ Մյուսները շարունակում են խաղը։"
   },
   "history": {
     "title": "Խաղերի պատմություն",
@@ -318,19 +322,6 @@
     }
   },
   "durak": {
-    "card": "{{rank}} {{suit}}",
-    "suit": {
-      "spades": "ղառ",
-      "hearts": "սիրտ",
-      "diamonds": "քյափ",
-      "clubs": "խաչ"
-    },
-    "rank": {
-      "jack": "Վալետ",
-      "queen": "Դամա",
-      "king": "Արքա",
-      "ace": "Թուզ"
-    },
     "trump": "Կոզր",
     "trumpCard": "Կոզր քարտը՝ {{card}}",
     "deck_one": "Կապուկում {{count}} քարտ",
@@ -350,5 +341,63 @@
     "defend": "Ծածկեք քարտը կամ վերցրեք։",
     "youTake": "Դուք վերցնում եք քարտերը։",
     "waiting": "Մրցակցի քայլն է։"
+  },
+  "cards": {
+    "card": "{{rank}} {{suit}}",
+    "suit": {
+      "spades": "ղառ",
+      "hearts": "սիրտ",
+      "diamonds": "քյափ",
+      "clubs": "խաչ"
+    },
+    "rank": {
+      "jack": "Վալետ",
+      "queen": "Դամա",
+      "king": "Արքա",
+      "ace": "Թուզ"
+    }
+  },
+  "poker": {
+    "you": "Դուք",
+    "seat": "Տեղ {{seat}}",
+    "seats": "Խաղացողներ",
+    "dealer": "Դիլեր",
+    "chips_one": "{{count}} ժետոն",
+    "chips_other": "{{count}} ժետոն",
+    "out": "Դուրս է",
+    "folded": "Պաս",
+    "bet": "Խաղադրույք {{amount}}",
+    "allInStatus": "Օլ-ին",
+    "board": "Սեղան",
+    "potAmount_one": "Բանկ՝ {{count}} ժետոն",
+    "potAmount_other": "Բանկ՝ {{count}} ժետոն",
+    "handInfo": "Բաժանում {{hand}} · բլայնդներ {{small}}/{{big}}",
+    "yourCards": "Ձեր քարտերը",
+    "fold": "Պաս",
+    "check": "Չեք",
+    "call": "Կոլ {{amount}}",
+    "betTo": "Խաղադրույք {{amount}}",
+    "raiseTo": "Ռեյզ մինչև {{amount}}",
+    "allInAmount": "Օլ-ին {{amount}}",
+    "amount": "Խաղադրույքի չափ",
+    "halfPot": "½ բանկ",
+    "pot": "Բանկ",
+    "allIn": "Օլ-ին",
+    "waitingFor": "Սպասում ենք՝ {{name}}։",
+    "lastHand": "Նախորդ բաժանումը",
+    "lastHandTitle": "Բաժանում {{hand}}",
+    "won_one": "{{names}}՝ շահեց {{count}} ժետոն",
+    "won_other": "{{names}}՝ շահեց {{count}} ժետոն",
+    "hand": {
+      "highCard": "բարձր քարտ",
+      "pair": "զույգ",
+      "twoPair": "երկու զույգ",
+      "threeOfAKind": "եռյակ",
+      "straight": "ստրիտ",
+      "flush": "ֆլեշ",
+      "fullHouse": "ֆուլ-հաուս",
+      "fourOfAKind": "կարե",
+      "straightFlush": "ստրիտ-ֆլեշ"
+    }
   }
 }

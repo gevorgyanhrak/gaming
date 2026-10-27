@@ -60,6 +60,7 @@ return [
         'too_many_games' => 'Finish one of your current games first.',
         'verification_required' => 'Verify your :channel to play.',
         'no_bot' => 'No bot is available at this difficulty.',
+        'wrong_players' => 'This game mode can\'t be played with that many players.',
         'invite_invalid' => 'This invite code is not valid or the room is full.',
         'not_your_turn' => 'It is not your turn.',
         'illegal_move' => 'This move is not allowed.',

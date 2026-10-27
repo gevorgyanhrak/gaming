@@ -15,6 +15,7 @@ use App\Gameplay\Rooms\RoomStates;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Rooms\CreateRoomRequest;
 use App\Http\Resources\RoomResource;
+use App\Models\BotProfile;
 use App\Models\GameMode;
 use App\Models\GameRoom;
 use App\Models\User;
@@ -42,16 +43,27 @@ class RoomController extends Controller
 
         if ($type === 'bot') {
             $difficulty = BotDifficulty::from($request->string('bot_difficulty')->toString());
+            $opponents = $request->integer('opponents', 1);
+            $this->ensurePlayers($mode, 1 + $opponents, 'opponents');
 
-            try {
-                $bot = $bots->pick($mode->game, $difficulty);
-            } catch (InvalidArgumentException) {
-                throw ValidationException::withMessages(['bot_difficulty' => __('platform.play.no_bot')]);
+            $players = [$user];
+            $picked = [];
+            for ($i = 0; $i < $opponents; $i++) {
+                try {
+                    $bot = $bots->pick($mode->game, $difficulty, array_map(fn (BotProfile $b) => $b->id, $picked));
+                } catch (InvalidArgumentException) {
+                    // Fewer bots than seats: the same bots sit at the table more than once.
+                    $bot = $picked[$i % max(1, count($picked))] ?? throw ValidationException::withMessages(['bot_difficulty' => __('platform.play.no_bot')]);
+                }
+                $picked[] = $bot;
+                $players[] = ['bot' => $bot, 'difficulty' => $difficulty];
             }
 
-            $room = $rooms->createStarted($mode, RoomType::Bot, [$user, ['bot' => $bot, 'difficulty' => $difficulty]], $user);
+            $room = $rooms->createStarted($mode, RoomType::Bot, $players, $user);
         } else {
-            $room = $rooms->createWaiting($mode, $user, $this->inviteCode());
+            $seats = $request->integer('seats', $mode->max_players);
+            $this->ensurePlayers($mode, $seats, 'seats');
+            $room = $rooms->createWaiting($mode, $user, $this->inviteCode(), $seats);
         }
 
         return RoomResource::make($this->loaded($room))->response()->setStatusCode(201);
@@ -120,7 +132,7 @@ class RoomController extends Controller
         $room->load(['game', 'participants']);
         $participant = $room->participantFor($user);
 
-        if ($participant !== null && $room->isActive()) {
+        if ($participant !== null && $participant->is_active && $room->isActive()) {
             $actions->submit($room, $participant, new Action('resign'), clientActionId: (string) Str::uuid());
         } elseif ($participant !== null && $room->status === RoomStatus::Waiting) {
             if ($room->created_by === $user->id) {
@@ -132,6 +144,13 @@ class RoomController extends Controller
         }
 
         return response()->json(['data' => new RoomResource($this->loaded($room->refresh()))]);
+    }
+
+    private function ensurePlayers(GameMode $mode, int $players, string $field): void
+    {
+        if ($players < $mode->min_players || $players > $mode->max_players) {
+            throw ValidationException::withMessages([$field => __('platform.play.wrong_players')]);
+        }
     }
 
     private function loaded(GameRoom $room): GameRoom

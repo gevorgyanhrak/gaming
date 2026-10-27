@@ -87,7 +87,9 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   (`boards[slug]`, lazy). A board only renders `state.view` and calls `onAction` with one of
   `state.legal_actions` — never rules in the UI. Boards live in `games/<slug>/<Game>Board.tsx` (default
   export) with i18n keys under `<slug>.*`; Nardi's board (pick a source, then one of its legal targets;
-  board turned for seat 1) is the reference.
+  board turned for seat 1) is the reference. Shared card UI: `games/cards` (`PlayingCard`, `useCardLabel`).
+  Boards also receive `players` (names by seat). Range actions (poker raise {min,max}) are sent as
+  {type, amount}.
 - When generic skill advice conflicts with the established conventions of this repo, follow the repo.
 
 ## Definition of done (run these; report real output)

@@ -3,6 +3,7 @@
 namespace App\Gameplay\Rooms;
 
 use App\Gameplay\Contracts\GameEngine;
+use App\Gameplay\Contracts\HandlesDepartures;
 use App\Gameplay\Engine\Action;
 use App\Gameplay\Engine\GameSetup;
 use App\Gameplay\GameRegistry;
@@ -54,7 +55,15 @@ class RoomStates
         foreach ($moves->where('seq', '>', 0) as $move) {
             $version = $move->seq;
 
-            if (in_array($move->type, [GameMove::RESIGN, GameMove::TIMEOUT], true) || $move->participant === null) {
+            if ($move->participant === null) {
+                continue;
+            }
+            if ($move->type === GameMove::RESIGN && ($move->payload['departed'] ?? false) && $engine instanceof HandlesDepartures) {
+                $state = $engine->depart($state, $move->participant->seat, new ReplayRandom($move->rng ?? []))->state;
+
+                continue;
+            }
+            if (in_array($move->type, [GameMove::RESIGN, GameMove::TIMEOUT], true)) {
                 continue;
             }
 

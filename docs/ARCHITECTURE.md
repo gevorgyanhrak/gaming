@@ -234,8 +234,8 @@ stay available); staff bypass it.
 | 4 | Admin panel (Filament) | ✅ |
 | 5 | Gaming infrastructure (built against a test-only TicTacToe engine) | ✅ |
 | 6 | Nardi (short nardi first), end to end | ✅ |
-| 7 | Checkers (Russian draughts) → Chess → Durak (podkidnoy, 2 players first) → Poker (NL Hold'em, play chips per table session) | next (v1.0) |
-| 8 | Hardening, performance, monitoring, deployment | |
+| 7 | Checkers (Russian draughts) → Chess → Durak (podkidnoy, 2 players first) → Poker (NL Hold'em, play chips per table session) | ✅ |
+| 8 | Hardening, performance, monitoring, deployment | next |
 
 ## 11. Main risks
 

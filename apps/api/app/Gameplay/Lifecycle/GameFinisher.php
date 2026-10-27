@@ -24,6 +24,10 @@ class GameFinisher
         $finishedAt = now();
 
         foreach ($room->participants as $participant) {
+            // Players who left a game that went on already have their result.
+            if (! $participant->is_active && $participant->result !== null) {
+                continue;
+            }
             $result = match (true) {
                 in_array($participant->seat, $abandonedSeats, true) => ParticipantResult::Abandoned,
                 $outcome->isDraw() => ParticipantResult::Draw,
@@ -47,6 +51,18 @@ class GameFinisher
             'end_reason' => $endReason,
             'finished_at' => $finishedAt,
         ])->save();
+    }
+
+    /**
+     * One player's game is over while it goes on for the others (they left a multi-player game).
+     */
+    public function finishParticipant(GameParticipant $participant, int $gameId, ParticipantResult $result): void
+    {
+        $participant->forceFill(['result' => $result, 'is_active' => false])->save();
+
+        if ($participant->user_id !== null) {
+            $this->recordStats($participant, $gameId, $result);
+        }
     }
 
     private function recordStats(GameParticipant $participant, int $gameId, ParticipantResult $result): void
