@@ -11,8 +11,13 @@ export type Locale = (typeof bundledLocales)[number]
 const STORAGE_KEY = 'locale'
 const FALLBACK: Locale = 'en'
 
-function isLocale(value: string | null | undefined): value is Locale {
+export function isLocale(value: string | null | undefined): value is Locale {
   return bundledLocales.includes(value as Locale)
+}
+
+/** A language's name in that language itself. */
+export function languageName(locale: Locale): string {
+  return new Intl.DisplayNames([locale], { type: 'language' }).of(locale) ?? locale
 }
 
 function detectLocale(): Locale {

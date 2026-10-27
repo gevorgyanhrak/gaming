@@ -16,12 +16,15 @@
     "api:types": "npx --yes -p typescript@5.9.3 -p openapi-typescript@7.13.0 openapi-typescript ${API_DOCS_URL:-http://localhost:8000/docs/api.json} -o src/shared/api/schema.d.ts"
   },
   "dependencies": {
+    "@hookform/resolvers": "^6.0.1",
     "@tanstack/react-query": "^5.105.0",
     "i18next": "^26.5.11",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "react-hook-form": "^7.91.0",
     "react-i18next": "^17.1.9",
-    "react-router": "^8.5.0"
+    "react-router": "^8.5.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

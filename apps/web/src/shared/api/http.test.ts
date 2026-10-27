@@ -79,4 +79,60 @@ describe('apiRequest', () => {
 
     expect(seen).toEqual({ get: null, post: 'tok=en/1' })
   })
+
+  it('fetches the CSRF cookie before the first state-changing request', async () => {
+    const order: string[] = []
+    server.use(
+      http.get('*/sanctum/csrf-cookie', () => {
+        order.push('csrf')
+        document.cookie = 'XSRF-TOKEN=fresh; path=/'
+        return new HttpResponse(null, { status: 204 })
+      }),
+      http.post('*/api/write', ({ request }) => {
+        order.push(`post:${request.headers.get('X-XSRF-TOKEN')}`)
+        return new HttpResponse(null, { status: 204 })
+      }),
+    )
+
+    await apiRequest('/api/write', { method: 'POST' })
+
+    expect(order).toEqual(['csrf', 'post:fresh'])
+  })
+
+  it('refreshes the CSRF cookie and retries once after a token mismatch', async () => {
+    document.cookie = 'XSRF-TOKEN=stale; path=/'
+    let attempts = 0
+    server.use(
+      http.get('*/sanctum/csrf-cookie', () => {
+        document.cookie = 'XSRF-TOKEN=renewed; path=/'
+        return new HttpResponse(null, { status: 204 })
+      }),
+      http.post('*/api/write', ({ request }) => {
+        attempts += 1
+        return request.headers.get('X-XSRF-TOKEN') === 'renewed'
+          ? HttpResponse.json({ ok: true })
+          : HttpResponse.json({ message: 'CSRF token mismatch.' }, { status: 419 })
+      }),
+    )
+
+    await expect(apiRequest('/api/write', { method: 'POST' })).resolves.toEqual({ ok: true })
+    expect(attempts).toBe(2)
+  })
+
+  it('sends FormData without forcing a JSON content type', async () => {
+    document.cookie = 'XSRF-TOKEN=t; path=/'
+    let contentType: string | null = null
+    server.use(
+      http.post('*/api/upload', ({ request }) => {
+        contentType = request.headers.get('Content-Type')
+        return HttpResponse.json({})
+      }),
+    )
+    const body = new FormData()
+    body.append('avatar', new Blob(['x'], { type: 'image/png' }), 'a.png')
+
+    await apiRequest('/api/upload', { method: 'POST', body })
+
+    expect(contentType).toMatch(/^multipart\/form-data/)
+  })
 })

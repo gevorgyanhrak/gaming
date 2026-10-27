@@ -55,7 +55,8 @@ separate Redis instances**: cache eviction must never be able to remove live gam
 Version notes:
 - TypeScript is held at 6.0 because typescript-eslint does not support TypeScript 7 (the native port) yet.
 - `openapi-typescript` requires TypeScript 5, so type generation runs in an isolated `npx` environment (`npm run api:types`) instead of being a project dependency.
-- Added later, when first needed: Zustand, zod, react-hook-form, laravel-echo/pusher-js (Phases 3/5), spatie/laravel-permission (Phase 3), Filament (Phase 4).
+- Added in Phase 3: zod, react-hook-form, spatie/laravel-permission, propaganistas/laravel-phone, laravel-lang (translations, dev only).
+- Added later, when first needed: Zustand, laravel-echo/pusher-js (Phase 5), Filament (Phase 4).
 
 ## 3. Repository layout
 
@@ -112,8 +113,10 @@ shared/     api/ (client, errors, generated OpenAPI types), i18n/, ui/, config/
 test/       MSW server, handlers/fixtures, render helpers
 ```
 
-Server state lives in TanStack Query. Client stores (Zustand, from Phase 3) hold only ephemeral
-UI state, never a copy of authoritative game state.
+Server state lives in TanStack Query, including the current user (`['me']`). Client stores (Zustand,
+added when the first game UI needs one) hold only ephemeral UI state, never a copy of authoritative
+game state. Sign-in and account routes are lazy-loaded; `RequireAuth`/`RequireGuest` layout routes
+own all auth redirects (including where a user goes right after signing in).
 
 ## 4. Database (MySQL 8.4)
 
@@ -127,7 +130,7 @@ channel names, CHECK constraints added through `DB::statement` in migrations.
 | `games` | slug UNIQUE; translatable name/description/rules (JSON); player counts with CHECK; `is_enabled` (playable) and `is_visible` (listed) | 2 ✅ |
 | `users` | username UNIQUE, email UNIQUE NULL, phone (E.164) UNIQUE NULL, nullable password (future social login), verification timestamps, status, locale, last_active_at. CHECK email or phone present | 3 |
 | `user_profiles` | display name, avatar, bio, preferences JSON | 3 |
-| `user_bans` | ban history (by, reason, expires, revoked); `users.status` is the fast copy | 3 |
+| `user_bans` | ban history (by, reason, expires, revoked); `users.status` is the fast copy | 4 (with ban management) |
 | `verification_codes` | channel, destination, purpose, code hash, attempts, expiry | 3 |
 | roles / permissions | spatie/laravel-permission | 3 |
 | `platform_settings` | key, JSON value, type, group, `is_public` allowlist, `is_encrypted` | 4 |
@@ -209,8 +212,8 @@ audit log. Maintenance mode is a setting enforced by middleware, so admins keep 
 |---|---|---|
 | 1 | Architecture and plan | ✅ |
 | 2 | Project setup, tooling, CI, layout, catalog slice | ✅ |
-| 3 | Authentication and user management | next |
-| 4 | Admin panel (Filament) | |
+| 3 | Authentication and user management | ✅ |
+| 4 | Admin panel (Filament) | next |
 | 5 | Gaming infrastructure (built against a test-only TicTacToe engine) | |
 | 6 | Nardi (short nardi first), end to end | MVP |
 | 7 | Checkers (Russian draughts) → Chess → Durak (podkidnoy, 2 players first) → Poker (NL Hold'em, play chips per table session) | v1.0 |

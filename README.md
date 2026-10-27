@@ -16,7 +16,7 @@ Architecture and decisions: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [
 | Project setup, Docker, CI, linting, tests | ✅ Done (Phase 2) |
 | Public layout, game catalog, game info pages (en/ru/hy) | ✅ Done; reads real data from the API |
 | Health checks, public config endpoint, OpenAPI docs | ✅ Done |
-| Registration, login, profiles | ⏳ Phase 3 |
+| Registration and login by email or phone, verification codes, password reset, profiles, avatars, settings, roles | ✅ Done (Phase 3). The SMS provider is not chosen yet (see below). |
 | Admin panel | ⏳ Phase 4 |
 | Matchmaking, rooms, WebSocket gameplay | ⏳ Phase 5 (Reverb runs, but no channels are used yet) |
 | Playable games | ⏳ Nardi in Phase 6, then the others. All games are listed as "Coming soon" until their engine exists. |
@@ -91,6 +91,19 @@ Makefile        developer commands
 
 `.env` files are git-ignored. Never commit real credentials. The example values are for local
 development only.
+
+## Accounts and roles (local development)
+
+- **Verification and reset codes by email** arrive in Mailpit: http://localhost:8025.
+- **Codes by SMS** use the development `log` driver, which writes them to `apps/api/storage/logs/laravel.log`. It refuses to run in production: a real SMS provider still has to be chosen and added (`App\Platform\Sms\SmsGateway`) before phone sign-up can be offered publicly.
+- **Admin roles** (`super_admin`, `admin`, `moderator`) are granted from the command line until the admin panel exists:
+
+  ```sh
+  make artisan cmd="app:role you@example.com super_admin"
+  make artisan cmd="app:role you@example.com super_admin --revoke"
+  ```
+
+Not enforced yet, by design: the "verification required" settings are exposed to the frontend now and enforced on gameplay routes from Phase 5. Accepting the terms of service at registration comes with the admin-editable content pages in Phase 4.
 
 ## Testing
 

@@ -16,3 +16,4 @@ Records are immutable once accepted; a changed decision gets a new record that s
 | [0009](0009-sanctum-spa-cookie-auth.md) | Sanctum SPA cookie authentication | Accepted |
 | [0010](0010-filament-admin.md) | Admin panel in Filament | Accepted |
 | [0011](0011-toolchain-versions.md) | Toolchain versions and compatibility pins | Accepted |
+| [0012](0012-one-time-codes-for-both-channels.md) | One-time codes for both channels | Accepted |
