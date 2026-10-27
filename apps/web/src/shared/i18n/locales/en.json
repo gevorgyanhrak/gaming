@@ -272,5 +272,18 @@
     "barTheirs": "Their bar",
     "offMine": "Off",
     "offTheirs": "Their off"
+  },
+  "checkers": {
+    "pickPiece": "Pick a piece to move.",
+    "pickTarget": "Pick where it goes.",
+    "continueCapture": "Keep capturing with the same piece.",
+    "waiting": "Waiting for the other player.",
+    "youWhite": "You play white",
+    "youBlack": "You play black",
+    "whiteMan": "white man",
+    "whiteKing": "white king",
+    "blackMan": "black man",
+    "blackKing": "black king",
+    "empty": "empty"
   }
 }

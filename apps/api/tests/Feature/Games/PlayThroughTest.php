@@ -16,24 +16,26 @@ use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
-it('seeds Nardi as playable because its engine is registered', function () {
+// Every game with an engine is played to the end through the real API and queue jobs.
+dataset('games', ['nardi', 'checkers']);
+
+it('seeds games as playable only when their engine is registered', function () {
     $this->seed([GameSeeder::class, GameModeSeeder::class]);
 
-    expect(Game::query()->where('slug', 'nardi')->sole()->is_enabled)->toBeTrue()
-        ->and(Game::query()->where('slug', 'chess')->sole()->is_enabled)->toBeFalse();
+    expect(Game::query()->where('is_enabled', true)->pluck('slug')->all())->toBe(['nardi', 'checkers']);
 });
 
-it('plays a full game of Nardi against a bot through the API', function () {
+it('plays a full game against a bot through the API', function (string $slug) {
     Queue::fake();
     // Hundreds of requests in a few seconds: far beyond what a person sends.
     $this->withoutMiddleware(ThrottleRequests::class);
     $this->seed([GameSeeder::class, GameModeSeeder::class]);
-    $nardi = Game::query()->where('slug', 'nardi')->sole();
-    BotProfile::factory()->create(['name' => 'Levon'])->gameProfiles()->create(['game_id' => $nardi->id, 'difficulty' => BotDifficulty::Medium]);
+    $game = Game::query()->where('slug', $slug)->sole();
+    BotProfile::factory()->create(['name' => 'Levon'])->gameProfiles()->create(['game_id' => $game->id, 'difficulty' => BotDifficulty::Medium]);
     $player = User::factory()->create();
     $this->actingAs($player);
 
-    $id = $this->postJson('/api/v1/rooms', ['game_mode_id' => $nardi->modes()->first()->id, 'type' => 'bot', 'bot_difficulty' => 'medium'])
+    $id = $this->postJson('/api/v1/rooms', ['game_mode_id' => $game->modes()->first()->id, 'type' => 'bot', 'bot_difficulty' => 'medium'])
         ->assertCreated()
         ->json('data.id');
     $room = GameRoom::query()->where('public_id', $id)->sole();
@@ -61,4 +63,4 @@ it('plays a full game of Nardi against a bot through the API', function () {
     $live = app(RoomStates::class)->current($room->load(['game', 'participants']))->state;
     app(RoomStateStore::class)->forget($room);
     expect(app(RoomStates::class)->rebuild($room)->state)->toBe($live);
-});
+})->with('games');

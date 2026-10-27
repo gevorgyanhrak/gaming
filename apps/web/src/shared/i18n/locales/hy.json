@@ -272,5 +272,18 @@
     "barTheirs": "Մրցակցի բարը",
     "offMine": "Դուրս",
     "offTheirs": "Մրցակցինը"
+  },
+  "checkers": {
+    "pickPiece": "Ընտրեք քարը։",
+    "pickTarget": "Ընտրեք, թե ուր գնալ։",
+    "continueCapture": "Շարունակեք վերցնել նույն քարով։",
+    "waiting": "Մրցակցի քայլն է։",
+    "youWhite": "Դուք խաղում եք սպիտակներով",
+    "youBlack": "Դուք խաղում եք սևերով",
+    "whiteMan": "սպիտակ քար",
+    "whiteKing": "սպիտակ դամկա",
+    "blackMan": "սև քար",
+    "blackKing": "սև դամկա",
+    "empty": "դատարկ"
   }
 }

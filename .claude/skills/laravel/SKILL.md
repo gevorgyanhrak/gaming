@@ -91,6 +91,13 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
   static functions on the state array), `NardiEngine` (turn flow: opening roll, auto-roll, auto-pass,
   must-play-maximum / higher-die rule via `maxPlayable`), `NardiBot` (easy random, medium plan
   evaluation, hard 21-roll lookahead). One action = one checker step `{type:'move', from, to, die}`.
+  **Checkers** (Russian draughts): `CheckersRules` (64-square board, a8 = 0; flying kings; mandatory,
+  non-maximal captures; Turkish strike — jumped pieces removed when the series ends; crowning mid-capture),
+  one action = one step `{type:'move', from, to}` and the same seat keeps acting during a capture series
+  (`capturing`). Draws: threefold repetition, 15 king-only moves each. `CheckersRules::turns()` gives
+  whole turns for bots/perft; perft from the start is 7, 49, 302, 1469, 7482 (tested). `CheckersBot`:
+  easy random, medium depth 2, hard depth 6 alpha-beta with forced-capture extension.
+- Test helper functions are global in Pest: prefix them per game (`draughtsSteps`, not `play`).
 - Engine tests: unit tests on the engine with `ReplayRandom` for fixed dice, a seeded fuzz of whole
   games with invariants (checker conservation), bots legal at every level and medium beats random; one
   feature test plays a full bot game through the API (`withoutMiddleware(ThrottleRequests::class)`) and

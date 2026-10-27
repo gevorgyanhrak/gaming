@@ -67,7 +67,7 @@ class GameSeeder extends Seeder
                     'The game is played on the dark squares of an 8×8 board, and each player starts with twelve pieces. White moves first. Men move one square diagonally forward.',
                     'Capturing is mandatory: jump diagonally over an adjacent opposing piece onto the empty square behind it. Men capture both forwards and backwards, and a capturing sequence must be completed to the end. When several captures are available, you may choose any of them.',
                     'A man that reaches the far row becomes a king. Kings move any distance diagonally and capture from a distance. A man that reaches the far row during a capture is crowned immediately and continues capturing as a king.',
-                    'You win by capturing all of your opponent\'s pieces or leaving them without a legal move.',
+                    'You win by capturing all of your opponent\'s pieces or leaving them without a legal move. The game is drawn when the same position occurs for the third time with the same player to move, or after fifteen moves by each player made only with kings and without a capture.',
                 ])],
                 'min_players' => 2,
                 'max_players' => 2,
