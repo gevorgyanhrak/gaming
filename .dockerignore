@@ -1,0 +1,15 @@
+.git
+**/.env
+**/.env.*
+!**/.env.example
+**/node_modules
+**/.DS_Store
+
+apps/web
+apps/api/vendor
+apps/api/storage/logs/*.log
+apps/api/storage/framework/cache/data/*
+apps/api/storage/framework/sessions/*
+apps/api/storage/framework/views/*.php
+apps/api/.phpunit.cache
+apps/api/tests

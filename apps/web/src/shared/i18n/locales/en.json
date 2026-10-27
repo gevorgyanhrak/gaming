@@ -1,0 +1,40 @@
+{
+  "nav": {
+    "main": "Main",
+    "home": "Home",
+    "games": "Games"
+  },
+  "landing": {
+    "title": "Classic board and card games, in one place",
+    "subtitle": "Pick a game, learn the rules and get ready to play.",
+    "cta": "Browse games",
+    "gamesHeading": "Games"
+  },
+  "catalog": {
+    "title": "Games",
+    "subtitle": "Choose a game to read its rules.",
+    "empty": "No games are available right now.",
+    "comingSoon": "Coming soon",
+    "players_one": "{{count}} player",
+    "players_other": "{{count}} players",
+    "playersRange": "{{min}}–{{max}} players"
+  },
+  "game": {
+    "back": "All games",
+    "rules": "Rules",
+    "notPlayable": "This game isn't available to play yet. Check back soon.",
+    "notFound": "We couldn't find that game."
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Can't reach the server. Check your connection and try again.",
+    "retry": "Try again",
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "The page you're looking for doesn't exist.",
+    "goHome": "Go to the home page"
+  },
+  "footer": {
+    "language": "Language",
+    "copyright": "© {{year}} {{name}}"
+  }
+}
