@@ -90,9 +90,10 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
 - If something could not be verified (e.g. no browser available), say exactly what and why.
 
 ## Git & safety
-- Work on a feature branch, never commit directly to `main`. Commit in logical steps with clear messages
-  ending with the attribution line the session provides.
-- **Ask before pushing, opening PRs, or anything outward-facing.** Never force-push.
+- The owner's workflow: work on `main`, commit each verified step (lint + tests green) with a clear
+  message ending with the attribution line the session provides, and push to `origin main`.
+  No pull requests. Pushing to `main` runs GitHub Actions; check the result.
+- Never force-push or rewrite pushed history.
 - Never commit `.env` files or secrets; example values only in `.env.example`.
 - Destructive local commands (`make fresh`, `migrate:fresh`, dropping volumes) only on the dev database and
   only when needed — say so before running them.
