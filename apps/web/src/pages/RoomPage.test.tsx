@@ -60,6 +60,23 @@ describe('Room', () => {
     expect(body.client_action_id).toMatch(/^[0-9a-f-]{36}$/)
   })
 
+  it('shows chess clocks: the running one counts down to the deadline', async () => {
+    serveRoom(
+      roomFixture(),
+      roomStateFixture({
+        deadline: '2026-10-27T10:02:05+00:00',
+        clocks: [125_000, 300_000],
+      }),
+    )
+    renderRoute('/rooms/room-1')
+
+    expect(await screen.findByLabelText('Time left: 5:00')).toBeInTheDocument()
+    expect(
+      await screen.findByLabelText('Time left: 2:05', {}, { timeout: 2000 }),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/seconds left/)).not.toBeInTheDocument()
+  })
+
   it('applies the next update from the server and refetches after a gap', async () => {
     let stateRequests = 0
     server.use(

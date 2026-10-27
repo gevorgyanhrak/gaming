@@ -2,6 +2,7 @@
 
 namespace App\Gameplay\Rooms;
 
+use App\Gameplay\Lifecycle\TimeControl;
 use App\Models\GameParticipant;
 use App\Models\GameRoom;
 
@@ -29,6 +30,8 @@ class RoomPresenter
             'seats_to_act' => $state->seatsToAct,
             'deadline' => $state->deadline === null ? null : now()->setTimestamp($state->deadline)->toIso8601String(),
             'server_time' => now()->toIso8601String(),
+            // Chess clocks: milliseconds left per seat at server_time (null with per-turn timers).
+            'clocks' => $room->isActive() ? TimeControl::remaining($state->clock, $state->seatsToAct, now()->getTimestampMs()) : null,
             'view' => $engine->viewFor($state->state, $seat),
             'legal_actions' => $canAct
                 ? array_map(fn ($action) => $action->toArray(), $engine->legalActions($state->state, $seat))

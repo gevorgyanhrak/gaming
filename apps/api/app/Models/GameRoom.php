@@ -24,6 +24,7 @@ use Illuminate\Support\Str;
  * @property int $seats
  * @property bool $has_bot
  * @property array<string, mixed>|null $options
+ * @property array{remaining: list<int>, since: int}|null $clock
  * @property int $state_version
  * @property string|null $end_reason
  * @property Carbon|null $started_at
@@ -54,6 +55,7 @@ class GameRoom extends Model
             'seats' => 'integer',
             'has_bot' => 'boolean',
             'options' => 'array',
+            'clock' => 'array',
             'state_version' => 'integer',
             'started_at' => 'datetime',
             'finished_at' => 'datetime',

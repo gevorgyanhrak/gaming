@@ -247,7 +247,8 @@
       "active": "In progress",
       "finished": "Finished",
       "aborted": "Closed"
-    }
+    },
+    "clock": "Time left: {{time}}"
   },
   "history": {
     "title": "Game history",

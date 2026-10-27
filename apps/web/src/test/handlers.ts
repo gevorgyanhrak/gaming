@@ -115,6 +115,7 @@ export function roomStateFixture(overrides: Partial<RoomState> = {}): RoomState 
     seats_to_act: [0],
     deadline: null,
     server_time: '2026-10-27T10:00:00+00:00',
+    clocks: null,
     view: { board: [null, null, null] },
     legal_actions: [{ type: 'place', cell: 0 }],
     result: null,

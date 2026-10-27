@@ -4,14 +4,21 @@ import { Badge } from '@/shared/ui/Badge'
 import type { ParticipantResult, Room } from '../api'
 import { resultLabel } from '../labels'
 
+/** 4:05, 0:09 */
+const formatClock = (seconds: number) =>
+  `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
+
 export function PlayerList({
   room,
   mySeat,
   seatsToAct,
+  clocks = null,
 }: {
   room: Room
   mySeat: number | null
   seatsToAct: number[]
+  /** Chess clocks: seconds left per seat. */
+  clocks?: (number | null)[] | null
 }) {
   const { t } = useTranslation()
 
@@ -39,6 +46,14 @@ export function PlayerList({
                 <p className="truncate text-sm text-muted">@{player.username}</p>
               ) : null}
             </div>
+            {clocks && clocks[player.seat] != null ? (
+              <span
+                className={`rounded-lg px-2 py-1 font-mono text-lg font-bold tabular-nums ${toAct ? 'bg-accent text-white' : 'bg-bg text-muted'}`}
+                aria-label={t('room.clock', { time: formatClock(clocks[player.seat] ?? 0) })}
+              >
+                {formatClock(clocks[player.seat] ?? 0)}
+              </span>
+            ) : null}
             {player.result ? (
               <Badge tone={player.result === 'win' ? 'neutral' : 'warning'}>
                 {t(resultLabel[player.result as ParticipantResult])}

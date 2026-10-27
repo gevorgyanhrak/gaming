@@ -2,6 +2,7 @@
 
 namespace App\Gameplay\Actions;
 
+use App\Gameplay\Contracts\DecidesTimeouts;
 use App\Gameplay\Engine\Action;
 use App\Gameplay\Engine\ActionResult;
 use App\Gameplay\Engine\Outcome;
@@ -10,6 +11,7 @@ use App\Gameplay\Exceptions\RoomNotActive;
 use App\Gameplay\Exceptions\VersionConflict;
 use App\Gameplay\Lifecycle\GameFinisher;
 use App\Gameplay\Lifecycle\GameScheduler;
+use App\Gameplay\Lifecycle\TimeControl;
 use App\Gameplay\Random\RecordingRandom;
 use App\Gameplay\Rooms\RoomState;
 use App\Gameplay\Rooms\RoomStates;
@@ -63,6 +65,14 @@ class GameActionService
                 throw new IllegalAction(__('platform.play.not_your_turn'));
             }
 
+            $time = TimeControl::for($room);
+            $nowMs = now()->getTimestampMs();
+
+            // A move after the clock ran out (beyond the lag allowance) loses on time.
+            if ($current->clock !== null && $time->left($current->clock, $actor->seat, $nowMs) < -TimeControl::GRACE_MS) {
+                return $this->end($room, $current, $actor, GameMove::TIMEOUT, $clientActionId);
+            }
+
             $engine = $this->states->engine($room);
             $legal = collect($engine->legalActions($current->state, $actor->seat))->contains(fn (Action $a) => $a->equals($action));
 
@@ -74,8 +84,10 @@ class GameActionService
             $transition = $engine->apply($current->state, $actor->seat, $action, $random);
             $outcome = $engine->outcome($transition->state);
             $version = $current->version + 1;
+            $seats = $outcome === null ? $engine->seatsToAct($transition->state) : [];
+            $clock = $current->clock === null ? null : $time->afterMove($current->clock, $actor->seat, ! in_array($actor->seat, $seats, true), $nowMs);
 
-            DB::transaction(function () use ($room, $actor, $action, $random, $version, $clientActionId, $outcome) {
+            DB::transaction(function () use ($room, $actor, $action, $random, $version, $clientActionId, $outcome, $clock) {
                 $room->moves()->create([
                     'seq' => $version,
                     'participant_id' => $actor->id,
@@ -84,15 +96,14 @@ class GameActionService
                     'rng' => $random->draws() ?: null,
                     'client_action_id' => $clientActionId,
                 ]);
-                $room->forceFill(['state_version' => $version])->save();
+                $room->forceFill(['state_version' => $version, 'clock' => $clock])->save();
 
                 if ($outcome !== null) {
                     $this->finisher->finish($room, $outcome, 'completed');
                 }
             });
 
-            $seats = $outcome === null ? $engine->seatsToAct($transition->state) : [];
-            $state = new RoomState($version, $transition->state, $seats, $this->deadline($room, $seats));
+            $state = new RoomState($version, $transition->state, $seats, $time->deadline($clock, $seats, $nowMs), $clock);
             $this->store->put($room, $state);
 
             $this->afterChange($room, $state, $transition->events);
@@ -134,8 +145,13 @@ class GameActionService
     {
         $version = $current->version + 1;
         $winners = $room->participants->pluck('seat')->reject(fn (int $seat) => $seat === $loser->seat)->values()->all();
+        $outcome = new Outcome($winners, $type);
+        $engine = $this->states->engine($room);
+        if ($type === GameMove::TIMEOUT && $engine instanceof DecidesTimeouts) {
+            $outcome = $engine->timeoutOutcome($current->state, $loser->seat);
+        }
 
-        DB::transaction(function () use ($room, $loser, $type, $version, $clientActionId, $winners) {
+        DB::transaction(function () use ($room, $loser, $type, $version, $clientActionId, $outcome) {
             $room->moves()->create([
                 'seq' => $version,
                 'participant_id' => $loser->id,
@@ -146,25 +162,17 @@ class GameActionService
 
             $this->finisher->finish(
                 $room,
-                new Outcome($winners, $type),
+                $outcome,
                 $type,
-                $type === GameMove::TIMEOUT ? [$loser->seat] : [],
+                $type === GameMove::TIMEOUT && ! $outcome->isDraw() ? [$loser->seat] : [],
             );
         });
 
-        $state = new RoomState($version, $current->state, [], null);
+        $state = new RoomState($version, $current->state, [], null, $current->clock);
         $this->store->put($room, $state);
         $this->afterChange($room, $state, [['type' => $type, 'seat' => $loser->seat]]);
 
         return new ActionResult($version);
-    }
-
-    /**
-     * @param  list<int>  $seats
-     */
-    private function deadline(GameRoom $room, array $seats): ?int
-    {
-        return $seats === [] ? null : now()->addSeconds($room->turnSeconds())->getTimestamp();
     }
 
     private function guard(GameRoom $room, ?int $expectedVersion): RoomState

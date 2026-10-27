@@ -83,6 +83,12 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
   `current_version`) in bootstrap/app.php.
 - Live state lives in the `game` cache store (`RoomStateStore`, Redis DB 2, `array` in tests) and is
   rebuilt from `game_moves` by `RoomStates` (recorded RNG draws make replays exact). seq 0 = `start`.
+- Time control (`Lifecycle\TimeControl`): per-turn `turn_seconds` by default; modes with
+  `initial_seconds` (+ `increment_seconds`) get a chess clock stored on `game_rooms.clock`
+  ({remaining ms per seat, since ms}) and in `RoomState::$clock`; the deadline is the running seat's
+  bank. A move later than its bank + 1 s grace loses on time. The state API returns `clocks` (ms left
+  per seat at server_time). Engines may implement `Contracts\DecidesTimeouts` to turn a timeout into
+  another outcome (chess: draw when the opponent can't mate). Tests: `freezeSecond()` + `travel()`.
 - After commit: `RoomEvents` broadcasts `RoomUpdated` per human player on `private-user.{id}` (own view);
   `GameScheduler` queues `TurnTimeoutJob` / `BotTurnJob` on the `game` queue, each tied to a version.
 - Games (`app/Games/<Game>`): `Engine/` (pure rules + `GameEngine`), `Bot/` (`BotStrategy`), a

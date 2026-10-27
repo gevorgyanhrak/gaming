@@ -6,6 +6,7 @@ use App\Gameplay\Contracts\GameEngine;
 use App\Gameplay\Engine\Action;
 use App\Gameplay\Engine\GameSetup;
 use App\Gameplay\GameRegistry;
+use App\Gameplay\Lifecycle\TimeControl;
 use App\Gameplay\Random\ReplayRandom;
 use App\Models\GameMove;
 use App\Models\GameRoom;
@@ -62,7 +63,8 @@ class RoomStates
 
         $seats = $room->isActive() ? $engine->seatsToAct($state) : [];
 
-        // The original deadline isn't stored; a rebuilt room gives the seats to act a full turn.
-        return new RoomState($version, $state, $seats, $seats === [] ? null : now()->addSeconds($room->turnSeconds())->getTimestamp());
+        // Chess clocks are stored on the room. Per-turn deadlines aren't: a rebuilt room gives the
+        // seats to act a full turn.
+        return new RoomState($version, $state, $seats, TimeControl::for($room)->deadline($room->clock, $seats, now()->getTimestampMs()), $room->clock);
     }
 }

@@ -53,6 +53,13 @@ export function RoomPage() {
       .then(() => room.refetch())
       .then(() => state.refetch())
   const reasonKey = data.end_reason ? endReasonLabel[data.end_reason] : undefined
+  // Chess clocks: the running clock counts down with the deadline, the others stand still.
+  const clocks =
+    view?.clocks && data.status === 'active'
+      ? (view.clocks as number[]).map((ms, seat) =>
+          view.seats_to_act.includes(seat) ? secondsLeft : Math.ceil(ms / 1000),
+        )
+      : null
   const myResult =
     view?.seat != null ? data.participants.find((p) => p.seat === view.seat)?.result : null
 
@@ -67,7 +74,7 @@ export function RoomPage() {
         {data.status === 'active' && view ? (
           <div className="text-right" role="status">
             <p className="font-semibold">{myTurn ? t('room.yourTurn') : t('room.theirTurn')}</p>
-            {secondsLeft !== null ? (
+            {secondsLeft !== null && !clocks ? (
               <p className="text-sm text-muted">{t('room.secondsLeft', { count: secondsLeft })}</p>
             ) : null}
           </div>
@@ -99,7 +106,12 @@ export function RoomPage() {
       ) : null}
 
       {data.status !== 'waiting' ? (
-        <PlayerList room={data} mySeat={view?.seat ?? null} seatsToAct={view?.seats_to_act ?? []} />
+        <PlayerList
+          room={data}
+          mySeat={view?.seat ?? null}
+          seatsToAct={view?.seats_to_act ?? []}
+          clocks={clocks}
+        />
       ) : null}
 
       {data.status === 'finished' ? (

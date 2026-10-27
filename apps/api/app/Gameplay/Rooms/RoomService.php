@@ -8,6 +8,7 @@ use App\Enums\RoomType;
 use App\Gameplay\Actions\RoomEvents;
 use App\Gameplay\Engine\GameSetup;
 use App\Gameplay\Lifecycle\GameScheduler;
+use App\Gameplay\Lifecycle\TimeControl;
 use App\Gameplay\Random\RecordingRandom;
 use App\Models\BotProfile;
 use App\Models\GameMode;
@@ -94,13 +95,17 @@ class RoomService
         $random = new RecordingRandom;
         $initial = $engine->initialState(new GameSetup($room->seats, $room->options ?? []), $random);
 
-        DB::transaction(function () use ($room, $random) {
+        $time = TimeControl::for($room);
+        $nowMs = now()->getTimestampMs();
+        $clock = $time->start($room->seats, $nowMs);
+
+        DB::transaction(function () use ($room, $random, $clock) {
             $room->moves()->create(['seq' => 0, 'type' => GameMove::START, 'rng' => $random->draws() ?: null]);
-            $room->forceFill(['status' => RoomStatus::Active, 'started_at' => now(), 'state_version' => 0])->save();
+            $room->forceFill(['status' => RoomStatus::Active, 'started_at' => now(), 'state_version' => 0, 'clock' => $clock])->save();
         });
 
         $seats = $engine->seatsToAct($initial);
-        $state = new RoomState(0, $initial, $seats, $seats === [] ? null : now()->addSeconds($room->turnSeconds())->getTimestamp());
+        $state = new RoomState(0, $initial, $seats, $time->deadline($clock, $seats, $nowMs), $clock);
         $this->store->put($room, $state);
 
         DB::afterCommit(function () use ($room, $state) {

@@ -954,6 +954,8 @@ export interface operations {
                             seats_to_act: number[];
                             deadline: string | null;
                             server_time: string;
+                            /** @description Chess clocks: milliseconds left per seat at server_time (null with per-turn timers). */
+                            clocks: unknown[] | null;
                             view: {
                                 [key: string]: unknown;
                             };
@@ -1775,6 +1777,8 @@ export interface operations {
                             seats_to_act: number[];
                             deadline: string | null;
                             server_time: string;
+                            /** @description Chess clocks: milliseconds left per seat at server_time (null with per-turn timers). */
+                            clocks: unknown[] | null;
                             view: {
                                 [key: string]: unknown;
                             };
