@@ -18,7 +18,7 @@ class PublicProfileController extends Controller
             User::query()
                 ->where('username', $username)
                 ->where('status', UserStatus::Active)
-                ->with('profile')
+                ->with(['profile', 'gameStats.game'])
                 ->firstOrFail(),
         );
     }

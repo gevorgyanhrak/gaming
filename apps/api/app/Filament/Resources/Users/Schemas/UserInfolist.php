@@ -49,6 +49,22 @@ class UserInfolist
                         TextEntry::make('last_active_at')->label('Last active')->dateTime()->placeholder('Never'),
                         TextEntry::make('terms_accepted_at')->label('Terms accepted')->dateTime()->placeholder('—'),
                     ]),
+                Section::make('Games')
+                    ->columnSpanFull()
+                    ->schema([
+                        RepeatableEntry::make('gameStats')
+                            ->hiddenLabel()
+                            ->placeholder('No games played yet.')
+                            ->columns(6)
+                            ->schema([
+                                TextEntry::make('game.name')->label('Game'),
+                                TextEntry::make('played'),
+                                TextEntry::make('wins'),
+                                TextEntry::make('losses'),
+                                TextEntry::make('draws'),
+                                TextEntry::make('abandoned')->label('Abandoned'),
+                            ]),
+                    ]),
                 Section::make('Ban history')
                     ->columnSpanFull()
                     ->schema([

@@ -64,6 +64,7 @@ return [
         'not_your_turn' => 'It is not your turn.',
         'illegal_move' => 'This move is not allowed.',
         'not_in_progress' => 'This game is not in progress.',
+        'no_bot_offer' => 'There is no bot game to accept. You may have been matched with a player.',
         'out_of_date' => 'The game has moved on. Refresh and try again.',
     ],
 ];

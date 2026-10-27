@@ -9,13 +9,16 @@ use App\Http\Controllers\Api\V1\Auth\VerificationController;
 use App\Http\Controllers\Api\V1\ConfigController;
 use App\Http\Controllers\Api\V1\ContentPageController;
 use App\Http\Controllers\Api\V1\GameController;
+use App\Http\Controllers\Api\V1\MatchmakingController;
 use App\Http\Controllers\Api\V1\Me\AvatarController;
 use App\Http\Controllers\Api\V1\Me\ContactController;
+use App\Http\Controllers\Api\V1\Me\HistoryController;
 use App\Http\Controllers\Api\V1\Me\MeController;
 use App\Http\Controllers\Api\V1\Me\PasswordController;
 use App\Http\Controllers\Api\V1\Me\ProfileController;
 use App\Http\Controllers\Api\V1\Me\RoomsController;
 use App\Http\Controllers\Api\V1\Me\SettingsController;
+use App\Http\Controllers\Api\V1\OnlineController;
 use App\Http\Controllers\Api\V1\PublicProfileController;
 use App\Http\Controllers\Api\V1\Rooms\ActionController;
 use App\Http\Controllers\Api\V1\Rooms\RoomController;
@@ -72,6 +75,23 @@ Route::prefix('v1')->name('v1.')->group(function () {
                 Route::post('contact', [ContactController::class, 'store'])->middleware('throttle:verification')->name('contact.store');
                 Route::post('contact/verify', [ContactController::class, 'verify'])->middleware('throttle:verification')->name('contact.verify');
                 Route::get('rooms', [RoomsController::class, 'index'])->name('rooms.index');
+                Route::get('games', [HistoryController::class, 'games'])->name('games');
+                Route::get('stats', [HistoryController::class, 'stats'])->name('stats');
+            });
+
+        Route::get('stats/online', OnlineController::class)->middleware('throttle:lookups')->name('stats.online');
+
+        Route::middleware(['auth:sanctum', 'active', 'touch-last-active', 'throttle:game'])
+            ->prefix('matchmaking')
+            ->name('matchmaking.')
+            ->group(function () {
+                Route::get('/', [MatchmakingController::class, 'show'])->name('show');
+                Route::post('heartbeat', [MatchmakingController::class, 'heartbeat'])->name('heartbeat');
+                Route::delete('/', [MatchmakingController::class, 'destroy'])->name('destroy');
+                Route::middleware('verified-contact')->group(function () {
+                    Route::post('/', [MatchmakingController::class, 'store'])->name('store');
+                    Route::post('accept-bot', [MatchmakingController::class, 'acceptBot'])->name('accept-bot');
+                });
             });
 
         Route::middleware(['auth:sanctum', 'active', 'touch-last-active', 'throttle:game'])

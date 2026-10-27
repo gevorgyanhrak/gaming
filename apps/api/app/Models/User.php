@@ -103,6 +103,14 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     }
 
     /**
+     * @return HasMany<UserGameStat, $this>
+     */
+    public function gameStats(): HasMany
+    {
+        return $this->hasMany(UserGameStat::class)->orderByDesc('played');
+    }
+
+    /**
      * @return HasMany<VerificationCode, $this>
      */
     public function verificationCodes(): HasMany

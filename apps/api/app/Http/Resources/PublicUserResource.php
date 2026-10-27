@@ -31,6 +31,7 @@ class PublicUserResource extends JsonResource
             'created_at' => $this->created_at->toIso8601String(),
             /** @var string|null */
             'last_active_at' => $this->last_active_at?->toIso8601String(),
+            'stats' => GameStatResource::collection($this->whenLoaded('gameStats')),
         ];
     }
 }

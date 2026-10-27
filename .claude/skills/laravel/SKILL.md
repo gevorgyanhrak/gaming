@@ -73,8 +73,13 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
   moves or room status directly. Rooms are created/started by `Rooms\RoomService`; who may start what is
   `Rooms\PlayRules` (playable game, mode flags, concurrent-games limit) plus the `verified-contact`
   middleware. Resigning is accepted at any time; other actions only from `seatsToAct`.
-- HTTP: `/api/v1/rooms` (bot | private), `rooms/join`, `rooms/{room}` (+ `/state`, `/actions`, `/leave`),
-  `me/rooms`. Engine exceptions map to 422 (IllegalAction) and 409 (RoomNotActive, VersionConflict with
+- Matchmaking (`Matchmaking\Matchmaker`): tickets per mode in the game store, every queue change under
+  the mode's lock (no double matches); `app:matchmaking-sweep` (every 5 s) drops tickets without a
+  heartbeat for 45 s and applies the game's bot fallback (offer / auto / off, game timeout or the platform
+  default). Events `matchmaking.matched` / `matchmaking.bot_offered` on `private-user.{id}`.
+- HTTP: `/api/v1/matchmaking` (POST join, GET status, POST heartbeat, POST accept-bot, DELETE leave),
+  `/api/v1/rooms` (bot | private), `rooms/join`, `rooms/{room}` (+ `/state`, `/actions`, `/leave`),
+  `me/rooms`, `me/games` (history, paginated), `me/stats`, `stats/online`. Engine exceptions map to 422 (IllegalAction) and 409 (RoomNotActive, VersionConflict with
   `current_version`) in bootstrap/app.php.
 - Live state lives in the `game` cache store (`RoomStateStore`, Redis DB 2, `array` in tests) and is
   rebuilt from `game_moves` by `RoomStates` (recorded RNG draws make replays exact). seq 0 = `start`.

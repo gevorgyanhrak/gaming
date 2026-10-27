@@ -193,9 +193,11 @@ created for, so stale jobs do nothing).
 
 ## 8. Matchmaking and bots
 
-Tickets live in Redis sorted sets per mode. An atomic Lua script pairs compatible tickets
-(`queued → matched` exactly once); a sweeper fills multi-seat tables and handles bot fallback
-per game (`auto` / `offer` / `off`, with a configurable timeout). Bots are `bot_profiles` with
+Tickets live in the game store per mode; every queue change happens under that mode's lock, so a
+ticket is matched exactly once (a human match and a bot acceptance can't both win). Rooms are
+formed from the mode's `min_players` oldest tickets; filling larger tables (poker) comes with that
+game. `app:matchmaking-sweep` runs every 5 seconds: drops tickets without a heartbeat for 45 s and
+applies the bot fallback per game (`auto` / `offer` / `off`, game timeout or platform default). Bots are `bot_profiles` with
 per-game difficulty, act after a configurable human-like delay, and always carry a visible "Bot"
 badge.
 
