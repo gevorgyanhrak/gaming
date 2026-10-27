@@ -17,4 +17,5 @@ export interface BoardProps {
 export const boards: Partial<Record<string, LazyExoticComponent<ComponentType<BoardProps>>>> = {
   nardi: lazy(() => import('./nardi/NardiBoard')),
   checkers: lazy(() => import('./checkers/CheckersBoard')),
+  chess: lazy(() => import('./chess/ChessBoard')),
 }

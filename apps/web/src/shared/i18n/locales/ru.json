@@ -294,5 +294,35 @@
     "blackMan": "чёрная шашка",
     "blackKing": "чёрная дамка",
     "empty": "пусто"
+  },
+  "chess": {
+    "pickPiece": "Выберите фигуру.",
+    "pickTarget": "Выберите, куда пойти.",
+    "waiting": "Ход соперника.",
+    "check": "Шах!",
+    "youWhite": "Вы играете белыми",
+    "youBlack": "Вы играете чёрными",
+    "promoteTo": "Превратить в",
+    "moves": "Ходы",
+    "noMoves": "Ходов пока нет.",
+    "empty": "пусто",
+    "piece": {
+      "whiteKing": "белый король",
+      "whiteQueen": "белый ферзь",
+      "whiteRook": "белая ладья",
+      "whiteBishop": "белый слон",
+      "whiteKnight": "белый конь",
+      "whitePawn": "белая пешка",
+      "blackKing": "чёрный король",
+      "blackQueen": "чёрный ферзь",
+      "blackRook": "чёрная ладья",
+      "blackBishop": "чёрный слон",
+      "blackKnight": "чёрный конь",
+      "blackPawn": "чёрная пешка",
+      "queen": "Ферзь",
+      "rook": "Ладья",
+      "bishop": "Слон",
+      "knight": "Конь"
+    }
   }
 }

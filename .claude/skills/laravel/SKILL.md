@@ -103,6 +103,11 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
   (`capturing`). Draws: threefold repetition, 15 king-only moves each. `CheckersRules::turns()` gives
   whole turns for bots/perft; perft from the start is 7, 49, 302, 1469, 7482 (tested). `CheckersBot`:
   easy random, medium depth 2, hard depth 6 alpha-beta with forced-capture extension.
+  **Chess**: own move generator `ChessRules` (a8 = 0; FEN in/out of tests via `fromFen`; perft verified
+  against chessprogramming.org positions, Kiwipete to depth 3), SAN in `san()`, repetition `key()`.
+  `ChessEngine` applies checkmate/stalemate/insufficient material/threefold/fifty-move automatically and
+  implements `DecidesTimeouts`. Action `{type:'move', from, to, promotion?}`. `ChessBot`: alpha-beta +
+  quiescence + Michniewski PSTs; easy depth 1 (misses mates), medium 2, hard 3 (~1 s per move).
 - Test helper functions are global in Pest: prefix them per game (`draughtsSteps`, not `play`).
 - Engine tests: unit tests on the engine with `ReplayRandom` for fixed dice, a seeded fuzz of whole
   games with invariants (checker conservation), bots legal at every level and medium beats random; one

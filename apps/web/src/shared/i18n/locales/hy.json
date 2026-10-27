@@ -286,5 +286,35 @@
     "blackMan": "սև քար",
     "blackKing": "սև դամկա",
     "empty": "դատարկ"
+  },
+  "chess": {
+    "pickPiece": "Ընտրեք խաղաքարը։",
+    "pickTarget": "Ընտրեք, թե ուր գնալ։",
+    "waiting": "Մրցակցի քայլն է։",
+    "check": "Շախ։",
+    "youWhite": "Դուք խաղում եք սպիտակներով",
+    "youBlack": "Դուք խաղում եք սևերով",
+    "promoteTo": "Դարձնել",
+    "moves": "Քայլեր",
+    "noMoves": "Դեռ քայլեր չկան։",
+    "empty": "դատարկ",
+    "piece": {
+      "whiteKing": "սպիտակ արքա",
+      "whiteQueen": "սպիտակ թագուհի",
+      "whiteRook": "սպիտակ նավակ",
+      "whiteBishop": "սպիտակ փիղ",
+      "whiteKnight": "սպիտակ ձի",
+      "whitePawn": "սպիտակ զինվոր",
+      "blackKing": "սև արքա",
+      "blackQueen": "սև թագուհի",
+      "blackRook": "սև նավակ",
+      "blackBishop": "սև փիղ",
+      "blackKnight": "սև ձի",
+      "blackPawn": "սև զինվոր",
+      "queen": "Թագուհի",
+      "rook": "Նավակ",
+      "bishop": "Փիղ",
+      "knight": "Ձի"
+    }
   }
 }

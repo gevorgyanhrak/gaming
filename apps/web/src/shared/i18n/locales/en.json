@@ -286,5 +286,35 @@
     "blackMan": "black man",
     "blackKing": "black king",
     "empty": "empty"
+  },
+  "chess": {
+    "pickPiece": "Pick a piece to move.",
+    "pickTarget": "Pick where it goes.",
+    "waiting": "Waiting for the other player.",
+    "check": "Check!",
+    "youWhite": "You play white",
+    "youBlack": "You play black",
+    "promoteTo": "Promote to",
+    "moves": "Moves",
+    "noMoves": "No moves yet.",
+    "empty": "empty",
+    "piece": {
+      "whiteKing": "white king",
+      "whiteQueen": "white queen",
+      "whiteRook": "white rook",
+      "whiteBishop": "white bishop",
+      "whiteKnight": "white knight",
+      "whitePawn": "white pawn",
+      "blackKing": "black king",
+      "blackQueen": "black queen",
+      "blackRook": "black rook",
+      "blackBishop": "black bishop",
+      "blackKnight": "black knight",
+      "blackPawn": "black pawn",
+      "queen": "Queen",
+      "rook": "Rook",
+      "bishop": "Bishop",
+      "knight": "Knight"
+    }
   }
 }
