@@ -8,6 +8,7 @@ use App\Enums\RoomType;
 use App\Gameplay\Actions\GameActionService;
 use App\Gameplay\Bots\BotSelector;
 use App\Gameplay\Engine\Action;
+use App\Gameplay\Lifecycle\RoomPresence;
 use App\Gameplay\Rooms\PlayRules;
 use App\Gameplay\Rooms\RoomPresenter;
 use App\Gameplay\Rooms\RoomService;
@@ -114,6 +115,23 @@ class RoomController extends Controller
         }
 
         return response()->json(['data' => $presenter->stateFor($room, $states->current($room), $room->participantFor($user))]);
+    }
+
+    /**
+     * "Still here": the game page calls this every few seconds. Players who stop calling for longer than
+     * the platform allows lose the game (see RoomPresence).
+     */
+    public function presence(Request $request, GameRoom $room, RoomPresence $presence): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $participant = $room->load('participants')->participantFor($user);
+
+        if ($participant !== null && $participant->is_active && $room->isActive()) {
+            $presence->seen($room, $participant);
+        }
+
+        return response()->json(null, 204);
     }
 
     /**

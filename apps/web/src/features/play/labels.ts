@@ -25,9 +25,13 @@ export const statusLabel = {
 
 export const endReasonLabel: Record<
   string,
-  'room.endReason.completed' | 'room.endReason.resign' | 'room.endReason.timeout'
+  | 'room.endReason.completed'
+  | 'room.endReason.resign'
+  | 'room.endReason.timeout'
+  | 'room.endReason.abandon'
 > = {
   completed: 'room.endReason.completed',
   resign: 'room.endReason.resign',
   timeout: 'room.endReason.timeout',
+  abandon: 'room.endReason.abandon',
 }

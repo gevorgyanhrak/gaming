@@ -3,14 +3,14 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { Card } from '@/shared/ui/Card'
 import { Skeleton } from '@/shared/ui/Skeleton'
-import { fetchMyRooms, fetchMyStats } from '../api'
+import { fetchMyRooms, fetchMyStats, myRoomsKey } from '../api'
 import { RoomSummary } from './RoomSummary'
 
 /** Dashboard sections: games to resume and per-game statistics. Hidden while there is nothing to show. */
 export function DashboardGames() {
   const { t } = useTranslation()
   const rooms = useQuery({
-    queryKey: ['me', 'rooms'],
+    queryKey: myRoomsKey,
     queryFn: ({ signal }) => fetchMyRooms(signal),
   })
   const stats = useQuery({

@@ -58,12 +58,12 @@ class RoomStates
             if ($move->participant === null) {
                 continue;
             }
-            if ($move->type === GameMove::RESIGN && ($move->payload['departed'] ?? false) && $engine instanceof HandlesDepartures) {
+            if (in_array($move->type, [GameMove::RESIGN, GameMove::ABANDON], true) && ($move->payload['departed'] ?? false) && $engine instanceof HandlesDepartures) {
                 $state = $engine->depart($state, $move->participant->seat, new ReplayRandom($move->rng ?? []))->state;
 
                 continue;
             }
-            if (in_array($move->type, [GameMove::RESIGN, GameMove::TIMEOUT], true)) {
+            if (in_array($move->type, [GameMove::RESIGN, GameMove::TIMEOUT, GameMove::ABANDON], true)) {
                 continue;
             }
 

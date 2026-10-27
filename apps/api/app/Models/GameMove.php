@@ -31,6 +31,9 @@ class GameMove extends Model
 
     public const TIMEOUT = 'timeout';
 
+    /** The player left the game page and didn't come back in time. */
+    public const ABANDON = 'abandon';
+
     /**
      * @return array<string, string>
      */

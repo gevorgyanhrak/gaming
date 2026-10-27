@@ -88,7 +88,8 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   `state.legal_actions` — never rules in the UI. Boards live in `games/<slug>/<Game>Board.tsx` (default
   export) with i18n keys under `<slug>.*`; Nardi's board (pick a source, then one of its legal targets;
   board turned for seat 1) is the reference. Shared card UI: `games/cards` (`PlayingCard`, `useCardLabel`).
-  Boards also receive `players` (names by seat). Range actions (poker raise {min,max}) are sent as
+  Boards also receive `players` (names by seat). `ActiveGamesBar` (in PublicLayout) lists the games
+  you're in with a return link and a close (leave) button; `usePresence` on RoomPage reports presence. Range actions (poker raise {min,max}) are sent as
   {type, amount}.
 - When generic skill advice conflicts with the established conventions of this repo, follow the repo.
 

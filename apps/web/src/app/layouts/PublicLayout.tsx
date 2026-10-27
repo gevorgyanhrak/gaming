@@ -4,6 +4,7 @@ import { updateSettings } from '@/features/account/api'
 import { UserMenu } from '@/features/auth/components/UserMenu'
 import { VerificationBanner } from '@/features/auth/components/VerificationBanner'
 import { useCurrentUser } from '@/features/auth/hooks'
+import { ActiveGamesBar } from '@/features/play/components/ActiveGamesBar'
 import { MaintenanceScreen } from '@/features/platform/MaintenanceScreen'
 import { useFavicon } from '@/features/platform/useFavicon'
 import { usePublicConfig } from '@/features/platform/usePublicConfig'
@@ -69,6 +70,7 @@ export function PublicLayout() {
       </header>
 
       {user.data ? <VerificationBanner user={user.data} /> : null}
+      {user.data && !inMaintenance ? <ActiveGamesBar /> : null}
 
       <main className="flex-1">
         {inMaintenance ? (

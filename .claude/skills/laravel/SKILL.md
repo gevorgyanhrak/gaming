@@ -77,6 +77,11 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
   the mode's lock (no double matches); `app:matchmaking-sweep` (every 5 s) drops tickets without a
   heartbeat for 45 s and applies the game's bot fallback (offer / auto / off, game timeout or the platform
   default). Events `matchmaking.matched` / `matchmaking.bot_offered` on `private-user.{id}`.
+- Presence (`Lifecycle\RoomPresence`): the room page POSTs `/rooms/{room}/presence` every 5 s; the
+  scheduler's `app:abandonment-sweep` (every 5 s) ends the game for a player unseen for the admin setting
+  `matchmaking.abandon_after_seconds` (default 15, 0 = off; public in /config as play.abandon_after_seconds)
+  via `GameActionService::abandon` — move type `abandon`, result Abandoned, end_reason `abandon`; at
+  bigger tables with other people the leaver departs instead. Tests: `freezeSecond()` + `travel()` + `sweep()`.
 - Bigger tables (min_players < max_players): a full table starts at once; otherwise everyone waiting sits
   down once the oldest ticket waited the mode's `table_wait_seconds` (default `Matchmaker::TABLE_WAIT_SECONDS`).
   Bot fallback seats `BOT_TABLE_SIZE` there; `BotSelector::pickMany` reuses bots when there are too few.

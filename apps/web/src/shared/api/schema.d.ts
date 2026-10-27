@@ -475,6 +475,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/rooms/{room}/presence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * "Still here": the game page calls this every few seconds. Players who stop calling for longer than
+         *     the platform allows lose the game (see RoomPresence)
+         */
+        post: operations["v1.rooms.presence"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/rooms/{room}/leave": {
         parameters: {
             query?: never;
@@ -1060,6 +1080,10 @@ export interface operations {
                                 require_email_verification: boolean;
                                 require_phone_verification: boolean;
                                 requires_terms: boolean;
+                            };
+                            play: {
+                                /** @description Seconds away from a running game before it is lost; 0: never. */
+                                abandon_after_seconds: number;
                             };
                             pages: {
                                 slug: string;
@@ -1804,6 +1828,30 @@ export interface operations {
                         data: null;
                     };
                 };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "v1.rooms.presence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The room public id */
+                room: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             401: components["responses"]["AuthenticationException"];
             403: components["responses"]["AuthorizationException"];

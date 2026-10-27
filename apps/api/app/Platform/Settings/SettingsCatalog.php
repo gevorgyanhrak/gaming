@@ -46,6 +46,7 @@ final class SettingsCatalog
 
             // Matchmaking (read by the gameplay infrastructure from Phase 5)
             new SettingDefinition('matchmaking.default_bot_timeout_seconds', SettingType::Integer, 30, rules: ['required', 'integer', 'min:5', 'max:600']),
+            new SettingDefinition('matchmaking.abandon_after_seconds', SettingType::Integer, 15, public: true, rules: ['required', 'integer', 'min:0', 'max:600']),
             new SettingDefinition('matchmaking.max_concurrent_games', SettingType::Integer, 1, rules: ['required', 'integer', 'min:1', 'max:10']),
 
             // Security

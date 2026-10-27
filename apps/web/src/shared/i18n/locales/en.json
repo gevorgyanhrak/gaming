@@ -245,7 +245,8 @@
     "endReason": {
       "completed": "The game was played to the end.",
       "resign": "A player resigned.",
-      "timeout": "A player ran out of time."
+      "timeout": "A player ran out of time.",
+      "abandon": "A player left the game."
     },
     "status": {
       "waiting": "Waiting",
@@ -405,5 +406,17 @@
       "fourOfAKind": "four of a kind",
       "straightFlush": "a straight flush"
     }
+  },
+  "activeGame": {
+    "playing": "You are in a game of {{game}}.",
+    "waiting": "Your {{game}} room is waiting for players.",
+    "return": "Return to the game",
+    "close": "Leave the {{game}} game",
+    "confirmLeave": "Leave? The game counts as lost.",
+    "confirmClose": "Close the room?",
+    "leave": "Leave",
+    "keep": "Keep playing",
+    "awayLimit_one": "Come back within {{count}} second, or the game is lost.",
+    "awayLimit_other": "Come back within {{count}} seconds, or the game is lost."
   }
 }

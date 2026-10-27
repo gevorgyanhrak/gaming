@@ -20,6 +20,7 @@ export const configFixture: PublicConfig = {
     require_phone_verification: true,
     requires_terms: false,
   },
+  play: { abandon_after_seconds: 15 },
   pages: [],
 }
 
@@ -78,8 +79,9 @@ export const handlers = [
   // Visitors are guests unless a test uses signedInAs().
   http.get('*/api/v1/me', unauthenticated),
   http.get('*/sanctum/csrf-cookie', () => new HttpResponse(null, { status: 204 })),
-  http.get('*/api/v1/me/rooms', () => HttpResponse.json({ data: [] })),
   http.get('*/api/v1/me/stats', () => HttpResponse.json({ data: [] })),
+  http.get('*/api/v1/me/rooms', () => HttpResponse.json({ data: [] })),
+  http.post('*/api/v1/rooms/:id/presence', () => new HttpResponse(null, { status: 204 })),
   http.get('*/api/v1/matchmaking', () =>
     HttpResponse.json({ data: { ticket: null, room: null, waiting: null } }),
   ),

@@ -23,6 +23,8 @@ export type GameAction = { type: string } & Record<string, unknown>
 export type BotDifficulty = 'easy' | 'medium' | 'hard'
 
 export const matchmakingKey = ['matchmaking'] as const
+/** Games the player is currently in (GET /me/rooms). */
+export const myRoomsKey = ['me', 'rooms'] as const
 
 type RoomResponse = { data: Room }
 const unwrap = <T>(r: { data: T }) => r.data
@@ -64,6 +66,10 @@ export const submitAction = (id: string, action: GameAction, expectedVersion: nu
     method: 'POST',
     body: { client_action_id: crypto.randomUUID(), expected_version: expectedVersion, action },
   }).then(unwrap)
+
+/** "Still on the game page" (see usePresence). */
+export const sendPresence = (id: string) =>
+  apiRequest<null>(`/api/v1/rooms/${encodeURIComponent(id)}/presence`, { method: 'POST' })
 
 export const leaveRoom = (id: string) =>
   apiRequest<{ data: Room }>(`/api/v1/rooms/${encodeURIComponent(id)}/leave`, {

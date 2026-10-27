@@ -8,6 +8,7 @@ use App\Enums\RoomType;
 use App\Gameplay\Actions\RoomEvents;
 use App\Gameplay\Engine\GameSetup;
 use App\Gameplay\Lifecycle\GameScheduler;
+use App\Gameplay\Lifecycle\RoomPresence;
 use App\Gameplay\Lifecycle\TimeControl;
 use App\Gameplay\Random\RecordingRandom;
 use App\Models\BotProfile;
@@ -107,6 +108,8 @@ class RoomService
         $seats = $engine->seatsToAct($initial);
         $state = new RoomState(0, $initial, $seats, $time->deadline($clock, $seats, $nowMs), $clock);
         $this->store->put($room, $state);
+
+        app(RoomPresence::class)->started($room);
 
         DB::afterCommit(function () use ($room, $state) {
             $this->events->changed($room, $state, [['type' => 'started']]);

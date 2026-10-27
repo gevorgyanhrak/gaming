@@ -60,6 +60,21 @@ describe('Room', () => {
     expect(body.client_action_id).toMatch(/^[0-9a-f-]{36}$/)
   })
 
+  it('reports that the player is on the game page', async () => {
+    serveRoom()
+    let reports = 0
+    server.use(
+      http.post('*/api/v1/rooms/room-1/presence', () => {
+        reports++
+        return new HttpResponse(null, { status: 204 })
+      }),
+    )
+    renderRoute('/rooms/room-1')
+
+    await screen.findByText('Your turn')
+    await vi.waitFor(() => expect(reports).toBeGreaterThan(0))
+  })
+
   it('shows chess clocks: the running one counts down to the deadline', async () => {
     serveRoom(
       roomFixture(),

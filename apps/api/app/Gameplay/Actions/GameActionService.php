@@ -133,6 +133,26 @@ class GameActionService
     }
 
     /**
+     * The player left the game: they lose, or at a bigger table that goes on they are taken out.
+     */
+    public function abandon(GameRoom $room, GameParticipant $participant): void
+    {
+        $this->store->locked($room, function () use ($room, $participant) {
+            $room->refresh()->load(['game', 'participants']);
+            $leaver = $room->participants->firstWhere('id', $participant->id);
+
+            if (! $room->isActive() || $leaver === null || ! $leaver->is_active) {
+                return;
+            }
+
+            $current = $this->states->current($room);
+            $this->othersPlayOn($room, $leaver)
+                ? $this->depart($room, $current, $leaver, null, GameMove::ABANDON)
+                : $this->end($room, $current, $leaver, GameMove::ABANDON, null);
+        });
+    }
+
+    /**
      * Apply a legal action and record it.
      */
     private function play(GameRoom $room, RoomState $current, GameParticipant $actor, Action $action, ?string $clientActionId): ActionResult
@@ -157,7 +177,7 @@ class GameActionService
     /**
      * The player leaves a game that goes on without them: they lose, and the engine takes them out.
      */
-    private function depart(GameRoom $room, RoomState $current, GameParticipant $leaver, ?string $clientActionId): ActionResult
+    private function depart(GameRoom $room, RoomState $current, GameParticipant $leaver, ?string $clientActionId, string $type = GameMove::RESIGN): ActionResult
     {
         $engine = $this->states->engine($room);
         assert($engine instanceof HandlesDepartures);
@@ -165,12 +185,12 @@ class GameActionService
         $transition = $engine->depart($current->state, $leaver->seat, $random);
 
         return $this->record($room, $current, $leaver, $transition, [
-            'type' => GameMove::RESIGN,
-            'payload' => ['type' => GameMove::RESIGN, 'departed' => true],
+            'type' => $type,
+            'payload' => ['type' => $type, 'departed' => true],
             'rng' => $random->draws() ?: null,
             'client_action_id' => $clientActionId,
-        ], fn () => $current->clock, function () use ($room, $leaver) {
-            $this->finisher->finishParticipant($leaver, $room->game_id, ParticipantResult::Loss);
+        ], fn () => $current->clock, function () use ($room, $leaver, $type) {
+            $this->finisher->finishParticipant($leaver, $room->game_id, $type === GameMove::ABANDON ? ParticipantResult::Abandoned : ParticipantResult::Loss);
         });
     }
 
@@ -244,7 +264,7 @@ class GameActionService
                 $room,
                 $outcome,
                 $type,
-                $type === GameMove::TIMEOUT && ! $outcome->isDraw() ? [$loser->seat] : [],
+                in_array($type, [GameMove::TIMEOUT, GameMove::ABANDON], true) && ! $outcome->isDraw() ? [$loser->seat] : [],
             );
         });
 

@@ -6,6 +6,7 @@ import { leaveRoom, type ParticipantResult } from '@/features/play/api'
 import { endReasonLabel, outcomeLabel } from '@/features/play/labels'
 import { PlayerList } from '@/features/play/components/PlayerList'
 import { useCountdown } from '@/features/play/useCountdown'
+import { usePresence } from '@/features/play/usePresence'
 import { useRoom } from '@/features/play/useRoom'
 import { boards } from '@/games/registry'
 import { isApiError } from '@/shared/api/errors'
@@ -22,6 +23,8 @@ export function RoomPage() {
   const { room, state, act } = useRoom(id)
   const [confirmResign, setConfirmResign] = useState(false)
   const secondsLeft = useCountdown(state.data?.deadline, state.data?.server_time)
+  // Report presence while playing: leaving the page for too long loses the game.
+  usePresence(id, room.data?.status === 'active' && state.data?.seat != null && !state.data?.result)
 
   if (room.isPending) {
     return (

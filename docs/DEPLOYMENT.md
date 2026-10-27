@@ -16,7 +16,8 @@ decisions are in `ARCHITECTURE.md` and `adr/`.
 | Redis A | `maxmemory-policy noeviction`, AOF on: queues, Horizon, locks, matchmaking, live game state | one |
 | Redis B | `maxmemory-policy allkeys-lru`: cache, sessions, rate limits | one |
 
-The scheduler sweeps matchmaking every 5 seconds, lifts expired bans every minute and prunes old
+The scheduler sweeps matchmaking and ends games for players who left their game page (both every 5
+seconds), lifts expired bans every minute and prunes old
 verification codes daily (`routes/console.php`). Running two schedulers double-matches nothing (every
 queue change is locked) but wastes work; running none stops matchmaking.
 

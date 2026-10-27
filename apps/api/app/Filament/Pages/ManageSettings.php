@@ -101,10 +101,13 @@ class ManageSettings extends Page
                         ->multiple()->searchable()->options($countries)
                         ->helperText('Empty allows every country. Limiting this reduces SMS cost and fraud.'),
                 ]),
-                Section::make('Matchmaking')->columns(2)->description('Takes effect when matchmaking launches.')->schema([
+                Section::make('Matchmaking and play')->columns(2)->schema([
                     TextInput::make('matchmaking.default_bot_timeout_seconds')->label('Offer a bot after (seconds)')
                         ->numeric()->integer()->required()->minValue(5)->maxValue(600)
                         ->helperText('Default for games without their own timeout.'),
+                    TextInput::make('matchmaking.abandon_after_seconds')->label('A player who leaves the game loses after (seconds)')
+                        ->numeric()->integer()->required()->minValue(0)->maxValue(600)
+                        ->helperText('Away from the game page this long ends the game for them. 0 turns it off.'),
                     TextInput::make('matchmaking.max_concurrent_games')->label('Games a player can play at once')
                         ->numeric()->integer()->required()->minValue(1)->maxValue(10),
                 ]),

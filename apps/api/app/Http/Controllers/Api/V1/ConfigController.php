@@ -46,6 +46,10 @@ class ConfigController extends Controller
                     /** @var bool */
                     'requires_terms' => ContentPage::query()->published()->where('slug', ContentPage::TERMS)->exists(),
                 ],
+                'play' => [
+                    /** @var int Seconds away from a running game before it is lost; 0: never. */
+                    'abandon_after_seconds' => $settings->get('matchmaking.abandon_after_seconds'),
+                ],
                 /** @var list<array{slug: string, title: string}> */
                 'pages' => ContentPage::query()->published()->orderBy('id')->get()
                     ->map(fn (ContentPage $page) => ['slug' => $page->slug, 'title' => $page->title])
