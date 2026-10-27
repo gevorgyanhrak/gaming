@@ -41,7 +41,9 @@ return Application::configure(basePath: dirname(__DIR__))
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
 
-        // Gameplay outcomes the client handles: refetch state on 409, show the message on 422.
+        // Gameplay outcomes the client handles: refetch state on 409, show the message on 422. They are
+        // part of normal play (a late click, a stale tab), not errors: never report them.
+        $exceptions->dontReport([IllegalAction::class, RoomNotActive::class, VersionConflict::class]);
         $exceptions->render(fn (IllegalAction $e) => response()->json(['message' => $e->getMessage()], 422));
         $exceptions->render(fn (RoomNotActive $e) => response()->json(['message' => $e->getMessage()], 409));
         $exceptions->render(fn (VersionConflict $e) => response()->json([

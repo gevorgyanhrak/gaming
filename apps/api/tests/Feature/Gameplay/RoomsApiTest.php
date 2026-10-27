@@ -7,6 +7,7 @@ use App\Models\GameMode;
 use App\Models\GameRoom;
 use App\Models\User;
 use App\Platform\Settings\Settings;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
@@ -111,6 +112,7 @@ it('opens a private room that starts when a friend joins with the code', functio
 });
 
 it('plays moves over HTTP with version checks', function () {
+    Exceptions::fake();
     $mode = ticTacToe();
     [$alice, $bob] = User::factory()->count(2)->create();
     $this->actingAs($alice);
@@ -132,7 +134,26 @@ it('plays moves over HTTP with version checks', function () {
     $move($second, 0, 0)->assertConflict()->assertJsonPath('current_version', 1);
 
     expect($room->moves()->count())->toBe(2);
+    // Out-of-turn, illegal and stale moves are normal play, not errors to report.
+    Exceptions::assertNothingReported();
 });
+
+it('only accepts small, flat action objects', function (array $action) {
+    $mode = ticTacToe();
+    [$alice, $bob] = User::factory()->count(2)->create();
+    $code = $this->actingAs($alice)->postJson('/api/v1/rooms', ['game_mode_id' => $mode->id, 'type' => 'private'])->json('data.invite_code');
+    $id = $this->actingAs($bob)->postJson('/api/v1/rooms/join', ['invite_code' => $code])->json('data.id');
+
+    $this->postJson("/api/v1/rooms/{$id}/actions", [
+        'client_action_id' => (string) Str::uuid(),
+        'expected_version' => 0,
+        'action' => $action,
+    ])->assertUnprocessable()->assertJsonValidationErrors('action');
+})->with([
+    'nested' => [['type' => 'place', 'cell' => [4]]],
+    'long text' => [['type' => 'place', 'cell' => str_repeat('x', 65)]],
+    'too many fields' => [['type' => 'place', 'a' => 1, 'b' => 2, 'c' => 3, 'd' => 4, 'e' => 5, 'f' => 6, 'g' => 7, 'h' => 8]],
+]);
 
 it('hides rooms from players who are not in them', function () {
     $mode = ticTacToe();

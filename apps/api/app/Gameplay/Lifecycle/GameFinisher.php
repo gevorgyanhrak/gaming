@@ -9,6 +9,7 @@ use App\Models\GameParticipant;
 use App\Models\GameRoom;
 use App\Models\UserGameStat;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Ends a room: results per seat, room status, and players' statistics. Called inside the transaction
@@ -51,6 +52,14 @@ class GameFinisher
             'end_reason' => $endReason,
             'finished_at' => $finishedAt,
         ])->save();
+
+        Log::info('Game finished.', [
+            'room' => $room->public_id,
+            'game_id' => $room->game_id,
+            'end_reason' => $endReason,
+            'outcome' => $outcome->reason,
+            'seconds' => $room->started_at?->diffInSeconds($finishedAt),
+        ]);
     }
 
     /**
