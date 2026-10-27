@@ -68,7 +68,7 @@ it('seeds the five launch games without overwriting admin changes', function () 
 
     expect(Game::query()->ordered()->pluck('slug')->all())
         ->toBe(['nardi', 'chess', 'checkers', 'durak', 'poker'])
-        ->and(Game::query()->where('is_enabled', true)->exists())->toBeFalse();
+        ->and(Game::query()->where('is_enabled', true)->pluck('slug')->all())->toBe(['nardi']);
 
     Game::query()->where('slug', 'chess')->firstOrFail()
         ->setTranslation('description', 'en', 'Edited by an admin')

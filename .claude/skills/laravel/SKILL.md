@@ -85,6 +85,16 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
   rebuilt from `game_moves` by `RoomStates` (recorded RNG draws make replays exact). seq 0 = `start`.
 - After commit: `RoomEvents` broadcasts `RoomUpdated` per human player on `private-user.{id}` (own view);
   `GameScheduler` queues `TurnTimeoutJob` / `BotTurnJob` on the `game` queue, each tied to a version.
+- Games (`app/Games/<Game>`): `Engine/` (pure rules + `GameEngine`), `Bot/` (`BotStrategy`), a
+  `<Game>Definition` and a `<Game>ServiceProvider` registered in bootstrap/providers.php. The seeder creates
+  a game enabled only when its engine is registered. Pattern to copy: **Nardi** — `NardiRules` (pure
+  static functions on the state array), `NardiEngine` (turn flow: opening roll, auto-roll, auto-pass,
+  must-play-maximum / higher-die rule via `maxPlayable`), `NardiBot` (easy random, medium plan
+  evaluation, hard 21-roll lookahead). One action = one checker step `{type:'move', from, to, die}`.
+- Engine tests: unit tests on the engine with `ReplayRandom` for fixed dice, a seeded fuzz of whole
+  games with invariants (checker conservation), bots legal at every level and medium beats random; one
+  feature test plays a full bot game through the API (`withoutMiddleware(ThrottleRequests::class)`) and
+  checks `RoomStates` rebuild equals the live state.
 - Tests: `ticTacToe()` (tests/Pest.php) registers the test-only engine in tests/Fixtures and returns a
   playable mode. `Queue::fake()` and run jobs explicitly (`app()->call([$job, 'handle'])`).
 

@@ -256,5 +256,21 @@
     "previous": "Նախորդ",
     "next": "Հաջորդ",
     "page": "Էջ {{page}}՝ {{total}}-ից"
+  },
+  "nardi": {
+    "dice": "Զառեր",
+    "diceLeft": "Մնացած քայլեր՝ {{count}}",
+    "pickChecker": "Ընտրեք քարը։",
+    "pickTarget": "Ընտրեք, թե ուր տեղափոխել։",
+    "waiting": "Մրցակցի քայլն է։",
+    "point_one": "Կետ {{point}}՝ {{count}} քար, {{owner}}",
+    "point_other": "Կետ {{point}}՝ {{count}} քար, {{owner}}",
+    "empty": "դատարկ",
+    "mine": "ձերը",
+    "theirs": "մրցակցինը",
+    "barMine": "Ձեր բարը",
+    "barTheirs": "Մրցակցի բարը",
+    "offMine": "Դուրս",
+    "offTheirs": "Մրցակցինը"
   }
 }

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Gameplay\GameRegistry;
 use App\Models\Game;
 use Illuminate\Database\Seeder;
 
@@ -9,8 +10,8 @@ use Illuminate\Database\Seeder;
  * Seeds the five launch games.
  *
  * Idempotent and non-destructive: existing games are left untouched, so re-running
- * the seeder never overwrites changes made by administrators. Games ship hidden from
- * play (is_enabled = false) until their engine is implemented. Descriptions and rules
+ * the seeder never overwrites changes made by administrators. A game is created playable only
+ * if its engine is registered. Descriptions and rules
  * are seeded in English; other locales fall back to English until translated in the admin panel.
  */
 class GameSeeder extends Seeder
@@ -18,9 +19,10 @@ class GameSeeder extends Seeder
     public function run(): void
     {
         foreach ($this->games() as $index => $game) {
+            // New games start playable only if their engine exists; afterwards admins decide.
             Game::query()->firstOrCreate(
                 ['slug' => $game['slug']],
-                [...$game, 'sort_order' => ($index + 1) * 10, 'is_enabled' => false, 'is_visible' => true],
+                [...$game, 'sort_order' => ($index + 1) * 10, 'is_enabled' => app(GameRegistry::class)->has($game['slug']), 'is_visible' => true],
             );
         }
     }

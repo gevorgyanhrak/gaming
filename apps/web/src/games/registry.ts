@@ -1,4 +1,4 @@
-import type { ComponentType, LazyExoticComponent } from 'react'
+import { lazy, type ComponentType, type LazyExoticComponent } from 'react'
 import type { GameAction, RoomState } from '@/features/play/api'
 
 /**
@@ -12,7 +12,8 @@ export interface BoardProps {
 }
 
 /**
- * Board component per game slug, loaded on demand. Games add themselves here when their UI ships
- * (Nardi in Phase 6).
+ * Board component per game slug, loaded on demand.
  */
-export const boards: Partial<Record<string, LazyExoticComponent<ComponentType<BoardProps>>>> = {}
+export const boards: Partial<Record<string, LazyExoticComponent<ComponentType<BoardProps>>>> = {
+  nardi: lazy(() => import('./nardi/NardiBoard')),
+}

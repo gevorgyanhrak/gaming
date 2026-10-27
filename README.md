@@ -19,7 +19,7 @@ Architecture and decisions: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [
 | Registration and login by email or phone, verification codes, password reset, profiles, avatars, settings, roles | ✅ Done (Phase 3). The SMS provider is not chosen yet (see below). |
 | Admin panel: users and moderation, games and modes, bots, settings, content pages, audit log, dashboard | ✅ Done (Phase 4). Game statistics join the dashboard with gameplay. |
 | Gameplay infrastructure: rooms, matchmaking with bot fallback, bots, turn timers, real-time updates, history and statistics | ✅ Done (Phase 5), tested with a test-only engine. Real games plug in from Phase 6. |
-| Playable games | ⏳ Nardi in Phase 6, then the others. All games are listed as "Coming soon" until their engine exists. |
+| Playable games | ✅ Nardi (short nardi, bots easy/medium/hard). ⏳ Checkers, Chess, Durak and Poker in Phase 7; listed as "Coming soon" until their engine exists. |
 
 ## Prerequisites
 

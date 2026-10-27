@@ -256,5 +256,21 @@
     "previous": "Previous",
     "next": "Next",
     "page": "Page {{page}} of {{total}}"
+  },
+  "nardi": {
+    "dice": "Dice",
+    "diceLeft": "{{count}} dice left to play",
+    "pickChecker": "Pick a checker to move.",
+    "pickTarget": "Pick where it goes.",
+    "waiting": "Waiting for the other player.",
+    "point_one": "Point {{point}}: {{count}} checker, {{owner}}",
+    "point_other": "Point {{point}}: {{count}} checkers, {{owner}}",
+    "empty": "empty",
+    "mine": "yours",
+    "theirs": "opponent's",
+    "barMine": "Your bar",
+    "barTheirs": "Their bar",
+    "offMine": "Off",
+    "offTheirs": "Their off"
   }
 }

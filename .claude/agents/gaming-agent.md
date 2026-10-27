@@ -27,7 +27,7 @@ apps/api/   Laravel 13, PHP 8.5 (runs only in Docker)
   app/Platform/{Auth,Sms,Settings,Audit,Moderation}   cross-cutting services
   app/Filament                Filament 5 admin panel (/admin, "admin" guard)
   app/Gameplay/…              shared game infrastructure (Phase 5) — knows no game rules
-  app/Games/<Game>/{Engine,Bot} pure-PHP engines (Phase 6+)
+  app/Games/<Game>/{Engine,Bot} pure-PHP engines + Definition/ServiceProvider (Nardi done)
   app/Models, app/Enums, database/{migrations,factories,seeders}, lang/{en,ru,hy}, tests/Feature
 apps/web/   React 19, TypeScript 6 strict, Vite 8, React Router 8, TanStack Query 5, Tailwind 4,
             react-hook-form + zod, i18next (en/ru/hy), Vitest + Testing Library + MSW
@@ -85,7 +85,9 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
 - Gameplay UI: `features/play` (api, `useRoom` — merges updates by version and refetches on gaps,
   PlayPanel, MatchmakingStatus); `RoomPage` renders the board from `games/registry.ts`
   (`boards[slug]`, lazy). A board only renders `state.view` and calls `onAction` with one of
-  `state.legal_actions` — never rules in the UI.
+  `state.legal_actions` — never rules in the UI. Boards live in `games/<slug>/<Game>Board.tsx` (default
+  export) with i18n keys under `<slug>.*`; Nardi's board (pick a source, then one of its legal targets;
+  board turned for seat 1) is the reference.
 - When generic skill advice conflicts with the established conventions of this repo, follow the repo.
 
 ## Definition of done (run these; report real output)

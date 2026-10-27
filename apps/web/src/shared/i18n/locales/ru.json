@@ -262,5 +262,23 @@
     "previous": "Назад",
     "next": "Далее",
     "page": "Страница {{page}} из {{total}}"
+  },
+  "nardi": {
+    "dice": "Кости",
+    "diceLeft": "Осталось ходов: {{count}}",
+    "pickChecker": "Выберите шашку.",
+    "pickTarget": "Выберите, куда её поставить.",
+    "waiting": "Ход соперника.",
+    "point_one": "Пункт {{point}}: {{count}} шашка, {{owner}}",
+    "point_few": "Пункт {{point}}: {{count}} шашки, {{owner}}",
+    "point_many": "Пункт {{point}}: {{count}} шашек, {{owner}}",
+    "point_other": "Пункт {{point}}: {{count}} шашки, {{owner}}",
+    "empty": "пусто",
+    "mine": "ваши",
+    "theirs": "соперника",
+    "barMine": "Ваш бар",
+    "barTheirs": "Бар соперника",
+    "offMine": "Выброшено",
+    "offTheirs": "У соперника"
   }
 }
