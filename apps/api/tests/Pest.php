@@ -1,11 +1,15 @@
 <?php
 
+use App\Gameplay\GameRegistry;
+use App\Models\Game;
+use App\Models\GameMode;
 use App\Models\User;
 use App\Notifications\VerificationCodeNotification;
 use Database\Seeders\RoleSeeder;
 use Filament\Facades\Filament;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\Notification;
+use Tests\Fixtures\TicTacToe\TicTacToeDefinition;
 use Tests\TestCase;
 
 /*
@@ -74,4 +78,22 @@ function signInToAdmin(?string $role = 'super_admin', array $attributes = []): U
     Filament::setCurrentPanel(Filament::getPanel('admin'));
 
     return $user;
+}
+
+/**
+ * Registers the test-only tic-tac-toe engine and returns a playable mode for it.
+ *
+ * @param  array<string, mixed>  $mode
+ */
+function ticTacToe(array $mode = []): GameMode
+{
+    app(GameRegistry::class)->register(new TicTacToeDefinition);
+
+    $game = Game::factory()->playable()->create(['slug' => 'tictactoe', 'name' => ['en' => 'Tic-tac-toe']]);
+
+    return GameMode::factory()->for($game)->create([
+        'slug' => 'classic',
+        'config' => ['turn_seconds' => 30],
+        ...$mode,
+    ]);
 }

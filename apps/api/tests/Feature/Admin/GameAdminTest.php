@@ -31,7 +31,7 @@ it('edits a game in every language and audits the change', function () {
     expect($log->actor_id)->toBe($admin->id)->and($log->changes)->toHaveKey('bot_fallback_mode');
 });
 
-it('does not let admins switch a game to playable before its engine exists', function () {
+it('lets admins switch a game to playable only once its engine exists', function () {
     signInToAdmin('admin');
     $game = Game::factory()->create(['is_enabled' => false]);
 
@@ -40,6 +40,17 @@ it('does not let admins switch a game to playable before its engine exists', fun
         ->call('save');
 
     expect($game->refresh()->is_enabled)->toBeFalse();
+
+    $mode = ticTacToe();
+    $registered = $mode->game()->firstOrFail();
+    $registered->forceFill(['is_enabled' => false])->save();
+
+    Livewire::test(EditGame::class, ['record' => $registered->getRouteKey()])
+        ->fillForm(['is_enabled' => true])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($registered->refresh()->is_enabled)->toBeTrue();
 });
 
 it('creates a bot with game assignments', function () {

@@ -62,6 +62,20 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
 - Custom page with a form: `form()` with `statePath('data')` + `content()` returning
   `Form::make([EmbeddedSchema::make('form')])->livewireSubmitHandler('save')` (see `ManageSettings`).
 
+## Gameplay infrastructure (app/Gameplay)
+- Engines implement `Contracts\GameEngine` (initialState, seatsToAct, legalActions, apply, viewFor,
+  outcome) on plain array state; randomness only via `RandomSource`. Register a `GameDefinition` in the
+  singleton `GameRegistry` (from the game's service provider); `games.is_enabled` can only be switched on
+  for registered slugs.
+- **All** state changes go through `Actions\GameActionService` (submit / resign / timeOut) — never write
+  moves or room status directly. Rooms are created/started by `Rooms\RoomService`.
+- Live state lives in the `game` cache store (`RoomStateStore`, Redis DB 2, `array` in tests) and is
+  rebuilt from `game_moves` by `RoomStates` (recorded RNG draws make replays exact). seq 0 = `start`.
+- After commit: `RoomEvents` broadcasts `RoomUpdated` per human player on `private-user.{id}` (own view);
+  `GameScheduler` queues `TurnTimeoutJob` / `BotTurnJob` on the `game` queue, each tied to a version.
+- Tests: `ticTacToe()` (tests/Pest.php) registers the test-only engine in tests/Fixtures and returns a
+  playable mode. `Queue::fake()` and run jobs explicitly (`app()->call([$job, 'handle'])`).
+
 ## Auth & authorization
 - Sanctum **SPA cookie** auth (stateful). Session-based; `AuthenticateSession` signs out other sessions
   when the password hash changes — don't build a separate mechanism.

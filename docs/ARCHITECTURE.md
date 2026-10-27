@@ -86,19 +86,20 @@ Games/{Nardi,Chess,Checkers,Durak,Poker}/
 Filament/                  admin panel (Phase 4)
 ```
 
-Engine contract (draft, finalized in Phase 5):
+Engine contract (implemented in Phase 5):
 
 ```php
-interface GameEngine {
-    public function initialState(ModeConfig $config, SeatList $seats, RandomSource $rng): GameState;
-    public function legalActions(GameState $state, int $seat): array;
-    public function apply(GameState $state, int $seat, Action $action, RandomSource $rng): Transition;
-    public function viewFor(GameState $state, ?int $seat): array;   // redacts hidden information
-    public function outcome(GameState $state): ?Outcome;
+interface GameEngine {   // app/Gameplay/Contracts — state is a JSON-serializable array
+    public function initialState(GameSetup $setup, RandomSource $random): array;
+    public function seatsToAct(array $state): array;
+    public function legalActions(array $state, int $seat): array;      // list<Action>
+    public function apply(array $state, int $seat, Action $action, RandomSource $random): Transition;
+    public function viewFor(array $state, ?int $seat): array;           // redacts hidden information
+    public function outcome(array $state): ?Outcome;
 }
 
 interface BotStrategy {
-    public function chooseAction(array $seatView, array $legalActions, Difficulty $difficulty): Action;
+    public function chooseAction(array $view, array $legalActions, BotDifficulty $difficulty, RandomSource $random): Action;
 }
 ```
 
@@ -166,9 +167,8 @@ Responses use Laravel API Resources (`{ data: ... }`); errors are `{ message, er
 generic body for 404. The OpenAPI spec is served at `/docs/api.json` (UI at `/docs/api`, local
 environment only) and drives the frontend's generated types.
 
-Broadcast channels: `private-user.{id}` (matchmaking, invites, account events),
-`private-room.{room}.seat.{userId}` (per-player redacted game views), `presence-room.{room}`
-(connection presence only).
+Broadcast channels: `private-user.{id}` (room updates with that player's own redacted view,
+matchmaking, account events) and `presence-room.{room}` (who is connected; no game state).
 
 ## 6. Authentication
 

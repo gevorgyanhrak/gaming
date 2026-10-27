@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Gameplay\GameRegistry;
 use App\Models\User;
 use App\Platform\Settings\Settings;
 use App\Platform\Sms\LogSmsGateway;
@@ -21,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // One instance per request (or job), so settings are read once and never leak between requests.
         $this->app->scoped(Settings::class);
+
+        // Engines register themselves here (see app/Games/*); one registry for the whole app.
+        $this->app->singleton(GameRegistry::class);
 
         $this->app->singleton(SmsGateway::class, fn () => match (config('services.sms.driver')) {
             'log' => new LogSmsGateway,

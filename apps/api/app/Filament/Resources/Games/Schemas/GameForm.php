@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Games\Schemas;
 
 use App\Enums\BotFallbackMode;
 use App\Filament\Support\Translatable;
+use App\Gameplay\GameRegistry;
+use App\Models\Game;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -33,10 +35,12 @@ class GameForm
                     ->schema([
                         TextInput::make('slug')->disabled(),
                         Toggle::make('is_visible')->label('Shown in the catalog'),
-                        // Becomes switchable once the game's engine is registered (Phase 6+).
+                        // A game can only be played once its engine is registered (app/Games/*).
                         Toggle::make('is_enabled')->label('Playable')
-                            ->disabled()
-                            ->helperText('Can be switched on once this game’s engine is released.'),
+                            ->disabled(fn (?Game $record) => $record === null || ! app(GameRegistry::class)->has($record->slug))
+                            ->helperText(fn (?Game $record) => $record !== null && app(GameRegistry::class)->has($record->slug)
+                                ? 'Players can find and play this game.'
+                                : 'Can be switched on once this game’s engine is released.'),
                         TextInput::make('min_players')->label('Minimum players')->disabled(),
                         TextInput::make('max_players')->label('Maximum players')->disabled(),
                     ]),
