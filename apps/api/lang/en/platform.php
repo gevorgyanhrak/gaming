@@ -55,4 +55,15 @@ return [
         'keep_own_super_admin' => 'You cannot remove your own super admin role.',
         'use_unban' => 'This account is banned. Unban it instead.',
     ],
+    'play' => [
+        'unavailable' => 'This game mode is not available right now.',
+        'too_many_games' => 'Finish one of your current games first.',
+        'verification_required' => 'Verify your :channel to play.',
+        'no_bot' => 'No bot is available at this difficulty.',
+        'invite_invalid' => 'This invite code is not valid or the room is full.',
+        'not_your_turn' => 'It is not your turn.',
+        'illegal_move' => 'This move is not allowed.',
+        'not_in_progress' => 'This game is not in progress.',
+        'out_of_date' => 'The game has moved on. Refresh and try again.',
+    ],
 ];

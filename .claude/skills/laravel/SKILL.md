@@ -16,8 +16,10 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
 
 ## Structure
 - `app/Http/Controllers/Api/V1/{Auth,Me,…}` — thin controllers: authorize, delegate, return a Resource.
-- `app/Http/Requests/{Auth,Me,…}` — all non-trivial validation in Form Requests; normalize input in
+- `app/Http/Requests/{Auth,Me,Rooms,…}` — all non-trivial validation in Form Requests; normalize input in
   `prepareForValidation()` (e.g. `AccountRules::normalize()` lower-cases emails, phones → E.164).
+  Gotcha: `validated('x')` keeps only the nested keys that have rules — read free-form objects (e.g. a
+  game action validated by its engine) with `input()`.
 - `app/Http/Resources` — every response goes through an API Resource (`{ data: … }`). Never return models.
   Add `/** @var type */` PHPDoc on array items Scramble can't infer (nullable URLs, lists, unions), then
   regenerate frontend types (`make types`).
@@ -68,7 +70,12 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
   singleton `GameRegistry` (from the game's service provider); `games.is_enabled` can only be switched on
   for registered slugs.
 - **All** state changes go through `Actions\GameActionService` (submit / resign / timeOut) — never write
-  moves or room status directly. Rooms are created/started by `Rooms\RoomService`.
+  moves or room status directly. Rooms are created/started by `Rooms\RoomService`; who may start what is
+  `Rooms\PlayRules` (playable game, mode flags, concurrent-games limit) plus the `verified-contact`
+  middleware. Resigning is accepted at any time; other actions only from `seatsToAct`.
+- HTTP: `/api/v1/rooms` (bot | private), `rooms/join`, `rooms/{room}` (+ `/state`, `/actions`, `/leave`),
+  `me/rooms`. Engine exceptions map to 422 (IllegalAction) and 409 (RoomNotActive, VersionConflict with
+  `current_version`) in bootstrap/app.php.
 - Live state lives in the `game` cache store (`RoomStateStore`, Redis DB 2, `array` in tests) and is
   rebuilt from `game_moves` by `RoomStates` (recorded RNG draws make replays exact). seq 0 = `start`.
 - After commit: `RoomEvents` broadcasts `RoomUpdated` per human player on `private-user.{id}` (own view);

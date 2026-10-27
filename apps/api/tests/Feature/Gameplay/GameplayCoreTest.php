@@ -140,11 +140,13 @@ it('lets a player resign', function () {
     [$room] = humanRoom();
     [$first, $second] = turnOrder($room);
 
-    app(GameActionService::class)->submit($room, $first, new Action('resign'));
+    // The player who is waiting for their turn resigns.
+    app(GameActionService::class)->submit($room, $second, new Action('resign'));
 
     $room->refresh()->load('participants');
     expect($room->end_reason)->toBe('resign')
-        ->and($room->participants->firstWhere('seat', $second->seat)->result)->toBe(ParticipantResult::Win);
+        ->and($room->participants->firstWhere('seat', $first->seat)->result)->toBe(ParticipantResult::Win)
+        ->and($room->participants->firstWhere('seat', $second->seat)->result)->toBe(ParticipantResult::Loss);
 });
 
 it('ends the game when the turn times out, but not before', function () {

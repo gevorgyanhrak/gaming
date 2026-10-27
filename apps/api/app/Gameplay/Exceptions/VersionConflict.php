@@ -9,6 +9,6 @@ class VersionConflict extends RuntimeException
 {
     public function __construct(public readonly int $currentVersion)
     {
-        parent::__construct("The game has moved on (now at version {$currentVersion}).");
+        parent::__construct(__('platform.play.out_of_date'));
     }
 }

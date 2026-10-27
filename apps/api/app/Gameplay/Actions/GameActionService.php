@@ -54,19 +54,20 @@ class GameActionService
 
             $current = $this->guard($room, $expectedVersion);
 
-            if (! in_array($actor->seat, $current->seatsToAct, true)) {
-                throw new IllegalAction('It is not your turn.');
-            }
-
+            // Resigning is allowed at any time, not only on your turn.
             if ($action->type === GameMove::RESIGN) {
                 return $this->end($room, $current, $actor, GameMove::RESIGN, $clientActionId);
+            }
+
+            if (! in_array($actor->seat, $current->seatsToAct, true)) {
+                throw new IllegalAction(__('platform.play.not_your_turn'));
             }
 
             $engine = $this->states->engine($room);
             $legal = collect($engine->legalActions($current->state, $actor->seat))->contains(fn (Action $a) => $a->equals($action));
 
             if (! $legal) {
-                throw new IllegalAction('This move is not allowed.');
+                throw new IllegalAction(__('platform.play.illegal_move'));
             }
 
             $random = new RecordingRandom;
@@ -169,7 +170,7 @@ class GameActionService
     private function guard(GameRoom $room, ?int $expectedVersion): RoomState
     {
         if (! $room->isActive()) {
-            throw new RoomNotActive('This game is not in progress.');
+            throw new RoomNotActive(__('platform.play.not_in_progress'));
         }
 
         if ($expectedVersion !== null && $expectedVersion !== $room->state_version) {

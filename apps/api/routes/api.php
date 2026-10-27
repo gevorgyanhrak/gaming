@@ -14,8 +14,11 @@ use App\Http\Controllers\Api\V1\Me\ContactController;
 use App\Http\Controllers\Api\V1\Me\MeController;
 use App\Http\Controllers\Api\V1\Me\PasswordController;
 use App\Http\Controllers\Api\V1\Me\ProfileController;
+use App\Http\Controllers\Api\V1\Me\RoomsController;
 use App\Http\Controllers\Api\V1\Me\SettingsController;
 use App\Http\Controllers\Api\V1\PublicProfileController;
+use App\Http\Controllers\Api\V1\Rooms\ActionController;
+use App\Http\Controllers\Api\V1\Rooms\RoomController;
 use Illuminate\Support\Facades\Route;
 
 // Unversioned infrastructure endpoints. Liveness is Laravel's built-in GET /up.
@@ -68,6 +71,23 @@ Route::prefix('v1')->name('v1.')->group(function () {
                 Route::put('password', [PasswordController::class, 'update'])->name('password.update');
                 Route::post('contact', [ContactController::class, 'store'])->middleware('throttle:verification')->name('contact.store');
                 Route::post('contact/verify', [ContactController::class, 'verify'])->middleware('throttle:verification')->name('contact.verify');
+                Route::get('rooms', [RoomsController::class, 'index'])->name('rooms.index');
+            });
+
+        Route::middleware(['auth:sanctum', 'active', 'touch-last-active', 'throttle:game'])
+            ->prefix('rooms')
+            ->name('rooms.')
+            ->group(function () {
+                Route::middleware('verified-contact')->group(function () {
+                    Route::post('/', [RoomController::class, 'store'])->name('store');
+                    Route::post('join', [RoomController::class, 'join'])->name('join');
+                });
+                Route::middleware('can:view,room')->group(function () {
+                    Route::get('{room}', [RoomController::class, 'show'])->name('show');
+                    Route::get('{room}/state', [RoomController::class, 'state'])->name('state');
+                    Route::post('{room}/actions', [ActionController::class, 'store'])->middleware('throttle:game-actions')->name('actions.store');
+                    Route::post('{room}/leave', [RoomController::class, 'leave'])->name('leave');
+                });
             });
     });
 });

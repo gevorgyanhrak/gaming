@@ -1,7 +1,11 @@
 <?php
 
+use App\Gameplay\Exceptions\IllegalAction;
+use App\Gameplay\Exceptions\RoomNotActive;
+use App\Gameplay\Exceptions\VersionConflict;
 use App\Http\Middleware\ApplyRuntimeSettings;
 use App\Http\Middleware\EnsureAccountIsActive;
+use App\Http\Middleware\EnsureContactVerified;
 use App\Http\Middleware\EnsureNotInMaintenance;
 use App\Http\Middleware\SetLocaleFromRequest;
 use App\Http\Middleware\TouchLastActive;
@@ -29,12 +33,21 @@ return Application::configure(basePath: dirname(__DIR__))
             'active' => EnsureAccountIsActive::class,
             'touch-last-active' => TouchLastActive::class,
             'maintenance' => EnsureNotInMaintenance::class,
+            'verified-contact' => EnsureContactVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // Gameplay outcomes the client handles: refetch state on 409, show the message on 422.
+        $exceptions->render(fn (IllegalAction $e) => response()->json(['message' => $e->getMessage()], 422));
+        $exceptions->render(fn (RoomNotActive $e) => response()->json(['message' => $e->getMessage()], 409));
+        $exceptions->render(fn (VersionConflict $e) => response()->json([
+            'message' => $e->getMessage(),
+            'current_version' => $e->currentVersion,
+        ], 409));
 
         // Generic body: the default message names the Eloquent model class that was not found.
         $exceptions->render(fn (NotFoundHttpException $e, Request $request) => $request->is('api/*')

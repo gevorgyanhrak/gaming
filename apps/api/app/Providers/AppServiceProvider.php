@@ -56,6 +56,8 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('lookups', fn (Request $request) => Limit::perMinute(30)->by($request->ip()));
         RateLimiter::for('verification', fn (Request $request) => Limit::perMinute(10)->by($byUserOrIp($request)));
         RateLimiter::for('account', fn (Request $request) => Limit::perMinute(30)->by($byUserOrIp($request)));
+        RateLimiter::for('game', fn (Request $request) => Limit::perMinute(60)->by($byUserOrIp($request)));
+        RateLimiter::for('game-actions', fn (Request $request) => Limit::perMinute(120)->by($byUserOrIp($request)));
         RateLimiter::for('uploads', fn (Request $request) => Limit::perMinute(10)->by($byUserOrIp($request)));
     }
 }
