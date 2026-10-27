@@ -13,14 +13,15 @@ use App\Gameplay\Random\RandomSource;
 
 /**
  * Chess for two players; white is seat 0. One action = one move ("move" with from, to and, for
- * promotions, promotion).
+ * promotions, promotion). On your turn you may also offer a draw ("offer_draw", then move as usual);
+ * the opponent accepts on their turn ("accept_draw") or declines by moving.
  *
  * The game ends by checkmate, or is drawn by stalemate, insufficient material, the third repetition
  * of a position or fifty moves by each side without a pawn move or capture (all applied
  * automatically). Running out of time loses, unless the opponent couldn't checkmate anyway.
  *
  * State: a position (see ChessRules) plus check, last (the last move), moves (SAN history), seen
- * (position counts since the last irreversible move) and result.
+ * (position counts since the last irreversible move), draw_offer (the seat offering a draw) and result.
  */
 final class ChessEngine implements DecidesTimeouts, GameEngine
 {
@@ -43,6 +44,7 @@ final class ChessEngine implements DecidesTimeouts, GameEngine
             'last' => null,
             'moves' => [],
             'seen' => [ChessRules::key($position) => 1],
+            'draw_offer' => null,
             'result' => null,
         ];
     }
@@ -64,7 +66,15 @@ final class ChessEngine implements DecidesTimeouts, GameEngine
             return [];
         }
 
-        return array_map(fn (array $move) => new Action('move', $move), ChessRules::legalMoves($state));
+        $actions = array_map(fn (array $move) => new Action('move', $move), ChessRules::legalMoves($state));
+        $offer = $state['draw_offer'] ?? null;
+        if ($offer === 1 - $seat) {
+            $actions[] = new Action('accept_draw');
+        } elseif ($offer === null) {
+            $actions[] = new Action('offer_draw');
+        }
+
+        return $actions;
     }
 
     /**
@@ -72,6 +82,16 @@ final class ChessEngine implements DecidesTimeouts, GameEngine
      */
     public function apply(array $state, int $seat, Action $action, RandomSource $random): Transition
     {
+        if ($action->type === 'offer_draw' || $action->type === 'accept_draw') {
+            if (! collect($this->legalActions($state, $seat))->contains(fn (Action $a) => $a->equals($action))) {
+                throw new IllegalAction('That move is not allowed.');
+            }
+
+            return $action->type === 'offer_draw'
+                ? new Transition([...$state, 'draw_offer' => $seat], [['type' => 'draw_offered', 'seat' => $seat]])
+                : new Transition([...$state, 'draw_offer' => null, 'result' => ['winners' => [], 'reason' => 'agreement']], [['type' => 'draw_agreed']]);
+        }
+
         $move = ['from' => (int) ($action->payload['from'] ?? -1), 'to' => (int) ($action->payload['to'] ?? -1)];
         if (isset($action->payload['promotion'])) {
             $move['promotion'] = (string) $action->payload['promotion'];
@@ -104,6 +124,8 @@ final class ChessEngine implements DecidesTimeouts, GameEngine
             'last' => $move,
             'moves' => [...$state['moves'], $san],
             'seen' => $seen,
+            // Moving declines the opponent's offer; your own offer stands for their reply.
+            'draw_offer' => ($state['draw_offer'] ?? null) === $seat ? $seat : null,
             'result' => $result,
         ];
 

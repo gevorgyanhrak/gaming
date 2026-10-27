@@ -106,7 +106,9 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
   **Chess**: own move generator `ChessRules` (a8 = 0; FEN in/out of tests via `fromFen`; perft verified
   against chessprogramming.org positions, Kiwipete to depth 3), SAN in `san()`, repetition `key()`.
   `ChessEngine` applies checkmate/stalemate/insufficient material/threefold/fifty-move automatically and
-  implements `DecidesTimeouts`. Action `{type:'move', from, to, promotion?}`. `ChessBot`: alpha-beta +
+  implements `DecidesTimeouts`. Action `{type:'move', from, to, promotion?}`; draws by agreement via
+  `offer_draw` (side to move, then still moves) / `accept_draw` (opponent's turn; moving declines), state `draw_offer`.
+  Bots must filter `legalActions` by type before treating them as moves. `ChessBot`: alpha-beta +
   quiescence + Michniewski PSTs; easy depth 1 (misses mates), medium 2, hard 3 (~1 s per move).
   **Durak** (podkidnoy, 2 players): strictly sequential bout — attacker leads/throws in (`attack`
   {card}), defender `defend` {card} (beats the last unbeaten card) or `take`, attacker `done`; the bout

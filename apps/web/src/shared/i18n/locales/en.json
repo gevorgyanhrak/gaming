@@ -319,7 +319,11 @@
       "rook": "Rook",
       "bishop": "Bishop",
       "knight": "Knight"
-    }
+    },
+    "offerDraw": "Offer a draw",
+    "acceptDraw": "Accept the draw",
+    "drawOffered": "Your opponent offers a draw. Make a move to decline.",
+    "drawOfferSent": "You offered a draw."
   },
   "durak": {
     "trump": "Trump",

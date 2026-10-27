@@ -29,12 +29,12 @@ function chessPlay(array $state, string ...$moves): array
     return $state;
 }
 
-it('starts with white to move and twenty legal moves', function () {
+it('starts with white to move, twenty legal moves and a draw offer', function () {
     $engine = new ChessEngine;
     $state = $engine->initialState(new GameSetup(2), new SecureRandom);
 
     expect($engine->seatsToAct($state))->toBe([0])
-        ->and($engine->legalActions($state, 0))->toHaveCount(20)
+        ->and(collect($engine->legalActions($state, 0))->where('type', 'move'))->toHaveCount(20)
         ->and($engine->legalActions($state, 1))->toBe([]);
 });
 
@@ -61,7 +61,7 @@ it('does not castle out of, through or into check', function () {
     // The rook on f8 covers f1, so white can only castle queenside.
     $state = chessAt('4kr2/8/8/8/8/8/8/R3K2R w KQ - 0 1');
     $kingMoves = collect((new ChessEngine)->legalActions($state, 0))
-        ->filter(fn (Action $a) => $a->payload['from'] === ChessRules::square('e1'))
+        ->filter(fn (Action $a) => $a->type === 'move' && $a->payload['from'] === ChessRules::square('e1'))
         ->map(fn (Action $a) => ChessRules::name($a->payload['to']))
         ->sort()->values()->all();
 
@@ -175,4 +175,38 @@ it('has the medium bot beat the easy one', function () {
     }
 
     expect($wins)->toBeGreaterThanOrEqual(1);
+});
+
+it('lets a player offer a draw on their turn and the opponent accept or decline it', function () {
+    $engine = new ChessEngine;
+    $state = $engine->initialState(new GameSetup(2), new SecureRandom);
+    $types = fn (array $state) => collect($engine->legalActions($state, $state['turn']))->map->type->unique()->values()->all();
+
+    expect($types($state))->toBe(['move', 'offer_draw']);
+
+    $state = $engine->apply($state, 0, new Action('offer_draw'), new SecureRandom)->state;
+    // Still white's move, and no second offer.
+    expect($state['turn'])->toBe(0)->and($types($state))->toBe(['move']);
+
+    $state = chessPlay($state, 'e2e4');
+    expect($types($state))->toBe(['move', 'accept_draw']);
+
+    // Black declines by moving; white's offer is gone.
+    $declined = chessPlay($state, 'e7e5');
+    expect($declined['draw_offer'])->toBeNull()->and($types($declined))->toBe(['move', 'offer_draw']);
+
+    $accepted = $engine->apply($state, 1, new Action('accept_draw'), new SecureRandom)->state;
+    expect($engine->outcome($accepted))->toEqual(new Outcome([], 'agreement'));
+});
+
+it('has bots accept a draw only when they are clearly worse', function () {
+    $engine = new ChessEngine;
+    $bot = new ChessBot;
+    // Black, a queen down, is offered a draw; and white, a queen up, in the mirror position.
+    $worse = [...chessAt('4k3/8/8/8/8/8/8/3QK3 b - - 0 1'), 'draw_offer' => 0];
+    $better = [...chessAt('3qk3/8/8/8/8/8/8/4K3 b - - 0 1'), 'draw_offer' => 0];
+
+    $pick = fn (array $state) => $bot->chooseAction($engine->viewFor($state, 1), $engine->legalActions($state, 1), BotDifficulty::Medium, new SecureRandom)->type;
+
+    expect($pick($worse))->toBe('accept_draw')->and($pick($better))->toBe('move');
 });

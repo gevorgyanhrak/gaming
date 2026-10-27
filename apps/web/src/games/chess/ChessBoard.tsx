@@ -11,9 +11,11 @@ interface ChessView {
   check: boolean
   last: { from: number; to: number } | null
   moves: string[]
+  draw_offer?: number | null
 }
 
 type Move = { type: 'move'; from: number; to: number; promotion?: Promotion }
+type ChessAction = Move | { type: 'offer_draw' | 'accept_draw' }
 
 const glyphs: Record<string, string> = { k: '♚', q: '♛', r: '♜', b: '♝', n: '♞', p: '♟' }
 
@@ -52,7 +54,11 @@ export default function ChessBoard({ state, onAction, pending }: BoardProps) {
   const { t } = useTranslation()
   const view = state.view as unknown as ChessView
   const me = state.seat ?? 0
-  const moves = state.legal_actions as unknown as Move[]
+  const actions = state.legal_actions as unknown as ChessAction[]
+  const moves = actions.filter((a): a is Move => a.type === 'move')
+  const canOffer = actions.some((a) => a.type === 'offer_draw')
+  const canAccept = actions.some((a) => a.type === 'accept_draw')
+  const offer = view.draw_offer ?? null
   const [selected, setSelected] = useState<number | null>(null)
   const [promoting, setPromoting] = useState<Move[] | null>(null)
 
@@ -136,6 +142,33 @@ export default function ChessBoard({ state, onAction, pending }: BoardProps) {
             )
           })}
         </div>
+
+        {offer !== null || canOffer ? (
+          <div className="flex flex-wrap items-center gap-3 text-sm">
+            {offer === 1 - me ? <p className="font-medium">{t('chess.drawOffered')}</p> : null}
+            {offer === me ? <p className="text-muted">{t('chess.drawOfferSent')}</p> : null}
+            {canAccept ? (
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => onAction({ type: 'accept_draw' })}
+                className="rounded-lg bg-accent px-3 py-1.5 font-semibold text-white hover:bg-accent-hover"
+              >
+                {t('chess.acceptDraw')}
+              </button>
+            ) : null}
+            {canOffer ? (
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => onAction({ type: 'offer_draw' })}
+                className="rounded-lg border border-border px-3 py-1.5 font-medium hover:border-accent-text"
+              >
+                {t('chess.offerDraw')}
+              </button>
+            ) : null}
+          </div>
+        ) : null}
 
         {promoting ? (
           <div

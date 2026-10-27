@@ -70,6 +70,29 @@ describe('ChessBoard', () => {
     })
   })
 
+  it('offers and accepts draws', async () => {
+    const onAction = vi.fn()
+    render(
+      <ChessBoard
+        state={roomStateFixture({
+          seat: 1,
+          seats_to_act: [1],
+          view: view({ e1: 'K', e8: 'k' }, { turn: 1, draw_offer: 0 }),
+          legal_actions: [{ type: 'move', from: sq('e8'), to: sq('d8') }, { type: 'accept_draw' }],
+        })}
+        onAction={onAction}
+        pending={false}
+      />,
+    )
+
+    expect(
+      screen.getByText('Your opponent offers a draw. Make a move to decline.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Offer a draw' })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Accept the draw' }))
+    expect(onAction).toHaveBeenCalledWith({ type: 'accept_draw' })
+  })
+
   it('shows check, the move list and the board from black’s side', () => {
     render(
       <ChessBoard

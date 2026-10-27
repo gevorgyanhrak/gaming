@@ -43,8 +43,14 @@ final class ChessBot implements BotStrategy
         };
 
         $position = $view;
+        // Take a draw when clearly worse; never offer one.
+        $accept = collect($legalActions)->first(fn (Action $a) => $a->type === 'accept_draw');
+        if ($accept !== null && $difficulty !== BotDifficulty::Easy && $this->quiesce($position, -self::MATE, self::MATE, 4) <= -150) {
+            return $accept;
+        }
+
         $scored = [];
-        foreach ($legalActions as $action) {
+        foreach (array_filter($legalActions, fn (Action $a) => $a->type === 'move') as $action) {
             $move = $action->payload;
             $scored[] = [$action, -$this->search(ChessRules::play($position, $move), $depth - 1, -self::MATE * 2, self::MATE * 2, 1)];
         }
