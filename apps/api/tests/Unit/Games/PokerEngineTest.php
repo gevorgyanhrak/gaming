@@ -226,6 +226,34 @@ it('plays random sit-and-gos to the end without losing a chip', function (int $s
     }
 })->with([2, 3, 6]);
 
+it('never puts hidden cards in the events every player receives', function () {
+    $engine = new PokerEngine;
+    $random = new SecureRandom;
+    $state = holdem(4, ['level_hands' => 3]);
+
+    for ($i = 0; $i < 400 && $engine->outcome($state) === null; $i++) {
+        $seat = $state['to_act'];
+        $legal = $engine->legalActions($state, $seat);
+        $action = $legal[$random->int(0, count($legal) - 1)];
+        if ($action->type === 'raise') {
+            $action = new Action('raise', ['amount' => $action->payload['min']]);
+        }
+        $transition = $engine->apply($state, $seat, $action, $random);
+        $holes = array_merge(...$state['hole']);
+        foreach ($transition->events as $event) {
+            if ($event['type'] === 'dealt') {
+                // Community cards are public; they never come from anyone's hand.
+                expect(array_intersect($event['cards'], $holes))->toBe([]);
+            } else {
+                foreach (PokerHands::deck() as $card) {
+                    expect(json_encode($event))->not->toContain('"'.$card.'"');
+                }
+            }
+        }
+        $state = $transition->state;
+    }
+});
+
 it('has bots act legally and the medium bot beat loose play heads-up', function () {
     $engine = new PokerEngine;
     $bot = new PokerBot;

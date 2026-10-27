@@ -99,6 +99,13 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
 - Docs updated when behaviour, setup or decisions change (README status, ARCHITECTURE roadmap, ADRs).
 - If something could not be verified (e.g. no browser available), say exactly what and why.
 
+## Operations
+- Production setup, release steps and monitoring: `docs/DEPLOYMENT.md`. After changing PHP code locally,
+  `docker compose restart horizon reverb scheduler` — long-running workers keep old code (new games'
+  bots never move otherwise).
+- Local players: `php artisan db:seed --class=LocalPlayersSeeder` (player1/player2@example.test).
+- Expected gameplay exceptions are `dontReport`ed; tests log to the null channel.
+
 ## Git & safety
 - The owner's workflow: work on `main`, commit each verified step (lint + tests green) with a clear
   message ending with the attribution line the session provides, and push to `origin main`.
