@@ -3,3 +3,7 @@
 .idea/
 .vscode/
 *.log
+
+# Claude Code local state
+.claude/.turn-start
+.claude/settings.local.json

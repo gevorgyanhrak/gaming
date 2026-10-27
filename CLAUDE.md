@@ -1,5 +1,9 @@
 # Project guide for AI coding assistants
 
+Sessions in this project run as **gaming-agent** (`.claude/agents/gaming-agent.md`, set in `.claude/settings.json`).
+Project knowledge is kept in the repo and updated with every change (see the agent's "Keeping your knowledge current";
+a Stop hook in `.claude/hooks/knowledge-check.sh` reminds when code changed but no knowledge file did).
+
 Read `docs/ARCHITECTURE.md` and `docs/adr/` before making structural changes. Development happens in
 approved phases (see the roadmap there); stay within the current phase's scope.
 
