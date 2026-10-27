@@ -119,9 +119,12 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
   `offer_draw` (side to move, then still moves) / `accept_draw` (opponent's turn; moving declines), state `draw_offer`.
   Bots must filter `legalActions` by type before treating them as moves. `ChessBot`: alpha-beta +
   quiescence + Michniewski PSTs; easy depth 1 (misses mates), medium 2, hard 3 (~1 s per move).
-  **Durak** (podkidnoy, 2 players): strictly sequential bout — attacker leads/throws in (`attack`
-  {card}), defender `defend` {card} (beats the last unbeaten card) or `take`, attacker `done`; the bout
-  ends by itself when the attacker has nothing to throw. Limit: 6 and the defender's hand at bout start.
+  **Durak** (podkidnoy, 2–6 players): strictly sequential bout — attacker leads (`attack` {card}),
+  defender `defend` {card} (beats the last unbeaten card) or `take`; throwers (main attacker, then the
+  others round the table from the defender) throw in (`attack`) or pass (`done`; `passed` resets when a
+  card is added); the bout ends by itself when no thrower has anything left. After a take the attack skips
+  the defender. Players go out when the deck is empty and their hand too; last holder = durak.
+  3+ seats: `HandlesTimeouts` (take/pass/lowest lead) and `HandlesDepartures`. Limit: 6 and the defender's hand at bout start.
   Hidden information: `viewFor` returns only the seat's own hand, counts, table and the face-up trump —
   tests assert no other card leaks into the view JSON. Shuffle = Fisher–Yates over `RandomSource`.
   **Poker** (NL hold'em sit-and-go, 2–10 seats, play chips that exist only inside the game): one action

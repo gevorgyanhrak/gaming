@@ -35,8 +35,8 @@ it('plays a full game against a bot through the API', function (string $slug) {
     $player = User::factory()->create();
     $this->actingAs($player);
 
-    // Poker tables seat more than two: play against two bots there.
-    $opponents = $slug === 'poker' ? ['opponents' => 2] : [];
+    // Poker and durak tables seat more than two: play against two bots there.
+    $opponents = in_array($slug, ['poker', 'durak'], true) ? ['opponents' => 2] : [];
     $id = $this->postJson('/api/v1/rooms', ['game_mode_id' => $game->modes()->first()->id, 'type' => 'bot', 'bot_difficulty' => 'medium', ...$opponents])
         ->assertCreated()
         ->json('data.id');

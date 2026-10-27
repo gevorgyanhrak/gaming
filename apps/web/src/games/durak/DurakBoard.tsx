@@ -13,20 +13,41 @@ interface DurakView {
   attacker: number
   defender: number
   taking: boolean
+  passed?: number[]
+  left?: boolean[]
 }
 
 type DurakAction = { type: 'attack' | 'defend'; card: string } | { type: 'take' | 'done' }
 
 /**
- * Durak table: the opponent's card count, deck and trump, the bout on the table and your hand.
+ * Durak table: the other players' card counts and roles, deck and trump, the bout on the table and
+ * your hand.
  * Offers exactly the server's legal actions: cards to lead, throw in or beat with, "take" and "done".
  */
-export default function DurakBoard({ state, onAction, pending }: BoardProps) {
+export default function DurakBoard({ state, onAction, pending, players = {} }: BoardProps) {
   const { t } = useTranslation()
   const view = state.view as unknown as DurakView
   const me = state.seat ?? 0
   const actions = state.legal_actions as unknown as DurakAction[]
   const myTurn = state.seats_to_act.includes(me)
+  const seats = view.hand_counts.length
+  // The others in table order, starting with the player after you.
+  const others = Array.from({ length: seats - 1 }, (_, i) => (me + 1 + i) % seats)
+  const nameOf = (seat: number) => players[seat] || t('durak.seat', { seat: seat + 1 })
+  const roleOf = (seat: number) =>
+    view.left?.[seat]
+      ? t('durak.role.left')
+      : view.deck_count === 0 && (view.hand_counts[seat] ?? 0) === 0
+        ? t('durak.role.out')
+        : seat === view.attacker
+          ? t('durak.role.attacker')
+          : seat === view.defender
+            ? view.taking
+              ? t('durak.role.taking')
+              : t('durak.role.defender')
+            : view.passed?.includes(seat)
+              ? t('durak.role.passed')
+              : null
 
   const labels = useCardLabel()
   const cardLabel = labels.card
@@ -49,19 +70,35 @@ export default function DurakBoard({ state, onAction, pending }: BoardProps) {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div
-          className="flex items-center gap-2"
-          aria-label={t('durak.opponentCards', { count: view.hand_counts[1 - me] ?? 0 })}
-        >
-          {Array.from({ length: Math.min(view.hand_counts[1 - me] ?? 0, 12) }, (_, i) => (
-            <span
-              key={i}
-              aria-hidden="true"
-              className="-ml-6 h-16 w-11 rounded-lg border border-white/20 bg-accent/60 first:ml-0"
-            />
-          ))}
-          <span className="ml-2 text-sm text-muted">{view.hand_counts[1 - me] ?? 0}</span>
-        </div>
+        <ul className="flex flex-wrap gap-3" aria-label={t('durak.opponents')}>
+          {others.map((seat) => {
+            const count = view.hand_counts[seat] ?? 0
+            const role = roleOf(seat)
+            return (
+              <li
+                key={seat}
+                aria-current={state.seats_to_act.includes(seat) ? 'step' : undefined}
+                aria-label={t('durak.opponentCards', { name: nameOf(seat), count })}
+                className={`rounded-xl border p-2 ${state.seats_to_act.includes(seat) ? 'border-accent-text' : 'border-border'}`}
+              >
+                <p className="mb-1 flex items-center justify-between gap-2 text-xs">
+                  <span className="truncate font-medium">{nameOf(seat)}</span>
+                  {role ? <span className="text-muted">{role}</span> : null}
+                </p>
+                <div className="flex items-center">
+                  {Array.from({ length: Math.min(count, 8) }, (_, i) => (
+                    <span
+                      key={i}
+                      aria-hidden="true"
+                      className="-ml-5 h-12 w-8 rounded-md border border-white/20 bg-accent/60 first:ml-0"
+                    />
+                  ))}
+                  <span className="ml-2 text-sm text-muted">{count}</span>
+                </div>
+              </li>
+            )
+          })}
+        </ul>
         <div className="flex items-center gap-3">
           {view.trump_card ? (
             <Card

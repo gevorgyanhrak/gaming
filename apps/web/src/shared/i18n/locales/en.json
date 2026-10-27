@@ -333,8 +333,6 @@
     "trumpCard": "Trump card: {{card}}",
     "deck_one": "{{count}} card in the deck",
     "deck_other": "{{count}} cards in the deck",
-    "opponentCards_one": "Opponent has {{count}} card",
-    "opponentCards_other": "Opponent has {{count}} cards",
     "table": "Table",
     "emptyTable": "The table is empty.",
     "beatenBy": "beaten by {{card}}",
@@ -347,7 +345,19 @@
     "throwInBeforeTake": "They are taking: throw in more, or let them take.",
     "defend": "Beat the card or take.",
     "youTake": "You are taking the cards.",
-    "waiting": "Waiting for the other player."
+    "waiting": "Waiting for the other player.",
+    "opponents": "Other players",
+    "seat": "Seat {{seat}}",
+    "opponentCards_one": "{{name}} has {{count}} card",
+    "opponentCards_other": "{{name}} has {{count}} cards",
+    "role": {
+      "attacker": "attacking",
+      "defender": "defending",
+      "taking": "taking",
+      "passed": "passed",
+      "out": "out",
+      "left": "left"
+    }
   },
   "cards": {
     "card": "{{rank}} of {{suit}}",

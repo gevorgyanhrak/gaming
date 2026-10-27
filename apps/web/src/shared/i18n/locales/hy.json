@@ -333,8 +333,6 @@
     "trumpCard": "Կոզր քարտը՝ {{card}}",
     "deck_one": "Կապուկում {{count}} քարտ",
     "deck_other": "Կապուկում {{count}} քարտ",
-    "opponentCards_one": "Մրցակիցն ունի {{count}} քարտ",
-    "opponentCards_other": "Մրցակիցն ունի {{count}} քարտ",
     "table": "Սեղան",
     "emptyTable": "Սեղանը դատարկ է։",
     "beatenBy": "ծածկված՝ {{card}}",
@@ -347,7 +345,19 @@
     "throwInBeforeTake": "Մրցակիցը վերցնում է՝ գցեք ևս կամ թողեք վերցնի։",
     "defend": "Ծածկեք քարտը կամ վերցրեք։",
     "youTake": "Դուք վերցնում եք քարտերը։",
-    "waiting": "Մրցակցի քայլն է։"
+    "waiting": "Մրցակցի քայլն է։",
+    "opponents": "Այլ խաղացողներ",
+    "seat": "Տեղ {{seat}}",
+    "opponentCards_one": "{{name}}-ն ունի {{count}} քարտ",
+    "opponentCards_other": "{{name}}-ն ունի {{count}} քարտ",
+    "role": {
+      "attacker": "գրոհում է",
+      "defender": "պաշտպանվում է",
+      "taking": "վերցնում է",
+      "passed": "պաս",
+      "out": "դուրս է",
+      "left": "լքել է"
+    }
   },
   "cards": {
     "card": "{{rank}} {{suit}}",

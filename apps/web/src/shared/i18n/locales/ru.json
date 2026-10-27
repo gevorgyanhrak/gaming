@@ -347,10 +347,6 @@
     "deck_few": "В колоде {{count}} карты",
     "deck_many": "В колоде {{count}} карт",
     "deck_other": "В колоде {{count}} карты",
-    "opponentCards_one": "У соперника {{count}} карта",
-    "opponentCards_few": "У соперника {{count}} карты",
-    "opponentCards_many": "У соперника {{count}} карт",
-    "opponentCards_other": "У соперника {{count}} карты",
     "table": "Стол",
     "emptyTable": "Стол пуст.",
     "beatenBy": "побита: {{card}}",
@@ -363,7 +359,21 @@
     "throwInBeforeTake": "Соперник берёт: подкиньте ещё или отдайте.",
     "defend": "Отбейтесь или возьмите.",
     "youTake": "Вы берёте карты.",
-    "waiting": "Ход соперника."
+    "waiting": "Ход соперника.",
+    "opponents": "Другие игроки",
+    "seat": "Место {{seat}}",
+    "opponentCards_one": "У игрока {{name}} {{count}} карта",
+    "opponentCards_few": "У игрока {{name}} {{count}} карты",
+    "opponentCards_many": "У игрока {{name}} {{count}} карт",
+    "opponentCards_other": "У игрока {{name}} {{count}} карты",
+    "role": {
+      "attacker": "ходит",
+      "defender": "отбивается",
+      "taking": "берёт",
+      "passed": "пас",
+      "out": "вышел",
+      "left": "покинул стол"
+    }
   },
   "cards": {
     "card": "{{rank}} {{suit}}",

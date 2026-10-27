@@ -3,6 +3,8 @@
 namespace App\Games\Durak\Engine;
 
 use App\Gameplay\Contracts\GameEngine;
+use App\Gameplay\Contracts\HandlesDepartures;
+use App\Gameplay\Contracts\HandlesTimeouts;
 use App\Gameplay\Engine\Action;
 use App\Gameplay\Engine\GameSetup;
 use App\Gameplay\Engine\Outcome;
@@ -11,48 +13,51 @@ use App\Gameplay\Exceptions\IllegalAction;
 use App\Gameplay\Random\RandomSource;
 
 /**
- * Podkidnoy durak for two players with a 36-card deck.
+ * Podkidnoy durak for 2–6 players with a 36-card deck.
  *
- * Play is strictly turn by turn: the attacker leads a card; the defender beats it ("defend" with a
- * card) or picks up ("take"); while every card is beaten, the attacker may throw in another card of
- * a rank on the table ("attack") or end the bout ("done"). After "take" the attacker may still throw
- * in before the defender picks everything up. A bout holds at most six attacks and never more than
- * the defender held when it began. When the attacker has nothing left to throw, the bout ends by
- * itself.
+ * Play is strictly turn by turn: the attacker leads a card; the defender (the next player round the
+ * table) beats it ("defend" with a card) or picks up ("take"). While every card is beaten — or after
+ * "take" — the other players may throw in cards of a rank on the table ("attack"), one at a time: the
+ * main attacker first, then the others round the table from the defender. A player who has nothing
+ * to add passes ("done"); a new card on the table gives everyone another chance. The bout ends when
+ * every thrower has passed or has nothing that fits. A bout holds at most six attacks and never more
+ * than the defender held when it began.
  *
- * After a bout both players draw up to six (attacker first); the defender attacks next unless they
- * picked up. Once the deck is empty, a player without cards is out: the other is the durak. Both out
- * at once is a draw.
+ * After a bout everyone draws up to six (attacker first, defender last). The defender attacks next,
+ * or, if they picked up, the player after them. Once the deck is empty, players without cards are
+ * out; the last one holding cards is the durak. Nobody left holding cards is a draw.
  *
- * State: deck (hidden; the last card is the face-up trump card), trump (suit), hands, table
- * (list of {attack, defense}), attacker, defender, taking, limit, discarded, result.
+ * State: deck (hidden; the last card is the face-up trump card), trump (suit), trump_card, hands,
+ * table (list of {attack, defense}), attacker, defender, taking, passed (throwers who passed since the
+ * last card was added), limit, discarded, left (players who left the table), result.
  */
-final class DurakEngine implements GameEngine
+final class DurakEngine implements GameEngine, HandlesDepartures, HandlesTimeouts
 {
     public const HAND = 6;
 
     public function initialState(GameSetup $setup, RandomSource $random): array
     {
+        $seats = max(2, $setup->seats);
         $deck = DurakCards::shuffled($random);
-        $hands = [array_splice($deck, 0, self::HAND), array_splice($deck, 0, self::HAND)];
-        $trumpCard = $deck[count($deck) - 1];
+        $hands = [];
+        for ($seat = 0; $seat < $seats; $seat++) {
+            $hands[] = array_splice($deck, 0, self::HAND);
+        }
+        // With six players every card is dealt; the last one dealt shows the trump.
+        $trumpCard = $deck === [] ? $hands[$seats - 1][self::HAND - 1] : $deck[count($deck) - 1];
         $trump = DurakCards::suit($trumpCard);
 
-        // The lowest trump leads; without trumps in either hand, the dealer's left (seat 0) does.
-        $lowest = [null, null];
+        // The lowest trump leads; without trumps in any hand, seat 0 does.
+        $attacker = 0;
+        $lowest = null;
         foreach ($hands as $seat => $hand) {
             foreach ($hand as $card) {
-                if (DurakCards::suit($card) === $trump && ($lowest[$seat] === null || DurakCards::rank($card) < $lowest[$seat])) {
-                    $lowest[$seat] = DurakCards::rank($card);
+                if (DurakCards::suit($card) === $trump && ($lowest === null || DurakCards::rank($card) < $lowest)) {
+                    [$lowest, $attacker] = [DurakCards::rank($card), $seat];
                 }
             }
         }
-        $attacker = match (true) {
-            $lowest[0] === null && $lowest[1] === null => 0,
-            $lowest[0] === null => 1,
-            $lowest[1] === null => 0,
-            default => $lowest[0] < $lowest[1] ? 0 : 1,
-        };
+        $defender = ($attacker + 1) % $seats;
 
         return [
             'deck' => $deck,
@@ -61,10 +66,12 @@ final class DurakEngine implements GameEngine
             'hands' => $hands,
             'table' => [],
             'attacker' => $attacker,
-            'defender' => 1 - $attacker,
+            'defender' => $defender,
             'taking' => false,
-            'limit' => min(6, count($hands[1 - $attacker])),
+            'passed' => [],
+            'limit' => min(6, count($hands[$defender])),
             'discarded' => 0,
+            'left' => array_fill(0, $seats, false),
             'result' => null,
         ];
     }
@@ -77,8 +84,15 @@ final class DurakEngine implements GameEngine
         if ($state['result'] !== null) {
             return [];
         }
+        if ($this->unbeaten($state) && ! $state['taking']) {
+            return [$state['defender']];
+        }
+        if ($state['table'] === []) {
+            return [$state['attacker']];
+        }
+        $thrower = $this->currentThrower($state);
 
-        return [$this->unbeaten($state) && ! $state['taking'] ? $state['defender'] : $state['attacker']];
+        return $thrower === null ? [] : [$thrower];
     }
 
     /**
@@ -89,12 +103,11 @@ final class DurakEngine implements GameEngine
         if ($this->seatsToAct($state) !== [$seat]) {
             return [];
         }
-        $hand = $state['hands'][$seat];
 
-        if ($seat === $state['defender']) {
+        if ($seat === $state['defender'] && $this->unbeaten($state) && ! $state['taking']) {
             $attack = $state['table'][count($state['table']) - 1]['attack'];
             $actions = [];
-            foreach ($hand as $card) {
+            foreach ($state['hands'][$seat] as $card) {
                 if (DurakCards::beats($card, $attack, $state['trump'])) {
                     $actions[] = new Action('defend', ['card' => $card]);
                 }
@@ -104,7 +117,7 @@ final class DurakEngine implements GameEngine
             return $actions;
         }
 
-        $actions = array_map(fn (string $card) => new Action('attack', ['card' => $card]), $this->playable($state));
+        $actions = array_map(fn (string $card) => new Action('attack', ['card' => $card]), $this->playable($state, $seat));
         if ($state['table'] !== []) {
             $actions[] = new Action('done');
         }
@@ -120,6 +133,7 @@ final class DurakEngine implements GameEngine
         if (! collect($this->legalActions($state, $seat))->contains(fn (Action $legal) => $legal->equals($action))) {
             throw new IllegalAction('That move is not allowed.');
         }
+        $state['passed'] ??= [];
 
         $events = [];
         switch ($action->type) {
@@ -127,25 +141,93 @@ final class DurakEngine implements GameEngine
                 $card = (string) $action->payload['card'];
                 $state['hands'][$seat] = $this->without($state['hands'][$seat], $card);
                 $state['table'][] = ['attack' => $card, 'defense' => null];
+                $state['passed'] = [];
                 $events[] = ['type' => 'attacked', 'seat' => $seat, 'card' => $card];
                 break;
             case 'defend':
                 $card = (string) $action->payload['card'];
                 $state['hands'][$seat] = $this->without($state['hands'][$seat], $card);
                 $state['table'][count($state['table']) - 1]['defense'] = $card;
+                // A new rank on the table: everyone may throw in again.
+                $state['passed'] = [];
                 $events[] = ['type' => 'defended', 'seat' => $seat, 'card' => $card];
                 break;
             case 'take':
                 $state['taking'] = true;
+                $state['passed'] = [];
                 $events[] = ['type' => 'taking', 'seat' => $seat];
                 break;
             case 'done':
-                return new Transition(...$this->endBout($state, $events));
+                $state['passed'][] = $seat;
+                break;
         }
 
-        // Nothing left to throw in: the bout ends on its own.
-        if (($state['taking'] || ! $this->unbeaten($state)) && $this->playable($state) === []) {
+        // Nobody has anything (more) to throw in: the bout ends on its own.
+        if (($state['taking'] || ! $this->unbeaten($state)) && $this->currentThrower($state) === null) {
             return new Transition(...$this->endBout($state, $events));
+        }
+
+        return new Transition($state, $events);
+    }
+
+    /**
+     * At tables of three or more a player who runs out of time passes, picks up, or leads their lowest
+     * card, so the others can play on. Heads-up, running out of time loses.
+     *
+     * @param  array<string, mixed>  $state
+     */
+    public function timeoutAction(array $state, int $seat): ?Action
+    {
+        if (count($state['hands']) <= 2) {
+            return null;
+        }
+        $legal = $this->legalActions($state, $seat);
+        $types = array_map(fn (Action $a) => $a->type, $legal);
+
+        if (in_array('take', $types, true)) {
+            return new Action('take');
+        }
+        if (in_array('done', $types, true)) {
+            return new Action('done');
+        }
+        usort($legal, fn (Action $a, Action $b) => DurakCards::strength((string) $a->payload['card'], $state['trump']) <=> DurakCards::strength((string) $b->payload['card'], $state['trump']));
+
+        return $legal[0] ?? null;
+    }
+
+    /**
+     * The player leaves the table: their cards are put aside, and a bout they were attacking or
+     * defending is cleared, the next player attacking.
+     *
+     * @param  array<string, mixed>  $state
+     */
+    public function depart(array $state, int $seat, RandomSource $random): Transition
+    {
+        $state['left'] ??= array_fill(0, count($state['hands']), false);
+        $state['passed'] ??= [];
+        $events = [['type' => 'left', 'seat' => $seat]];
+
+        $state['left'][$seat] = true;
+        $state['discarded'] += count($state['hands'][$seat]);
+        $state['hands'][$seat] = [];
+        $state['passed'] = array_values(array_diff($state['passed'], [$seat]));
+
+        if ($state['result'] === null && ($seat === $state['attacker'] || $seat === $state['defender'])) {
+            $state['discarded'] += $this->tableCount($state);
+            $state['table'] = [];
+            $state['taking'] = false;
+            $state['passed'] = [];
+            $state['attacker'] = $this->nextActive($state, $seat);
+            $state['defender'] = $this->nextActive($state, $state['attacker']);
+            $this->refill($state, $events);
+            $state['limit'] = min(6, count($state['hands'][$state['defender']]));
+        }
+
+        $state['result'] ??= $this->result($state);
+
+        // A bout can't continue if nobody can act in it any more.
+        if ($state['result'] === null && $state['table'] !== [] && ($state['taking'] || ! $this->unbeaten($state)) && $this->currentThrower($state) === null) {
+            [$state, $events] = $this->endBout($state, $events);
         }
 
         return new Transition($state, $events);
@@ -167,8 +249,10 @@ final class DurakEngine implements GameEngine
             'attacker' => $state['attacker'],
             'defender' => $state['defender'],
             'taking' => $state['taking'],
+            'passed' => $state['passed'] ?? [],
             'limit' => $state['limit'],
             'discarded' => $state['discarded'],
+            'left' => $state['left'] ?? array_fill(0, count($state['hands']), false),
             'result' => $state['result'],
         ];
     }
@@ -182,17 +266,17 @@ final class DurakEngine implements GameEngine
     }
 
     /**
-     * Cards the attacker may play now: anything to open a bout; otherwise ranks already on the table,
-     * within the bout's limit and the defender's hand.
+     * Cards $seat may play now: anything to open a bout (attacker); otherwise ranks already on the
+     * table, within the bout's limit and the defender's hand.
      *
      * @param  array<string, mixed>  $state
      * @return list<string>
      */
-    private function playable(array $state): array
+    private function playable(array $state, int $seat): array
     {
-        $hand = $state['hands'][$state['attacker']];
+        $hand = $state['hands'][$seat];
         if ($state['table'] === []) {
-            return $hand;
+            return $seat === $state['attacker'] ? $hand : [];
         }
 
         $unbeaten = count(array_filter($state['table'], fn (array $pair) => $pair['defense'] === null));
@@ -209,6 +293,43 @@ final class DurakEngine implements GameEngine
         }
 
         return array_values(array_filter($hand, fn (string $card) => isset($ranks[$card[0]])));
+    }
+
+    /**
+     * Who may throw in, in order: the main attacker, then the others round the table from the
+     * defender (never the defender).
+     *
+     * @param  array<string, mixed>  $state
+     * @return list<int>
+     */
+    private function throwers(array $state): array
+    {
+        $n = count($state['hands']);
+        $order = [$state['attacker']];
+        for ($i = 1; $i < $n; $i++) {
+            $seat = ($state['defender'] + $i) % $n;
+            if ($seat !== $state['attacker'] && $seat !== $state['defender'] && ! ($state['left'][$seat] ?? false)) {
+                $order[] = $seat;
+            }
+        }
+
+        return $order;
+    }
+
+    /**
+     * The first thrower who hasn't passed and has something to throw in, if any.
+     *
+     * @param  array<string, mixed>  $state
+     */
+    private function currentThrower(array $state): ?int
+    {
+        foreach ($this->throwers($state) as $seat) {
+            if (! in_array($seat, $state['passed'] ?? [], true) && $this->playable($state, $seat) !== []) {
+                return $seat;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -246,31 +367,99 @@ final class DurakEngine implements GameEngine
         }
         $state['table'] = [];
         $state['taking'] = false;
+        $state['passed'] = [];
 
-        foreach ([$state['attacker'], $state['defender']] as $seat) {
-            $need = max(0, self::HAND - count($state['hands'][$seat]));
-            $drawn = array_splice($state['deck'], 0, $need);
+        $this->refill($state, $events);
+
+        $defender = $state['defender'];
+        $state['attacker'] = ! $took && $this->isActive($state, $defender) ? $defender : $this->nextActive($state, $defender);
+        $state['defender'] = $this->nextActive($state, $state['attacker']);
+        $state['limit'] = min(6, count($state['hands'][$state['defender']]));
+        $state['result'] = $this->result($state);
+
+        return [$state, $events];
+    }
+
+    /**
+     * Everyone draws up to six while the deck lasts: the attacker first, the defender last.
+     *
+     * @param  array<string, mixed>  $state
+     * @param  list<array<string, mixed>>  $events
+     */
+    private function refill(array &$state, array &$events): void
+    {
+        foreach ([...$this->throwers($state), $state['defender']] as $seat) {
+            if ($state['left'][$seat] ?? false) {
+                continue;
+            }
+            $drawn = array_splice($state['deck'], 0, max(0, self::HAND - count($state['hands'][$seat])));
             array_push($state['hands'][$seat], ...$drawn);
             if ($drawn !== []) {
                 $events[] = ['type' => 'drew', 'seat' => $seat, 'count' => count($drawn)];
             }
         }
+    }
 
-        if (! $took) {
-            [$state['attacker'], $state['defender']] = [$state['defender'], $state['attacker']];
+    /**
+     * Still in the game: hasn't left, and holds cards or can still draw.
+     *
+     * @param  array<string, mixed>  $state
+     */
+    private function isActive(array $state, int $seat): bool
+    {
+        return ! ($state['left'][$seat] ?? false) && ($state['hands'][$seat] !== [] || $state['deck'] !== []);
+    }
+
+    /**
+     * The next player still in the game after $seat (or $seat itself when nobody else is).
+     *
+     * @param  array<string, mixed>  $state
+     */
+    private function nextActive(array $state, int $seat): int
+    {
+        $n = count($state['hands']);
+        for ($i = 1; $i <= $n; $i++) {
+            if ($this->isActive($state, ($seat + $i) % $n)) {
+                return ($seat + $i) % $n;
+            }
         }
-        $state['limit'] = min(6, count($state['hands'][$state['defender']]));
 
-        if ($state['deck'] === []) {
-            $out = array_keys(array_filter($state['hands'], fn (array $hand) => $hand === []));
-            $state['result'] = match (count($out)) {
-                0 => null,
-                1 => ['winners' => $out, 'reason' => 'durak'],
-                default => ['winners' => [], 'reason' => 'draw'],
-            };
+        return $seat;
+    }
+
+    /**
+     * The end of the game, once at most one player is still in it.
+     *
+     * @param  array<string, mixed>  $state
+     * @return array{winners: list<int>, reason: string}|null
+     */
+    private function result(array $state): ?array
+    {
+        $n = count($state['hands']);
+        $active = array_values(array_filter(range(0, $n - 1), fn (int $s) => $this->isActive($state, $s)));
+        if (count($active) > 1) {
+            return null;
+        }
+        // Players who got rid of their cards (not those who left the table).
+        $finished = array_values(array_filter(range(0, $n - 1), fn (int $s) => ! ($state['left'][$s] ?? false) && ! in_array($s, $active, true)));
+
+        if ($active === []) {
+            return ['winners' => [], 'reason' => 'draw'];
+        }
+        if ($finished === []) {
+            // Everyone else left the table.
+            return ['winners' => $active, 'reason' => 'last_player'];
         }
 
-        return [$state, $events];
+        return ['winners' => $finished, 'reason' => 'durak'];
+    }
+
+    /**
+     * @param  array<string, mixed>  $state
+     */
+    private function tableCount(array $state): int
+    {
+        return array_sum(array_map(fn (array $pair) => $pair['defense'] === null ? 1 : 2, $state['table']));
     }
 
     /**

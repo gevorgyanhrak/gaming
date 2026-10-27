@@ -63,9 +63,9 @@ class GameModeSeeder extends Seeder
             ]],
             'durak' => [[
                 'slug' => 'podkidnoy',
-                'name' => ['en' => 'Podkidnoy, 2 players', 'ru' => 'Подкидной, 2 игрока', 'hy' => 'Պոդկիդնոյ, 2 խաղացող'],
-                'description' => null,
-                'min_players' => 2, 'max_players' => 2,
+                'name' => ['en' => 'Podkidnoy', 'ru' => 'Подкидной', 'hy' => 'Պոդկիդնոյ'],
+                'description' => ['en' => '2 to 6 players.', 'ru' => 'От 2 до 6 игроков.', 'hy' => '2-ից 6 խաղացող։'],
+                'min_players' => 2, 'max_players' => 6,
                 'config' => ['variant' => 'podkidnoy', 'deck_size' => 36, 'turn_seconds' => 45],
             ]],
             'poker' => [[

@@ -19,7 +19,7 @@ Architecture and decisions: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [
 | Registration and login by email or phone, verification codes, password reset, profiles, avatars, settings, roles | ✅ Done (Phase 3). The SMS provider is not chosen yet (see below). |
 | Admin panel: users and moderation, games and modes, bots, settings, content pages, audit log, dashboard | ✅ Done (Phase 4). Game statistics join the dashboard with gameplay. |
 | Gameplay infrastructure: rooms, matchmaking with bot fallback, bots, turn timers, real-time updates, history and statistics | ✅ Done (Phase 5), tested with a test-only engine. Real games plug in from Phase 6. |
-| Playable games | ✅ All five, with bots easy/medium/hard: Nardi (short nardi), Checkers (Russian draughts), Chess (with chess clocks), Durak (podkidnoy, 2 players) and Poker (no-limit hold'em sit-and-go, 2–6 seats, play chips only). Matchmaking fills poker tables of up to six (a full table starts at once, otherwise everyone waiting sits down after 20 seconds). |
+| Playable games | ✅ All five, with bots easy/medium/hard: Nardi (short nardi), Checkers (Russian draughts), Chess (with chess clocks), Durak (podkidnoy, 2–6 players) and Poker (no-limit hold'em sit-and-go, 2–6 seats, play chips only). Matchmaking fills poker tables of up to six (a full table starts at once, otherwise everyone waiting sits down after 20 seconds). |
 
 ## Prerequisites
 
