@@ -80,6 +80,12 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
 - Every data view handles loading, empty and error states. Accessible markup: labels, `aria-invalid`,
   roles for alerts, keyboard-operable menus. Dark-first design tokens from `src/styles/index.css`.
 - New sign-in/account-like pages are lazy routes (`lazy:` in `app/routes.tsx`).
+- Real time: `shared/realtime` (Echo + Reverb, `useUserChannel(userId, {'room.updated': …})`); in tests the
+  global fake from `test/realtime.ts` (`emit('user.1', 'room.updated', payload)`).
+- Gameplay UI: `features/play` (api, `useRoom` — merges updates by version and refetches on gaps,
+  PlayPanel, MatchmakingStatus); `RoomPage` renders the board from `games/registry.ts`
+  (`boards[slug]`, lazy). A board only renders `state.view` and calls `onAction` with one of
+  `state.legal_actions` — never rules in the UI.
 - When generic skill advice conflicts with the established conventions of this repo, follow the repo.
 
 ## Definition of done (run these; report real output)

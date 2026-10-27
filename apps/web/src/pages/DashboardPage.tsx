@@ -1,13 +1,13 @@
 import { useTranslation } from 'react-i18next'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { GameGrid } from '@/features/catalog/components/GameGrid'
+import { DashboardGames } from '@/features/play/components/DashboardGames'
 import { Avatar } from '@/shared/ui/Avatar'
 import { ButtonLink } from '@/shared/ui/Button'
 import { Container } from '@/shared/ui/Container'
 
 /**
- * Signed-in home. Recent games, statistics and online counts join this page once
- * gameplay exists (Phase 5); until then it shows only what is real.
+ * Signed-in home: games to resume, statistics, and the catalog.
  */
 export function DashboardPage() {
   const { t, i18n } = useTranslation()
@@ -40,6 +40,8 @@ export function DashboardPage() {
           </ButtonLink>
         </div>
       </section>
+
+      <DashboardGames />
 
       <section>
         <h2 className="mb-6 text-2xl font-bold">{t('dashboard.gamesHeading')}</h2>

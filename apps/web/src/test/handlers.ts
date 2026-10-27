@@ -1,5 +1,6 @@
 import { http, HttpResponse } from 'msw'
 import type { CurrentUser } from '@/features/auth/api'
+import type { Room, RoomState } from '@/features/play/api'
 import type { GameDetail, GameSummary } from '@/features/catalog/queries'
 import type { PublicConfig } from '@/features/platform/usePublicConfig'
 
@@ -77,6 +78,46 @@ export const handlers = [
   // Visitors are guests unless a test uses signedInAs().
   http.get('*/api/v1/me', unauthenticated),
   http.get('*/sanctum/csrf-cookie', () => new HttpResponse(null, { status: 204 })),
+  http.get('*/api/v1/me/rooms', () => HttpResponse.json({ data: [] })),
+  http.get('*/api/v1/me/stats', () => HttpResponse.json({ data: [] })),
+  http.get('*/api/v1/matchmaking', () => HttpResponse.json({ data: { ticket: null, room: null } })),
   http.get('*/api/v1/config', () => HttpResponse.json({ data: configFixture })),
   http.get('*/api/v1/games', () => HttpResponse.json({ data: [summaryOf(gameFixture())] })),
 ]
+
+export function roomFixture(overrides: Partial<Room> = {}): Room {
+  return {
+    id: 'room-1',
+    game: { slug: 'tictactoe', name: 'Tic-tac-toe' },
+    mode: { slug: 'classic', name: 'Classic' },
+    type: 'bot',
+    status: 'active',
+    invite_code: null,
+    seats: 2,
+    participants: [
+      { seat: 0, is_bot: false, name: 'alice', username: 'alice', avatar_url: null, result: null },
+      { seat: 1, is_bot: true, name: 'Aram', username: null, avatar_url: null, result: null },
+    ],
+    end_reason: null,
+    created_at: '2026-10-27T10:00:00+00:00',
+    started_at: '2026-10-27T10:00:00+00:00',
+    finished_at: null,
+    ...overrides,
+  }
+}
+
+export function roomStateFixture(overrides: Partial<RoomState> = {}): RoomState {
+  return {
+    room: 'room-1',
+    status: 'active',
+    version: 0,
+    seat: 0,
+    seats_to_act: [0],
+    deadline: null,
+    server_time: '2026-10-27T10:00:00+00:00',
+    view: { board: [null, null, null] },
+    legal_actions: [{ type: 'place', cell: 0 }],
+    result: null,
+    ...overrides,
+  }
+}

@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router'
 import { GameArtwork } from '@/features/catalog/components/GameArtwork'
 import { PlayerCount } from '@/features/catalog/components/PlayerCount'
 import { useGame } from '@/features/catalog/queries'
+import { PlayPanel } from '@/features/play/components/PlayPanel'
 import { isApiError } from '@/shared/api/errors'
 import { Badge } from '@/shared/ui/Badge'
 import { splitParagraphs } from '@/shared/lib/paragraphs'
@@ -53,7 +54,11 @@ export function GamePage() {
               </div>
             </header>
 
-            {game.data.is_playable ? null : (
+            {game.data.is_playable ? (
+              <div className="mt-8">
+                <PlayPanel game={game.data} />
+              </div>
+            ) : (
               <p className="mt-8 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-muted">
                 {t('game.notPlayable')}
               </p>

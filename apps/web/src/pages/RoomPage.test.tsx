@@ -1,0 +1,155 @@
+import { screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { http, HttpResponse } from 'msw'
+import { describe, expect, it, vi } from 'vitest'
+import { roomFixture, roomStateFixture, signedInAs, userFixture } from '@/test/handlers'
+import { emit } from '@/test/realtime'
+import { renderRoute } from '@/test/render'
+import { server } from '@/test/server'
+
+// A minimal board: shows the version and offers the legal actions as buttons.
+vi.mock('@/games/registry', async () => {
+  const { createElement, lazy } = await import('react')
+  type Props = {
+    state: { version: number; legal_actions: { type: string; cell?: number }[] }
+    onAction: (a: unknown) => void
+  }
+  const TestBoard = ({ state, onAction }: Props) =>
+    createElement('div', null, [
+      createElement('p', { key: 'v' }, `version ${state.version}`),
+      ...state.legal_actions.map((action, i) =>
+        createElement(
+          'button',
+          { key: i, type: 'button', onClick: () => onAction(action) },
+          `play ${action.cell}`,
+        ),
+      ),
+    ])
+  return { boards: { tictactoe: lazy(() => Promise.resolve({ default: TestBoard })) } }
+})
+
+function serveRoom(room = roomFixture(), state = roomStateFixture()) {
+  server.use(
+    signedInAs(userFixture({ id: 1, username: 'alice' })),
+    http.get('*/api/v1/rooms/room-1', () => HttpResponse.json({ data: room })),
+    http.get('*/api/v1/rooms/room-1/state', () => HttpResponse.json({ data: state })),
+  )
+}
+
+describe('Room', () => {
+  it('shows players, whose turn it is, and plays a legal move', async () => {
+    serveRoom()
+    let body: Record<string, unknown> = {}
+    server.use(
+      http.post('*/api/v1/rooms/room-1/actions', async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>
+        return HttpResponse.json({
+          data: roomStateFixture({ version: 1, seats_to_act: [1], legal_actions: [] }),
+        })
+      }),
+    )
+    renderRoute('/rooms/room-1')
+
+    expect(await screen.findByText('Your turn')).toBeInTheDocument()
+    expect(screen.getByText('Bot')).toBeInTheDocument()
+    await userEvent.click(await screen.findByRole('button', { name: 'play 0' }))
+
+    expect(await screen.findByText('version 1')).toBeInTheDocument()
+    expect(screen.getByText('Waiting for the other player')).toBeInTheDocument()
+    expect(body).toMatchObject({ expected_version: 0, action: { type: 'place', cell: 0 } })
+    expect(body.client_action_id).toMatch(/^[0-9a-f-]{36}$/)
+  })
+
+  it('applies the next update from the server and refetches after a gap', async () => {
+    let stateRequests = 0
+    server.use(
+      signedInAs(userFixture({ id: 1 })),
+      http.get('*/api/v1/rooms/room-1', () => HttpResponse.json({ data: roomFixture() })),
+      http.get('*/api/v1/rooms/room-1/state', () => {
+        stateRequests += 1
+        return HttpResponse.json({
+          data: roomStateFixture({ version: stateRequests === 1 ? 0 : 5 }),
+        })
+      }),
+    )
+    renderRoute('/rooms/room-1')
+    await screen.findByText('version 0')
+
+    emit('user.1', 'room.updated', roomStateFixture({ version: 1 }))
+    expect(await screen.findByText('version 1')).toBeInTheDocument()
+    expect(stateRequests).toBe(1)
+
+    emit('user.1', 'room.updated', roomStateFixture({ version: 4 }))
+    expect(await screen.findByText('version 5')).toBeInTheDocument()
+    expect(stateRequests).toBe(2)
+  })
+
+  it('shows the invite code while waiting and starts when a friend joins', async () => {
+    let started = false
+    server.use(
+      signedInAs(userFixture({ id: 1 })),
+      http.get('*/api/v1/rooms/room-1', () =>
+        HttpResponse.json({
+          data: started
+            ? roomFixture({ type: 'private' })
+            : roomFixture({
+                type: 'private',
+                status: 'waiting',
+                invite_code: 'ABC234',
+                participants: [roomFixture().participants[0]!],
+              }),
+        }),
+      ),
+      http.get('*/api/v1/rooms/room-1/state', () =>
+        HttpResponse.json({ data: roomStateFixture() }),
+      ),
+    )
+    renderRoute('/rooms/room-1')
+
+    expect(await screen.findByText('ABC234')).toBeInTheDocument()
+
+    started = true
+    emit('user.1', 'room.updated', roomStateFixture({ version: 0 }))
+
+    expect(await screen.findByText('Your turn')).toBeInTheDocument()
+  })
+
+  it('shows the result when the game is over', async () => {
+    serveRoom(
+      roomFixture({
+        status: 'finished',
+        end_reason: 'completed',
+        participants: [
+          { ...roomFixture().participants[0]!, result: 'win' },
+          { ...roomFixture().participants[1]!, result: 'loss' },
+        ],
+      }),
+      roomStateFixture({ status: 'finished', seats_to_act: [], legal_actions: [] }),
+    )
+    renderRoute('/rooms/room-1')
+
+    expect(await screen.findByText('You won!')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Play again' })).toHaveAttribute(
+      'href',
+      '/games/tictactoe',
+    )
+  })
+
+  it('asks for confirmation before resigning', async () => {
+    serveRoom()
+    let left = false
+    server.use(
+      http.post('*/api/v1/rooms/room-1/leave', () => {
+        left = true
+        return HttpResponse.json({ data: roomFixture({ status: 'finished' }) })
+      }),
+    )
+    renderRoute('/rooms/room-1')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Resign' }))
+    expect(left).toBe(false)
+    await userEvent.click(screen.getByRole('button', { name: 'Yes, resign' }))
+
+    await waitFor(() => expect(left).toBe(true))
+  })
+})

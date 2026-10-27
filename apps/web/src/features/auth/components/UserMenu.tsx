@@ -56,6 +56,9 @@ export function UserMenu({ user }: { user: CurrentUser }) {
           <Link to="/dashboard" className={item} onClick={() => setOpen(false)}>
             {t('nav.dashboard')}
           </Link>
+          <Link to="/history" className={item} onClick={() => setOpen(false)}>
+            {t('nav.history')}
+          </Link>
           <Link to="/profile" className={item} onClick={() => setOpen(false)}>
             {t('nav.profile')}
           </Link>

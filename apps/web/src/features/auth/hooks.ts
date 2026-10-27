@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { bundledLocales, type Locale } from '@/shared/i18n'
+import { disconnectEcho } from '@/shared/realtime/echo'
 import { fetchCurrentUser, logout, type CurrentUser } from './api'
 
 export const authKeys = {
@@ -55,6 +56,7 @@ export function useLogout() {
     // Even if the request fails (e.g. the session already expired), forget everything user-specific.
     // Not queryClient.clear(): it detaches queries that mounted components still observe.
     onSettled: () => {
+      disconnectEcho()
       const notMe = (query: { queryKey: readonly unknown[] }) =>
         query.queryKey[0] !== authKeys.me[0]
       queryClient.setQueryData(authKeys.me, null)

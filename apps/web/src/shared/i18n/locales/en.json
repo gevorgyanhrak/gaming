@@ -8,7 +8,8 @@
     "settings": "Settings",
     "account": "Account menu",
     "login": "Log in",
-    "register": "Sign up"
+    "register": "Sign up",
+    "history": "Game history"
   },
   "landing": {
     "title": "Classic board and card games, in one place",
@@ -122,7 +123,15 @@
     "title": "Dashboard",
     "welcome": "Welcome, {{name}}",
     "memberSince": "Member since {{date}}",
-    "gamesHeading": "Games"
+    "gamesHeading": "Games",
+    "inProgress": "Games in progress",
+    "stats": "Your statistics",
+    "game": "Game",
+    "played": "Played",
+    "wins": "Wins",
+    "losses": "Losses",
+    "draws": "Draws",
+    "history": "See all games"
   },
   "profile": {
     "country": "Country",
@@ -173,5 +182,79 @@
   },
   "content": {
     "updated": "Last updated {{date}}"
+  },
+  "play": {
+    "title": "Play",
+    "mode": "Mode",
+    "loginToPlay": "Log in to play",
+    "findOpponent": "Find an opponent",
+    "playWithFriend": "Play with a friend",
+    "botDifficulty": "Bot level",
+    "playBot": "Play against a bot",
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "inviteCode": "Invite code",
+    "join": "Join",
+    "searching": "Looking for an opponent…",
+    "botOffer": "No one is available right now. Play against a bot instead?",
+    "botIn_one": "A bot game will be offered in {{count}} second.",
+    "botIn_other": "A bot game will be offered in {{count}} seconds.",
+    "acceptBot": "Play against a bot",
+    "cancelSearch": "Cancel"
+  },
+  "room": {
+    "players": "Players",
+    "bot": "Bot",
+    "you": "you",
+    "yourTurn": "Your turn",
+    "theirTurn": "Waiting for the other player",
+    "secondsLeft_one": "{{count}} second left",
+    "secondsLeft_other": "{{count}} seconds left",
+    "waiting": "Waiting for your friend to join. Share this code:",
+    "inviteCode": "Invite code",
+    "copyCode": "Copy code",
+    "cancel": "Close room",
+    "resign": "Resign",
+    "confirmResign": "Yes, resign",
+    "keepPlaying": "Keep playing",
+    "playAgain": "Play again",
+    "finished": "The game is over.",
+    "aborted": "This room was closed.",
+    "notFound": "This game doesn't exist or you're not part of it.",
+    "boardUnavailable": "This game's board isn't available yet.",
+    "result": {
+      "win": "Won",
+      "loss": "Lost",
+      "draw": "Draw",
+      "abandoned": "Timed out"
+    },
+    "outcome": {
+      "win": "You won!",
+      "loss": "You lost.",
+      "draw": "It's a draw.",
+      "abandoned": "You ran out of time."
+    },
+    "endReason": {
+      "completed": "The game was played to the end.",
+      "resign": "A player resigned.",
+      "timeout": "A player ran out of time."
+    },
+    "status": {
+      "waiting": "Waiting",
+      "active": "In progress",
+      "finished": "Finished",
+      "aborted": "Closed"
+    }
+  },
+  "history": {
+    "title": "Game history",
+    "empty": "No finished games yet.",
+    "against": "vs {{names}}",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {{page}} of {{total}}"
   }
 }

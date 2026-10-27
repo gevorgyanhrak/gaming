@@ -17,6 +17,7 @@ class GameModeResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
             'slug' => $this->slug,
             'name' => $this->name,
             /** @var string|null */

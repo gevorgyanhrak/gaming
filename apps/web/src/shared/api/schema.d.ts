@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/v1/rooms/{room}/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Make a move. 200 with the new state; 409 if the client's view is outdated or the game is over;
+         *     422 if the move is not legal now
+         */
+        post: operations["v1.rooms.actions.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/me/avatar": {
         parameters: {
             query?: never;
@@ -156,6 +176,89 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me/games": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Finished games, newest first (paginated). Optional ?game=<slug> */
+        get: operations["v1.me.games"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Totals per game */
+        get: operations["v1.me.stats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/matchmaking": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1.matchmaking.show"];
+        put?: never;
+        post: operations["v1.matchmaking.store"];
+        delete: operations["v1.matchmaking.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/matchmaking/heartbeat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Called every ~15 s while the matchmaking screen is open */
+        post: operations["v1.matchmaking.heartbeat"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/matchmaking/accept-bot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1.matchmaking.accept-bot"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/me": {
         parameters: {
             query?: never;
@@ -165,6 +268,23 @@ export interface paths {
         };
         /** The authenticated user's account */
         get: operations["v1.me.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/stats/online": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Players active in the last 5 minutes (from last activity, cached briefly) */
+        get: operations["v1.stats.online"];
         put?: never;
         post?: never;
         delete?: never;
@@ -285,6 +405,110 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/rooms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start a game against a bot, or open a private room to share by invite code */
+        post: operations["v1.rooms.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/rooms/join": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Join a private room with its invite code. The game starts when the room is full */
+        post: operations["v1.rooms.join"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/rooms/{room}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1.rooms.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/rooms/{room}/state": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The game as the signed-in player sees it: their view, legal actions, deadline and version.
+         *     Clients call this on load and whenever an event's version shows they missed an update
+         */
+        get: operations["v1.rooms.state"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/rooms/{room}/leave": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Leave a room: resigns an active game, or leaves (the creator: closes) a waiting room */
+        post: operations["v1.rooms.leave"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/rooms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Rooms the player is in right now (waiting or in progress), to resume after a reload */
+        get: operations["v1.me.rooms.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/login": {
         parameters: {
             query?: never;
@@ -391,6 +615,11 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * BotDifficulty
+         * @enum {string}
+         */
+        BotDifficulty: "easy" | "medium" | "hard";
         /** ChangeContactRequest */
         ChangeContactRequest: {
             channel: components["schemas"]["ContactChannel"];
@@ -412,6 +641,16 @@ export interface components {
             body: string;
             updated_at: string;
         };
+        /** CreateRoomRequest */
+        CreateRoomRequest: {
+            game_mode_id: number;
+            /**
+             * @description Matchmaking rooms are created by the matchmaker, not by players.
+             * @enum {string}
+             */
+            type: "bot" | "private";
+            bot_difficulty: components["schemas"]["BotDifficulty"];
+        };
         /** ForgotPasswordRequest */
         ForgotPasswordRequest: {
             login: string;
@@ -432,6 +671,7 @@ export interface components {
         };
         /** GameModeResource */
         GameModeResource: {
+            id: number;
             slug: string;
             name: string;
             description: string | null;
@@ -449,6 +689,21 @@ export interface components {
             max_players: number;
             is_playable: boolean;
         };
+        /** GameStatResource */
+        GameStatResource: {
+            game: {
+                slug: string;
+                name: string;
+            };
+            played: number;
+            wins: number;
+            losses: number;
+            draws: number;
+            abandoned: number;
+            current_streak: number;
+            best_streak: number;
+            last_played_at: string | null;
+        };
         /** LoginRequest */
         LoginRequest: {
             login: string;
@@ -464,6 +719,7 @@ export interface components {
             country: string | null;
             created_at: string;
             last_active_at: string | null;
+            stats?: components["schemas"]["GameStatResource"][];
         };
         /** RegisterRequest */
         RegisterRequest: {
@@ -485,9 +741,60 @@ export interface components {
             password: string;
             password_confirmation: string;
         };
+        /** RoomResource */
+        RoomResource: {
+            id: string;
+            game: {
+                slug: string;
+                name: string;
+            };
+            mode: {
+                slug: string;
+                name: string;
+            };
+            /** @enum {string} */
+            type: "matchmaking" | "private" | "bot";
+            /** @enum {string} */
+            status: "waiting" | "active" | "finished" | "aborted";
+            invite_code: string | null;
+            seats: number;
+            participants: {
+                seat: number;
+                is_bot: boolean;
+                name: string | null;
+                username: string | null;
+                avatar_url: string | null;
+                result: string | null;
+            }[];
+            end_reason: string | null;
+            created_at: string;
+            started_at: string | null;
+            finished_at: string | null;
+        };
         /** SendVerificationRequest */
         SendVerificationRequest: {
             channel: components["schemas"]["ContactChannel"];
+        };
+        /** SubmitActionRequest */
+        SubmitActionRequest: {
+            /**
+             * Format: uuid
+             * @description Generated by the client per attempt; a retry with the same id is applied only once.
+             */
+            client_action_id: string;
+            /** @description The version the client saw; a different current version means its view is outdated. */
+            expected_version: number;
+            action: {
+                type: string;
+            };
+        };
+        /** TicketResource */
+        TicketResource: {
+            /** @enum {string} */
+            status: "bot_offered" | "queued";
+            game_mode_id: number;
+            joined_at: string;
+            bot_offer_at: string | null;
         };
         /** UpdateAvatarRequest */
         UpdateAvatarRequest: {
@@ -550,6 +857,10 @@ export interface components {
             channel: components["schemas"]["ContactChannel"];
             code: string;
         };
+        /** VersionConflict */
+        VersionConflict: {
+            currentVersion: number;
+        };
     };
     responses: {
         /** @description Validation error */
@@ -592,6 +903,18 @@ export interface components {
                 };
             };
         };
+        /** @description Not found */
+        ModelNotFoundException: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    /** @description Error overview. */
+                    message: string;
+                };
+            };
+        };
     };
     parameters: never;
     requestBodies: never;
@@ -600,6 +923,55 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    "v1.rooms.actions.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The room public id */
+                room: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitActionRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            room: string;
+                            /** @enum {string} */
+                            status: "waiting" | "active" | "finished" | "aborted";
+                            version: number;
+                            seat: number | null;
+                            seats_to_act: number[];
+                            deadline: string | null;
+                            server_time: string;
+                            view: {
+                                [key: string]: unknown;
+                            };
+                            legal_actions: unknown[];
+                            result: {
+                                end_reason: string | null;
+                                seats: ("win" | "loss" | "draw" | "abandoned" | null)[];
+                            } | null;
+                        };
+                    } | (Record<string, never> | components["schemas"]["VersionConflict"]);
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
     "v1.me.avatar.store": {
         parameters: {
             query?: never;
@@ -850,6 +1222,218 @@ export interface operations {
             };
         };
     };
+    "v1.me.games": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `RoomResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["RoomResource"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.me.stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `GameStatResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["GameStatResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.matchmaking.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            ticket: {
+                                [key: string]: unknown;
+                            } | null;
+                            room: string | null;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.matchmaking.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    game_mode_id: number;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            ticket: {
+                                [key: string]: unknown;
+                            } | null;
+                            room: string | null;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.matchmaking.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.matchmaking.heartbeat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            ticket: {
+                                [key: string]: unknown;
+                            } | null;
+                            room: string | null;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.matchmaking.accept-bot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    bot_difficulty?: components["schemas"]["BotDifficulty"];
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            ticket: {
+                                [key: string]: unknown;
+                            } | null;
+                            room: string | null;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
     "v1.me.show": {
         parameters: {
             query?: never;
@@ -871,6 +1455,29 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.stats.online": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            online: number;
+                        };
+                    };
+                };
+            };
         };
     };
     "v1.me.password.update": {
@@ -1009,7 +1616,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        data: components["schemas"]["PublicUserResource"];
+                        data: components["schemas"]["PublicUserResource"] & Record<string, never>;
                     };
                 };
             };
@@ -1053,6 +1660,188 @@ export interface operations {
                     };
                 };
             };
+        };
+    };
+    "v1.rooms.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRoomRequest"];
+            };
+        };
+        responses: {
+            /** @description `RoomResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["RoomResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.rooms.join": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    invite_code: string;
+                };
+            };
+        };
+        responses: {
+            /** @description `RoomResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["RoomResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.rooms.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The room public id */
+                room: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `RoomResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["RoomResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "v1.rooms.state": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The room public id */
+                room: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            room: string;
+                            /** @enum {string} */
+                            status: "waiting" | "active" | "finished" | "aborted";
+                            version: number;
+                            seat: number | null;
+                            seats_to_act: number[];
+                            deadline: string | null;
+                            server_time: string;
+                            view: {
+                                [key: string]: unknown;
+                            };
+                            legal_actions: unknown[];
+                            result: {
+                                end_reason: string | null;
+                                seats: ("win" | "loss" | "draw" | "abandoned" | null)[];
+                            } | null;
+                        };
+                    } | {
+                        data: null;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "v1.rooms.leave": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The room public id */
+                room: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["RoomResource"];
+                    } | (Record<string, never> | components["schemas"]["VersionConflict"]);
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "v1.me.rooms.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `RoomResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["RoomResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
         };
     };
     "v1.auth.login": {

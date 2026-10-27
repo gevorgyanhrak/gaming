@@ -109,6 +109,7 @@ describe('Admin-managed platform settings in the app', () => {
           data: gameFixture({
             modes: [
               {
+                id: 1,
                 slug: 'blitz',
                 name: 'Blitz 5+3',
                 description: '5 minutes each.',
