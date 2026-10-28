@@ -18,7 +18,7 @@ import { GridIcon, HistoryIcon, HomeIcon, SettingsIcon, UserIcon } from '@/share
 import { Skeleton } from '@/shared/ui/Skeleton'
 
 const navLink = ({ isActive }: { isActive: boolean }) =>
-  `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+  `rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
     isActive ? 'bg-surface-raised text-fg' : 'text-muted hover:text-fg'
   }`
 
@@ -64,7 +64,10 @@ export function PublicLayout() {
           <nav aria-label={t('nav.main')} className="flex items-center gap-1 sm:gap-2">
             {/* Signed-in players have the tab bar on phones and everyone has the sidebar on desktops. */}
             {user.data ? null : (
-              <NavLink to="/games" className={(state) => `${navLink(state)} lg:hidden`}>
+              <NavLink
+                to="/games"
+                className={(state) => `${navLink(state)} hidden sm:block lg:hidden`}
+              >
                 {t('nav.games')}
               </NavLink>
             )}
@@ -77,7 +80,7 @@ export function PublicLayout() {
                 <NavLink to="/login" className={navLink}>
                   {t('nav.login')}
                 </NavLink>
-                <ButtonLink to="/register" className="px-3 py-2">
+                <ButtonLink to="/register" className="px-3 py-2 whitespace-nowrap">
                   {t('nav.register')}
                 </ButtonLink>
               </>
