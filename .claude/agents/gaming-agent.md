@@ -91,12 +91,17 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   Boards also receive `players` (names by seat). `ActiveGamesBar` (in PublicLayout) lists the games
   you're in with a return link and a close (leave) button; `usePresence` on RoomPage reports presence. Range actions (poker raise {min,max}) are sent as
   {type, amount}.
-- Lobby look (chess.com layout + casino-lobby polish): top bar with logo and account, desktop sidebar
-  (`SideNav` in PublicLayout: sections, every game with its `GameIcon`, own pages), bottom tab bar on
-  phones for signed-in players. Gold (`.text-gold`, `Button variant="gold"`) marks headlines and the main
-  "play" actions; purple stays the accent. Games without uploaded art use the built-in SVG scenes in
-  `features/catalog/components/GameArt.tsx`. Few short choices are `shared/ui/Segmented` radio pills,
-  not selects. Never imply real money: the platform is play-for-fun only.
+- Club look (modelled on bazarblot.am): the app is a brass-edged window (`.club-frame`) over a lamp-lit
+  wood room (`.club-room`); panels are `.club-panel`, icon medallions `.club-medal`. Warm tokens in
+  `index.css`: accent is the green "play" colour, accent-text/gold is brass. Navigation is a ☰ drawer
+  (`Drawer` + `SideNav` in PublicLayout; a back arrow on `/rooms/*`) plus a phone tab bar. Games are
+  a 3D carousel (`GameCarousel`: arrows, dots, swipe, arrow keys, autoplay off with reduced motion);
+  the opened game's art and title travel to its page with React `<ViewTransition name>` (names in
+  `features/catalog/transitions.ts`; the Outlet is wrapped in one `<ViewTransition>`; don't use the
+  deprecated Link `viewTransition` prop). The game page is a lobby: hero with real stats and the big
+  green PLAY (matchmaking) + `ModeCard`s (bot, friend, invite code) rising in with `animate-rise`.
+  Games without uploaded art use the SVG scenes in `GameArt.tsx`; few short choices are
+  `Segmented` radio pills. Never imply real money, coins, VIP or a shop: play-for-fun only.
 - Card tables use the flat `.felt-table` baize. Durak seats the others in panels left, across and right in
   table order (`PLACES`; the player after you sits on your left), with your hand as a straight row that
   overlaps more as it grows and one wide action button under it; on phones the opponents stack on top.

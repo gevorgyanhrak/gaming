@@ -2,20 +2,17 @@ import { useTranslation } from 'react-i18next'
 import { Skeleton } from '@/shared/ui/Skeleton'
 import { EmptyState, QueryErrorState } from '@/shared/ui/States'
 import { useGames } from '../queries'
-import { GameCard } from './GameCard'
+import { GameCarousel } from './GameCarousel'
 
-const grid = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'
-
+/** The game catalogue as a carousel, with its loading, error and empty states. */
 export function GameGrid() {
   const { t } = useTranslation()
   const games = useGames()
 
   if (games.isPending) {
     return (
-      <div className={grid} data-testid="game-grid-loading">
-        {Array.from({ length: 3 }, (_, i) => (
-          <Skeleton key={i} className="h-72 rounded-2xl" />
-        ))}
+      <div data-testid="game-grid-loading" className="flex justify-center">
+        <Skeleton className="aspect-[4/5] w-[min(38rem,80%)] rounded-[1.75rem] sm:aspect-[16/10]" />
       </div>
     )
   }
@@ -28,13 +25,5 @@ export function GameGrid() {
     return <EmptyState title={t('catalog.empty')} />
   }
 
-  return (
-    <ul className={grid}>
-      {games.data.map((game) => (
-        <li key={game.slug} className="flex">
-          <GameCard game={game} />
-        </li>
-      ))}
-    </ul>
-  )
+  return <GameCarousel games={games.data} />
 }

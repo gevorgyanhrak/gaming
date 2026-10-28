@@ -1,4 +1,4 @@
-import { useId, type ReactNode } from 'react'
+import { useId, type CSSProperties, type ReactNode } from 'react'
 
 /*
  * Built-in illustrations for the games we ship, used until an admin uploads artwork: a scene for
@@ -103,10 +103,12 @@ const scenes: Record<string, (id: string) => ReactNode> = {
 export function GameScene({
   slug,
   className = '',
+  style,
   fallback = null,
 }: {
   slug: string
   className?: string
+  style?: CSSProperties
   fallback?: ReactNode
 }) {
   const id = useId().replace(/:/g, '')
@@ -118,6 +120,7 @@ export function GameScene({
       preserveAspectRatio="xMidYMid slice"
       aria-hidden="true"
       className={className}
+      style={style}
     >
       {scene(id)}
     </svg>

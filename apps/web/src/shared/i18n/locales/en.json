@@ -12,7 +12,10 @@
     "history": "Game history",
     "sections": "Sections",
     "shortcuts": "Shortcuts",
-    "historyShort": "History"
+    "historyShort": "History",
+    "menu": "Menu",
+    "close": "Close menu",
+    "back": "Back"
   },
   "landing": {
     "title": "Classic board and card games, in one place",
@@ -457,5 +460,14 @@
     "keep": "Keep playing",
     "awayLimit_one": "Come back within {{count}} second, or the game is lost.",
     "awayLimit_other": "Come back within {{count}} seconds, or the game is lost."
+  },
+  "carousel": {
+    "carousel": "carousel",
+    "slide": "slide",
+    "label": "Games",
+    "position": "{{index}} of {{count}}",
+    "previous": "Previous game",
+    "next": "Next game",
+    "show": "Show {{name}}"
   }
 }

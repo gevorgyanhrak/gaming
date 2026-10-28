@@ -55,12 +55,12 @@ export function DashboardPage() {
         </div>
       </section>
 
-      <DashboardGames />
-
       <section>
         <h2 className="mb-6 text-2xl font-bold">{t('dashboard.gamesHeading')}</h2>
         <GameGrid />
       </section>
+
+      <DashboardGames />
     </Container>
   )
 }

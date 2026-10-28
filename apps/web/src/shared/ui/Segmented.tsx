@@ -23,7 +23,7 @@ export function Segmented<T extends string | number>({
         {options.map((option) => (
           <label
             key={option.value}
-            className="cursor-pointer rounded-lg px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:text-fg has-checked:bg-accent has-checked:text-white has-focus-visible:outline-2 has-focus-visible:outline-accent-text"
+            className="cursor-pointer rounded-lg px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:text-fg has-checked:bg-linear-to-b has-checked:from-gold-light has-checked:to-gold has-checked:text-black has-focus-visible:outline-2 has-focus-visible:outline-accent-text"
           >
             <input
               type="radio"

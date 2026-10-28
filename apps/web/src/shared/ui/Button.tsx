@@ -3,7 +3,7 @@ import { Link, type LinkProps } from 'react-router'
 
 const variants = {
   primary:
-    'bg-linear-to-b from-accent-light to-accent text-white shadow-lg shadow-accent/25 hover:brightness-110',
+    'border border-white/15 bg-linear-to-b from-accent-light to-accent text-white shadow-lg shadow-black/40 hover:brightness-110',
   /** The main "play" calls to action. */
   gold: 'bg-linear-to-b from-gold-light via-gold to-gold-dark text-black shadow-lg shadow-gold/20 hover:brightness-110',
   secondary:

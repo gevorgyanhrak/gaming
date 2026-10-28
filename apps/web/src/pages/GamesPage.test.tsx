@@ -85,7 +85,7 @@ describe('Games catalog', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Игры')
   })
 
-  it('lists every game in the sidebar', async () => {
+  it('lists every game in the menu', async () => {
     server.use(
       http.get('*/api/v1/games', () =>
         HttpResponse.json({
@@ -95,11 +95,43 @@ describe('Games catalog', () => {
     )
 
     renderRoute('/games')
+    await userEvent.click(await screen.findByRole('button', { name: 'Menu' }))
 
-    const sidebar = await screen.findByRole('navigation', { name: 'Sections' })
-    expect(await within(sidebar).findByRole('link', { name: 'Durak' })).toHaveAttribute(
+    const menu = await screen.findByRole('navigation', { name: 'Sections' })
+    expect(await within(menu).findByRole('link', { name: 'Durak' })).toHaveAttribute(
       'href',
       '/games/durak',
     )
+
+    await userEvent.keyboard('{Escape}')
+    expect(screen.queryByRole('navigation', { name: 'Sections' })).not.toBeInTheDocument()
+  })
+
+  it('turns the carousel with the arrows and the dots', async () => {
+    server.use(
+      http.get('*/api/v1/games', () =>
+        HttpResponse.json({
+          data: ['Nardi', 'Chess', 'Durak'].map((name) =>
+            summaryOf(gameFixture({ slug: name.toLowerCase(), name, is_playable: true })),
+          ),
+        }),
+      ),
+    )
+
+    renderRoute('/games')
+    const dot = (name: string) => screen.getByRole('button', { name: `Show ${name}` })
+
+    await catalog().findByRole('link', { name: /Nardi/ })
+    expect(dot('Nardi')).toHaveAttribute('aria-current', 'true')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Next game' }))
+    expect(dot('Chess')).toHaveAttribute('aria-current', 'true')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Previous game' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Previous game' }))
+    expect(dot('Durak')).toHaveAttribute('aria-current', 'true')
+
+    await userEvent.click(dot('Nardi'))
+    expect(dot('Nardi')).toHaveAttribute('aria-current', 'true')
   })
 })

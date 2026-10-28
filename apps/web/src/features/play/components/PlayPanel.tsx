@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useId, useState } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
 import { useCurrentUser } from '@/features/auth/hooks'
@@ -8,9 +8,15 @@ import type { GameDetail } from '@/features/catalog/queries'
 import { isApiError } from '@/shared/api/errors'
 import { Alert } from '@/shared/ui/Alert'
 import { Button, ButtonLink } from '@/shared/ui/Button'
-import { Card } from '@/shared/ui/Card'
 import { TextField } from '@/shared/ui/Field'
-import { BoltIcon, BotIcon, FriendsIcon, TicketIcon } from '@/shared/ui/icons'
+import {
+  BoltIcon,
+  BotIcon,
+  ChevronIcon,
+  FriendsIcon,
+  PlayIcon,
+  TicketIcon,
+} from '@/shared/ui/icons'
 import { Segmented } from '@/shared/ui/Segmented'
 import {
   createBotRoom,
@@ -23,9 +29,10 @@ import {
 import { MatchmakingStatus } from './MatchmakingStatus'
 
 /**
- * How to start playing a game: find an opponent, play a bot, or play with a friend.
+ * The game's lobby: the hero (art and stats) with the big "play" button that finds an opponent,
+ * and panels for the other ways in: a bot, a friend's private table, an invite code.
  */
-export function PlayPanel({ game }: { game: GameDetail }) {
+export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode }) {
   const { t } = useTranslation()
   const message = useMessage()
   const navigate = useNavigate()
@@ -70,11 +77,17 @@ export function PlayPanel({ game }: { game: GameDetail }) {
 
   if (!user) {
     return (
-      <Card title={t('play.title')}>
-        <ButtonLink to={`/login?next=${encodeURIComponent(`/games/${game.slug}`)}`}>
-          {t('play.loginToPlay')}
-        </ButtonLink>
-      </Card>
+      <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:items-start">
+        {hero}
+        <ModeCard index={0} Icon={BoltIcon} title={t('play.title')}>
+          <ButtonLink
+            to={`/login?next=${encodeURIComponent(`/games/${game.slug}`)}`}
+            className="mt-3 w-full py-3 text-base"
+          >
+            {t('play.loginToPlay')}
+          </ButtonLink>
+        </ModeCard>
+      </div>
     )
   }
 
@@ -84,72 +97,35 @@ export function PlayPanel({ game }: { game: GameDetail }) {
   const busy = search.isPending || bot.isPending || friend.isPending
   const modeId = mode?.id
 
-  const tiles = [
-    {
-      key: 'search',
-      Icon: BoltIcon,
-      title: t('play.findOpponent'),
-      hint: t('play.findOpponentHint'),
-      run: () => modeId !== undefined && search.mutate(modeId),
-      featured: true,
-    },
-    {
-      key: 'bot',
-      Icon: BotIcon,
-      title: t('play.playBot'),
-      hint: t('play.botHint', { level: t(`play.difficulty.${difficulty}`) }),
-      run: () => modeId !== undefined && bot.mutate(modeId),
-    },
-    {
-      key: 'friend',
-      Icon: FriendsIcon,
-      title: t('play.playWithFriend'),
-      hint: t('play.friendHint'),
-      run: () => modeId !== undefined && friend.mutate(modeId),
-    },
-  ]
-
   return (
-    <section
-      aria-labelledby={`${id}-title`}
-      className="rounded-3xl border border-border bg-surface/80 p-5 shadow-xl shadow-black/30 backdrop-blur sm:p-6"
-    >
-      <h2 id={`${id}-title`} className="text-lg font-semibold">
-        {t('play.title')}
-      </h2>
+    <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:items-start">
+      <div className="space-y-5">
+        {hero}
 
-      <div className="mt-4 flex flex-wrap gap-x-6 gap-y-4">
-        {modes.length > 1 ? (
-          <Segmented
-            label={t('play.mode')}
-            value={modeSlug}
-            options={modes.map((m) => ({ value: m.slug, label: m.name }))}
-            onChange={setModeSlug}
-          />
+        {modes.length > 1 || tableSize !== undefined ? (
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-4 [animation-delay:120ms] motion-safe:animate-rise">
+            {modes.length > 1 ? (
+              <Segmented
+                label={t('play.mode')}
+                value={modeSlug}
+                options={modes.map((m) => ({ value: m.slug, label: m.name }))}
+                onChange={setModeSlug}
+              />
+            ) : null}
+            {tableSize !== undefined ? (
+              <Segmented
+                label={t('play.players')}
+                value={tableSize}
+                options={tableSizes.map((n) => ({
+                  value: n,
+                  label: t('play.playersCount', { count: n }),
+                }))}
+                onChange={setPlayers}
+              />
+            ) : null}
+          </div>
         ) : null}
-        {tableSize !== undefined ? (
-          <Segmented
-            label={t('play.players')}
-            value={tableSize}
-            options={tableSizes.map((n) => ({
-              value: n,
-              label: t('play.playersCount', { count: n }),
-            }))}
-            onChange={setPlayers}
-          />
-        ) : null}
-        <Segmented
-          label={t('play.botDifficulty')}
-          value={difficulty}
-          options={(['easy', 'medium', 'hard'] as const).map((d) => ({
-            value: d,
-            label: t(`play.difficulty.${d}`),
-          }))}
-          onChange={setDifficulty}
-        />
-      </div>
 
-      <div className="mt-5 space-y-4">
         {error ? (
           <Alert tone="danger">
             {message(error.message)}{' '}
@@ -162,51 +138,71 @@ export function PlayPanel({ game }: { game: GameDetail }) {
         ) : null}
 
         <MatchmakingStatus />
+
+        {/* The big green button: a game against another person. */}
+        <button
+          type="button"
+          aria-label={t('play.findOpponent')}
+          aria-describedby={`${id}-search`}
+          disabled={busy || modeId === undefined}
+          onClick={() => modeId !== undefined && search.mutate(modeId)}
+          className="group mx-auto flex w-full max-w-lg flex-col items-center rounded-2xl border border-white/20 bg-linear-to-b from-[#3f9d57] via-accent-light to-accent px-6 py-4 text-white shadow-[0_10px_30px_rgb(0_0_0/0.45),inset_0_1px_0_rgb(255_255_255/0.25)] transition [animation-delay:180ms] hover:brightness-110 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 motion-safe:animate-rise"
+        >
+          <span className="flex items-center gap-3 text-2xl font-extrabold tracking-wide uppercase sm:text-3xl">
+            <PlayIcon className="size-7 transition-transform group-hover:scale-110" />
+            {t('catalog.play')}
+          </span>
+          <span id={`${id}-search`} className="mt-0.5 text-sm text-white/85">
+            {t('play.findOpponent')} · {t('play.findOpponentHint')}
+          </span>
+        </button>
       </div>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        {tiles.map(({ key, Icon, title, hint, run, featured }) => (
-          <button
-            key={key}
-            type="button"
-            aria-label={title}
-            aria-describedby={`${id}-${key}`}
-            disabled={busy || modeId === undefined}
-            onClick={run}
-            className={`group flex items-center gap-4 rounded-2xl border p-4 text-left transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 ${
-              featured
-                ? 'border-gold/40 bg-linear-to-br from-gold/20 to-surface-raised hover:border-gold'
-                : 'border-border bg-surface-raised hover:border-accent/60'
-            }`}
-          >
-            <span
-              className={`flex size-12 shrink-0 items-center justify-center rounded-xl ${
-                featured ? 'bg-gold text-black' : 'bg-accent/15 text-accent-text'
-              }`}
-            >
-              <Icon className="size-6" />
-            </span>
-            <span className="min-w-0">
-              <span className="block font-semibold text-fg">{title}</span>
-              <span id={`${id}-${key}`} className="mt-0.5 block text-sm text-muted">
-                {hint}
-              </span>
-            </span>
-          </button>
-        ))}
-
-        <form
-          className="flex flex-col justify-center gap-3 rounded-2xl border border-dashed border-border p-4"
-          onSubmit={(e) => {
-            e.preventDefault()
-            if (code.trim()) join.mutate()
+      <div className="space-y-4">
+        <ModeCard
+          index={0}
+          Icon={BotIcon}
+          title={t('play.playBot')}
+          action={{
+            label: t('play.playBot'),
+            disabled: busy || modeId === undefined,
+            run: () => modeId !== undefined && bot.mutate(modeId),
           }}
         >
-          <span className="flex items-center gap-2 text-sm font-semibold">
-            <TicketIcon className="size-5 text-gold" />
-            {t('play.joinTitle')}
-          </span>
-          <div className="flex items-end gap-2">
+          <div className="mt-3">
+            <Segmented
+              label={t('play.botDifficulty')}
+              value={difficulty}
+              options={(['easy', 'medium', 'hard'] as const).map((d) => ({
+                value: d,
+                label: t(`play.difficulty.${d}`),
+              }))}
+              onChange={setDifficulty}
+            />
+          </div>
+        </ModeCard>
+
+        <ModeCard
+          index={1}
+          Icon={FriendsIcon}
+          title={t('play.playWithFriend')}
+          action={{
+            label: t('play.playWithFriend'),
+            disabled: busy || modeId === undefined,
+            run: () => modeId !== undefined && friend.mutate(modeId),
+          }}
+        >
+          <p className="mt-1 text-sm text-muted">{t('play.friendHint')}</p>
+        </ModeCard>
+
+        <ModeCard index={2} Icon={TicketIcon} title={t('play.joinTitle')}>
+          <form
+            className="mt-3 flex items-end gap-2"
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (code.trim()) join.mutate()
+            }}
+          >
             <div className="min-w-0 flex-1">
               <TextField
                 label={t('play.inviteCode')}
@@ -215,12 +211,56 @@ export function PlayPanel({ game }: { game: GameDetail }) {
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
               />
             </div>
-            <Button type="submit" variant="secondary" disabled={join.isPending || !code.trim()}>
+            <Button type="submit" variant="gold" disabled={join.isPending || !code.trim()}>
               {t('play.join')}
             </Button>
-          </div>
-        </form>
+          </form>
+        </ModeCard>
       </div>
+    </div>
+  )
+}
+
+/**
+ * One way to play, as a panel: a brass medallion, the title and its options, and an arrow that
+ * starts it. Panels rise in one after another.
+ */
+function ModeCard({
+  index,
+  Icon,
+  title,
+  action,
+  children,
+}: {
+  index: number
+  Icon: (props: { className?: string }) => ReactNode
+  title: string
+  action?: { label: string; disabled: boolean; run: () => void }
+  children: ReactNode
+}) {
+  return (
+    <section
+      className="club-panel flex items-center gap-4 rounded-3xl p-4 transition hover:border-gold/40 motion-safe:animate-rise sm:gap-5 sm:p-5"
+      style={{ animationDelay: `${150 + index * 110}ms` }}
+    >
+      <span className="club-medal flex size-14 shrink-0 items-center justify-center self-start rounded-full text-[#3a2410] sm:size-20">
+        <Icon className="size-7 sm:size-10" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <h3 className="text-xl font-extrabold text-gold sm:text-2xl">{title}</h3>
+        {children}
+      </div>
+      {action ? (
+        <button
+          type="button"
+          aria-label={action.label}
+          disabled={action.disabled}
+          onClick={action.run}
+          className="flex size-12 shrink-0 items-center justify-center rounded-full border border-gold/40 bg-surface-raised text-gold transition hover:translate-x-0.5 hover:border-gold hover:bg-gold hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <ChevronIcon className="size-6" />
+        </button>
+      ) : null}
     </section>
   )
 }
