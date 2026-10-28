@@ -91,6 +91,12 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   Boards also receive `players` (names by seat). `ActiveGamesBar` (in PublicLayout) lists the games
   you're in with a return link and a close (leave) button; `usePresence` on RoomPage reports presence. Range actions (poker raise {min,max}) are sent as
   {type, amount}.
+- Lobby look (chess.com layout + casino-lobby polish): top bar with logo and account, desktop sidebar
+  (`SideNav` in PublicLayout: sections, every game with its `GameIcon`, own pages), bottom tab bar on
+  phones for signed-in players. Gold (`.text-gold`, `Button variant="gold"`) marks headlines and the main
+  "play" actions; purple stays the accent. Games without uploaded art use the built-in SVG scenes in
+  `features/catalog/components/GameArt.tsx`. Few short choices are `shared/ui/Segmented` radio pills,
+  not selects. Never imply real money: the platform is play-for-fun only.
 - Card tables use the flat `.felt-table` baize. Durak seats the others in panels left, across and right in
   table order (`PLACES`; the player after you sits on your left), with your hand as a straight row that
   overlaps more as it grows and one wide action button under it; on phones the opponents stack on top.

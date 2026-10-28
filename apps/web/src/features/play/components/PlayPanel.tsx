@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
 import { useCurrentUser } from '@/features/auth/hooks'
@@ -9,7 +9,9 @@ import { isApiError } from '@/shared/api/errors'
 import { Alert } from '@/shared/ui/Alert'
 import { Button, ButtonLink } from '@/shared/ui/Button'
 import { Card } from '@/shared/ui/Card'
-import { SelectField, TextField } from '@/shared/ui/Field'
+import { TextField } from '@/shared/ui/Field'
+import { BoltIcon, BotIcon, FriendsIcon, TicketIcon } from '@/shared/ui/icons'
+import { Segmented } from '@/shared/ui/Segmented'
 import {
   createBotRoom,
   createPrivateRoom,
@@ -33,6 +35,7 @@ export function PlayPanel({ game }: { game: GameDetail }) {
   const [modeSlug, setModeSlug] = useState(modes[0]?.slug ?? '')
   const [difficulty, setDifficulty] = useState<BotDifficulty>('medium')
   const [code, setCode] = useState('')
+  const id = useId()
   const mode = modes.find((m) => m.slug === modeSlug)
   // Tables for more than two (poker): how many sit down, you included.
   const tableSizes = mode
@@ -81,39 +84,72 @@ export function PlayPanel({ game }: { game: GameDetail }) {
   const busy = search.isPending || bot.isPending || friend.isPending
   const modeId = mode?.id
 
+  const tiles = [
+    {
+      key: 'search',
+      Icon: BoltIcon,
+      title: t('play.findOpponent'),
+      hint: t('play.findOpponentHint'),
+      run: () => modeId !== undefined && search.mutate(modeId),
+      featured: true,
+    },
+    {
+      key: 'bot',
+      Icon: BotIcon,
+      title: t('play.playBot'),
+      hint: t('play.botHint', { level: t(`play.difficulty.${difficulty}`) }),
+      run: () => modeId !== undefined && bot.mutate(modeId),
+    },
+    {
+      key: 'friend',
+      Icon: FriendsIcon,
+      title: t('play.playWithFriend'),
+      hint: t('play.friendHint'),
+      run: () => modeId !== undefined && friend.mutate(modeId),
+    },
+  ]
+
   return (
-    <Card title={t('play.title')}>
-      <div className="space-y-5">
+    <section
+      aria-labelledby={`${id}-title`}
+      className="rounded-3xl border border-border bg-surface/80 p-5 shadow-xl shadow-black/30 backdrop-blur sm:p-6"
+    >
+      <h2 id={`${id}-title`} className="text-lg font-semibold">
+        {t('play.title')}
+      </h2>
+
+      <div className="mt-4 flex flex-wrap gap-x-6 gap-y-4">
         {modes.length > 1 ? (
-          <SelectField
+          <Segmented
             label={t('play.mode')}
             value={modeSlug}
-            onChange={(e) => setModeSlug(e.target.value)}
-          >
-            {modes.map((m) => (
-              <option key={m.slug} value={m.slug}>
-                {m.name}
-              </option>
-            ))}
-          </SelectField>
+            options={modes.map((m) => ({ value: m.slug, label: m.name }))}
+            onChange={setModeSlug}
+          />
         ) : null}
-
         {tableSize !== undefined ? (
-          <div className="w-44">
-            <SelectField
-              label={t('play.players')}
-              value={String(tableSize)}
-              onChange={(e) => setPlayers(Number(e.target.value))}
-            >
-              {tableSizes.map((n) => (
-                <option key={n} value={n}>
-                  {t('play.playersCount', { count: n })}
-                </option>
-              ))}
-            </SelectField>
-          </div>
+          <Segmented
+            label={t('play.players')}
+            value={tableSize}
+            options={tableSizes.map((n) => ({
+              value: n,
+              label: t('play.playersCount', { count: n }),
+            }))}
+            onChange={setPlayers}
+          />
         ) : null}
+        <Segmented
+          label={t('play.botDifficulty')}
+          value={difficulty}
+          options={(['easy', 'medium', 'hard'] as const).map((d) => ({
+            value: d,
+            label: t(`play.difficulty.${d}`),
+          }))}
+          onChange={setDifficulty}
+        />
+      </div>
 
+      <div className="mt-5 space-y-4">
         {error ? (
           <Alert tone="danger">
             {message(error.message)}{' '}
@@ -126,66 +162,65 @@ export function PlayPanel({ game }: { game: GameDetail }) {
         ) : null}
 
         <MatchmakingStatus />
+      </div>
 
-        <div className="flex flex-wrap items-end gap-3">
-          <Button
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        {tiles.map(({ key, Icon, title, hint, run, featured }) => (
+          <button
+            key={key}
+            type="button"
+            aria-label={title}
+            aria-describedby={`${id}-${key}`}
             disabled={busy || modeId === undefined}
-            onClick={() => modeId !== undefined && search.mutate(modeId)}
+            onClick={run}
+            className={`group flex items-center gap-4 rounded-2xl border p-4 text-left transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 ${
+              featured
+                ? 'border-gold/40 bg-linear-to-br from-gold/20 to-surface-raised hover:border-gold'
+                : 'border-border bg-surface-raised hover:border-accent/60'
+            }`}
           >
-            {t('play.findOpponent')}
-          </Button>
-          <Button
-            variant="secondary"
-            disabled={busy || modeId === undefined}
-            onClick={() => modeId !== undefined && friend.mutate(modeId)}
-          >
-            {t('play.playWithFriend')}
-          </Button>
-        </div>
-
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="w-44">
-            <SelectField
-              label={t('play.botDifficulty')}
-              value={difficulty}
-              onChange={(e) => setDifficulty(e.target.value as BotDifficulty)}
+            <span
+              className={`flex size-12 shrink-0 items-center justify-center rounded-xl ${
+                featured ? 'bg-gold text-black' : 'bg-accent/15 text-accent-text'
+              }`}
             >
-              {(['easy', 'medium', 'hard'] as const).map((d) => (
-                <option key={d} value={d}>
-                  {t(`play.difficulty.${d}`)}
-                </option>
-              ))}
-            </SelectField>
-          </div>
-          <Button
-            variant="secondary"
-            disabled={busy || modeId === undefined}
-            onClick={() => modeId !== undefined && bot.mutate(modeId)}
-          >
-            {t('play.playBot')}
-          </Button>
-        </div>
+              <Icon className="size-6" />
+            </span>
+            <span className="min-w-0">
+              <span className="block font-semibold text-fg">{title}</span>
+              <span id={`${id}-${key}`} className="mt-0.5 block text-sm text-muted">
+                {hint}
+              </span>
+            </span>
+          </button>
+        ))}
 
         <form
-          className="flex flex-wrap items-end gap-3"
+          className="flex flex-col justify-center gap-3 rounded-2xl border border-dashed border-border p-4"
           onSubmit={(e) => {
             e.preventDefault()
             if (code.trim()) join.mutate()
           }}
         >
-          <div className="w-44">
-            <TextField
-              label={t('play.inviteCode')}
-              value={code}
-              maxLength={12}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-            />
+          <span className="flex items-center gap-2 text-sm font-semibold">
+            <TicketIcon className="size-5 text-gold" />
+            {t('play.joinTitle')}
+          </span>
+          <div className="flex items-end gap-2">
+            <div className="min-w-0 flex-1">
+              <TextField
+                label={t('play.inviteCode')}
+                value={code}
+                maxLength={12}
+                onChange={(e) => setCode(e.target.value.toUpperCase())}
+              />
+            </div>
+            <Button type="submit" variant="secondary" disabled={join.isPending || !code.trim()}>
+              {t('play.join')}
+            </Button>
           </div>
-          <Button type="submit" variant="secondary" disabled={join.isPending || !code.trim()}>
-            {t('play.join')}
-          </Button>
         </form>
       </div>
-    </Card>
+    </section>
   )
 }

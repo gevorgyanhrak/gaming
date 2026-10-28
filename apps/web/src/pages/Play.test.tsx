@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it, vi } from 'vitest'
@@ -58,7 +58,7 @@ describe('Playing a game', () => {
     )
     const { router } = renderRoute('/games/tictactoe')
 
-    await userEvent.selectOptions(await screen.findByLabelText('Bot level'), 'hard')
+    await userEvent.click(await screen.findByRole('radio', { name: 'Hard' }))
     await userEvent.click(screen.getByRole('button', { name: 'Play against a bot' }))
 
     await screen.findByText('Your turn')
@@ -92,9 +92,9 @@ describe('Playing a game', () => {
     )
     renderRoute('/games/tictactoe')
 
-    const size = await screen.findByLabelText('Table size')
-    expect(size).toHaveValue('4')
-    await userEvent.selectOptions(size, '3')
+    const size = await screen.findByRole('group', { name: 'Table size' })
+    expect(within(size).getByRole('radio', { name: '4 players' })).toBeChecked()
+    await userEvent.click(within(size).getByRole('radio', { name: '3 players' }))
     await userEvent.click(screen.getByRole('button', { name: 'Play against a bot' }))
     await userEvent.click(screen.getByRole('button', { name: 'Play with a friend' }))
 

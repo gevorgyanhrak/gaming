@@ -6,6 +6,9 @@ import { gameFixture, summaryOf } from '@/test/handlers'
 import { renderRoute } from '@/test/render'
 import { server } from '@/test/server'
 
+// The sidebar links every game too; these tests are about the catalog itself.
+const catalog = () => within(screen.getByRole('main'))
+
 describe('Games catalog', () => {
   it('shows a loading state, then the games', async () => {
     server.use(
@@ -26,8 +29,8 @@ describe('Games catalog', () => {
 
     expect(screen.getByTestId('game-grid-loading')).toBeInTheDocument()
 
-    const nardi = await screen.findByRole('link', { name: /Nardi/ })
-    const poker = screen.getByRole('link', { name: /Poker/ })
+    const nardi = await catalog().findByRole('link', { name: /Nardi/ })
+    const poker = catalog().getByRole('link', { name: /Poker/ })
 
     expect(nardi).toHaveAttribute('href', '/games/nardi')
     expect(within(nardi).getByText('2 players')).toBeInTheDocument()
@@ -62,7 +65,7 @@ describe('Games catalog', () => {
 
     await userEvent.click(within(alert).getByRole('button', { name: 'Try again' }))
 
-    expect(await screen.findByRole('link', { name: /Chess/ })).toBeInTheDocument()
+    expect(await catalog().findByRole('link', { name: /Chess/ })).toBeInTheDocument()
   })
 
   it('refetches games in the selected language', async () => {
@@ -74,11 +77,29 @@ describe('Games catalog', () => {
     )
 
     renderRoute('/games')
-    await screen.findByRole('link', { name: /Chess/ })
+    await catalog().findByRole('link', { name: /Chess/ })
 
     await userEvent.selectOptions(await screen.findByLabelText('Language'), 'ru')
 
-    expect(await screen.findByRole('link', { name: /Шахматы/ })).toBeInTheDocument()
+    expect(await catalog().findByRole('link', { name: /Шахматы/ })).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Игры')
+  })
+
+  it('lists every game in the sidebar', async () => {
+    server.use(
+      http.get('*/api/v1/games', () =>
+        HttpResponse.json({
+          data: [summaryOf(gameFixture({ slug: 'durak', name: 'Durak', is_playable: true }))],
+        }),
+      ),
+    )
+
+    renderRoute('/games')
+
+    const sidebar = await screen.findByRole('navigation', { name: 'Sections' })
+    expect(await within(sidebar).findByRole('link', { name: 'Durak' })).toHaveAttribute(
+      'href',
+      '/games/durak',
+    )
   })
 })

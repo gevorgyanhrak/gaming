@@ -38,17 +38,23 @@ export function GamePage() {
         ) : (
           <article>
             <title>{game.data.name}</title>
-            <header className="flex flex-col gap-6 sm:flex-row sm:items-center">
-              <GameArtwork game={game.data} className="aspect-[16/9] w-full rounded-2xl sm:w-64" />
-              <div>
+            <header className="relative overflow-hidden rounded-3xl border border-border shadow-xl shadow-black/40">
+              <GameArtwork game={game.data} className="absolute inset-0 h-full w-full" />
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 bg-linear-to-r from-bg via-bg/85 to-bg/20"
+              />
+              <div className="relative max-w-2xl px-6 py-10 sm:px-10 sm:py-14">
                 <div className="flex flex-wrap items-center gap-3">
-                  <h1 className="text-3xl font-bold">{game.data.name}</h1>
+                  <h1 className="text-4xl font-extrabold tracking-tight text-gold sm:text-5xl">
+                    {game.data.name}
+                  </h1>
                   {game.data.is_playable ? null : (
                     <Badge tone="warning">{t('catalog.comingSoon')}</Badge>
                   )}
                 </div>
-                <p className="mt-2 text-muted">{game.data.description}</p>
-                <p className="mt-3 text-sm font-medium text-muted">
+                <p className="mt-3 text-fg/85 sm:text-lg">{game.data.description}</p>
+                <p className="mt-4 inline-flex rounded-full border border-white/10 bg-black/40 px-3 py-1 text-sm font-medium text-fg/90">
                   <PlayerCount game={game.data} />
                 </p>
               </div>
@@ -69,7 +75,10 @@ export function GamePage() {
                 <h2 className="text-xl font-semibold">{t('game.modes')}</h2>
                 <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {game.data.modes.map((mode) => (
-                    <li key={mode.slug} className="rounded-xl border border-border bg-surface p-4">
+                    <li
+                      key={mode.slug}
+                      className="rounded-2xl border border-border bg-surface/80 p-4"
+                    >
                       <p className="font-medium">{mode.name}</p>
                       {mode.description ? (
                         <p className="mt-1 text-sm text-muted">{mode.description}</p>

@@ -9,13 +9,33 @@
     "account": "Account menu",
     "login": "Log in",
     "register": "Sign up",
-    "history": "Game history"
+    "history": "Game history",
+    "sections": "Sections",
+    "shortcuts": "Shortcuts",
+    "historyShort": "History"
   },
   "landing": {
     "title": "Classic board and card games, in one place",
     "subtitle": "Pick a game, learn the rules and get ready to play.",
     "cta": "Browse games",
-    "gamesHeading": "Games"
+    "gamesHeading": "Games",
+    "eyebrow": "Free to play · no real money",
+    "playNow": "Play now",
+    "join": "Create a free account",
+    "ways": {
+      "online": {
+        "title": "Play people online",
+        "text": "Get matched with another player in seconds."
+      },
+      "bots": {
+        "title": "Practice against bots",
+        "text": "Easy, medium or hard, any time of day."
+      },
+      "friends": {
+        "title": "Invite your friends",
+        "text": "Open a private table and share the code."
+      }
+    }
   },
   "catalog": {
     "title": "Games",
@@ -24,7 +44,8 @@
     "comingSoon": "Coming soon",
     "players_one": "{{count}} player",
     "players_other": "{{count}} players",
-    "playersRange": "{{min}}–{{max}} players"
+    "playersRange": "{{min}}–{{max}} players",
+    "play": "Play"
   },
   "game": {
     "back": "All games",
@@ -131,7 +152,8 @@
     "wins": "Wins",
     "losses": "Losses",
     "draws": "Draws",
-    "history": "See all games"
+    "history": "See all games",
+    "play": "Choose a game"
   },
   "profile": {
     "country": "Country",
@@ -208,7 +230,11 @@
     "playersCount_one": "{{count}} player",
     "playersCount_other": "{{count}} players",
     "tableWaiting_one": "{{count}} player is waiting; the table starts soon.",
-    "tableWaiting_other": "{{count}} players are waiting; the table starts soon."
+    "tableWaiting_other": "{{count}} players are waiting; the table starts soon.",
+    "findOpponentHint": "Get matched with another player.",
+    "botHint": "Level: {{level}}",
+    "friendHint": "Open a private table and share the code.",
+    "joinTitle": "Got an invite code?"
   },
   "room": {
     "players": "Players",

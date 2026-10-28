@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useCurrentUser } from '@/features/auth/hooks'
+import { GameScene } from '@/features/catalog/components/GameArt'
 import { GameGrid } from '@/features/catalog/components/GameGrid'
 import { DashboardGames } from '@/features/play/components/DashboardGames'
 import { Avatar } from '@/shared/ui/Avatar'
@@ -23,21 +24,34 @@ export function DashboardPage() {
   return (
     <Container className="space-y-10 py-10">
       <title>{t('dashboard.title')}</title>
-      <section className="flex flex-col gap-5 rounded-2xl border border-border bg-surface p-6 sm:flex-row sm:items-center">
-        <Avatar url={user.profile.avatar_url} name={name} size="lg" />
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold">{t('dashboard.welcome', { name })}</h1>
-          <p className="mt-1 text-sm text-muted">
-            {t('dashboard.memberSince', { date: memberSince })}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <ButtonLink to="/profile" variant="secondary">
-            {t('nav.profile')}
-          </ButtonLink>
-          <ButtonLink to="/settings" variant="secondary">
-            {t('nav.settings')}
-          </ButtonLink>
+      <section className="relative overflow-hidden rounded-3xl border border-gold/20 bg-linear-to-r from-accent/25 via-surface to-surface p-6 shadow-xl shadow-black/30 sm:p-8">
+        <GameScene
+          slug="poker"
+          className="pointer-events-none absolute inset-y-0 right-0 hidden h-full w-1/2 [mask-image:linear-gradient(to_right,transparent,black)] opacity-30 md:block"
+        />
+        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-4">
+            <Avatar url={user.profile.avatar_url} name={name} size="md" />
+            <div className="min-w-0">
+              <h1 className="text-2xl font-extrabold text-gold sm:text-3xl">
+                {t('dashboard.welcome', { name })}
+              </h1>
+              <p className="mt-0.5 text-xs text-muted">
+                {t('dashboard.memberSince', { date: memberSince })}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 sm:ml-auto">
+            <ButtonLink to="/games" variant="gold">
+              {t('dashboard.play')}
+            </ButtonLink>
+            <ButtonLink to="/profile" variant="secondary">
+              {t('nav.profile')}
+            </ButtonLink>
+            <ButtonLink to="/settings" variant="secondary">
+              {t('nav.settings')}
+            </ButtonLink>
+          </div>
         </div>
       </section>
 

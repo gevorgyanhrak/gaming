@@ -2,19 +2,25 @@
 
 /*
  * Design tokens. Dark-first: these values are the default theme.
- * Contrast (WCAG): fg/muted/accent-text on bg ≥ 7:1, white on accent ≥ 5:1.
+ * Contrast (WCAG): fg/muted/accent-text on bg ≥ 7:1, white on accent ≥ 4.5:1 (accent-light too),
+ * black on the golds ≥ 6:1.
  */
 @theme {
-  --color-bg: #0b0e17;
-  --color-surface: #131826;
-  --color-surface-raised: #1a2133;
-  --color-border: #262f45;
+  --color-bg: #080a12;
+  --color-surface: #10141f;
+  --color-surface-raised: #171d2d;
+  --color-border: #242b40;
   --color-fg: #e8ecf5;
   --color-muted: #94a0b8;
 
   --color-accent: #6b46ff;
   --color-accent-hover: #5a35f0;
   --color-accent-text: #a48bff;
+  --color-accent-light: #7f52ff;
+
+  /* Lobby highlights: gold for headlines and the main "play" calls to action. */
+  --color-gold-light: #f7dc8f;
+  --color-gold-dark: #b9822f;
 
   --color-success: #2fbf71;
   --color-warning: #f0b429;
@@ -66,6 +72,25 @@
 }
 
 @layer components {
+  /* Headlines in polished gold. */
+  .text-gold {
+    background: linear-gradient(
+      180deg,
+      var(--color-gold-light) 10%,
+      var(--color-gold) 55%,
+      var(--color-gold-dark)
+    );
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* The lobby backdrop: soft purple and gold light falling on the dark page. */
+  .lobby-glow {
+    background:
+      radial-gradient(60rem 26rem at 15% -10%, rgb(107 70 255 / 0.28), transparent 70%),
+      radial-gradient(40rem 22rem at 95% 0%, rgb(214 171 78 / 0.14), transparent 70%);
+  }
+
   /* A flat field of green baize with a fine weave, a little lighter in the middle. */
   .felt-table {
     background:
