@@ -6,6 +6,7 @@ import { leaveRoom, type ParticipantResult } from '@/features/play/api'
 import { endReasonLabel, outcomeLabel } from '@/features/play/labels'
 import { GameIcon } from '@/features/catalog/components/GameArt'
 import { PlayerList } from '@/features/play/components/PlayerList'
+import { WaitingTable } from '@/features/play/components/WaitingTable'
 import { useCountdown } from '@/features/play/useCountdown'
 import { usePresence } from '@/features/play/usePresence'
 import { useRoom } from '@/features/play/useRoom'
@@ -99,27 +100,7 @@ export function RoomPage() {
       </header>
 
       {data.status === 'waiting' ? (
-        <section className="space-y-4 rounded-2xl border border-border bg-surface p-6 text-center">
-          <p className="text-muted">{t('room.waiting')}</p>
-          {data.invite_code ? (
-            <div>
-              <p className="text-sm text-muted">{t('room.inviteCode')}</p>
-              <p className="mt-1 font-mono text-3xl font-bold tracking-[0.3em]">
-                {data.invite_code}
-              </p>
-              <Button
-                variant="secondary"
-                className="mt-3"
-                onClick={() => void navigator.clipboard?.writeText(data.invite_code ?? '')}
-              >
-                {t('room.copyCode')}
-              </Button>
-            </div>
-          ) : null}
-          <Button variant="secondary" onClick={leave}>
-            {t('room.cancel')}
-          </Button>
-        </section>
+        <WaitingTable room={data} mySeat={view?.seat ?? 0} onLeave={leave} />
       ) : null}
 
       {data.status !== 'waiting' ? (

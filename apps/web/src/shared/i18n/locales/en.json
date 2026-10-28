@@ -284,7 +284,9 @@
       "aborted": "Closed"
     },
     "clock": "Time left: {{time}}",
-    "leftTable": "You left this table. The game goes on for the others."
+    "leftTable": "You left this table. The game goes on for the others.",
+    "waitingTitle": "Waiting for players",
+    "emptySeat": "Empty seat"
   },
   "history": {
     "title": "Game history",

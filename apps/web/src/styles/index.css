@@ -163,6 +163,25 @@
     box-shadow: 0 16px 40px rgb(0 0 0 / 0.35);
   }
 
+  /* An oval card table: a polished wooden rim around green baize. */
+  .table-rim {
+    padding: 14px;
+    background: linear-gradient(135deg, #9a6a38, #5a3218 35%, #a87440 55%, #4a2810 80%, #7a4a22);
+    box-shadow:
+      0 30px 70px rgb(0 0 0 / 0.6),
+      inset 0 2px 2px rgb(255 220 170 / 0.35),
+      inset 0 -3px 6px rgb(0 0 0 / 0.5);
+  }
+
+  .table-felt {
+    background:
+      radial-gradient(ellipse at 50% 40%, #237446, #165934 55%, #0e3d23),
+      repeating-linear-gradient(0deg, rgb(0 0 0 / 0.04) 0 1px, transparent 1px 3px);
+    box-shadow:
+      inset 0 0 0 2px rgb(0 0 0 / 0.35),
+      inset 0 10px 40px rgb(0 0 0 / 0.55);
+  }
+
   .card-back {
     background-color: var(--color-card-back);
     background-image:

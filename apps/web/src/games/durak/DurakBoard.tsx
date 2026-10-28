@@ -136,16 +136,27 @@ export default function DurakBoard({ state, onAction, pending, players = {} }: B
   const placed = (place: Place) => others.filter((_, i) => places[i] === place).map(seat)
 
   return (
-    <div className="felt-table relative overflow-hidden rounded-2xl px-3 pt-8 pb-5 text-white sm:px-6 sm:pt-10 sm:pb-6">
+    <div className="relative px-1 pt-8 pb-4 text-white sm:px-4 sm:pt-10">
       <div className="grid grid-cols-2 items-start gap-x-3 gap-y-8 sm:grid-cols-[minmax(0,1fr)_minmax(0,2.4fr)_minmax(0,1fr)] sm:items-center sm:gap-x-6">
-        <div className="sm:col-start-1 sm:row-start-2">{placed('left')}</div>
-        <div className="order-first col-span-2 flex flex-wrap justify-center gap-x-6 gap-y-8 sm:order-none sm:col-span-3 sm:col-start-1 sm:row-start-1">
+        {/* The oval table behind the bout; the other players sit on its rim. */}
+        <div
+          aria-hidden="true"
+          className="table-rim col-span-2 col-start-1 row-start-3 self-stretch rounded-[2.5rem] sm:col-span-3 sm:col-start-1 sm:row-start-2 sm:mx-[3%] sm:-my-10 sm:rounded-[50%]"
+        >
+          <div className="table-felt h-full w-full rounded-[inherit]" />
+        </div>
+        <div className="relative z-10 col-start-1 row-start-2 sm:col-start-1 sm:row-start-2">
+          {placed('left')}
+        </div>
+        <div className="relative z-10 col-span-2 col-start-1 row-start-1 flex flex-wrap justify-center gap-x-6 gap-y-8 sm:col-span-3 sm:col-start-1 sm:row-start-1">
           {placed('top')}
         </div>
-        <div className="sm:col-start-3 sm:row-start-2">{placed('right')}</div>
+        <div className="relative z-10 col-start-2 row-start-2 sm:col-start-3 sm:row-start-2">
+          {placed('right')}
+        </div>
 
         {/* On a phone the deck and the discard pile share a row above the bout. */}
-        <div className="col-span-2 flex flex-wrap items-start justify-between gap-3 px-2 sm:col-span-1 sm:col-start-2 sm:row-start-2 sm:flex-nowrap sm:justify-center sm:gap-6 sm:px-0">
+        <div className="relative z-10 col-span-2 col-start-1 row-start-3 flex flex-wrap items-start justify-between gap-3 px-5 py-6 sm:col-span-1 sm:col-start-2 sm:row-start-2 sm:flex-nowrap sm:justify-center sm:gap-6 sm:px-0 sm:py-4">
           <div className="flex shrink-0 flex-col items-center gap-2">
             {/* The trump card lies face up under the deck, its top end showing. */}
             <div className="relative h-36 w-16 sm:h-40">
@@ -351,8 +362,10 @@ function Seat({
       role="group"
       aria-label={label}
       aria-current={acting ? 'step' : undefined}
-      className={`relative mx-auto w-full max-w-60 rounded-lg px-3 pt-7 pb-3 transition-colors ${
-        acting ? 'bg-white/15' : 'bg-white/[0.07]'
+      className={`relative mx-auto w-full max-w-60 rounded-2xl border px-3 pt-7 pb-3 backdrop-blur-sm transition-colors ${
+        acting
+          ? 'border-gold bg-black/55 shadow-[0_0_0_3px_rgb(214_171_78/0.25)]'
+          : 'border-gold/20 bg-black/40'
       }`}
     >
       <span className="absolute -top-5 -left-2 sm:-left-4">

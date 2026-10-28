@@ -102,7 +102,9 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   green PLAY (matchmaking) + `ModeCard`s (bot, friend, invite code) rising in with `animate-rise`.
   Games without uploaded art use the SVG scenes in `GameArt.tsx`; few short choices are
   `Segmented` radio pills. Never imply real money, coins, VIP or a shop: play-for-fun only.
-- Card tables use the flat `.felt-table` baize. Durak seats the others in panels left, across and right in
+- Card tables are oval: `.table-rim` (wood) around `.table-felt` (baize). A private room waits on
+  `WaitingTable` (seats round the rim, invite code in the middle). Durak places every grid item
+  explicitly (row and column) so the oval can share the middle row with the seats. Durak seats the others in panels left, across and right in
   table order (`PLACES`; the player after you sits on your left), with your hand as a straight row that
   overlaps more as it grows and one wide action button under it; on phones the opponents stack on top.
 - To look at a board without the Docker stack: a temporary (uncommitted) Vite page rendering the board
