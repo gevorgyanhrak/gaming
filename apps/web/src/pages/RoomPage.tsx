@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router'
 import { useMessage } from '@/features/auth/forms'
 import { leaveRoom, type ParticipantResult } from '@/features/play/api'
 import { endReasonLabel, outcomeLabel } from '@/features/play/labels'
+import { GameIcon } from '@/features/catalog/components/GameArt'
 import { PlayerList } from '@/features/play/components/PlayerList'
 import { useCountdown } from '@/features/play/useCountdown'
 import { usePresence } from '@/features/play/usePresence'
@@ -73,15 +74,25 @@ export function RoomPage() {
     <Container className="space-y-6 py-8">
       <title>{data.game.name}</title>
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">{data.game.name}</h1>
-          <p className="text-sm text-muted">{data.mode.name}</p>
+        <div className="flex items-center gap-3">
+          <span className="flex size-11 items-center justify-center rounded-xl bg-gold/15 text-gold">
+            <GameIcon slug={data.game.slug} name={data.game.name} className="size-6" />
+          </span>
+          <div>
+            <h1 className="text-2xl font-bold">{data.game.name}</h1>
+            <p className="text-sm text-muted">{data.mode.name}</p>
+          </div>
         </div>
         {data.status === 'active' && view ? (
-          <div className="text-right" role="status">
+          <div
+            className={`rounded-2xl px-4 py-2 text-right ${myTurn ? 'bg-linear-to-b from-gold-light via-gold to-gold-dark text-black shadow-lg shadow-gold/20' : 'border border-border bg-surface'}`}
+            role="status"
+          >
             <p className="font-semibold">{myTurn ? t('room.yourTurn') : t('room.theirTurn')}</p>
             {secondsLeft !== null && !clocks ? (
-              <p className="text-sm text-muted">{t('room.secondsLeft', { count: secondsLeft })}</p>
+              <p className={`text-sm ${myTurn ? 'text-black/70' : 'text-muted'}`}>
+                {t('room.secondsLeft', { count: secondsLeft })}
+              </p>
             ) : null}
           </div>
         ) : null}

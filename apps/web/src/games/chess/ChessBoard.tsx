@@ -98,7 +98,7 @@ export default function ChessBoard({ state, onAction, pending }: BoardProps) {
           </p>
         </div>
 
-        <div className="grid aspect-square w-full grid-cols-8 overflow-hidden rounded-2xl border border-border">
+        <div className="grid aspect-square w-full grid-cols-8 grid-rows-8 overflow-hidden rounded-2xl border border-border">
           {order.map((square) => {
             const dark = (Math.floor(square / 8) + (square % 8)) % 2 === 1
             const piece = view.board[square] ?? null
