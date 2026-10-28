@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCountdown } from '@/features/play/useCountdown'
 import { suitSymbols, useCardLabel, type Suit } from '../cards/cards'
@@ -22,8 +22,24 @@ interface DurakView {
 
 type DurakAction = { type: 'attack' | 'defend'; card: string } | { type: 'take' | 'done' }
 
+type Place = 'left' | 'top' | 'right'
+
+interface Role {
+  text: string
+  tone: string
+}
+
 const RANKS = '6789TJQKA'
 const SUITS = 'SHDC'
+
+/** Where the other players sit, in table order from the player after you (on your left). */
+const PLACES: Record<number, Place[]> = {
+  1: ['top'],
+  2: ['left', 'right'],
+  3: ['left', 'top', 'right'],
+  4: ['left', 'top', 'top', 'right'],
+  5: ['left', 'top', 'top', 'top', 'right'],
+}
 
 /** Your hand in a readable order: suits together, ranks ascending, trumps last. */
 function sortHand(hand: string[], trump: Suit) {
@@ -33,9 +49,10 @@ function sortHand(hand: string[], trump: Suit) {
 }
 
 /**
- * Durak table: the other players round the top of the felt, deck and trump on the left, the
- * discard pile on the right, the bout in the middle and your hand fanned at the bottom.
- * Offers exactly the server's legal actions: cards to lead, throw in or beat with, "take" and "done".
+ * Durak table: the other players in panels round the felt (left, across and right), the deck with
+ * the trump under it, the bout in the middle and your hand in a row at the bottom with the action
+ * button under it. Offers exactly the server's legal actions: cards to lead, throw in or beat with,
+ * "take" and "done".
  */
 export default function DurakBoard({ state, onAction, pending, players = {} }: BoardProps) {
   const { t } = useTranslation()
@@ -49,9 +66,10 @@ export default function DurakBoard({ state, onAction, pending, players = {} }: B
   const seats = view.hand_counts.length
   // The others in table order, starting with the player after you.
   const others = Array.from({ length: seats - 1 }, (_, i) => (me + 1 + i) % seats)
+  const places = PLACES[others.length] ?? others.map((): Place => 'top')
   const nameOf = (seat: number) => players[seat] || t('durak.seat', { seat: seat + 1 })
-  const roleOf = (seat: number): { text: string; tone: string } | null => {
-    if (view.left?.[seat]) return { text: t('durak.role.left'), tone: 'bg-black/40 text-white/70' }
+  const roleOf = (seat: number): Role | null => {
+    if (view.left?.[seat]) return { text: t('durak.role.left'), tone: 'bg-black/60 text-white/80' }
     if (view.deck_count === 0 && (view.hand_counts[seat] ?? 0) === 0)
       return { text: t('durak.role.out'), tone: 'bg-beaten text-white' }
     if (seat === view.attacker)
@@ -59,9 +77,9 @@ export default function DurakBoard({ state, onAction, pending, players = {} }: B
     if (seat === view.defender)
       return view.taking
         ? { text: t('durak.role.taking'), tone: 'bg-take text-white' }
-        : { text: t('durak.role.defender'), tone: 'bg-sky-300 text-black' }
+        : { text: t('durak.role.defender'), tone: 'bg-white text-black' }
     if (view.passed?.includes(seat))
-      return { text: t('durak.role.passed'), tone: 'bg-black/40 text-white/80' }
+      return { text: t('durak.role.passed'), tone: 'bg-black/60 text-white/90' }
     return null
   }
 
@@ -96,170 +114,169 @@ export default function DurakBoard({ state, onAction, pending, players = {} }: B
           : t('durak.throwIn')
 
   const hand = sortHand(view.hand, view.trump)
-  const spread = Math.min(7, 48 / Math.max(hand.length, 1))
+  const myRole = roleOf(me)
+
+  const seat = (other: number) => {
+    const acting = state.seats_to_act.includes(other)
+    return (
+      <Seat
+        key={other}
+        name={nameOf(other)}
+        count={view.hand_counts[other] ?? 0}
+        role={roleOf(other)}
+        acting={acting}
+        share={acting ? turnShare : null}
+        label={t('durak.opponentCards', {
+          name: nameOf(other),
+          count: view.hand_counts[other] ?? 0,
+        })}
+      />
+    )
+  }
+  const placed = (place: Place) => others.filter((_, i) => places[i] === place).map(seat)
 
   return (
-    <div className="felt-table relative overflow-hidden rounded-[2rem] px-3 pt-5 pb-10 text-white sm:rounded-[2.5rem] sm:px-10 sm:pt-6">
-      <ul
-        className="flex flex-wrap justify-around gap-x-4 gap-y-3"
-        aria-label={t('durak.opponents')}
-      >
-        {others.map((seat, index) => {
-          const count = view.hand_counts[seat] ?? 0
-          const role = roleOf(seat)
-          const acting = state.seats_to_act.includes(seat)
-          // Seats further from the middle sit a little lower, along the table's curve.
-          const fromMiddle = Math.abs(index - (others.length - 1) / 2)
-          return (
-            <li
-              key={seat}
-              aria-current={acting ? 'step' : undefined}
-              aria-label={t('durak.opponentCards', { name: nameOf(seat), count })}
-              className="flex flex-col items-center gap-1 sm:mt-(--arc)"
-              style={{ '--arc': `${fromMiddle * 0.9}rem` } as CSSProperties}
-            >
-              <Avatar name={nameOf(seat)} acting={acting} share={acting ? turnShare : null} />
-              <span className="max-w-24 truncate text-xs font-medium">{nameOf(seat)}</span>
-              <span className="relative block h-14 w-20" aria-hidden="true">
-                {Array.from({ length: Math.min(count, 7) }, (_, i) => (
-                  <CardBack
-                    key={i}
-                    size="sm"
-                    className="absolute top-0 left-1/2 -ml-[1.375rem] origin-bottom"
-                    // A small fan: the cards turn out from the middle.
-                    style={{
-                      transform: `rotate(${(i - (Math.min(count, 7) - 1) / 2) * 9}deg) scale(0.75)`,
-                    }}
-                  />
-                ))}
-              </span>
-              <span className="relative z-10 flex items-center gap-1.5">
-                <span className="rounded-full bg-black/45 px-2 py-0.5 text-xs tabular-nums">
-                  {count}
-                </span>
-                {role ? (
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${role.tone}`}>
-                    {role.text}
-                  </span>
-                ) : null}
-              </span>
-            </li>
-          )
-        })}
-      </ul>
-
-      <div className="mt-6 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 sm:gap-6">
-        <div className="flex flex-col items-center gap-2">
-          <div className="relative h-24 w-24 origin-top scale-75 sm:scale-100">
-            {view.trump_card ? (
-              <span className="absolute top-3 left-10 rotate-90">
-                <Card
-                  card={view.trump_card}
-                  label={t('durak.trumpCard', { card: cardLabel(view.trump_card) })}
-                />
-              </span>
-            ) : null}
-            {view.deck_count > 1 ? (
-              <>
-                <CardBack className="absolute top-0 left-0" />
-                <CardBack className="absolute top-0.5 left-0.5" />
-              </>
-            ) : null}
-            {view.deck_count === 0 ? (
-              <span
-                aria-hidden="true"
-                className={`absolute inset-0 flex items-center justify-center text-6xl opacity-40 ${
-                  view.trump === 'H' || view.trump === 'D' ? 'text-red-300' : 'text-white'
-                }`}
-              >
-                {suitSymbols[view.trump]}
-              </span>
-            ) : null}
-          </div>
-          <p className="text-center text-xs text-white/80">
-            <span className="block">{t('durak.deck', { count: view.deck_count })}</span>
-            <span className="block">
-              {t('durak.trump')}: {suitSymbols[view.trump]} {labels.suit(view.trump)}
-            </span>
-          </p>
+    <div className="felt-table relative overflow-hidden rounded-2xl px-3 pt-8 pb-5 text-white sm:px-6 sm:pt-10 sm:pb-6">
+      <div className="grid grid-cols-2 items-start gap-x-3 gap-y-8 sm:grid-cols-[minmax(0,1fr)_minmax(0,2.4fr)_minmax(0,1fr)] sm:items-center sm:gap-x-6">
+        <div className="sm:col-start-1 sm:row-start-2">{placed('left')}</div>
+        <div className="order-first col-span-2 flex flex-wrap justify-center gap-x-6 gap-y-8 sm:order-none sm:col-span-3 sm:col-start-1 sm:row-start-1">
+          {placed('top')}
         </div>
+        <div className="sm:col-start-3 sm:row-start-2">{placed('right')}</div>
 
-        <section
-          aria-label={t('durak.table')}
-          className="flex min-h-40 flex-wrap items-center justify-center gap-x-8 gap-y-4"
-        >
-          {view.table.length === 0 ? (
-            <p className="text-sm text-white/60">{t('durak.emptyTable')}</p>
-          ) : (
-            view.table.map((pair, i) => (
-              <div key={i} className="relative h-32 w-20 motion-safe:animate-card-in">
-                <Card card={pair.attack} label={cardLabel(pair.attack)} />
-                {pair.defense ? (
-                  <span className="absolute top-6 left-5 rotate-12 motion-safe:animate-card-in">
-                    <Card
-                      card={pair.defense}
-                      label={t('durak.beatenBy', { card: cardLabel(pair.defense) })}
-                    />
-                  </span>
-                ) : null}
-              </div>
-            ))
-          )}
-        </section>
-
-        <div className="flex flex-col items-center gap-2" aria-label={t('durak.discardPile')}>
-          <div className="relative h-24 w-20 origin-top scale-75 sm:scale-100">
-            {(view.discarded ?? 0) > 0
-              ? [-14, 6, -4].map((angle, i) => (
-                  <CardBack
-                    key={i}
-                    className="absolute top-0 left-2"
-                    style={{ transform: `rotate(${angle}deg)` }}
+        {/* On a phone the deck and the discard pile share a row above the bout. */}
+        <div className="col-span-2 flex flex-wrap items-start justify-between gap-3 px-2 sm:col-span-1 sm:col-start-2 sm:row-start-2 sm:flex-nowrap sm:justify-center sm:gap-6 sm:px-0">
+          <div className="flex shrink-0 flex-col items-center gap-2">
+            {/* The trump card lies face up under the deck, its top end showing. */}
+            <div className="relative h-36 w-16 sm:h-40">
+              {view.trump_card ? (
+                <span className="absolute top-0 left-0">
+                  <Card
+                    card={view.trump_card}
+                    label={t('durak.trumpCard', { card: cardLabel(view.trump_card) })}
                   />
-                ))
-              : null}
+                </span>
+              ) : null}
+              {view.deck_count > 1 ? (
+                <>
+                  <CardBack className="absolute top-11 left-0 sm:top-14" />
+                  <CardBack className="absolute top-12 left-0 sm:top-[3.75rem]" />
+                </>
+              ) : null}
+              {view.deck_count === 0 ? (
+                <span
+                  aria-hidden="true"
+                  className={`absolute inset-x-0 top-6 text-center text-6xl opacity-40 ${
+                    view.trump === 'H' || view.trump === 'D' ? 'text-red-300' : 'text-white'
+                  }`}
+                >
+                  {suitSymbols[view.trump]}
+                </span>
+              ) : null}
+            </div>
+            <p className="text-center text-xs text-white/75">
+              <span className="block">{t('durak.deck', { count: view.deck_count })}</span>
+              <span className="block">
+                {t('durak.trump')}: {suitSymbols[view.trump]} {labels.suit(view.trump)}
+              </span>
+            </p>
           </div>
-          <p className="text-xs text-white/80">
-            {t('durak.discarded', { count: view.discarded ?? 0 })}
-          </p>
+
+          <section
+            aria-label={t('durak.table')}
+            className="order-last flex min-h-44 min-w-0 basis-full flex-wrap content-center items-start justify-center gap-x-3 gap-y-4 sm:order-none sm:min-h-48 sm:flex-1 sm:basis-auto sm:gap-x-4"
+          >
+            {view.table.length === 0 ? (
+              <p className="self-center text-sm text-white/55">{t('durak.emptyTable')}</p>
+            ) : (
+              view.table.map((pair, i) => (
+                <div
+                  key={i}
+                  className="relative h-40 w-20 motion-safe:animate-card-in sm:h-44 sm:w-[5.5rem]"
+                >
+                  <Card card={pair.attack} label={cardLabel(pair.attack)} size="lg" />
+                  {pair.defense ? (
+                    // The beating card lies straight over the lower part of the attack.
+                    <span className="absolute top-9 left-0 motion-safe:animate-card-in sm:top-10">
+                      <Card
+                        card={pair.defense}
+                        label={t('durak.beatenBy', { card: cardLabel(pair.defense) })}
+                        size="lg"
+                      />
+                    </span>
+                  ) : null}
+                </div>
+              ))
+            )}
+          </section>
+
+          <div
+            role="group"
+            aria-label={t('durak.discardPile')}
+            className="flex shrink-0 flex-col items-center gap-2"
+          >
+            <div className="relative h-16 w-14">
+              {(view.discarded ?? 0) > 0
+                ? [-14, 6, -4].map((angle, i) => (
+                    <CardBack
+                      key={i}
+                      size="sm"
+                      className="absolute top-0 left-1.5"
+                      style={{ transform: `rotate(${angle}deg)` }}
+                    />
+                  ))
+                : null}
+            </div>
+            <p className="text-xs text-white/75">
+              {t('durak.discarded', { count: view.discarded ?? 0 })}
+            </p>
+          </div>
         </div>
       </div>
 
-      <p
-        className="mx-auto mt-4 w-fit max-w-full rounded-full bg-black/40 px-4 py-1.5 text-center text-sm"
-        aria-live="polite"
-      >
-        {status}
-      </p>
-
-      <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
-        <div className="order-2 flex items-center gap-2 sm:order-1">
+      <div className="mx-auto mt-8 w-full max-w-xl">
+        <div className="flex items-center gap-3">
           <Avatar
             name={players[me] || t('poker.you')}
             acting={myTurn}
             share={myTurn ? turnShare : null}
+            size="lg"
           />
-          {roleOf(me) ? (
-            <span
-              className={`rounded-full px-2 py-0.5 text-xs font-semibold ${roleOf(me)?.tone ?? ''}`}
+          <div className="min-w-0 flex-1">
+            <p className="flex items-center gap-2 text-sm text-white/75">
+              <span className="truncate">{players[me] || t('poker.you')}</span>
+              {myRole ? (
+                <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${myRole.tone}`}>
+                  {myRole.text}
+                </span>
+              ) : null}
+            </p>
+            <p
+              className="mt-1 rounded-md bg-[#fdebc8] px-3 py-1.5 text-sm text-black shadow"
+              aria-live="polite"
             >
-              {roleOf(me)?.text}
-            </span>
-          ) : null}
+              {status}
+            </p>
+          </div>
         </div>
 
         <ul
           aria-label={t('durak.yourHand')}
-          className="order-1 flex w-full justify-center pt-4 sm:order-2 sm:w-auto sm:flex-1"
+          className="mt-4 flex justify-center pt-4 [--card-w:5rem] sm:[--card-w:5.5rem]"
         >
           {hand.map((card, i) => {
             const action = actionFor(card)
-            const angle = (i - (hand.length - 1) / 2) * spread
             return (
               <li
                 key={card}
-                className="-ml-12 origin-bottom first:ml-0 sm:-ml-8"
-                style={{ transform: `rotate(${angle}deg) translateY(${Math.abs(angle) * 0.25}px)` }}
+                // A straight row that overlaps more as the hand grows, so it always fits.
+                style={
+                  i === 0
+                    ? undefined
+                    : {
+                        marginLeft: `calc(min(3.25rem, (100% - var(--card-w)) / ${hand.length - 1}) - var(--card-w))`,
+                      }
+                }
               >
                 <button
                   type="button"
@@ -268,9 +285,9 @@ export default function DurakBoard({ state, onAction, pending, players = {} }: B
                   aria-label={cardLabel(card)}
                   className={`block rounded-lg transition-transform duration-150 disabled:cursor-default ${
                     action
-                      ? 'hover:-translate-y-5 focus-visible:-translate-y-5 [&>span]:shadow-[0_0_0_2px_var(--color-turn),0_6px_14px_rgb(0_0_0/0.45)]'
+                      ? '-translate-y-3 hover:-translate-y-6 focus-visible:-translate-y-6 [&>span]:shadow-[0_0_0_2px_var(--color-turn),0_6px_14px_rgb(0_0_0/0.45)]'
                       : myTurn
-                        ? 'brightness-[.82]'
+                        ? 'brightness-[.8]'
                         : ''
                   }`}
                 >
@@ -281,13 +298,14 @@ export default function DurakBoard({ state, onAction, pending, players = {} }: B
           })}
         </ul>
 
-        <div className="order-3 flex gap-2">
+        {/* The action row keeps its height so the hand doesn't jump when the buttons come and go. */}
+        <div className="mt-4 flex min-h-12 gap-3">
           {canTake ? (
             <button
               type="button"
               disabled={pending}
               onClick={() => onAction({ type: 'take' })}
-              className="rounded-full bg-take px-6 py-3 text-base font-bold shadow-lg hover:brightness-110 disabled:opacity-60"
+              className="flex-1 rounded-md bg-turn px-6 py-3 text-base font-semibold text-black shadow-lg hover:brightness-110 disabled:opacity-60"
             >
               {t('durak.take')}
             </button>
@@ -297,9 +315,7 @@ export default function DurakBoard({ state, onAction, pending, players = {} }: B
               type="button"
               disabled={pending}
               onClick={() => onAction({ type: 'done' })}
-              className={`rounded-full px-6 py-3 text-base font-bold shadow-lg hover:brightness-110 disabled:opacity-60 ${
-                view.taking || me !== view.attacker ? 'bg-turn text-black' : 'bg-beaten'
-              }`}
+              className="flex-1 rounded-md bg-turn px-6 py-3 text-base font-semibold text-black shadow-lg hover:brightness-110 disabled:opacity-60"
             >
               {finishLabel}
             </button>
@@ -310,17 +326,94 @@ export default function DurakBoard({ state, onAction, pending, players = {} }: B
   )
 }
 
+/**
+ * Another player: a panel with the avatar on its corner, the name, the cards held face down in a
+ * row with their number, and the player's part in the bout as a speech bubble.
+ */
+function Seat({
+  name,
+  count,
+  role,
+  acting,
+  share,
+  label,
+}: {
+  name: string
+  count: number
+  role: Role | null
+  acting: boolean
+  share: number | null
+  label: string
+}) {
+  const shown = Math.min(count, 8)
+  return (
+    <div
+      role="group"
+      aria-label={label}
+      aria-current={acting ? 'step' : undefined}
+      className={`relative mx-auto w-full max-w-60 rounded-lg px-3 pt-7 pb-3 transition-colors ${
+        acting ? 'bg-white/15' : 'bg-white/[0.07]'
+      }`}
+    >
+      <span className="absolute -top-5 -left-2 sm:-left-4">
+        <Avatar name={name} acting={acting} share={share} />
+      </span>
+      <span className="absolute top-1.5 right-2 left-12 truncate text-sm text-white/75 sm:left-10">
+        {name}
+      </span>
+      {role ? (
+        <span
+          className={`absolute -top-7 left-10 rounded-xl px-2.5 py-0.5 text-xs font-semibold shadow sm:left-8 ${role.tone}`}
+        >
+          {role.text}
+        </span>
+      ) : null}
+      <span className="mt-2 flex items-center gap-2">
+        <span className="flex min-h-16 sm:min-h-24" aria-hidden="true">
+          {Array.from({ length: shown }, (_, i) => (
+            <CardBack
+              key={i}
+              className={`max-sm:h-16 max-sm:w-11 max-sm:rounded-md ${i ? '-ml-11 max-sm:-ml-8' : ''}`}
+            />
+          ))}
+        </span>
+        <span className="ml-auto rounded-full bg-black/45 px-2 py-0.5 text-xs tabular-nums">
+          {count}
+        </span>
+      </span>
+    </div>
+  )
+}
+
 /** A round avatar with the player's initial; the acting player's ring shows the time left. */
-function Avatar({ name, acting, share }: { name: string; acting: boolean; share: number | null }) {
+function Avatar({
+  name,
+  acting,
+  share,
+  size = 'md',
+}: {
+  name: string
+  acting: boolean
+  share: number | null
+  size?: 'md' | 'lg'
+}) {
   const ring =
     acting && share !== null
       ? `conic-gradient(var(--color-turn) ${share * 360}deg, rgb(255 255 255 / 0.15) 0)`
       : acting
         ? 'var(--color-turn)'
-        : 'rgb(255 255 255 / 0.15)'
+        : 'rgb(255 255 255 / 0.25)'
   return (
-    <span className="rounded-full p-[3px]" style={{ background: ring }} aria-hidden="true">
-      <span className="flex size-9 items-center justify-center rounded-full bg-[#1d2a24] text-base font-bold uppercase sm:size-11 sm:text-lg">
+    <span
+      className="block rounded-full p-[3px] shadow-md"
+      style={{ background: ring }}
+      aria-hidden="true"
+    >
+      <span
+        className={`flex items-center justify-center rounded-full bg-[#1d2a24] font-bold uppercase ${
+          size === 'lg' ? 'size-12 text-xl sm:size-14' : 'size-10 text-lg'
+        }`}
+      >
         {name.slice(0, 1)}
       </span>
     </span>

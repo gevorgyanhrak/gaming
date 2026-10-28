@@ -360,7 +360,6 @@
     "defend": "Отбейтесь или возьмите.",
     "youTake": "Вы берёте карты.",
     "waiting": "Ход соперника.",
-    "opponents": "Другие игроки",
     "seat": "Место {{seat}}",
     "opponentCards_one": "У игрока {{name}} {{count}} карта",
     "opponentCards_few": "У игрока {{name}} {{count}} карты",

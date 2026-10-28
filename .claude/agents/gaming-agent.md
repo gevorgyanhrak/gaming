@@ -91,6 +91,11 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   Boards also receive `players` (names by seat). `ActiveGamesBar` (in PublicLayout) lists the games
   you're in with a return link and a close (leave) button; `usePresence` on RoomPage reports presence. Range actions (poker raise {min,max}) are sent as
   {type, amount}.
+- Card tables use the flat `.felt-table` baize. Durak seats the others in panels left, across and right in
+  table order (`PLACES`; the player after you sits on your left), with your hand as a straight row that
+  overlaps more as it grows and one wide action button under it; on phones the opponents stack on top.
+- To look at a board without the Docker stack: a temporary (uncommitted) Vite page rendering the board
+  with `roomStateFixture`, screenshotted with Playwright's cached `chrome-headless-shell` — delete it after.
 - When generic skill advice conflicts with the established conventions of this repo, follow the repo.
 
 ## Definition of done (run these; report real output)

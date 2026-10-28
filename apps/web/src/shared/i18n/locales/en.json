@@ -346,7 +346,6 @@
     "defend": "Beat the card or take.",
     "youTake": "You are taking the cards.",
     "waiting": "Waiting for the other player.",
-    "opponents": "Other players",
     "seat": "Seat {{seat}}",
     "opponentCards_one": "{{name}} has {{count}} card",
     "opponentCards_other": "{{name}} has {{count}} cards",
