@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useCountdown } from '@/features/play/useCountdown'
 import { useCardLabel } from '../cards/cards'
 import { CardBack, PlayingCard } from '../cards/PlayingCard'
 import type { BoardProps } from '../registry'
@@ -79,84 +80,151 @@ export default function PokerBoard({ state, onAction, pending, players = {} }: B
       ]
     : []
 
+  // Turn timer: the share of the turn left, for the ring round the acting player's avatar.
+  const secondsLeft = useCountdown(state.deadline, state.server_time)
+  const [timer, setTimer] = useState({ deadline: state.deadline, total: secondsLeft })
+  if (timer.deadline !== state.deadline || (timer.total === null && secondsLeft !== null)) {
+    setTimer({ deadline: state.deadline, total: secondsLeft })
+  }
+  const turnShare =
+    secondsLeft !== null && timer.total ? Math.min(1, secondsLeft / timer.total) : null
+
+  const seats = view.stacks.length
+  // Round the oval from your seat at the bottom; x and y in percent of the table.
+  const spot = (seat: number, radius: number) => {
+    const angle = Math.PI / 2 + ((seat - me) * 2 * Math.PI) / seats
+    return { left: `${50 + radius * Math.cos(angle)}%`, top: `${50 + radius * Math.sin(angle)}%` }
+  }
+
   return (
-    <div className="space-y-5">
-      <ul aria-label={t('poker.seats')} className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-        {view.stacks.map((stack, seat) => (
-          <li
-            key={seat}
-            aria-current={view.to_act === seat ? 'step' : undefined}
-            className={`rounded-xl border p-3 text-sm ${view.to_act === seat ? 'border-accent-text' : 'border-border'} ${
-              view.out[seat] || view.folded[seat] ? 'opacity-50' : ''
-            } bg-surface`}
+    <div className="space-y-5 text-white">
+      <div className="px-7 pt-10 pb-12 sm:px-14 sm:pt-12 sm:pb-14">
+        <div className="relative mx-auto aspect-[3/4] w-full max-w-5xl sm:aspect-[2.1/1]">
+          <div aria-hidden="true" className="table-rim absolute inset-0 rounded-[50%]">
+            <div className="table-felt h-full w-full rounded-[50%]" />
+          </div>
+
+          <section
+            aria-label={t('poker.board')}
+            className="absolute inset-x-[5%] top-1/2 flex -translate-y-1/2 flex-col items-center gap-2 text-center sm:inset-x-[12%] sm:gap-3"
           >
-            <p className="flex items-center justify-between gap-2 font-medium">
-              <span className="truncate">{name(seat)}</span>
-              {view.button === seat ? (
-                <span
-                  title={t('poker.dealer')}
-                  className="rounded-full bg-fg px-1.5 text-xs font-bold text-bg"
-                >
-                  D
+            <div className="flex justify-center gap-1 sm:gap-2 max-sm:[&>span>span]:h-16 max-sm:[&>span>span]:w-11 max-sm:[&>span>span]:rounded-md">
+              {view.board.map((card) => (
+                <span key={card} className="motion-safe:animate-card-in">
+                  <PlayingCard card={card} label={labels.card(card)} />
                 </span>
-              ) : null}
+              ))}
+              {Array.from({ length: 5 - view.board.length }, (_, i) => (
+                <span key={i} aria-hidden="true">
+                  <span className="block h-16 w-11 rounded-md border border-dashed border-white/25 bg-black/10 sm:h-24 sm:w-16 sm:rounded-lg" />
+                </span>
+              ))}
+            </div>
+            <p className="flex items-center gap-2 rounded-full bg-black/45 px-4 py-1.5 text-sm font-bold sm:text-base">
+              <ChipStack amount={view.pot} />
+              {t('poker.potAmount', { count: view.pot })}
             </p>
-            <p className="tabular-nums">{t('poker.chips', { count: stack })}</p>
-            <p className="text-xs text-muted">
-              {view.out[seat]
+            <p className="text-xs text-white/65">
+              {t('poker.handInfo', { hand: view.hand, small: view.blinds[0], big: view.blinds[1] })}
+            </p>
+          </section>
+
+          <ul aria-label={t('poker.seats')}>
+            {view.stacks.map((stack, seat) => {
+              const acting = view.to_act === seat
+              const gone = view.out[seat] || view.folded[seat]
+              const bet = view.bets[seat] ?? 0
+              const status = view.out[seat]
                 ? t('poker.out')
                 : view.folded[seat]
                   ? t('poker.folded')
-                  : (view.bets[seat] ?? 0) > 0
-                    ? t('poker.bet', { amount: view.bets[seat] })
-                    : stack === 0
-                      ? t('poker.allInStatus')
-                      : ' '}
-            </p>
-          </li>
-        ))}
-      </ul>
+                  : stack === 0
+                    ? t('poker.allInStatus')
+                    : null
+              return (
+                <li
+                  key={seat}
+                  aria-current={acting ? 'step' : undefined}
+                  aria-label={`${name(seat)}, ${t('poker.chips', { count: stack })}`}
+                >
+                  <div
+                    className={`absolute z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center transition-opacity ${
+                      gone ? 'opacity-50' : ''
+                    }`}
+                    style={spot(seat, 50)}
+                  >
+                    <div className="relative isolate">
+                      <Avatar name={name(seat)} acting={acting} share={acting ? turnShare : null} />
+                      {view.button === seat ? (
+                        <span
+                          title={t('poker.dealer')}
+                          className="absolute -top-1 -right-2 flex size-6 items-center justify-center rounded-full border-2 border-[#c9c2b0] bg-white text-xs font-extrabold text-black shadow"
+                        >
+                          D
+                        </span>
+                      ) : null}
+                      {seat !== me && !gone ? (
+                        // Their two cards, face down, peeking out behind the avatar.
+                        <span
+                          aria-hidden="true"
+                          className="absolute -top-4 left-1/2 -z-10 flex -translate-x-1/2"
+                        >
+                          <CardBack size="sm" className="-rotate-12" />
+                          <CardBack size="sm" className="-ml-6 rotate-12" />
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="relative -mt-2 min-w-24 rounded-lg border border-gold/35 bg-[#1c120d]/90 px-2.5 py-1 text-center shadow-lg backdrop-blur">
+                      <span className="block max-w-28 truncate text-xs font-semibold sm:text-sm">
+                        {name(seat)}
+                      </span>
+                      <span className="block text-xs font-bold text-gold tabular-nums">
+                        {stack.toLocaleString()}
+                      </span>
+                      {status ? (
+                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-black/80 px-2 py-0.5 text-[0.65rem] font-semibold whitespace-nowrap uppercase">
+                          {status}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
 
-      <section
-        aria-label={t('poker.board')}
-        className="space-y-3 rounded-[2rem] border border-border bg-[#1f5c3d]/60 p-5 text-center text-white"
-      >
-        <div className="flex min-h-24 flex-wrap justify-center gap-2">
-          {view.board.map((card) => (
-            <PlayingCard key={card} card={card} label={labels.card(card)} />
-          ))}
-          {Array.from({ length: 5 - view.board.length }, (_, i) => (
-            <span
-              key={i}
-              aria-hidden="true"
-              className="h-24 w-16 rounded-lg border border-dashed border-white/30"
-            />
-          ))}
+                  {bet > 0 ? (
+                    <span
+                      className="absolute z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-full bg-black/55 py-0.5 pr-2.5 pl-1 text-xs font-bold whitespace-nowrap tabular-nums transition-[left,top] duration-500 motion-safe:animate-card-in"
+                      style={spot(seat, 30)}
+                    >
+                      <ChipStack amount={bet} />
+                      {t('poker.bet', { amount: bet })}
+                    </span>
+                  ) : null}
+                </li>
+              )
+            })}
+          </ul>
         </div>
-        <p className="font-semibold">{t('poker.potAmount', { count: view.pot })}</p>
-        <p className="text-xs text-white/70">
-          {t('poker.handInfo', { hand: view.hand, small: view.blinds[0], big: view.blinds[1] })}
-        </p>
-      </section>
+      </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex gap-2" aria-label={t('poker.yourCards')}>
+      <div className="club-panel mx-auto flex max-w-4xl flex-col items-center gap-4 rounded-3xl p-4 sm:flex-row sm:p-5">
+        <div className="flex shrink-0 gap-2" aria-label={t('poker.yourCards')}>
           {view.hand_cards.length > 0
-            ? view.hand_cards.map((card) => (
-                <PlayingCard key={card} card={card} label={labels.card(card)} />
+            ? view.hand_cards.map((card, i) => (
+                <span key={card} className={i === 0 ? '-rotate-6' : 'rotate-6'}>
+                  <PlayingCard card={card} label={labels.card(card)} size="lg" />
+                </span>
               ))
-            : [0, 1].map((i) => <CardBack key={i} />)}
+            : [0, 1].map((i) => <CardBack key={i} size="lg" />)}
         </div>
 
         {actions.length > 0 ? (
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-wrap gap-2">
+          <div className="flex w-full flex-col gap-3">
+            <div className="grid grid-cols-3 gap-2">
               {has('fold') ? (
                 <button
                   type="button"
                   disabled={pending}
                   onClick={() => send({ type: 'fold' })}
-                  className={secondary}
+                  className={`${actionButton} border-[#a8473c]/60 bg-linear-to-b from-[#8e3a31] to-[#5e211b] text-white`}
                 >
                   {t('poker.fold')}
                 </button>
@@ -166,7 +234,7 @@ export default function PokerBoard({ state, onAction, pending, players = {} }: B
                   type="button"
                   disabled={pending}
                   onClick={() => send({ type: 'check' })}
-                  className={secondary}
+                  className={`${actionButton} border-gold/40 bg-linear-to-b from-gold-light to-gold text-black`}
                 >
                   {t('poker.check')}
                 </button>
@@ -176,7 +244,7 @@ export default function PokerBoard({ state, onAction, pending, players = {} }: B
                   type="button"
                   disabled={pending}
                   onClick={() => send({ type: 'call' })}
-                  className={secondary}
+                  className={`${actionButton} border-gold/40 bg-linear-to-b from-gold-light to-gold text-black`}
                 >
                   {t('poker.call', { amount: callAmount })}
                 </button>
@@ -186,7 +254,7 @@ export default function PokerBoard({ state, onAction, pending, players = {} }: B
                   type="button"
                   disabled={pending}
                   onClick={() => send({ type: 'raise', amount: raiseTo })}
-                  className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover"
+                  className={`${actionButton} border-white/20 bg-linear-to-b from-accent-light to-accent text-white`}
                 >
                   {raiseTo === raise.max
                     ? t('poker.allInAmount', { amount: raiseTo })
@@ -206,14 +274,14 @@ export default function PokerBoard({ state, onAction, pending, players = {} }: B
                   value={raiseTo}
                   onChange={(e) => setAmount(Number(e.target.value))}
                   aria-label={t('poker.amount')}
-                  className="w-40 accent-[var(--color-accent)]"
+                  className="min-w-32 flex-1 accent-[var(--color-gold)]"
                 />
                 {presets.map((preset) => (
                   <button
                     key={preset.label}
                     type="button"
                     onClick={() => setAmount(preset.value)}
-                    className="rounded-md border border-border px-2 py-1 text-xs hover:border-accent-text"
+                    className="rounded-full border border-gold/35 bg-black/30 px-3 py-1 text-xs font-semibold hover:border-gold"
                   >
                     {preset.label}
                   </button>
@@ -222,8 +290,11 @@ export default function PokerBoard({ state, onAction, pending, players = {} }: B
             ) : null}
           </div>
         ) : (
-          <p className="text-sm text-muted" aria-live="polite">
-            {view.to_act === null ? '' : t('poker.waitingFor', { name: name(view.to_act) })}
+          <p
+            className="w-full rounded-md bg-[#fdebc8] px-3 py-2 text-center text-sm text-black"
+            aria-live="polite"
+          >
+            {view.to_act === null ? ' ' : t('poker.waitingFor', { name: name(view.to_act) })}
           </p>
         )}
       </div>
@@ -231,9 +302,9 @@ export default function PokerBoard({ state, onAction, pending, players = {} }: B
       {view.last_hand ? (
         <section
           aria-label={t('poker.lastHand')}
-          className="rounded-xl border border-border bg-surface p-4 text-sm"
+          className="club-panel mx-auto max-w-4xl rounded-3xl p-4 text-sm"
         >
-          <h2 className="mb-2 font-semibold">
+          <h2 className="mb-2 font-semibold text-gold">
             {t('poker.lastHandTitle', { hand: view.last_hand.number })}
           </h2>
           <ul className="space-y-1">
@@ -265,5 +336,45 @@ export default function PokerBoard({ state, onAction, pending, players = {} }: B
   )
 }
 
-const secondary =
-  'rounded-lg border border-border bg-surface-raised px-4 py-2 text-sm font-semibold hover:border-accent-text'
+/** A few play chips, more of them for bigger amounts. Decorative. */
+function ChipStack({ amount }: { amount: number }) {
+  const count = amount >= 500 ? 3 : amount >= 50 ? 2 : 1
+  return (
+    <span aria-hidden="true" className="relative inline-block h-5 w-5">
+      {Array.from({ length: count }, (_, i) => (
+        <span
+          key={i}
+          className="absolute left-0 size-5 rounded-full border-2 border-dashed border-white/85 shadow"
+          style={{
+            bottom: `${i * 3}px`,
+            background: ['#c62f3a', '#2f6fd6', '#d6ab4e'][i],
+          }}
+        />
+      ))}
+    </span>
+  )
+}
+
+/** A round avatar with the player's initial; the acting player's ring shows the time left. */
+function Avatar({ name, acting, share }: { name: string; acting: boolean; share: number | null }) {
+  const ring =
+    acting && share !== null
+      ? `conic-gradient(var(--color-turn) ${share * 360}deg, rgb(255 255 255 / 0.15) 0)`
+      : acting
+        ? 'var(--color-turn)'
+        : 'rgb(214 171 78 / 0.45)'
+  return (
+    <span
+      className="block rounded-full p-[3px] shadow-lg shadow-black/50"
+      style={{ background: ring }}
+      aria-hidden="true"
+    >
+      <span className="flex size-12 items-center justify-center rounded-full bg-linear-to-b from-[#4a342b] to-[#24170f] text-xl font-bold uppercase sm:size-16 sm:text-2xl">
+        {name.slice(0, 1)}
+      </span>
+    </span>
+  )
+}
+
+const actionButton =
+  'rounded-xl border px-3 py-3 text-sm font-bold shadow-lg shadow-black/40 transition hover:brightness-110 active:translate-y-px disabled:opacity-60 sm:text-base'
