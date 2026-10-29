@@ -308,3 +308,47 @@ None found on the screens I saw. These all render as before:
   out) and at Durak when it isn't my turn with several opponents (also in the report).
 - **P4** Poker at 390: the "Bet 5" chip overlaps the right-hand nameplate (David 995).
 - **P5** Duplicate bot names at big tables (three "David", two "Alex"; TD-002, already P1).
+
+### Re-review — 2026-10-29 (commit `2af549b`)
+
+Scope: TASK-003, plus a quick check that the minor fixes caused no regressions. Same setup (local
+stack, headless Chrome, `player2`). Each language was set in the footer select and the page
+reloaded, then set back to English.
+
+**TASK-003: checked**
+
+| Check | Result |
+|---|---|
+| `/history` 390×844 en, ru, hy | rows 96 px: name; opponents · date; then badge + reason on their own line ✓ |
+| One-opponent rows in every language | name, opponent and full date ("против Alex · 29 окт. 2026 г.", "ընդդեմ Alex · Oct 29, 2026") visible ✓ |
+| Only the 5-opponent Poker lists | truncate; date, badge and reason stay whole ✓ |
+| Horizontal scroll at 390 | none (390 = 390) ✓ |
+| `/history` 1440×900 en | unchanged 70 px rows, outcome in the right column ✓ |
+| Icon tiles (`/history`) | visible gold/15 tiles; computed `background-clip: border-box` ✓ |
+| Icon tile (room header, finished Poker) | visible gold/15 tile; computed `background-clip: border-box` ✓ |
+| Hidden copy of the outcome | `display:none` (`hidden sm:flex` / `sm:hidden`), so it is read once ✓ |
+
+TASK-003 is now **APPROVED**.
+
+**Minor fixes: checked**
+- **Stats table:** cells have `pl-3` (computed 12 px); the 1440 table still fits (1054 = 1054).
+- **Poker Bot pill:** 14.4 px tall; its top (874.9) clears the stack digits; it overlaps the line
+  box by 0.4 px, which is not visible.
+- **PlayerList:** "Lost" now uses the `danger` tone and "Won" the `success` tone on the finished
+  Poker table, matching History. This is the first live sighting of the `success` badge; it reads
+  clearly.
+- **Streak line:** checked in code only (one colour class); still no streak data to see it live.
+- **Regressions:** none seen.
+
+Screenshots: `rr-hist-390-en`, `rr-hist-390-ru`, `rr-hist-390-hy`, `rr-hist-1440-en`,
+`rr-poker-390`, `rr-poker-1440`.
+
+**Final B1 verdicts:**
+
+| Task | Verdict |
+|---|---|
+| TASK-001 | APPROVED WITH MINOR ISSUES (needs a human listen; left-player end sound left as is by decision) |
+| TASK-002 | APPROVED (minor items fixed) |
+| TASK-003 | APPROVED |
+| TASK-004 | APPROVED |
+| TASK-005 | APPROVED (minor items fixed) |
