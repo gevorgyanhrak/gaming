@@ -102,9 +102,11 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   green PLAY (matchmaking) + `ModeCard`s (bot, friend, invite code) rising in with `animate-rise`.
   Games without uploaded art use the SVG scenes in `GameArt.tsx`; few short choices are
   `Segmented` radio pills. Never imply real money, coins, VIP or a shop: play-for-fun only.
-- Checkers is a classic beige/brown board (`#e3d0ac` / `#8b7355`) in a `.table-rim` wood frame, with
-  3D men (`.checker-white` / `.checker-black`: radial-gradient rim and dish), coordinates on the edge
+- Chess and Checkers share a classic beige/brown board (`#e3d0ac` / `#8b7355`) in a `.table-rim` wood frame, with
+  checkers men in 3D (`.checker-white` / `.checker-black`: radial-gradient rim and dish), coordinates on the edge
   squares, a "Move: White/Black" heading, and a width capped by viewport height so it fits without scrolling.
+  Chess uses the solid glyphs for both sides (with U+FE0E so the pawn never renders as an emoji), cream
+  with a dark stroke for white; the move list sits beside the board on desktop.
 - Card tables are oval: `.table-rim` (wood) around `.table-felt` (baize). Poker seats sit round the
   rim by angle from your seat at the bottom (`spot(seat, radius)`), bets part-way to the centre. A private room waits on
   `WaitingTable` (seats round the rim, invite code in the middle). Durak places every grid item

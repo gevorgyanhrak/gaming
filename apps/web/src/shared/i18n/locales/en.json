@@ -328,6 +328,8 @@
     "empty": "empty"
   },
   "chess": {
+    "moveWhite": "Move: White",
+    "moveBlack": "Move: Black",
     "pickPiece": "Pick a piece to move.",
     "pickTarget": "Pick where it goes.",
     "waiting": "Waiting for the other player.",
