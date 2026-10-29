@@ -161,7 +161,7 @@ Critical writes use `DB::transaction(..., attempts: 3)` to retry InnoDB deadlock
 | Auth | `POST /auth/register`, `/login`, `/logout`, `/verification/send`, `/verification/verify`, `/password/forgot`, `/password/reset`; `GET /auth/username-available` | 3 |
 | Me | `GET /me`, `PATCH /me/profile`, `POST\|DELETE /me/avatar`, `PATCH /me/settings`, `PUT /me/password`, `POST /me/contact`, `GET /me/games`, `GET /me/stats`, `GET /me/active-room` | 3–5 |
 | Matchmaking | `POST /matchmaking/tickets`, `GET\|DELETE /matchmaking/tickets/current`, `POST /matchmaking/tickets/current/accept-bot` | 5 |
-| Rooms | `POST /rooms`, `POST /rooms/join`, `GET /rooms/{id}`, `GET /rooms/{id}/state`, `POST /rooms/{id}/actions`, `GET /rooms/{id}/moves` | 5 |
+| Rooms | `POST /rooms`, `POST /rooms/join`, `GET /rooms/{id}`, `GET /rooms/{id}/state`, `POST /rooms/{id}/actions` (`GET /rooms/{id}/moves` is planned, backlog TASK-021) | 5 |
 
 Responses use Laravel API Resources (`{ data: ... }`); errors are `{ message, errors? }`, with a
 generic body for 404. The OpenAPI spec is served at `/docs/api.json` (UI at `/docs/api`, local
