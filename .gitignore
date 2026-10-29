@@ -7,3 +7,7 @@
 # Claude Code local state
 .claude/.turn-start
 .claude/settings.local.json
+
+# curl cookie jars from manual API testing
+*.cookies
+cookies*.txt

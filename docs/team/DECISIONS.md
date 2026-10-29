@@ -9,6 +9,12 @@ Newest first. Format: date · decision · why · who.
 
 ## Decided
 
+- 2026-10-29 · Autonomous mode on: batches B1–B3 are built task by task (spec → build → design review →
+  PM validation) and pushed to `main` without asking per task; B4 still needs the owner · owner.
+- 2026-10-29 · Delete the committed cookie jars `a.txt`/`b.txt` (TD-001) and ignore cookie files · owner.
+- 2026-10-29 · Game sounds are synthesized with Web Audio in code (no sound files, no licensing) ·
+  avoids an asset decision; small and themeable · team.
+
 - 2026-10-29 · Chess and Checkers use a classic beige/brown board (`#e3d0ac` / `#8b7355`) in the wood
   frame, with a "Move: White/Black" heading · matches the reference the owner gave · owner.
 - 2026-10-28 · "Card club" look: dark wood room, gold emphasis, green play buttons, game carousel with

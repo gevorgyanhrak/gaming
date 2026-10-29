@@ -8,7 +8,7 @@ Last planning: 2026-10-29.
 
 | Batch | Theme | Tasks | Approval |
 |---|---|---|---|
-| B1 | Honest and clear: fix what misleads or loses games | TASK-001…005 | none (frontend) |
+| B1 | Honest and clear: fix what misleads or loses games (in progress) | TASK-001…005 | none (frontend) |
 | B2 | Keep playing: after-game flow, profiles, invites | TASK-006…008, TASK-024 | none (frontend) |
 | B3 | Polish and consistency | TASK-009…013, TASK-025 | none (frontend) |
 | B4 | New capabilities (backend / new rules) | TASK-014…023 | **owner** |
@@ -17,7 +17,7 @@ Last planning: 2026-10-29.
 
 ## B1 · Honest and clear
 
-### TASK-001 · Game sounds that respect the setting            P0 · M · PLANNED · B1
+### TASK-001 · Game sounds that respect the setting            P0 · M · DESIGN_IN_PROGRESS · B1
 Problem: Settings offers "Sound effects", but the game is silent; players miss turns.
 User story: As a player, I want a sound when it's my turn and when pieces move, so I notice the game
 without staring at it.
@@ -36,7 +36,7 @@ Acceptance criteria:
 Tests: unit tests for the state→event mapping; manual check in a bot game.
 Depends on: —   Approval: none
 
-### TASK-002 · Statistics that add up                          P1 · S · PLANNED · B1
+### TASK-002 · Statistics that add up                          P1 · S · DESIGN_IN_PROGRESS · B1
 Problem: Dashboard shows "Played 2 · W 0 · L 0 · D 0".
 Scope: show `abandoned` (already in `GET /me/stats`) in `DashboardGames`; compact on phones; also show
 `current_streak` / `best_streak` and win rate, which the API already returns (OPP-008).
@@ -44,21 +44,21 @@ Acceptance: Played = W + L + D + Abandoned on every row; no horizontal scroll at
 Tests: component test with a fixture that has abandoned games and a streak. Evidence: UX-002, OPP-008.
 Depends on: —   Approval: none
 
-### TASK-003 · History shows the outcome                       P1 · S · PLANNED · B1
+### TASK-003 · History shows the outcome                       P1 · S · DESIGN_IN_PROGRESS · B1
 Problem: history rows say "Timed out" but not who won.
 Scope: `RoomSummary`: game icon, outcome badge (Won / Lost / Draw / Abandoned) with text, end reason
 under it. Evidence: UX-003.
 Acceptance: every finished row shows outcome + reason; AA contrast; colour never the only signal.
 Tests: component test per outcome. Depends on: —   Approval: none
 
-### TASK-004 · Your-turn signal in the browser tab             P1 · S · PLANNED · B1
+### TASK-004 · Your-turn signal in the browser tab             P1 · S · DESIGN_IN_PROGRESS · B1
 Problem: moves made while you're on another tab go unnoticed; games time out.
 Scope: room page title "● Your turn · {game}" while it's your turn; plays the your-turn sound
 (TASK-001) when the tab is hidden. Evidence: UX-004.
 Acceptance: title flips within one state update and reverts after your move; translated.
 Tests: RoomPage test for title on my turn / their turn. Depends on: TASK-001 (sound part only).
 
-### TASK-005 · Card tables without the duplicate player row    P1 · S · PLANNED · B1
+### TASK-005 · Card tables without the duplicate player row    P1 · S · DESIGN_IN_PROGRESS · B1
 Problem: Durak/Poker show every player twice; on phones the table starts below the fold.
 Scope: RoomPage skips `PlayerList` for boards that render seats (Durak, Poker). Evidence: UX-006.
 Acceptance: at 390×844 a 6-player Poker table starts on the first screen; names, bot badges, turn
@@ -140,5 +140,4 @@ Ordered by the PM's recommendation.
 1. B4 tasks: which to build and in what order (PM recommends TASK-014 ratings, TASK-016 rematch,
    TASK-018 long nardi). Details per task in PRODUCT_RESEARCH.md §6.
 2. Brand: the real product name and logo (UX-009).
-3. TD-001: delete the committed cookie files `a.txt` and `b.txt`.
-4. Autonomous mode: may B1–B3 tasks be built and pushed to `main` without asking per task?
+(Decided 2026-10-29: autonomous mode for B1–B3; TD-001 deleted. See DECISIONS.md.)
