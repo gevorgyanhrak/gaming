@@ -125,7 +125,7 @@ function GameHero({ game }: { game: GameDetail }) {
     <header className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
         <ViewTransition name={titleTransition(game.slug)}>
-          <h1 className="text-4xl font-extrabold tracking-tight text-gold uppercase sm:text-6xl">
+          <h1 className="text-gold-gradient text-4xl font-extrabold tracking-tight uppercase sm:text-6xl">
             {game.name}
           </h1>
         </ViewTransition>

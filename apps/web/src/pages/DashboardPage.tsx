@@ -33,7 +33,7 @@ export function DashboardPage() {
           <div className="flex items-center gap-4">
             <Avatar url={user.profile.avatar_url} name={name} size="md" />
             <div className="min-w-0">
-              <h1 className="text-2xl font-extrabold text-gold sm:text-3xl">
+              <h1 className="text-gold-gradient text-2xl font-extrabold sm:text-3xl">
                 {t('dashboard.welcome', { name })}
               </h1>
               <p className="mt-0.5 text-xs text-muted">

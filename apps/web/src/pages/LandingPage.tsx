@@ -28,7 +28,7 @@ export function LandingPage() {
             <p className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-xs font-semibold tracking-wide text-gold-light uppercase">
               {t('landing.eyebrow')}
             </p>
-            <h1 className="mt-5 text-4xl leading-tight font-extrabold tracking-tight text-balance text-gold sm:text-6xl">
+            <h1 className="text-gold-gradient mt-5 text-4xl leading-tight font-extrabold tracking-tight text-balance sm:text-6xl">
               {t('landing.title')}
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-lg text-muted lg:mx-0">

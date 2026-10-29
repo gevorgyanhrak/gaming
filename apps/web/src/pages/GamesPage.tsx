@@ -9,7 +9,9 @@ export function GamesPage() {
     <Container className="py-12">
       <title>{t('catalog.title')}</title>
       <header className="mb-8">
-        <h1 className="text-4xl font-extrabold tracking-tight text-gold">{t('catalog.title')}</h1>
+        <h1 className="text-gold-gradient text-4xl font-extrabold tracking-tight">
+          {t('catalog.title')}
+        </h1>
         <p className="mt-2 text-muted">{t('catalog.subtitle')}</p>
       </header>
       <GameGrid />

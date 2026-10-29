@@ -18,7 +18,7 @@ export function Segmented<T extends string | number>({
   const name = useId()
 
   return (
-    <fieldset>
+    <fieldset className={fill ? 'w-full max-w-xs' : undefined}>
       <legend className="mb-2 text-xs font-semibold tracking-wider text-muted uppercase">
         {label}
       </legend>

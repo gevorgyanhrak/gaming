@@ -141,20 +141,20 @@ export function RoomPage() {
         <WaitingTable room={data} mySeat={view?.seat ?? 0} onLeave={leave} />
       ) : null}
 
+      {data.status === 'finished' || data.status === 'aborted' || leftTable ? (
+        <GameOverPanel
+          room={data}
+          result={(myResult ?? null) as ParticipantResult | null}
+          leftTable={leftTable}
+        />
+      ) : null}
+
       {showPlayers ? (
         <PlayerList
           room={data}
           mySeat={view?.seat ?? null}
           seatsToAct={view?.seats_to_act ?? []}
           clocks={clocks}
-        />
-      ) : null}
-
-      {data.status === 'finished' || data.status === 'aborted' || leftTable ? (
-        <GameOverPanel
-          room={data}
-          result={(myResult ?? null) as ParticipantResult | null}
-          leftTable={leftTable}
         />
       ) : null}
 

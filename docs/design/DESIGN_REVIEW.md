@@ -3,6 +3,325 @@
 One section per reviewed task or batch, newest first (format: `.claude/agents/ui-ux-agent.md`).
 Paths are under `apps/web/src`.
 
+## B2 · TASK-026, 006, 028, 007, 024, 008 (+ TASK-030) — 2026-10-29
+
+Reviewed by the UI/UX agent against `DESIGN_SPECIFICATIONS.md` (Batch B2) and
+`IMPLEMENTATION_REPORT.md#b2`. Implementation: commit `3114df9` on `main`.
+
+| Task | Verdict |
+|---|---|
+| TASK-026 Names follow the language switch | **APPROVED** |
+| TASK-006 Game-over panel with "Play again" | **APPROVED WITH MINOR ISSUES** |
+| TASK-028 Turn caption that tells the truth | **APPROVED** |
+| TASK-007 Own profile with records and recent games | **APPROVED** |
+| TASK-024 Shareable invite link | **NEEDS REVISION** |
+| TASK-008 Clear play actions in the lobby | **NEEDS REVISION** |
+| TASK-030 Distinct bot names at a table (quick check) | **APPROVED** |
+
+### What I checked
+
+- **Code:** the `apps/web/src` diff of `3114df9`:
+  - `useRefreshOnLanguageChange`, `translatedQuery`, `GameOverPanel`, `turnCaption`;
+  - the four boards, RoomPage, ProfilePage, `GameRecord`, `records.ts`;
+  - JoinPage, `withNext` and the login, register and verify pages;
+  - WaitingTable, PlayPanel, Button, Segmented;
+  - the new keys in en/ru/hy (all present; ru plural forms present).
+- **Live app:** local stack, headless Chrome over CDP, signed in as `player2@example.test`. Clipboard,
+  `navigator.share`, `AudioContext` and `fetch` were stubbed or instrumented where noted.
+- **Screens, viewports and languages:**
+
+  | Screen | Viewports | Languages |
+  |---|---|---|
+  | `/games/poker` lobby | 390, 1440 | en, ru, hy (390) |
+  | Durak 4 players (me + 3 bots): active, captions, finished panel, Play again | 390, 1440 | en, ru, hy |
+  | Chess (me + Hard bot): captions, language switch with a piece selected, finished panel, reload, Play again | 390 | en, ru |
+  | Poker 6 players: names, finished panel under a 6-row player list, Play again | 390 | en |
+  | Private 4-seat Poker table: Copy code, Copy link, the clipboard-failure fallback, the stubbed Share path, closed-room panel | 390, 1440 | en, ru, hy (390) |
+  | `/join/zzz999` and `/join/<closed code>`, signed in | 390, 1440 | en |
+  | `/profile` | 390, 820, 1440 | en, ru, hy |
+  | `/history` language switch without reload | 390 | en → ru → hy |
+
+- **Screenshots** (scratchpad `review/`):
+  - lobby: `b2-lobby-poker-390(-cards|-ru|-hy|-hy-top)`, `b2-lobby-poker-1440`,
+    `b2-outline-rest`, `b2-outline-hover`;
+  - Durak: `b2-durak-1440`, `b2-durak-390(-ru|-hy)`, `b2-durak-over-390(-top)`,
+    `b2-durak-over-1440`, `b2-over-390-ru`, `b2-over-390-hy`;
+  - Chess: `b2-chess-390-ru-selected`, `b2-chess-390-ru`, `b2-chess-390-waiting`,
+    `b2-chess-over-390-reload`;
+  - Poker: `b2-poker6-390`, `b2-poker6-over-390(-top)`;
+  - private table: `b2-private-390(-full|-copied|-fallback|-ru|-hy|-share)`, `b2-private-1440`,
+    `b2-private-aborted-390`, `b2-private-aborted-1440`;
+  - join: `b2-join-bad-390`, `b2-join-bad-1440`;
+  - profile and history: `b2-profile-1440`, `b2-profile-390(-ru|-hy)`, `b2-history-390-ru`,
+    `b2-history-390-hy`.
+
+**Not checked:**
+- The guest flow `/join/CODE` → login/register → verify → table. The browser is signed in and I did
+  not sign out. I read the code: `withNext` is carried through Login ↔ Register → Verify, and Verify
+  uses `safeRedirect(next)`; B2 tests cover it.
+- Join with a 403 (verification required).
+- Matchmaking Play again.
+- A finished **private** game: it needs a second human. The closed (aborted) private room was
+  checked, and the code gives private rooms only "Back to lobby".
+- The real Web Share sheet: only stubbed.
+- The profile empty state for a new player: the account has games.
+- Nardi and Checkers captions live (unit tests only).
+- "Several seats acting" in Durak live: never happened in about 3 minutes of play; it is in
+  `turnCaption.test.ts`.
+- Keyboard-only Tab order through the lobby.
+
+---
+
+### TASK-026 · Names follow the language switch — APPROVED
+
+**Spec vs implementation:**
+- The hook is mounted once in `PublicLayout`, not `App.tsx`. That is equivalent: every page that
+  shows translated names is inside it.
+- It remembers the last language.
+- `translatedQuery` matches `['rooms', id]` (length 2 only), `['me', rooms|games|stats]` and
+  `['users', …]`; the `/state` key is never touched.
+- Recommendation 4 (`keepPreviousData` in `useGames`/`useGame`) was not done; see minor.
+
+**Observed:**
+
+| Check | Result |
+|---|---|
+| `/history` en → ru → hy → ru → en, at 390 and 820 | names change in place, no skeleton, no navigation, no horizontal scroll ✓ |
+| Active Durak room, en → ru → hy | h1 "Durak" → "Дурак" → "Դուրակ"; mode and tab title follow ("● Ваш ход · Дурак") ✓ |
+| Requests per switch | `/me/rooms`, `/rooms/{id}`, `/me/settings` (the save); no `/state` ✓ (AC 2) |
+| Sound during switches (instrumented, sound on) | 0 sounds ✓ (AC 3) |
+| Durak hand during switches | stays 6 cards ✓ |
+| Chess: e2 selected, then switch to ru | e2 stays `aria-pressed="true"`; caption "Выберите, куда пойти." ✓ (AC 1) |
+| `/profile` 390 en → hy → ru → hy → en | records, recent games and note re-render in place ✓ |
+
+**Minor (no revision required):** the game lobby (`/games/<slug>`) uses locale-keyed catalog
+queries. The first switch to a language not yet cached put me back at the top of the page (seen
+once in hy). Later switches kept `scrollY 700` with no skeleton. Adding `placeholderData:
+keepPreviousData` to `useGame`/`useGames` in `features/catalog/queries.ts` (spec recommendation 4)
+would remove that.
+
+---
+
+### TASK-006 · Game-over panel with "Play again" — APPROVED WITH MINOR ISSUES
+
+**Spec vs implementation:**
+- `club-frame max-w-xl rounded-3xl` panel with eyebrow, h2 outcome (gold + medal on a win), reason,
+  green Play again + secondary Back to lobby, `min-h-11 w-full sm:w-auto`, and the "Same settings"
+  line.
+- Errors show in an `Alert` inside the panel.
+- `MatchmakingStatus` replaces the actions while searching.
+- Heading has `tabIndex=-1` and is focused per room id.
+- Accepted deviation: the level comes from `participants[].bot_difficulty` and the mode from
+  `mode.id` (no localStorage), which resolves spec open question 1 exactly.
+
+**Observed:**
+
+| Check | Result |
+|---|---|
+| Durak 4p resign, 390 | "GAME OVER / You lost. / A player resigned. / Play again / Back to lobby / Same settings: Podkidnoy · Level: Easy · 4 players"; buttons 314×44 ✓; focus on `#game-over-title` ✓; tab "Lost · Durak" ✓; only the loss sound ✓ |
+| 1440 | centred 576 px panel, buttons in one row (103×44, 126×44) ✓ |
+| ru, hy at 390 | strings fit, buttons 314×44, no horizontal scroll ✓ (AC 5) |
+| Play again, Durak | new room `type bot`, mode 5, 4 seats, all bots `easy` ✓ (AC 1) |
+| Play again, Chess | new room mode 2, 2 seats, bot `hard` ✓ |
+| Play again, Poker | new room mode 6, 6 seats, all bots `medium` ✓ |
+| Reload a finished Chess room | panel present, focus on the heading ✓ (AC 4) |
+| Closed private Poker table (aborted) | "This room was closed." + one primary "Back to lobby", no Play again, no POST ✓ (AC 3) |
+
+Not seen: a win (no wins on this account), matchmaking, the left-table variant on a table that
+plays on, a finished private game.
+
+**Minor (fix in the next pass, no re-review needed):**
+1. `pages/RoomPage.tsx`: the panel renders **after** `PlayerList`; the spec puts it under the room
+   header, before the player list. At a finished 6-player table at 390 the panel spans 490–768 px.
+   It is only just above the tab bar on an 844 px screen and would start below the first screen on a
+   667 px phone. Move the `GameOverPanel` block above the `showPlayers` block.
+2. `features/play/components/GameOverPanel.tsx`: the eyebrow "Game over" also shows for a room
+   that never started ("GAME OVER · This room was closed."). Hide the eyebrow when `aborted`.
+
+---
+
+### TASK-028 · Turn caption that tells the truth — APPROVED
+
+**Spec vs implementation:**
+- `waitingCaption` follows the rules (result or nobody acting → null; mine → null; several → others;
+  one → name or fallback).
+- The four boards use it with `?? ''`, so the `aria-live` line stays mounted.
+- The header badge falls back to `room.theirTurn` and has `max-w-48 truncate`.
+- The `*.waiting` keys are removed in all three locales.
+- Poker is unchanged.
+- RoomPage has no slug checks.
+
+**Observed:**
+
+| Check | Result |
+|---|---|
+| Durak 4p, during play | header and board read "Waiting for Anna", "Waiting for David", "Waiting for Mariam" as the turn moves; hy "Սպասում ենք՝ David" ✓ (AC 3, one actor) |
+| Chess vs Robert | "Waiting for Robert" in header and board in en; "Ждём: Robert" in ru ✓ (AC 2) |
+| Chess at 390 | header badge fits on one line next to the title ✓ |
+| Finished Durak, Chess and Poker | board `aria-live` line empty, header badge gone; nothing says "Waiting…" ✓ (AC 1) |
+
+The "several acting" caption was not seen live (unit-tested).
+
+---
+
+### TASK-007 · Own profile with records and recent games — APPROVED
+
+**Spec vs implementation:**
+- Records `section aria-labelledby` with h2, a grid `sm:grid-cols-2 lg:grid-cols-3` of cards
+  (`GameRecord size="lg"`: h3 name, `text-2xl` win rate, `dt`/`dd` pairs, streak line).
+- Note under the grid.
+- Recent games: 5 `RoomSummary` rows and "See all games" when total > 5.
+- Each section has its own skeleton and error state; the empty state replaces both.
+- The dashboard list now uses the same `GameRecord`.
+
+**Observed:**
+
+| Check | Result |
+|---|---|
+| Columns | 1440: three (w 360); 820: two (w 363); 390: one (w 356) ✓ (AC 4) |
+| Horizontal scroll at 390 and 820 in en, ru, hy | none ✓ (AC 4) |
+| Chess record | Played 6 = 0+3+0+3 ✓ |
+| Checkers record | 4 = 0+3+0+1 ✓ |
+| Recent games | 5 newest rows, each with badge + reason; "See all games" present (total > 5) ✓ (AC 2) |
+| Dashboard → profile (SPA) | no `/me/stats` request ✓ (AC 5); `/me/games?page=1` was fetched twice in dev (StrictMode re-mount aborts the first), not a production issue |
+
+The empty state was not seen (account has games); I read the code.
+
+---
+
+### TASK-024 · Shareable invite link — NEEDS REVISION
+
+**Spec vs implementation:**
+- `/join/:code` under the signed-in routes.
+- JoinPage joins once (ref guard) and navigates with `replace`.
+- Errors: 422 → EmptyState with the server message + "Choose a game"; 403 → verify link with
+  `next`; anything else → `QueryErrorState`.
+- WaitingTable:
+  - new copy, the code, a link-style "Copy code";
+  - gold primary Share (when `navigator.share` exists) or Copy link;
+  - secondary Copy link (only with Share) and Close room under the oval;
+  - 2 s "Link copied" / "Code copied" labels plus an `sr-only role="status"`;
+  - a read-only, focused and selected fallback field when the clipboard fails.
+
+**Observed:**
+
+| Check | Result |
+|---|---|
+| Copy link (stubbed clipboard) | writes `http://localhost:5175/join/UF5988`; label "Link copied", status "Link copied", resets after 2 s ✓ |
+| Copy code | writes `UF5988`, label "Code copied" ✓ |
+| Clipboard rejects | "Copy this link" field appears, focused, whole link selected ✓ (AC 4) |
+| `navigator.share` stubbed | primary "Share invite" with secondary "Copy link" + "Close room" under the oval ✓ |
+| Share payload | `{ title: "Join a table", text: "Join my Poker table.", url: …/join/UF5988 }` ✓ |
+| Share `AbortError` | silent, nothing copied ✓ |
+| Share other error | falls back to copying ✓ |
+| `/join/zzz999` and `/join/<closed code>`, signed in | "This invite code is not valid or the room is full." + "Choose a game"; no horizontal scroll ✓ (AC 3) |
+| 1440 | 2:1 oval, frame centred; Share invite and the secondary buttons below the bottom seat ✓ |
+| 390 en / ru | frame content inside the frame (`scrollWidth 234 = clientWidth 234`) ✓ |
+| 390 hy | **overflows**: frame `scrollWidth 293 > clientWidth 234`; the title "Սպասում ենք խաղացողներին" pushes the three gold dots past the frame's right edge (x ≈ 372 vs frame edge 313) ✗ (AC 4) |
+| Button heights at 390 | primary Copy link / Share invite **40 px**, Close room and secondary Copy link **42 px**; the spec says 44 px targets ✗. "Copy code" is 44 ✓ |
+
+**Corrections (required):**
+1. `features/play/components/WaitingTable.tsx`, the frame header row (medal · h2 · dots):
+   - below `sm`, hide the medal and the dots (`hidden sm:flex` on both spans);
+   - give the h2 `min-w-0 break-words text-lg sm:text-xl`.
+
+   The title then has the full ~196 px and the hy title wraps inside the frame. The long hy title was
+   there before B2, but AC 4 requires the frame not to overflow at 390 in hy.
+2. Same file: add `min-h-11` to the primary Share/Copy link `Button` and to both secondary buttons
+   under the oval (Copy link, Close room).
+3. Re-check at 390×844 in en, ru and hy:
+   - frame `scrollWidth === clientWidth`;
+   - all four buttons at least 44 px tall;
+   - no horizontal scroll;
+   - the fallback field state still fits.
+
+Optional: in the fallback state the frame grows to 401 px and covers the top of my own seat's
+avatar at 390. Acceptable for an error path, but hiding the "Copy code" button while the field is
+shown would give the space back.
+
+---
+
+### TASK-008 · Clear play actions in the lobby — NEEDS REVISION
+
+**Spec vs implementation:**
+- ModeCard is a grid: medal + h3 on one row on phones, the medal spanning three rows from `sm`.
+- The body is full width on phones.
+- A text `Button variant="outline"` "Start game" / "Create table" with a chevron, `min-h-11 w-full
+  sm:w-auto`, `aria-describedby` the title; the hover translate was dropped.
+- The Join submit moved to `outline`.
+- `Segmented fill`: level pills share the width at 44 px; table-size pills show numbers only.
+
+**Observed:**
+
+| Check | Result |
+|---|---|
+| 390 en/ru/hy | Start game and Create table 322×44; Join 62–94×44; level pills on one line (equal tops, 101×44 each, "Сложный" fits); table-size pills 2–6 on one line, 44 px tall; no horizontal scroll ✓ (AC 1–3 except below) |
+| 1440 | medal left, button right-aligned under the pills (137×44, 145×44) ✓ |
+| Outline button at rest | gold label on the card, gold/40 border ✓ — but computed `background-clip: text`, so its `bg-surface-raised` fill is not painted |
+| Outline button **on hover** | the label turns **black on the dark card** (computed `color: rgb(0 0 0)`, `background-clip: text`; screenshot `b2-outline-hover`). About 1.3:1, unreadable on the main action of every card ✗ |
+| Table-size pills at 390 | only **32–33 px wide**: the hero's fieldset is shrink-wrapped (190 px) inside a centred flex row, so `fill` has nothing to fill. 44 px tall, but the touch area is 32×44 against the 44 px rule ✗ |
+
+**Cause of the hover bug:** the `outline` variant uses `text-gold`. In `styles/index.css`,
+`.text-gold` is also a component class: a gold gradient with `background-clip: text`. Its
+`background-clip` applies to the button, so the theme `bg-*` utilities only paint inside the glyphs.
+On hover, `hover:bg-gold` shows only through the glyphs while `hover:text-black` paints the text
+black over them, so the label goes black. This is the third time this name clash has bitten (B1 icon
+tiles, here, and the old chevron button had the same classes).
+
+**Corrections (required):**
+1. `shared/ui/Button.tsx`, `outline` variant: replace `text-gold` with the plain colour utility
+   `text-(--color-gold)`, which does not pull in the gradient component class:
+   `border border-gold/40 bg-surface-raised text-(--color-gold) hover:border-gold hover:bg-gold
+   hover:text-black`.
+   - Expected computed values: `background-clip: border-box`; rest = gold on `surface-raised`
+     (7.0:1); hover = black on gold (9.8:1).
+   - This covers Start game, Create table and Join.
+2. `features/play/components/PlayPanel.tsx`, the hero's table-size `Segmented`: give its wrapper
+   `fieldset` (or the `Segmented` root when `fill`) `w-full max-w-xs`. The five pills are then about
+   60 px wide at 390 (≥ 44 px target), still on one line; 820/1440 unchanged.
+3. Re-check at 390 and 1440:
+   - hover (mouse) and keyboard focus on Start game, Create table and Join (with a code typed);
+   - table-size pill widths ≥ 44 px.
+
+Follow-up for the tech-debt list: rename the component class `.text-gold` (e.g. to
+`.text-gold-gradient`), so `text-gold` is only the colour utility and this can't recur.
+
+---
+
+### TASK-030 · Distinct bot names at a table (quick check) — APPROVED
+
+| Table | Bots |
+|---|---|
+| Durak 4p | David, Mariam, Anna |
+| Durak 4p, Play again | Igor, Mariam, Anna |
+| Poker 6p (medium) | Sergey, Aram, Nina, Michael, Daniel |
+| Poker 6p, Play again | same five, all distinct |
+
+No repeats at any table; the levels are as requested. The admin shortage subheading was not checked
+(admin panel not opened).
+
+### Regressions
+
+None found in the B2-touched screens:
+- dashboard records (shared `GameRecord`);
+- history rows;
+- the B1 tab titles ("Lost · Durak", "● Ваш ход · Дурак");
+- sounds (loss only on resign, nothing on language switch);
+- the B1 icon tiles;
+- Bot pills;
+- player-list result tones.
+
+### Pre-existing issues seen (not B2; for PM / TECHNICAL_DEBT)
+
+- In hy, the lobby hero stat labels run together ("ՀԱՂԹԱՆԱԿՆԵՐՊԱՐՏՈՒԹՅՈՒՆՆԵՐ" over Wins/Losses).
+- The Poker game description stays English in hy (content).
+- A finished Durak table still shows seat role pills ("defending"); in hy, "պաշտպանվում է" wraps
+  to two lines over the seat.
+- At the waiting table at 390 the frame overlaps the left and right empty seats by a few px.
+- hy dates still use English formatting.
+
+---
+
 ## B1 · TASK-001…005 — 2026-10-29
 
 Reviewed by the UI/UX agent against `DESIGN_SPECIFICATIONS.md` (B1) and

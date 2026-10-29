@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { apiRequest } from '@/shared/api/http'
 import type { ApiResponse, Schemas } from '@/shared/api/types'
@@ -15,10 +15,12 @@ export const catalogKeys = {
 export function useGames() {
   const { i18n } = useTranslation()
 
-  return useQuery({
+  return useQuery<GameSummary[]>({
     queryKey: catalogKeys.all(i18n.language),
     queryFn: ({ signal }) =>
       apiRequest<ApiResponse<'v1.games.index'>>('/api/v1/games', { signal }).then((r) => r.data),
+    // A language switch keeps the old names on screen until the new ones arrive.
+    placeholderData: keepPreviousData,
   })
 }
 
@@ -31,5 +33,8 @@ export function useGame(slug: string) {
       apiRequest<ApiResponse<'v1.games.show'>>(`/api/v1/games/${encodeURIComponent(slug)}`, {
         signal,
       }).then((r) => r.data),
+    // Only for a language switch: another game never borrows this one's page.
+    placeholderData: (previous, previousQuery) =>
+      previousQuery?.queryKey[2] === slug ? previous : undefined,
   })
 }

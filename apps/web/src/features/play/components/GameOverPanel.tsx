@@ -92,12 +92,16 @@ export function GameOverPanel({
           <TrophyIcon className="size-6" />
         </span>
       ) : null}
-      <p className="text-xs font-semibold tracking-wider text-muted uppercase">{t('room.over')}</p>
+      {aborted ? null : (
+        <p className="text-xs font-semibold tracking-wider text-muted uppercase">
+          {t('room.over')}
+        </p>
+      )}
       <h2
         id="game-over-title"
         ref={heading}
         tabIndex={-1}
-        className={`mt-1 text-2xl font-extrabold outline-none sm:text-3xl ${result === 'win' && !leftTable ? 'text-gold' : ''}`}
+        className={`mt-1 text-2xl font-extrabold outline-none sm:text-3xl ${result === 'win' && !leftTable ? 'text-gold-gradient' : ''}`}
       >
         {title}
       </h2>

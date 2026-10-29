@@ -254,7 +254,7 @@ function ModeCard({
       <span className="club-medal flex size-12 shrink-0 items-center justify-center rounded-full text-[#3a2410] sm:row-span-3 sm:size-20">
         <Icon className="size-6 sm:size-10" />
       </span>
-      <h3 id={titleId} className="text-xl font-extrabold text-gold sm:text-2xl">
+      <h3 id={titleId} className="text-gold-gradient text-xl font-extrabold sm:text-2xl">
         {title}
       </h3>
       <div className="col-span-2 min-w-0 sm:col-span-1 sm:col-start-2">{children}</div>

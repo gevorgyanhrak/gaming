@@ -106,8 +106,8 @@
 }
 
 @layer components {
-  /* Headlines in polished gold. */
-  .text-gold {
+  /* Gold gradient lettering for big headings. (Plain gold text is Tailwind's `text-gold`.) */
+  .text-gold-gradient {
     background: linear-gradient(
       180deg,
       var(--color-gold-light) 10%,

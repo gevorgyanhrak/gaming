@@ -122,7 +122,7 @@ export function GameCarousel({ games }: { games: GameSummary[] }) {
                 <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5 sm:p-7">
                   <div className="min-w-0">
                     <Shared name={isActive ? titleTransition(game.slug) : null}>
-                      <h3 className="text-3xl font-extrabold tracking-tight text-gold sm:text-5xl">
+                      <h3 className="text-gold-gradient text-3xl font-extrabold tracking-tight sm:text-5xl">
                         {game.name}
                       </h3>
                     </Shared>

@@ -2,7 +2,26 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
-## B2 (TASK-026, 006, 028, 007, 024, 008) + TASK-030, TASK-031 — 2026-10-29 · READY_FOR_REVIEW
+## B2 revision after design review — 2026-10-29 · READY_FOR_REVIEW
+
+- Root cause of TASK-008's unreadable hover (and B1's invisible icon tiles): the custom `.text-gold`
+  component class shared its name with Tailwind's `text-gold` colour utility, so every element with
+  gold text also got a gradient background clipped to the text. Renamed it `.text-gold-gradient`
+  (`styles/index.css`) and used it only on the seven big gold headings (games, dashboard, game page,
+  landing, carousel slide titles, lobby card titles, game-over win). `text-gold` is now plain gold.
+  Checked: Start game at rest gold on `#33231a`, forced `:hover` black on gold, `background-clip`
+  border-box.
+- TASK-008: `Segmented` `fill` sets the fieldset `w-full max-w-xs`; at 390 table-size pills 59×44,
+  level pills 101×44.
+- TASK-024: `WaitingTable` hides the medal and dots below `sm`, title `min-w-0 break-words text-lg`;
+  Share/Copy link, Copy link and Close room `min-h-11`. hy at 390: frame `scrollWidth 234 =
+  clientWidth 234`, page 390, all buttons 44 px.
+- Minor: `GameOverPanel` renders above `PlayerList`; no "Game over" eyebrow for a closed room;
+  catalog queries keep the previous language's data during a switch (the game page only for the same
+  game).
+Checks: typecheck ✓ lint ✓ format ✓ vitest 99 passed ✓ build ✓.
+
+## B2 (TASK-026, 006, 028, 007, 024, 008) + TASK-030, TASK-031 — 2026-10-29 · reviewed
 
 Owner go-ahead for TASK-030/031 ("do all necessary things", 2026-10-29). Built to the B2 specs; the
 spec's open question 1 was resolved in code: the room payload now carries `mode.id` and each bot's

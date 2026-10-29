@@ -16,7 +16,7 @@ trustworthy, never casino-flashy: no coins, jackpots, flashing lights or "win bi
 | Text / muted | `text-fg` / `text-muted` | `#f4ebdd` / `#c2ab92` |
 | Primary action (play, save) | `accent`, `accent-light`, `accent-hover` | green `#226b37`, `#2a7f41`, `#1d5c2f` |
 | Links, small emphasis | `text-accent-text` | `#e7c36a` |
-| Gold emphasis | `text-gold` (gradient text), `gold`, `gold-light`, `gold-dark` | `#d6ab4e`, `#f7dc8f`, `#b9822f` |
+| Gold emphasis | `text-gold` (plain gold), `.text-gold-gradient` (big headings only), `gold`, `gold-light`, `gold-dark` | `#d6ab4e`, `#f7dc8f`, `#b9822f` |
 | Game signals | `turn`, `take`, `beaten` | `#f2c14e`, `#d9483b`, `#2f9e5b` |
 | Card faces | `font-card`, `card`, `card-back` | Georgia serif, `#6d1530` back |
 

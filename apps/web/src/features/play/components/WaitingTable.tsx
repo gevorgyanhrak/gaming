@@ -109,11 +109,13 @@ export function WaitingTable({
         <div className="absolute inset-0 flex items-center justify-center p-6">
           <div className="club-frame w-full max-w-md rounded-3xl p-5 text-center motion-safe:animate-rise sm:p-6">
             <div className="flex items-center gap-3">
-              <span className="club-medal flex size-12 shrink-0 items-center justify-center rounded-full text-[#3a2410]">
+              <span className="club-medal hidden size-12 shrink-0 items-center justify-center rounded-full text-[#3a2410] sm:flex">
                 <FriendsIcon className="size-6" />
               </span>
-              <h2 className="flex-1 text-xl font-extrabold">{t('room.waitingTitle')}</h2>
-              <span aria-hidden="true" className="flex gap-1">
+              <h2 className="min-w-0 flex-1 text-lg font-extrabold break-words sm:text-xl">
+                {t('room.waitingTitle')}
+              </h2>
+              <span aria-hidden="true" className="hidden gap-1 sm:flex">
                 {[0, 1, 2].map((i) => (
                   <span
                     key={i}
@@ -140,7 +142,7 @@ export function WaitingTable({
                 </button>
                 <Button
                   variant="gold"
-                  className="mt-1 w-full"
+                  className="mt-1 min-h-11 w-full"
                   onClick={() => void (canShare ? share() : copy('link'))}
                 >
                   {canShare ? <ShareIcon className="size-4" /> : <LinkIcon className="size-4" />}
@@ -177,11 +179,11 @@ export function WaitingTable({
 
       <div className="mt-16 flex flex-wrap justify-center gap-2 sm:mt-20">
         {code && canShare ? (
-          <Button variant="secondary" onClick={() => void copy('link')}>
+          <Button variant="secondary" className="min-h-11" onClick={() => void copy('link')}>
             {copied === 'link' ? t('room.linkCopied') : t('room.copyLink')}
           </Button>
         ) : null}
-        <Button variant="secondary" onClick={onLeave}>
+        <Button variant="secondary" className="min-h-11" onClick={onLeave}>
           {t('room.cancel')}
         </Button>
       </div>
