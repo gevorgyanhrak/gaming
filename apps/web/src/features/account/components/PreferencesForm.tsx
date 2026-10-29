@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import type { CurrentUser } from '@/features/auth/api'
+import { playSound, unlockSounds } from '@/features/play/sounds'
 import { bundledLocales, isLocale, languageName } from '@/shared/i18n'
 import { Card } from '@/shared/ui/Card'
 import { SelectField } from '@/shared/ui/Field'
@@ -47,7 +48,15 @@ export function PreferencesForm({
             className="size-5 accent-accent"
             checked={user.profile.preferences.sound}
             disabled={mutation.isPending}
-            onChange={(event) => mutation.mutate({ preferences: { sound: event.target.checked } })}
+            onChange={(event) => {
+              const sound = event.target.checked
+              mutation.mutate({ preferences: { sound } })
+              // A preview; the click is the gesture that lets the browser play audio.
+              if (sound) {
+                unlockSounds()
+                window.setTimeout(() => playSound('yourTurn'), 60)
+              }
+            }}
           />
         </label>
       </div>

@@ -11,6 +11,8 @@ export interface BoardProps {
   pending: boolean
   /** Display names by seat, for boards that show the players (poker). */
   players?: Partial<Record<number, string>>
+  /** Seats played by bots, for boards that show the players. */
+  bots?: Partial<Record<number, boolean>>
 }
 
 /**
@@ -23,3 +25,38 @@ export const boards: Partial<Record<string, LazyExoticComponent<ComponentType<Bo
   durak: lazy(() => import('./durak/DurakBoard')),
   poker: lazy(() => import('./poker/PokerBoard')),
 }
+
+type View = Record<string, unknown>
+
+/** What the room page and the sounds need to know about a game, without loading its board. */
+export interface GameTraits {
+  /** The board draws every player at a seat, so the room page needn't list them while playing. */
+  seatsOnBoard: boolean
+  /** Which "move" sound fits: pieces on wood or cards. */
+  material: 'wood' | 'cards'
+  /** Whether the step from one view to the next took something (only where it's cheap to see). */
+  capture?: (prev: View, next: View) => boolean
+}
+
+const pieces = (view: View) =>
+  Array.isArray(view.board) ? view.board.filter((piece) => piece !== null).length : 0
+const length = (value: unknown) => (Array.isArray(value) ? value.length : 0)
+const sum = (value: unknown) =>
+  Array.isArray(value) ? value.reduce((total: number, n) => total + Number(n || 0), 0) : 0
+
+export const traits: Partial<Record<string, GameTraits>> = {
+  chess: { seatsOnBoard: false, material: 'wood', capture: (a, b) => pieces(b) < pieces(a) },
+  checkers: {
+    seatsOnBoard: false,
+    material: 'wood',
+    capture: (a, b) => length(b.captured) > length(a.captured) || pieces(b) < pieces(a),
+  },
+  // A hit sends a checker to the bar.
+  nardi: { seatsOnBoard: false, material: 'wood', capture: (a, b) => sum(b.bar) > sum(a.bar) },
+  // The defender gives up and takes the cards.
+  durak: { seatsOnBoard: true, material: 'cards', capture: (a, b) => !a.taking && !!b.taking },
+  poker: { seatsOnBoard: true, material: 'cards' },
+}
+
+export const traitsOf = (slug: string): GameTraits =>
+  traits[slug] ?? { seatsOnBoard: false, material: 'wood' }

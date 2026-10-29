@@ -102,6 +102,13 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   green PLAY (matchmaking) + `ModeCard`s (bot, friend, invite code) rising in with `animate-rise`.
   Games without uploaded art use the SVG scenes in `GameArt.tsx`; few short choices are
   `Segmented` radio pills. Never imply real money, coins, VIP or a shop: play-for-fun only.
+- Game traits (`games/registry.ts` `traitsOf(slug)`: `seatsOnBoard`, `material`, `capture`) let the room
+  page and sounds avoid slug checks. Durak/Poker (`seatsOnBoard`) hide `PlayerList` while active and show
+  "Bot" pills at seats (`BoardProps.bots`).
+- Sounds: `features/play/sounds.ts` synthesizes them with Web Audio (no files); `useGameSounds` picks
+  at most one per new state version via the pure `soundFor` (result > your turn when hidden or > 2
+  seats > capture > move) plus a low-time warning at 10 s; honours `preferences.sound`. The room tab
+  title shows "● Your turn · {game}".
 - Chess and Checkers share a classic beige/brown board (`#e3d0ac` / `#8b7355`) in a `.table-rim` wood frame, with
   checkers men in 3D (`.checker-white` / `.checker-black`: radial-gradient rim and dish), coordinates on the edge
   squares, a "Move: White/Black" heading, and a width capped by viewport height so it fits without scrolling.

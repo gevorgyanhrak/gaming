@@ -54,7 +54,13 @@ function sortHand(hand: string[], trump: Suit) {
  * button under it. Offers exactly the server's legal actions: cards to lead, throw in or beat with,
  * "take" and "done".
  */
-export default function DurakBoard({ state, onAction, pending, players = {} }: BoardProps) {
+export default function DurakBoard({
+  state,
+  onAction,
+  pending,
+  players = {},
+  bots = {},
+}: BoardProps) {
   const { t } = useTranslation()
   const view = state.view as unknown as DurakView
   const me = state.seat ?? 0
@@ -126,10 +132,11 @@ export default function DurakBoard({ state, onAction, pending, players = {} }: B
         role={roleOf(other)}
         acting={acting}
         share={acting ? turnShare : null}
-        label={t('durak.opponentCards', {
+        bot={bots[other] ? t('room.bot') : null}
+        label={`${t('durak.opponentCards', {
           name: nameOf(other),
           count: view.hand_counts[other] ?? 0,
-        })}
+        })}${bots[other] ? `, ${t('room.bot')}` : ''}`}
       />
     )
   }
@@ -347,6 +354,7 @@ function Seat({
   role,
   acting,
   share,
+  bot,
   label,
 }: {
   name: string
@@ -354,6 +362,8 @@ function Seat({
   role: Role | null
   acting: boolean
   share: number | null
+  /** "Bot" when a bot plays this seat. */
+  bot: string | null
   label: string
 }) {
   const shown = Math.min(count, 8)
@@ -371,8 +381,13 @@ function Seat({
       <span className="absolute -top-5 -left-2 sm:-left-4">
         <Avatar name={name} acting={acting} share={share} />
       </span>
-      <span className="absolute top-1.5 right-2 left-12 truncate text-sm text-white/75 sm:left-10">
-        {name}
+      <span className="absolute top-1.5 right-2 left-12 flex items-center gap-1.5 text-sm text-white/75 sm:left-10">
+        <span className="truncate">{name}</span>
+        {bot ? (
+          <span className="shrink-0 rounded-full bg-black/60 px-1.5 py-px text-[0.65rem] font-semibold tracking-wide text-white/85 uppercase">
+            {bot}
+          </span>
+        ) : null}
       </span>
       {role ? (
         <span

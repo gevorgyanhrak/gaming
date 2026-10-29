@@ -51,7 +51,13 @@ const handKeys = {
  * Hold'em table: seats with stacks and bets, the board and pot, your hole cards, and the server's
  * legal actions (fold / check / call, and raises anywhere in the allowed range). Play chips only.
  */
-export default function PokerBoard({ state, onAction, pending, players = {} }: BoardProps) {
+export default function PokerBoard({
+  state,
+  onAction,
+  pending,
+  players = {},
+  bots = {},
+}: BoardProps) {
   const { t } = useTranslation()
   const labels = useCardLabel()
   const view = state.view as unknown as PokerView
@@ -145,7 +151,9 @@ export default function PokerBoard({ state, onAction, pending, players = {} }: B
                 <li
                   key={seat}
                   aria-current={acting ? 'step' : undefined}
-                  aria-label={`${name(seat)}, ${t('poker.chips', { count: stack })}`}
+                  aria-label={`${name(seat)}, ${t('poker.chips', { count: stack })}${
+                    seat !== me && bots[seat] ? `, ${t('room.bot')}` : ''
+                  }`}
                 >
                   <div
                     className={`absolute z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center transition-opacity ${
@@ -181,6 +189,11 @@ export default function PokerBoard({ state, onAction, pending, players = {} }: B
                       <span className="block text-xs font-bold text-gold tabular-nums">
                         {stack.toLocaleString()}
                       </span>
+                      {seat !== me && bots[seat] ? (
+                        <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-1.5 py-px text-[0.65rem] font-semibold tracking-wide text-white/85 uppercase">
+                          {t('room.bot')}
+                        </span>
+                      ) : null}
                       {status ? (
                         <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-black/80 px-2 py-0.5 text-[0.65rem] font-semibold whitespace-nowrap uppercase">
                           {status}

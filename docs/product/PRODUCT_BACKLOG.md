@@ -17,7 +17,7 @@ Last planning: 2026-10-29.
 
 ## B1 · Honest and clear
 
-### TASK-001 · Game sounds that respect the setting            P0 · M · DESIGN_IN_PROGRESS · B1
+### TASK-001 · Game sounds that respect the setting            P0 · M · READY_FOR_REVIEW · B1
 Problem: Settings offers "Sound effects", but the game is silent; players miss turns.
 User story: As a player, I want a sound when it's my turn and when pieces move, so I notice the game
 without staring at it.
@@ -36,7 +36,7 @@ Acceptance criteria:
 Tests: unit tests for the state→event mapping; manual check in a bot game.
 Depends on: —   Approval: none
 
-### TASK-002 · Statistics that add up                          P1 · S · DESIGN_IN_PROGRESS · B1
+### TASK-002 · Statistics that add up                          P1 · S · READY_FOR_REVIEW · B1
 Problem: Dashboard shows "Played 2 · W 0 · L 0 · D 0".
 Scope: show `abandoned` (already in `GET /me/stats`) in `DashboardGames`; compact on phones; also show
 `current_streak` / `best_streak` and win rate, which the API already returns (OPP-008).
@@ -44,21 +44,21 @@ Acceptance: Played = W + L + D + Abandoned on every row; no horizontal scroll at
 Tests: component test with a fixture that has abandoned games and a streak. Evidence: UX-002, OPP-008.
 Depends on: —   Approval: none
 
-### TASK-003 · History shows the outcome                       P1 · S · DESIGN_IN_PROGRESS · B1
+### TASK-003 · History shows the outcome                       P1 · S · READY_FOR_REVIEW · B1
 Problem: history rows say "Timed out" but not who won.
 Scope: `RoomSummary`: game icon, outcome badge (Won / Lost / Draw / Abandoned) with text, end reason
 under it. Evidence: UX-003.
 Acceptance: every finished row shows outcome + reason; AA contrast; colour never the only signal.
 Tests: component test per outcome. Depends on: —   Approval: none
 
-### TASK-004 · Your-turn signal in the browser tab             P1 · S · DESIGN_IN_PROGRESS · B1
+### TASK-004 · Your-turn signal in the browser tab             P1 · S · READY_FOR_REVIEW · B1
 Problem: moves made while you're on another tab go unnoticed; games time out.
 Scope: room page title "● Your turn · {game}" while it's your turn; plays the your-turn sound
 (TASK-001) when the tab is hidden. Evidence: UX-004.
 Acceptance: title flips within one state update and reverts after your move; translated.
 Tests: RoomPage test for title on my turn / their turn. Depends on: TASK-001 (sound part only).
 
-### TASK-005 · Card tables without the duplicate player row    P1 · S · DESIGN_IN_PROGRESS · B1
+### TASK-005 · Card tables without the duplicate player row    P1 · S · READY_FOR_REVIEW · B1
 Problem: Durak/Poker show every player twice; on phones the table starts below the fold.
 Scope: RoomPage skips `PlayerList` for boards that render seats (Durak, Poker). Evidence: UX-006.
 Acceptance: at 390×844 a 6-player Poker table starts on the first screen; names, bot badges, turn

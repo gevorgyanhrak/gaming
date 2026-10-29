@@ -44,10 +44,13 @@ describe('PokerBoard', () => {
         onAction={onAction}
         pending={false}
         players={players}
+        bots={{ 0: true, 1: false, 2: false }}
       />,
     )
 
     expect(screen.getByText('Aram')).toBeInTheDocument()
+    expect(screen.getByRole('listitem', { name: /^Aram, .*, Bot$/ })).toHaveTextContent('Bot')
+    expect(screen.getByRole('listitem', { name: /^Levon, / })).not.toHaveTextContent('Bot')
     expect(screen.getByText('Pot: 15 chips')).toBeInTheDocument()
     expect(screen.getByRole('img', { name: 'Ace of spades' })).toBeInTheDocument()
     expect(screen.getByRole('img', { name: 'King of hearts' })).toBeInTheDocument()

@@ -25,7 +25,12 @@ vi.mock('@/games/registry', async () => {
         ),
       ),
     ])
-  return { boards: { tictactoe: lazy(() => Promise.resolve({ default: TestBoard })) } }
+  const board = lazy(() => Promise.resolve({ default: TestBoard }))
+  return {
+    boards: { tictactoe: board, cardtable: board },
+    // "cardtable" stands for Durak/Poker: a board that seats every player itself.
+    traitsOf: (slug: string) => ({ seatsOnBoard: slug === 'cardtable', material: 'wood' }),
+  }
 })
 
 function serveRoom(room = roomFixture(), state = roomStateFixture()) {
@@ -183,5 +188,64 @@ describe('Room', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Yes, resign' }))
 
     await waitFor(() => expect(left).toBe(true))
+  })
+
+  it('puts "your turn" in the tab title until the player moves', async () => {
+    serveRoom()
+    server.use(
+      http.post('*/api/v1/rooms/room-1/actions', () =>
+        HttpResponse.json({
+          data: roomStateFixture({ version: 1, seats_to_act: [1], legal_actions: [] }),
+        }),
+      ),
+    )
+    renderRoute('/rooms/room-1')
+
+    await waitFor(() => expect(document.title).toBe('● Your turn · Tic-tac-toe'))
+    await userEvent.click(await screen.findByRole('button', { name: 'play 0' }))
+    await waitFor(() => expect(document.title).toBe('Tic-tac-toe'))
+  })
+
+  it('shows the result in the tab title when the game is over', async () => {
+    serveRoom(
+      roomFixture({
+        status: 'finished',
+        end_reason: 'completed',
+        participants: roomFixture().participants.map((p) => ({
+          ...p,
+          result: p.seat === 0 ? 'win' : 'loss',
+        })),
+      }),
+      roomStateFixture({
+        status: 'finished',
+        seats_to_act: [],
+        legal_actions: [],
+        result: { end_reason: 'completed', seats: ['win', 'loss'] },
+      }),
+    )
+    renderRoute('/rooms/room-1')
+
+    await waitFor(() => expect(document.title).toBe('Won · Tic-tac-toe'))
+  })
+
+  it('leaves the players to the board at card tables while the game is on', async () => {
+    const table = { game: { slug: 'cardtable', name: 'Cards' } }
+    serveRoom(roomFixture(table))
+    const { unmount } = renderRoute('/rooms/room-1')
+
+    expect(await screen.findByText('version 0')).toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: 'Players' })).not.toBeInTheDocument()
+    unmount()
+
+    serveRoom(
+      roomFixture({
+        ...table,
+        status: 'finished',
+        participants: roomFixture().participants.map((p) => ({ ...p, result: 'loss' })),
+      }),
+      roomStateFixture({ status: 'finished', seats_to_act: [], legal_actions: [] }),
+    )
+    renderRoute('/rooms/room-1')
+    expect(await screen.findByRole('list', { name: 'Players' })).toBeInTheDocument()
   })
 })

@@ -2,15 +2,17 @@ import { Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
 import { useMessage } from '@/features/auth/forms'
+import { useCurrentUser } from '@/features/auth/hooks'
 import { leaveRoom, type ParticipantResult } from '@/features/play/api'
-import { endReasonLabel, outcomeLabel } from '@/features/play/labels'
+import { endReasonLabel, outcomeLabel, resultLabel } from '@/features/play/labels'
 import { GameIcon } from '@/features/catalog/components/GameArt'
 import { PlayerList } from '@/features/play/components/PlayerList'
 import { WaitingTable } from '@/features/play/components/WaitingTable'
 import { useCountdown } from '@/features/play/useCountdown'
+import { useGameSounds } from '@/features/play/useGameSounds'
 import { usePresence } from '@/features/play/usePresence'
 import { useRoom } from '@/features/play/useRoom'
-import { boards } from '@/games/registry'
+import { boards, traitsOf } from '@/games/registry'
 import { isApiError } from '@/shared/api/errors'
 import { Alert } from '@/shared/ui/Alert'
 import { Button, ButtonLink } from '@/shared/ui/Button'
@@ -23,10 +25,25 @@ export function RoomPage() {
   const message = useMessage()
   const { id = '' } = useParams()
   const { room, state, act } = useRoom(id)
+  const { data: user } = useCurrentUser()
   const [confirmResign, setConfirmResign] = useState(false)
   const secondsLeft = useCountdown(state.data?.deadline, state.data?.server_time)
   // Report presence while playing: leaving the page for too long loses the game.
   usePresence(id, room.data?.status === 'active' && state.data?.seat != null && !state.data?.result)
+  const mySeat = state.data?.seat
+  const stillPlaying =
+    mySeat != null && room.data?.participants.find((p) => p.seat === mySeat)?.result == null
+  useGameSounds({
+    roomId: id,
+    state: state.data,
+    waiting: room.data?.status === 'waiting',
+    seats: room.data?.participants.length ?? 2,
+    traits: traitsOf(room.data?.game.slug ?? ''),
+    // Players who left a table that plays on don't hear it; the game's end still sounds.
+    enabled:
+      Boolean(user?.profile.preferences.sound) && (stillPlaying || Boolean(state.data?.result)),
+    secondsLeft,
+  })
 
   if (room.isPending) {
     return (
@@ -70,10 +87,23 @@ export function RoomPage() {
 
   // Left a multi-player game that goes on without you.
   const leftTable = data.status === 'active' && myResult != null
+  // Boards that seat every player show them already while the game is on.
+  const showPlayers =
+    data.status !== 'waiting' &&
+    !(traitsOf(data.game.slug).seatsOnBoard && data.status === 'active')
+  const tabTitle =
+    data.status === 'active' && myTurn && !leftTable
+      ? t('room.tab.yourTurn', { game: data.game.name })
+      : data.status === 'finished' && myResult
+        ? t('room.tab.finished', {
+            game: data.game.name,
+            result: t(resultLabel[myResult as ParticipantResult]),
+          })
+        : data.game.name
 
   return (
     <Container className="space-y-6 py-8">
-      <title>{data.game.name}</title>
+      <title>{tabTitle}</title>
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="flex size-11 items-center justify-center rounded-xl bg-gold/15 text-gold">
@@ -103,7 +133,7 @@ export function RoomPage() {
         <WaitingTable room={data} mySeat={view?.seat ?? 0} onLeave={leave} />
       ) : null}
 
-      {data.status !== 'waiting' ? (
+      {showPlayers ? (
         <PlayerList
           room={data}
           mySeat={view?.seat ?? null}
@@ -133,6 +163,7 @@ export function RoomPage() {
               onAction={(action) => act.mutate(action)}
               pending={act.isPending}
               players={Object.fromEntries(data.participants.map((p) => [p.seat, p.name ?? '']))}
+              bots={Object.fromEntries(data.participants.map((p) => [p.seat, p.is_bot]))}
             />
           </Suspense>
         ) : (

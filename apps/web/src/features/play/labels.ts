@@ -35,3 +35,25 @@ export const endReasonLabel: Record<
   timeout: 'room.endReason.timeout',
   abandon: 'room.endReason.abandon',
 }
+
+/** The end reason in a few words, for lists. */
+export const endReasonShort: Record<
+  string,
+  | 'room.endReasonShort.completed'
+  | 'room.endReasonShort.resign'
+  | 'room.endReasonShort.timeout'
+  | 'room.endReasonShort.abandon'
+> = {
+  completed: 'room.endReasonShort.completed',
+  resign: 'room.endReasonShort.resign',
+  timeout: 'room.endReasonShort.timeout',
+  abandon: 'room.endReasonShort.abandon',
+}
+
+/** How each result looks as a badge. */
+export const resultTone = {
+  win: 'success',
+  loss: 'danger',
+  draw: 'neutral',
+  abandoned: 'warning',
+} as const satisfies Record<ParticipantResult, string>

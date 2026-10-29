@@ -156,7 +156,13 @@
     "losses": "Losses",
     "draws": "Draws",
     "history": "See all games",
-    "play": "Choose a game"
+    "play": "Choose a game",
+    "timedOut": "Timed out",
+    "winRate": "Win rate",
+    "streak": "Win streak",
+    "bestStreak": "Best streak",
+    "statsNote": "Win rate counts every game played, timeouts included.",
+    "streakLine": "Win streak {{current}} · Best {{best}}"
   },
   "profile": {
     "country": "Country",
@@ -183,7 +189,7 @@
     "avatarSize": "The image must be 2 MB or smaller.",
     "preferencesSection": "Preferences",
     "sound": "Sound effects",
-    "soundHint": "Play sounds during games.",
+    "soundHint": "Moves, captures, your turn, low time and game end.",
     "securitySection": "Password",
     "currentPassword": "Current password",
     "changePassword": "Change password",
@@ -286,7 +292,17 @@
     "clock": "Time left: {{time}}",
     "leftTable": "You left this table. The game goes on for the others.",
     "waitingTitle": "Waiting for players",
-    "emptySeat": "Empty seat"
+    "emptySeat": "Empty seat",
+    "tab": {
+      "yourTurn": "● Your turn · {{game}}",
+      "finished": "{{result}} · {{game}}"
+    },
+    "endReasonShort": {
+      "completed": "Played to the end",
+      "resign": "By resignation",
+      "timeout": "On time",
+      "abandon": "Left the game"
+    }
   },
   "history": {
     "title": "Game history",

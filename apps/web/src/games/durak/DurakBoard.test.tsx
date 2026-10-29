@@ -84,11 +84,15 @@ describe('DurakBoard', () => {
         onAction={vi.fn()}
         pending={false}
         players={{ 1: 'Levon', 2: 'Aram', 3: 'Ani' }}
+        bots={{ 0: false, 1: false, 2: true, 3: false }}
       />,
     )
 
     expect(screen.getByLabelText('Levon has 4 cards')).toHaveTextContent('defending')
-    expect(screen.getByLabelText('Aram has 6 cards')).toHaveAttribute('aria-current', 'step')
+    expect(screen.getByLabelText('Levon has 4 cards')).not.toHaveTextContent('Bot')
+    // Bots are marked at their seat, since the room page doesn't list the players at card tables.
+    expect(screen.getByLabelText('Aram has 6 cards, Bot')).toHaveAttribute('aria-current', 'step')
+    expect(screen.getByLabelText('Aram has 6 cards, Bot')).toHaveTextContent('Bot')
     expect(screen.getByLabelText('Ani has 0 cards')).toHaveTextContent('out')
   })
 
