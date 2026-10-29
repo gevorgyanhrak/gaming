@@ -106,8 +106,8 @@ export function RoomPage() {
       <title>{tabTitle}</title>
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="flex size-11 items-center justify-center rounded-xl bg-gold/15 text-gold">
-            <GameIcon slug={data.game.slug} name={data.game.name} className="size-6" />
+          <span className="flex size-11 items-center justify-center rounded-xl bg-gold/15">
+            <GameIcon slug={data.game.slug} name={data.game.name} className="size-6 text-gold" />
           </span>
           <div>
             <h1 className="text-2xl font-bold">{data.game.name}</h1>

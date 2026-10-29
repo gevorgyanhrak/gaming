@@ -2,7 +2,23 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
-## B1 · TASK-001…005 — 2026-10-29 · READY_FOR_REVIEW
+## B1 revision after design review — 2026-10-29 · READY_FOR_REVIEW
+
+Corrections from `DESIGN_REVIEW.md` (B1):
+1. `RoomSummary.tsx`: below `sm` the outcome badge and reason move to a third line under the names
+   (`sm:hidden`); the right column shows from `sm` (`hidden sm:flex`).
+2. Game icon tiles: `text-gold` moved from the tile onto `GameIcon` (`RoomSummary.tsx`, and the room
+   header in `RoomPage.tsx`), so the `bg-gold/15` tile is no longer clipped to the text.
+3. `Records.test.tsx`: asserts both layouts render the badge with the right tone.
+4. Re-checked `/history` at 390×844 in en, ru and hy: opponents and dates fully visible,
+   `scrollWidth 390 = clientWidth 390`, icon tiles visible.
+Minor items also fixed: streak line uses one colour class; stats table cells `pl-3`; Poker "Bot" pill
+`py-0.5 leading-none`; `PlayerList` result badges use `resultTone` (Lost is red everywhere).
+Left as is: the end sound for a player who left a table that plays on (harmless at bot tables; to
+decide with human multi-player tables).
+Checks: typecheck ✓ lint ✓ format ✓ vitest 89 passed ✓ build ✓.
+
+## B1 · TASK-001…005 — 2026-10-29 · reviewed
 
 Built to `docs/design/DESIGN_SPECIFICATIONS.md` (B1). Frontend only; no API or backend change.
 

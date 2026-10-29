@@ -76,7 +76,16 @@ describe('History', () => {
       expect.stringMatching(/DrawPlayed to the end$/),
       expect.stringMatching(/Timed outOn time$/),
     ])
-    expect(within(rows[0]!).getByText('Won').className).toContain('bg-success/20')
-    expect(within(rows[1]!).getByText('Lost').className).toContain('bg-danger/20')
+    // The outcome is rendered for phones (under the names) and for wider screens (right column).
+    for (const [index, label, tone] of [
+      [0, 'Won', 'bg-success/20'],
+      [1, 'Lost', 'bg-danger/20'],
+    ] as const) {
+      const badges = within(rows[index]!).getAllByText(label)
+      expect(badges).toHaveLength(2)
+      expect(badges[0]!.parentElement!.className).toContain('sm:hidden')
+      expect(badges[1]!.parentElement!.className).toContain('sm:flex')
+      for (const badge of badges) expect(badge.className).toContain(tone)
+    }
   })
 })

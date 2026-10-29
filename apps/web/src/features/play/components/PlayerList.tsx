@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Avatar } from '@/shared/ui/Avatar'
 import { Badge } from '@/shared/ui/Badge'
 import type { ParticipantResult, Room } from '../api'
-import { resultLabel } from '../labels'
+import { resultLabel, resultTone } from '../labels'
 
 /** 4:05, 0:09 */
 const formatClock = (seconds: number) =>
@@ -55,7 +55,7 @@ export function PlayerList({
               </span>
             ) : null}
             {player.result ? (
-              <Badge tone={player.result === 'win' ? 'neutral' : 'warning'}>
+              <Badge tone={resultTone[player.result as ParticipantResult]}>
                 {t(resultLabel[player.result as ParticipantResult])}
               </Badge>
             ) : null}

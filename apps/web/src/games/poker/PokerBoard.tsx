@@ -190,7 +190,7 @@ export default function PokerBoard({
                         {stack.toLocaleString()}
                       </span>
                       {seat !== me && bots[seat] ? (
-                        <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-1.5 py-px text-[0.65rem] font-semibold tracking-wide text-white/85 uppercase">
+                        <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-1.5 py-0.5 text-[0.65rem] leading-none font-semibold tracking-wide text-white/85 uppercase">
                           {t('room.bot')}
                         </span>
                       ) : null}

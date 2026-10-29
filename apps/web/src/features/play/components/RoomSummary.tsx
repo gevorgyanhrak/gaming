@@ -20,13 +20,24 @@ export function RoomSummary({ room }: { room: Room }) {
   const result = (me?.result ?? null) as ParticipantResult | null
   const reasonKey = result && room.end_reason ? endReasonShort[room.end_reason] : undefined
 
+  const outcome = (
+    <>
+      {result ? (
+        <Badge tone={resultTone[result]}>{t(resultLabel[result])}</Badge>
+      ) : (
+        <Badge>{t(statusLabel[room.status])}</Badge>
+      )}
+      {reasonKey ? <span className="text-xs text-muted sm:max-w-32">{t(reasonKey)}</span> : null}
+    </>
+  )
+
   return (
     <Link
       to={`/rooms/${room.id}`}
       className="flex min-h-14 items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 transition-colors hover:bg-surface-raised"
     >
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gold/15 text-gold">
-        <GameIcon slug={room.game.slug} name={room.game.name} className="size-5" />
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gold/15">
+        <GameIcon slug={room.game.slug} name={room.game.name} className="size-5 text-gold" />
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate font-medium">
@@ -39,15 +50,13 @@ export function RoomSummary({ room }: { room: Room }) {
             {new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium' }).format(new Date(when))}
           </span>
         </span>
+        {/* Phones: the outcome on a third line, so names and dates keep the width. */}
+        <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 sm:hidden">
+          {outcome}
+        </span>
       </span>
-      <span className="flex shrink-0 flex-col items-end gap-1 text-right">
-        {result ? (
-          <Badge tone={resultTone[result]}>{t(resultLabel[result])}</Badge>
-        ) : (
-          <Badge>{t(statusLabel[room.status])}</Badge>
-        )}
-        {reasonKey ? <span className="max-w-32 text-xs text-muted">{t(reasonKey)}</span> : null}
-      </span>
+      {/* Wider rows: the outcome in its own column on the right. */}
+      <span className="hidden shrink-0 flex-col items-end gap-1 text-right sm:flex">{outcome}</span>
     </Link>
   )
 }

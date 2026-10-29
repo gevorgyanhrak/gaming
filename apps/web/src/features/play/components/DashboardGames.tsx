@@ -30,7 +30,8 @@ export function DashboardGames() {
     { key: 'draws', label: t('dashboard.draws'), value: row.draws },
     { key: 'timedOut', label: t('dashboard.timedOut'), value: row.abandoned },
   ]
-  const streakTone = (row: GameStat) => (row.current_streak >= 2 ? 'text-accent-text' : '')
+  const streakTone = (row: GameStat) =>
+    row.current_streak >= 2 ? 'text-accent-text' : 'text-muted'
 
   return (
     <div className="grid gap-6">
@@ -55,17 +56,17 @@ export function DashboardGames() {
                   {t('dashboard.game')}
                 </th>
                 {counts(stats.data[0]!).map(({ key, label }) => (
-                  <th key={key} scope="col" className="pb-2 text-right font-medium">
+                  <th key={key} scope="col" className="pb-2 pl-3 text-right font-medium">
                     {label}
                   </th>
                 ))}
-                <th scope="col" className="pb-2 text-right font-medium">
+                <th scope="col" className="pb-2 pl-3 text-right font-medium">
                   {t('dashboard.winRate')}
                 </th>
-                <th scope="col" className="pb-2 text-right font-medium">
+                <th scope="col" className="pb-2 pl-3 text-right font-medium">
                   {t('dashboard.streak')}
                 </th>
-                <th scope="col" className="pb-2 text-right font-medium">
+                <th scope="col" className="pb-2 pl-3 text-right font-medium">
                   {t('dashboard.bestStreak')}
                 </th>
               </tr>
@@ -84,13 +85,17 @@ export function DashboardGames() {
                     </span>
                   </th>
                   {counts(row).map(({ key, value }) => (
-                    <td key={key} className="py-2.5 text-right">
+                    <td key={key} className="py-2.5 pl-3 text-right">
                       {value}
                     </td>
                   ))}
-                  <td className="py-2.5 text-right font-semibold">{winRate(row)}</td>
-                  <td className={`py-2.5 text-right ${streakTone(row)}`}>{row.current_streak}</td>
-                  <td className="py-2.5 text-right">{row.best_streak}</td>
+                  <td className="py-2.5 pl-3 text-right font-semibold">{winRate(row)}</td>
+                  <td
+                    className={`py-2.5 pl-3 text-right ${row.current_streak >= 2 ? 'text-accent-text' : ''}`}
+                  >
+                    {row.current_streak}
+                  </td>
+                  <td className="py-2.5 pl-3 text-right">{row.best_streak}</td>
                 </tr>
               ))}
             </tbody>
@@ -128,7 +133,7 @@ export function DashboardGames() {
                   ))}
                 </dl>
                 {row.best_streak > 0 ? (
-                  <p className={`mt-1 text-sm text-muted ${streakTone(row)}`}>
+                  <p className={`mt-1 text-sm ${streakTone(row)}`}>
                     {t('dashboard.streakLine', {
                       current: row.current_streak,
                       best: row.best_streak,
