@@ -313,6 +313,8 @@
     "offTheirs": "Մրցակցինը"
   },
   "checkers": {
+    "moveWhite": "Քայլում են սպիտակները",
+    "moveBlack": "Քայլում են սևերը",
     "pickPiece": "Ընտրեք քարը։",
     "pickTarget": "Ընտրեք, թե ուր գնալ։",
     "continueCapture": "Շարունակեք վերցնել նույն քարով։",

@@ -325,6 +325,8 @@
     "offTheirs": "У соперника"
   },
   "checkers": {
+    "moveWhite": "Ход белых",
+    "moveBlack": "Ход чёрных",
     "pickPiece": "Выберите шашку.",
     "pickTarget": "Выберите, куда пойти.",
     "continueCapture": "Продолжайте бить той же шашкой.",

@@ -313,6 +313,8 @@
     "offTheirs": "Their off"
   },
   "checkers": {
+    "moveWhite": "Move: White",
+    "moveBlack": "Move: Black",
     "pickPiece": "Pick a piece to move.",
     "pickTarget": "Pick where it goes.",
     "continueCapture": "Keep capturing with the same piece.",

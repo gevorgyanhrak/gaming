@@ -63,8 +63,19 @@ export default function CheckersBoard({ state, onAction, pending }: BoardProps) 
         ? t('checkers.pickPiece')
         : t('checkers.pickTarget')
 
+  const coord = (square: number, index: number) => ({
+    // Files along the bottom row and ranks down the left edge, as seen from this side.
+    file: index >= 56 ? 'abcdefgh'[square % 8] : null,
+    rank: index % 8 === 0 ? 8 - Math.floor(square / 8) : null,
+  })
+
   return (
-    <div className="space-y-4">
+    <div className="mx-auto max-w-[max(20rem,min(38rem,calc(100dvh-24rem)))] space-y-3">
+      {state.seats_to_act.length > 0 ? (
+        <p className="text-center text-2xl font-semibold sm:text-3xl">
+          {view.turn === 0 ? t('checkers.moveWhite') : t('checkers.moveBlack')}
+        </p>
+      ) : null}
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
         <p className="font-medium">{me === 0 ? t('checkers.youWhite') : t('checkers.youBlack')}</p>
         <p className="text-muted" aria-live="polite">
@@ -72,47 +83,93 @@ export default function CheckersBoard({ state, onAction, pending }: BoardProps) 
         </p>
       </div>
 
-      <div className="mx-auto grid aspect-square w-full max-w-[32rem] grid-cols-8 grid-rows-8 overflow-hidden rounded-2xl border border-border">
-        {order.map((square) => {
-          const dark = (Math.floor(square / 8) + (square % 8)) % 2 === 1
-          const piece = view.board[square] ?? null
-          const isSource = sources.has(square)
-          const isTarget = targets.has(square)
-          const isLast =
-            view.last !== null && (view.last.from === square || view.last.to === square)
-          const jumped = view.captured.includes(square)
+      <div className="table-rim rounded-xl p-2 sm:p-3">
+        <div className="grid aspect-square w-full grid-cols-8 grid-rows-8 overflow-hidden rounded-sm text-[clamp(0.55rem,1.6vw,0.75rem)] shadow-[inset_0_0_0_1px_rgb(0_0_0/0.35)]">
+          {order.map((square, index) => {
+            const dark = (Math.floor(square / 8) + (square % 8)) % 2 === 1
+            const piece = view.board[square] ?? null
+            const isSource = sources.has(square)
+            const isTarget = targets.has(square)
+            const isLast =
+              view.last !== null && (view.last.from === square || view.last.to === square)
+            const jumped = view.captured.includes(square)
+            const { file, rank } = coord(square, index)
+            const labels = (
+              <>
+                {rank !== null ? (
+                  <span
+                    aria-hidden="true"
+                    className={`absolute top-0.5 left-1 font-semibold ${dark ? 'text-[#e3d0ac]' : 'text-[#8b7355]'}`}
+                  >
+                    {rank}
+                  </span>
+                ) : null}
+                {file !== null ? (
+                  <span
+                    aria-hidden="true"
+                    className={`absolute right-1 bottom-0.5 font-semibold ${dark ? 'text-[#e3d0ac]' : 'text-[#8b7355]'}`}
+                  >
+                    {file}
+                  </span>
+                ) : null}
+              </>
+            )
 
-          if (!dark) return <div key={square} aria-hidden="true" className="bg-border/40" />
+            if (!dark) {
+              return (
+                <div key={square} aria-hidden="true" className="relative bg-[#e3d0ac]">
+                  {labels}
+                </div>
+              )
+            }
 
-          return (
-            <button
-              key={square}
-              type="button"
-              onClick={() => click(square)}
-              disabled={pending || (!isTarget && (!isSource || view.capturing !== null))}
-              aria-pressed={selected === square}
-              aria-label={`${squareName(square)}: ${piece ? t(pieceKeys[piece]) : t('checkers.empty')}`}
-              className={`relative flex items-center justify-center bg-surface-raised disabled:cursor-default ${
-                isLast ? 'bg-accent/15' : ''
-              } ${isTarget ? 'bg-accent/30' : ''} ${selected === square ? 'ring-2 ring-accent-text ring-inset' : ''}`}
-            >
-              {piece ? (
-                <span
-                  aria-hidden="true"
-                  className={`flex size-4/5 items-center justify-center rounded-full border-2 text-xs font-bold sm:text-base ${
-                    piece === 'w' || piece === 'W'
-                      ? 'border-black/30 bg-white text-black'
-                      : 'border-white/30 bg-neutral-900 text-white'
-                  } ${jumped ? 'opacity-40' : ''} ${isSource && myTurn ? 'ring-2 ring-warning' : ''}`}
-                >
-                  {piece === 'W' || piece === 'B' ? '♛' : null}
-                </span>
-              ) : isTarget ? (
-                <span aria-hidden="true" className="size-1/4 rounded-full bg-accent" />
-              ) : null}
-            </button>
-          )
-        })}
+            return (
+              <button
+                key={square}
+                type="button"
+                onClick={() => click(square)}
+                disabled={pending || (!isTarget && (!isSource || view.capturing !== null))}
+                aria-pressed={selected === square}
+                aria-label={`${squareName(square)}: ${piece ? t(pieceKeys[piece]) : t('checkers.empty')}`}
+                className={`relative flex items-center justify-center bg-[#8b7355] shadow-[inset_0_0_0_0.5px_rgb(0_0_0/0.25)] disabled:cursor-default ${
+                  isTarget ? 'cursor-pointer hover:bg-[#7d6649]' : ''
+                }`}
+              >
+                {isLast ? (
+                  <span aria-hidden="true" className="absolute inset-0 bg-gold/25" />
+                ) : null}
+                {selected === square ? (
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-gold/30 shadow-[inset_0_0_0_3px_var(--color-gold)]"
+                  />
+                ) : null}
+                {labels}
+                {piece ? (
+                  <span
+                    aria-hidden="true"
+                    className={`relative flex size-[80%] items-center justify-center rounded-full text-[min(5vw,1.9rem)] leading-none transition-transform duration-150 ${
+                      piece === 'w' || piece === 'W'
+                        ? 'checker-white text-gold-dark'
+                        : 'checker-black text-gold'
+                    } ${jumped ? 'opacity-40' : ''} ${selected === square ? '-translate-y-0.5 scale-105' : ''} ${
+                      isSource && myTurn && selected !== square
+                        ? 'outline-2 outline-offset-2 outline-gold/80'
+                        : ''
+                    }`}
+                  >
+                    {piece === 'W' || piece === 'B' ? '♛' : null}
+                  </span>
+                ) : isTarget ? (
+                  <span
+                    aria-hidden="true"
+                    className="relative size-[30%] rounded-full bg-gold/70 shadow-[0_0_0_4px_rgb(214_171_78/0.25)]"
+                  />
+                ) : null}
+              </button>
+            )
+          })}
+        </div>
       </div>
     </div>
   )
