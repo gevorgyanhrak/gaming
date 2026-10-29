@@ -96,13 +96,13 @@ it('seeds modes, bots and draft pages without overwriting admin changes', functi
     $this->seed([GameSeeder::class, GameModeSeeder::class, BotSeeder::class, ContentPageSeeder::class]);
 
     expect(GameMode::query()->count())->toBe(6)
-        ->and(BotProfile::query()->pluck('name')->sort()->values()->all())->toBe(['Alex', 'Aram', 'Daniel', 'David', 'Levon', 'Michael', 'Robert'])
+        ->and(BotProfile::query()->pluck('name')->sort()->values()->all())->toBe(['Alex', 'Anna', 'Aram', 'Daniel', 'David', 'Elena', 'Gor', 'Igor', 'Levon', 'Mariam', 'Michael', 'Nina', 'Robert', 'Sergey', 'Viktor'])
         ->and(BotProfile::query()->where('name', 'Levon')->sole()->gameProfiles()->count())->toBe(5);
 
     BotProfile::query()->where('name', 'Alex')->update(['is_enabled' => false]);
     $this->seed([GameModeSeeder::class, BotSeeder::class, ContentPageSeeder::class]);
 
     expect(GameMode::query()->count())->toBe(6)
-        ->and(BotProfile::query()->count())->toBe(7)
+        ->and(BotProfile::query()->count())->toBe(15)
         ->and(BotProfile::query()->where('name', 'Alex')->sole()->is_enabled)->toBeFalse();
 });

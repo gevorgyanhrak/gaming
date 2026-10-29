@@ -3,11 +3,11 @@ import { useMutation } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { z } from 'zod'
 import { isUsernameAvailable, register as registerAccount, type Channel } from '@/features/auth/api'
 import { AuthCard } from '@/features/auth/components/AuthCard'
-import { applyServerErrors, useMessage } from '@/features/auth/forms'
+import { applyServerErrors, useMessage, withNext } from '@/features/auth/forms'
 import { useSetCurrentUser } from '@/features/auth/hooks'
 import {
   confirmed,
@@ -66,6 +66,8 @@ export function RegisterPage() {
   const message = useMessage()
   const config = usePublicConfig()
   const setCurrentUser = useSetCurrentUser()
+  const [params] = useSearchParams()
+  const next = params.get('next')
   const [formError, setFormError] = useState<string | null>(null)
   const [usernameHint, setUsernameHint] = useState<'available' | 'taken' | null>(null)
 
@@ -90,7 +92,8 @@ export function RegisterPage() {
     // The API only reads the identifier for the chosen method and ignores the other one.
     mutationFn: (values: Values) => registerAccount(values),
     // RequireGuest then continues to verification of the contact we just sent a code to.
-    onSuccess: (user, values) => setCurrentUser(user, `/verify?channel=${values.method}&sent=1`),
+    onSuccess: (user, values) =>
+      setCurrentUser(user, withNext(`/verify?channel=${values.method}&sent=1`, next)),
     onError: (error) => setFormError(applyServerErrors(error, form.setError, fields)),
   })
 
@@ -110,7 +113,10 @@ export function RegisterPage() {
   const footer = (
     <>
       {t('auth.haveAccount')}{' '}
-      <Link to="/login" className="font-semibold text-accent-text hover:underline">
+      <Link
+        to={withNext('/login', next)}
+        className="font-semibold text-accent-text hover:underline"
+      >
         {t('auth.login')}
       </Link>
     </>
@@ -135,6 +141,7 @@ export function RegisterPage() {
   return (
     <AuthCard title={t('auth.registerTitle')} subtitle={t('auth.registerSubtitle')} footer={footer}>
       <form onSubmit={(e) => void onSubmit(e)} noValidate className="space-y-4">
+        {next?.startsWith('/join/') ? <Alert tone="info">{t('join.signInFirst')}</Alert> : null}
         {formError ? <Alert tone="danger">{message(formError)}</Alert> : null}
 
         <fieldset>

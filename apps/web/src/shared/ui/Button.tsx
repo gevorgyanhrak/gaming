@@ -6,6 +6,9 @@ const variants = {
     'border border-white/15 bg-linear-to-b from-accent-light to-accent text-white shadow-lg shadow-black/40 hover:brightness-110',
   /** The main "play" calls to action. */
   gold: 'bg-linear-to-b from-gold-light via-gold to-gold-dark text-black shadow-lg shadow-gold/20 hover:brightness-110',
+  /** A way to play next to the main one: gold outline that fills on hover. */
+  outline:
+    'border border-gold/40 bg-surface-raised text-gold hover:border-gold hover:bg-gold hover:text-black',
   secondary:
     'border border-border bg-surface text-fg hover:border-accent/50 hover:bg-surface-raised',
 } as const

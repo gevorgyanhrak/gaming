@@ -7,7 +7,7 @@ import { GameArtwork } from '@/features/catalog/components/GameArtwork'
 import { PlayerCount } from '@/features/catalog/components/PlayerCount'
 import { useGame, type GameDetail } from '@/features/catalog/queries'
 import { artTransition, titleTransition } from '@/features/catalog/transitions'
-import { fetchMyStats } from '@/features/play/api'
+import { fetchMyStats, myStatsKey } from '@/features/play/api'
 import { PlayPanel } from '@/features/play/components/PlayPanel'
 import { isApiError } from '@/shared/api/errors'
 import { Badge } from '@/shared/ui/Badge'
@@ -103,7 +103,7 @@ function GameHero({ game }: { game: GameDetail }) {
   const { t } = useTranslation()
   const { data: user } = useCurrentUser()
   const stats = useQuery({
-    queryKey: ['me', 'stats'],
+    queryKey: myStatsKey,
     queryFn: ({ signal }) => fetchMyStats(signal),
     enabled: Boolean(user),
   })

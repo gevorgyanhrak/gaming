@@ -1,7 +1,8 @@
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Avatar } from '@/shared/ui/Avatar'
 import { Button } from '@/shared/ui/Button'
-import { FriendsIcon } from '@/shared/ui/icons'
+import { FriendsIcon, LinkIcon, ShareIcon } from '@/shared/ui/icons'
 import type { Room } from '../api'
 
 /**
@@ -19,6 +20,46 @@ export function WaitingTable({
 }) {
   const { t } = useTranslation()
   const bySeat = new Map(room.participants.map((p) => [p.seat, p]))
+  const code = room.invite_code
+  const link = code ? `${window.location.origin}/join/${code}` : ''
+  const canShare = typeof navigator.share === 'function'
+  // Which button just copied (its label says so for a moment), and the link to copy by hand if
+  // the clipboard isn't available.
+  const [copied, setCopied] = useState<'link' | 'code' | null>(null)
+  const [manual, setManual] = useState(false)
+  const field = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!copied) return
+    const timer = window.setTimeout(() => setCopied(null), 2000)
+    return () => window.clearTimeout(timer)
+  }, [copied])
+
+  useEffect(() => {
+    if (manual) field.current?.select()
+  }, [manual])
+
+  const copy = async (what: 'link' | 'code') => {
+    try {
+      await navigator.clipboard.writeText(what === 'link' ? link : (code ?? ''))
+      setCopied(what)
+    } catch {
+      setManual(true)
+    }
+  }
+
+  const share = async () => {
+    try {
+      await navigator.share({
+        title: t('join.title'),
+        text: t('room.shareText', { game: room.game.name }),
+        url: link,
+      })
+    } catch (error) {
+      // Closing the share sheet isn't a failure; anything else falls back to copying.
+      if (!(error instanceof DOMException && error.name === 'AbortError')) await copy('link')
+    }
+  }
 
   return (
     <section className="px-9 py-10 sm:px-12 sm:py-16">
@@ -84,29 +125,65 @@ export function WaitingTable({
             </div>
             <hr className="my-4 border-gold/20" />
             <p className="text-sm text-muted">{t('room.waiting')}</p>
-            {room.invite_code ? (
+            {code ? (
               <>
                 <p className="sr-only">{t('room.inviteCode')}</p>
                 <p className="mt-2 font-mono text-3xl font-bold tracking-[0.3em] text-gold sm:text-4xl">
-                  {room.invite_code}
+                  {code}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => void copy('code')}
+                  className="min-h-11 text-sm font-medium text-accent-text hover:underline"
+                >
+                  {copied === 'code' ? t('room.codeCopied') : t('room.copyCode')}
+                </button>
+                <Button
+                  variant="gold"
+                  className="mt-1 w-full"
+                  onClick={() => void (canShare ? share() : copy('link'))}
+                >
+                  {canShare ? <ShareIcon className="size-4" /> : <LinkIcon className="size-4" />}
+                  {canShare
+                    ? t('room.share')
+                    : copied === 'link'
+                      ? t('room.linkCopied')
+                      : t('room.copyLink')}
+                </Button>
+                {manual ? (
+                  <label className="mt-3 block text-left text-xs text-muted">
+                    {t('room.copyFallback')}
+                    <input
+                      ref={field}
+                      readOnly
+                      value={link}
+                      onFocus={(event) => event.currentTarget.select()}
+                      className="mt-1 w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-fg"
+                    />
+                  </label>
+                ) : null}
+                <p role="status" className="sr-only">
+                  {copied === 'link'
+                    ? t('room.linkCopied')
+                    : copied === 'code'
+                      ? t('room.codeCopied')
+                      : ''}
                 </p>
               </>
             ) : null}
-            <div className="mt-4 flex flex-wrap justify-center gap-2">
-              {room.invite_code ? (
-                <Button
-                  variant="gold"
-                  onClick={() => void navigator.clipboard?.writeText(room.invite_code ?? '')}
-                >
-                  {t('room.copyCode')}
-                </Button>
-              ) : null}
-              <Button variant="secondary" onClick={onLeave}>
-                {t('room.cancel')}
-              </Button>
-            </div>
           </div>
         </div>
+      </div>
+
+      <div className="mt-16 flex flex-wrap justify-center gap-2 sm:mt-20">
+        {code && canShare ? (
+          <Button variant="secondary" onClick={() => void copy('link')}>
+            {copied === 'link' ? t('room.linkCopied') : t('room.copyLink')}
+          </Button>
+        ) : null}
+        <Button variant="secondary" onClick={onLeave}>
+          {t('room.cancel')}
+        </Button>
       </div>
     </section>
   )

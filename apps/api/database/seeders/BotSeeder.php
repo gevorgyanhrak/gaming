@@ -14,14 +14,23 @@ use Illuminate\Database\Seeder;
 class BotSeeder extends Seeder
 {
     /** @var array<string, BotDifficulty> */
+    /** Five per difficulty: enough for a full six-seat table without two bots sharing a name. */
     private const BOTS = [
         'Alex' => BotDifficulty::Easy,
         'David' => BotDifficulty::Easy,
+        'Anna' => BotDifficulty::Easy,
+        'Mariam' => BotDifficulty::Easy,
+        'Igor' => BotDifficulty::Easy,
         'Michael' => BotDifficulty::Medium,
         'Daniel' => BotDifficulty::Medium,
         'Aram' => BotDifficulty::Medium,
+        'Nina' => BotDifficulty::Medium,
+        'Sergey' => BotDifficulty::Medium,
         'Robert' => BotDifficulty::Hard,
         'Levon' => BotDifficulty::Hard,
+        'Elena' => BotDifficulty::Hard,
+        'Gor' => BotDifficulty::Hard,
+        'Viktor' => BotDifficulty::Hard,
     ];
 
     public function run(): void

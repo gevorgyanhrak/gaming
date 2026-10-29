@@ -169,7 +169,10 @@
     "memberSince": "Member since",
     "lastActive": "Last active",
     "edit": "Edit profile",
-    "notFound": "We couldn't find that player."
+    "notFound": "We couldn't find that player.",
+    "records": "Records",
+    "recent": "Recent games",
+    "noGames": "No games yet. Play one and your records will show here."
   },
   "settings": {
     "title": "Settings",
@@ -243,7 +246,9 @@
     "findOpponentHint": "Get matched with another player.",
     "botHint": "Level: {{level}}",
     "friendHint": "Open a private table and share the code.",
-    "joinTitle": "Got an invite code?"
+    "joinTitle": "Got an invite code?",
+    "startBot": "Start game",
+    "createTable": "Create table"
   },
   "room": {
     "players": "Players",
@@ -253,7 +258,7 @@
     "theirTurn": "Waiting for the other player",
     "secondsLeft_one": "{{count}} second left",
     "secondsLeft_other": "{{count}} seconds left",
-    "waiting": "Waiting for your friend to join. Share this code:",
+    "waiting": "Send your friend the link or this code:",
     "inviteCode": "Invite code",
     "copyCode": "Copy code",
     "cancel": "Close room",
@@ -302,7 +307,18 @@
       "resign": "By resignation",
       "timeout": "On time",
       "abandon": "Left the game"
-    }
+    },
+    "waitingFor": "Waiting for {{name}}",
+    "waitingForOthers": "Waiting for the other players",
+    "over": "Game over",
+    "backToLobby": "Back to lobby",
+    "sameSettings": "Same settings:",
+    "share": "Share invite",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "codeCopied": "Code copied",
+    "copyFallback": "Copy this link",
+    "shareText": "Join my {{game}} table."
   },
   "history": {
     "title": "Game history",
@@ -317,7 +333,6 @@
     "diceLeft": "{{count}} dice left to play",
     "pickChecker": "Pick a checker to move.",
     "pickTarget": "Pick where it goes.",
-    "waiting": "Waiting for the other player.",
     "point_one": "Point {{point}}: {{count}} checker, {{owner}}",
     "point_other": "Point {{point}}: {{count}} checkers, {{owner}}",
     "empty": "empty",
@@ -334,7 +349,6 @@
     "pickPiece": "Pick a piece to move.",
     "pickTarget": "Pick where it goes.",
     "continueCapture": "Keep capturing with the same piece.",
-    "waiting": "Waiting for the other player.",
     "youWhite": "You play white",
     "youBlack": "You play black",
     "whiteMan": "white man",
@@ -348,7 +362,6 @@
     "moveBlack": "Move: Black",
     "pickPiece": "Pick a piece to move.",
     "pickTarget": "Pick where it goes.",
-    "waiting": "Waiting for the other player.",
     "check": "Check!",
     "youWhite": "You play white",
     "youBlack": "You play black",
@@ -396,7 +409,6 @@
     "throwInBeforeTake": "They are taking: throw in more, or let them take.",
     "defend": "Beat the card or take.",
     "youTake": "You are taking the cards.",
-    "waiting": "Waiting for the other player.",
     "seat": "Seat {{seat}}",
     "opponentCards_one": "{{name}} has {{count}} card",
     "opponentCards_other": "{{name}} has {{count}} cards",
@@ -491,5 +503,10 @@
     "previous": "Previous game",
     "next": "Next game",
     "show": "Show {{name}}"
+  },
+  "join": {
+    "title": "Join a table",
+    "joining": "Joining the table…",
+    "signInFirst": "Log in or sign up to join your friend's table."
   }
 }

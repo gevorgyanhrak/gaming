@@ -4,10 +4,12 @@ import { Link, useParams } from 'react-router'
 import { useMessage } from '@/features/auth/forms'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { leaveRoom, type ParticipantResult } from '@/features/play/api'
-import { endReasonLabel, outcomeLabel, resultLabel } from '@/features/play/labels'
+import { resultLabel } from '@/features/play/labels'
 import { GameIcon } from '@/features/catalog/components/GameArt'
+import { GameOverPanel } from '@/features/play/components/GameOverPanel'
 import { PlayerList } from '@/features/play/components/PlayerList'
 import { WaitingTable } from '@/features/play/components/WaitingTable'
+import { waitingCaption } from '@/features/play/turnCaption'
 import { useCountdown } from '@/features/play/useCountdown'
 import { useGameSounds } from '@/features/play/useGameSounds'
 import { usePresence } from '@/features/play/usePresence'
@@ -15,7 +17,7 @@ import { useRoom } from '@/features/play/useRoom'
 import { boards, traitsOf } from '@/games/registry'
 import { isApiError } from '@/shared/api/errors'
 import { Alert } from '@/shared/ui/Alert'
-import { Button, ButtonLink } from '@/shared/ui/Button'
+import { Button } from '@/shared/ui/Button'
 import { Container } from '@/shared/ui/Container'
 import { Skeleton } from '@/shared/ui/Skeleton'
 import { EmptyState, QueryErrorState } from '@/shared/ui/States'
@@ -74,7 +76,6 @@ export function RoomPage() {
     void leaveRoom(id)
       .then(() => room.refetch())
       .then(() => state.refetch())
-  const reasonKey = data.end_reason ? endReasonLabel[data.end_reason] : undefined
   // Chess clocks: the running clock counts down with the deadline, the others stand still.
   const clocks =
     view?.clocks && data.status === 'active'
@@ -85,6 +86,9 @@ export function RoomPage() {
   const myResult =
     view?.seat != null ? data.participants.find((p) => p.seat === view.seat)?.result : null
 
+  const playerNames: Partial<Record<number, string>> = Object.fromEntries(
+    data.participants.map((p) => [p.seat, p.name ?? '']),
+  )
   // Left a multi-player game that goes on without you.
   const leftTable = data.status === 'active' && myResult != null
   // Boards that seat every player show them already while the game is on.
@@ -119,7 +123,11 @@ export function RoomPage() {
             className={`rounded-2xl px-4 py-2 text-right ${myTurn ? 'bg-linear-to-b from-gold-light via-gold to-gold-dark text-black shadow-lg shadow-gold/20' : 'border border-border bg-surface'}`}
             role="status"
           >
-            <p className="font-semibold">{myTurn ? t('room.yourTurn') : t('room.theirTurn')}</p>
+            <p className="max-w-48 truncate font-semibold">
+              {myTurn
+                ? t('room.yourTurn')
+                : (waitingCaption(view, playerNames, t) ?? t('room.theirTurn'))}
+            </p>
             {secondsLeft !== null && !clocks ? (
               <p className={`text-sm ${myTurn ? 'text-black/70' : 'text-muted'}`}>
                 {t('room.secondsLeft', { count: secondsLeft })}
@@ -142,16 +150,13 @@ export function RoomPage() {
         />
       ) : null}
 
-      {data.status === 'finished' ? (
-        <Alert tone={myResult === 'win' ? 'success' : 'info'}>
-          <p className="font-semibold">
-            {myResult ? t(outcomeLabel[myResult as ParticipantResult]) : t('room.finished')}
-          </p>
-          {reasonKey ? <p className="mt-1">{t(reasonKey)}</p> : null}
-        </Alert>
+      {data.status === 'finished' || data.status === 'aborted' || leftTable ? (
+        <GameOverPanel
+          room={data}
+          result={(myResult ?? null) as ParticipantResult | null}
+          leftTable={leftTable}
+        />
       ) : null}
-      {data.status === 'aborted' ? <Alert tone="info">{t('room.aborted')}</Alert> : null}
-      {leftTable ? <Alert tone="info">{t('room.leftTable')}</Alert> : null}
 
       {act.error ? <Alert tone="danger">{message(act.error.message)}</Alert> : null}
 
@@ -162,7 +167,7 @@ export function RoomPage() {
               state={view}
               onAction={(action) => act.mutate(action)}
               pending={act.isPending}
-              players={Object.fromEntries(data.participants.map((p) => [p.seat, p.name ?? '']))}
+              players={playerNames}
               bots={Object.fromEntries(data.participants.map((p) => [p.seat, p.is_bot]))}
             />
           </Suspense>
@@ -193,9 +198,6 @@ export function RoomPage() {
               {t('room.resign')}
             </Button>
           )
-        ) : null}
-        {data.status === 'finished' || data.status === 'aborted' ? (
-          <ButtonLink to={`/games/${data.game.slug}`}>{t('room.playAgain')}</ButtonLink>
         ) : null}
         <Link
           to="/dashboard"

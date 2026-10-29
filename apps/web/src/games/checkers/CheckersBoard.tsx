@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { waitingCaption } from '@/features/play/turnCaption'
 import type { BoardProps } from '../registry'
 
 type Piece = 'w' | 'W' | 'b' | 'B'
@@ -30,7 +31,7 @@ const squareName = (square: number) =>
  * around) and offers exactly the server's legal steps: pick a piece, then one of its targets.
  * During a capture series the capturing piece stays selected.
  */
-export default function CheckersBoard({ state, onAction, pending }: BoardProps) {
+export default function CheckersBoard({ state, onAction, pending, players }: BoardProps) {
   const { t } = useTranslation()
   const view = state.view as unknown as CheckersView
   const me = state.seat ?? 0
@@ -56,7 +57,7 @@ export default function CheckersBoard({ state, onAction, pending }: BoardProps) 
   }
 
   const status = !myTurn
-    ? t('checkers.waiting')
+    ? (waitingCaption(state, players, t) ?? '')
     : view.capturing !== null
       ? t('checkers.continueCapture')
       : selected === null

@@ -59,7 +59,7 @@ describe('Playing a game', () => {
     const { router } = renderRoute('/games/tictactoe')
 
     await userEvent.click(await screen.findByRole('radio', { name: 'Hard' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Play against a bot' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Start game' }))
 
     await screen.findByText('Your turn')
     expect(router.state.location.pathname).toBe('/rooms/room-9')
@@ -93,10 +93,10 @@ describe('Playing a game', () => {
     renderRoute('/games/tictactoe')
 
     const size = await screen.findByRole('group', { name: 'Table size' })
-    expect(within(size).getByRole('radio', { name: '4 players' })).toBeChecked()
-    await userEvent.click(within(size).getByRole('radio', { name: '3 players' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Play against a bot' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Play with a friend' }))
+    expect(within(size).getByRole('radio', { name: '4' })).toBeChecked()
+    await userEvent.click(within(size).getByRole('radio', { name: '3' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Start game' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Create table' }))
 
     await vi.waitFor(() => expect(bodies).toHaveLength(2))
     expect(bodies[0]).toMatchObject({ type: 'bot', opponents: 2 })

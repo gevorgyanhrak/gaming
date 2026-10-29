@@ -39,6 +39,10 @@ it('starts a game against a bot', function () {
         ->assertJsonPath('data.participants.0.username', 'alice')
         ->assertJsonPath('data.participants.1.is_bot', true)
         ->assertJsonPath('data.participants.1.name', 'Aram')
+        // What "Play again" needs to start the same kind of game.
+        ->assertJsonPath('data.mode.id', $mode->id)
+        ->assertJsonPath('data.participants.0.bot_difficulty', null)
+        ->assertJsonPath('data.participants.1.bot_difficulty', 'easy')
         ->json('data.id');
 
     $state = $this->getJson("/api/v1/rooms/{$id}/state")->assertOk()->json('data');

@@ -125,6 +125,20 @@ export const TargetIcon = (p: IconProps) => (
   </Icon>
 )
 
+export const LinkIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1" />
+    <path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1" />
+  </Icon>
+)
+
+export const ShareIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 15V4M8 8l4-4 4 4" />
+    <path d="M6 11H5a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1h-1" />
+  </Icon>
+)
+
 export const PlayIcon = (p: IconProps) => (
   <svg viewBox="0 0 24 24" aria-hidden="true" className={p.className ?? 'size-5'}>
     <path d="M7 4.5v15l12-7.5z" fill="currentColor" />

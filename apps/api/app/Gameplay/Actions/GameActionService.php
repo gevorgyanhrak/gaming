@@ -237,7 +237,8 @@ class GameActionService
     }
 
     /**
-     * Resignation or timeout: the given seat loses, every other seat wins.
+     * Resignation or timeout: the given seat loses (recorded as abandoned for a missed turn timer),
+     * every other seat wins.
      */
     private function end(GameRoom $room, RoomState $current, GameParticipant $loser, string $type, ?string $clientActionId): ActionResult
     {
@@ -251,7 +252,11 @@ class GameActionService
             $outcome = $engine->timeoutOutcome($current->state, $loser->seat);
         }
 
-        DB::transaction(function () use ($room, $loser, $type, $version, $clientActionId, $outcome) {
+        // Running out of a game clock (chess) is a plain loss on time; a missed per-turn timer counts as
+        // walking away from the game.
+        $abandoned = $type === GameMove::ABANDON || ($type === GameMove::TIMEOUT && $current->clock === null);
+
+        DB::transaction(function () use ($room, $loser, $type, $version, $clientActionId, $outcome, $abandoned) {
             $room->moves()->create([
                 'seq' => $version,
                 'participant_id' => $loser->id,
@@ -264,7 +269,7 @@ class GameActionService
                 $room,
                 $outcome,
                 $type,
-                in_array($type, [GameMove::TIMEOUT, GameMove::ABANDON], true) && ! $outcome->isDraw() ? [$loser->seat] : [],
+                $abandoned && ! $outcome->isDraw() ? [$loser->seat] : [],
             );
         });
 

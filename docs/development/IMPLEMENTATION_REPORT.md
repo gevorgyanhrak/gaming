@@ -2,6 +2,40 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## B2 (TASK-026, 006, 028, 007, 024, 008) + TASK-030, TASK-031 — 2026-10-29 · READY_FOR_REVIEW
+
+Owner go-ahead for TASK-030/031 ("do all necessary things", 2026-10-29). Built to the B2 specs; the
+spec's open question 1 was resolved in code: the room payload now carries `mode.id` and each bot's
+`bot_difficulty` (additive API fields, `make types` committed), so "Play again" repeats the exact
+level instead of remembering it on the device.
+
+| Task | Changes |
+|---|---|
+| TASK-030 bot names | `apps/api/app/Gameplay/Bots/BotSelector.php`: `pickMany` seats distinct bots, borrowing bots of other levels for the game (they play at the table's level, set per seat) before repeating one; `shortages()` lists game/level pairs with too few bots → subheading on the admin Bots list (`ListBotProfiles`). `BotSeeder`: 5 bots per level (15). Ran the seeder locally |
+| TASK-031 chess on time | `GameActionService::end`: a timeout with a game clock records `loss` (counts in losses); per-turn timer timeouts and leaving stay `abandoned` |
+| API | `RoomResource`: `mode.id`, `participants[].bot_difficulty`; schema.d.ts regenerated |
+| TASK-026 | `app/useRefreshOnLanguageChange.ts` (mounted in `PublicLayout`) invalidates `translatedQuery` keys (`features/play/api.ts`: rooms not state, me/rooms|games|stats, users) on `languageChanged`; shared `myStatsKey` / `myGamesKey` |
+| TASK-028 | `features/play/turnCaption.ts` `waitingCaption` used by the RoomPage header badge and the Chess, Checkers, Nardi and Durak boards (names via the `players` prop); nothing once the game is over; `*.waiting` strings removed |
+| TASK-006 | `features/play/components/GameOverPanel.tsx` replaces the finished/aborted/left alerts and the footer link: outcome, reason, Play again (bot: same mode/seats/level; matchmaking: new search with status in the panel; private/aborted: lobby only), Back to lobby, "Same settings" line; heading focused |
+| TASK-007 | `pages/ProfilePage.tsx`: Records grid (`GameRecord`, shared with the dashboard via `features/play/records.ts`) and 5 recent games; empty state for new players |
+| TASK-024 | `pages/JoinPage.tsx` + route `join/:code`; `withNext` (`features/auth/forms.ts`) keeps the destination through login ↔ register → verify; join notice on login/register; `WaitingTable`: Copy code, Share (Web Share) or Copy link, secondary Copy link, Close room below the table, selectable fallback field; `LinkIcon`, `ShareIcon` |
+| TASK-008 | `PlayPanel` `ModeCard`: medal + title row, full-width body and visible text button (`Button` variant `outline`), labels "Start game" / "Create table"; `Segmented` `fill` (one line, 44 px on phones); table size pills show numbers |
+
+**Tests run:** web `typecheck` ✓ `lint` ✓ `format:check` ✓ `vitest` 21 files **99 passed** (new:
+`turnCaption.test.ts`, `pages/B2.test.tsx` language refetch, profile, join flows, copy link; updated
+RoomPage/Play/Nardi tests) · `build` ✓. API `make lint-api` ✓ (pint, PHPStan) · `make test-api`
+**291 passed** (new: distinct bots with borrowing, repeat-only-when-short + shortages, chess flag-fall
+= loss with stats; updated: admin seeder list, room API fields).
+
+**Browser check (390×844 / 1440×900, local stack):** lobby cards show text buttons and one-line size
+pills; resigned a Hard checkers game → panel "You lost. · A player resigned · Same settings: Russian
+draughts · Level: Hard", focus on the heading, tab "Lost · Checkers"; Play again → new room, "● Your
+turn · Checkers", opponent a Hard bot (Viktor); profile records + 5 recent games + See all games;
+private 4-seat Poker table: code, Copy code, Copy link, Close room, no horizontal scroll.
+
+**Not checked live:** Web Share sheet (headless has none), matchmaking Play again, sign-up → verify →
+join with a real new account, ru/hy on the new screens, TASK-031 in a live chess game (feature tests).
+
 ## B1 revision after design review — 2026-10-29 · READY_FOR_REVIEW
 
 Corrections from `DESIGN_REVIEW.md` (B1):

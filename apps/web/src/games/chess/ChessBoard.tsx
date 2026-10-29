@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/shared/ui/Button'
+import { waitingCaption } from '@/features/play/turnCaption'
 import type { BoardProps } from '../registry'
 
 type Piece = 'K' | 'Q' | 'R' | 'B' | 'N' | 'P' | 'k' | 'q' | 'r' | 'b' | 'n' | 'p'
@@ -59,7 +60,7 @@ const isWhite = (piece: Piece) => piece === piece.toUpperCase()
  * Chess board. Renders the server's view from the player's side (black sees the board turned) and
  * offers exactly the server's legal moves: pick a piece, then a target; promotions ask which piece.
  */
-export default function ChessBoard({ state, onAction, pending }: BoardProps) {
+export default function ChessBoard({ state, onAction, pending, players }: BoardProps) {
   const { t } = useTranslation()
   const view = state.view as unknown as ChessView
   const me = state.seat ?? 0
@@ -105,7 +106,7 @@ export default function ChessBoard({ state, onAction, pending }: BoardProps) {
           <p className={view.check ? 'font-semibold text-take' : 'text-muted'} aria-live="polite">
             {view.check ? `${t('chess.check')} ` : ''}
             {!myTurn
-              ? t('chess.waiting')
+              ? (waitingCaption(state, players, t) ?? '')
               : selected === null
                 ? t('chess.pickPiece')
                 : t('chess.pickTarget')}

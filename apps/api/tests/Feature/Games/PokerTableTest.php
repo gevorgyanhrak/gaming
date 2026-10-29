@@ -4,6 +4,7 @@ use App\Enums\BotDifficulty;
 use App\Enums\ParticipantResult;
 use App\Enums\RoomStatus;
 use App\Gameplay\Actions\GameActionService;
+use App\Gameplay\Bots\BotSelector;
 use App\Gameplay\Lifecycle\TurnTimeoutJob;
 use App\Gameplay\Rooms\RoomStates;
 use App\Gameplay\Rooms\RoomStateStore;
@@ -54,6 +55,44 @@ it('seats as many bots as asked for', function () {
     $this->actingAs(User::factory()->create())
         ->postJson('/api/v1/rooms', ['game_mode_id' => $mode->id, 'type' => 'bot', 'bot_difficulty' => 'easy', 'opponents' => 6])
         ->assertUnprocessable()->assertJsonValidationErrors('opponents');
+});
+
+it('seats different bots, borrowing from other levels before repeating one', function () {
+    $mode = pokerMode();
+    $bot = fn (string $name, BotDifficulty $difficulty) => BotProfile::factory()->create(['name' => $name])
+        ->gameProfiles()->create(['game_id' => $mode->game->id, 'difficulty' => $difficulty]);
+    $bot('Alex', BotDifficulty::Easy);
+    $bot('David', BotDifficulty::Easy);
+    foreach (['Aram', 'Nina', 'Levon'] as $name) {
+        $bot($name, BotDifficulty::Hard);
+    }
+
+    $room = $this->actingAs(User::factory()->create())
+        ->postJson('/api/v1/rooms', ['game_mode_id' => $mode->id, 'type' => 'bot', 'bot_difficulty' => 'easy', 'opponents' => 5])
+        ->assertCreated()->json('data');
+
+    $names = collect($room['participants'])->where('is_bot', true)->pluck('name');
+    expect($names)->toHaveCount(5)
+        ->and($names->unique())->toHaveCount(5)
+        ->and($names)->toContain('Alex', 'David');
+    // Borrowed bots still play at the table's level.
+    expect(GameRoom::query()->where('public_id', $room['id'])->sole()->participants()->whereNotNull('bot_profile_id')->pluck('bot_difficulty')->unique()->values()->all())
+        ->toBe([BotDifficulty::Easy]);
+});
+
+it('repeats a bot only when the game has fewer bots than seats, and tells the admin', function () {
+    $mode = pokerMode();
+    BotProfile::factory()->create(['name' => 'Alex'])->gameProfiles()->create(['game_id' => $mode->game->id, 'difficulty' => BotDifficulty::Easy]);
+    BotProfile::factory()->create(['name' => 'David'])->gameProfiles()->create(['game_id' => $mode->game->id, 'difficulty' => BotDifficulty::Easy]);
+
+    $room = $this->actingAs(User::factory()->create())
+        ->postJson('/api/v1/rooms', ['game_mode_id' => $mode->id, 'type' => 'bot', 'bot_difficulty' => 'easy', 'opponents' => 3])
+        ->assertCreated()->json('data');
+
+    expect(collect($room['participants'])->where('is_bot', true))->toHaveCount(3);
+    expect(app(BotSelector::class)->shortages())->toContain(
+        ['game' => 'Poker', 'difficulty' => BotDifficulty::Easy, 'bots' => 2, 'needed' => 5],
+    );
 });
 
 it('opens private tables of the chosen size', function () {

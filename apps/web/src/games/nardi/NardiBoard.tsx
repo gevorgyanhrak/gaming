@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { waitingCaption } from '@/features/play/turnCaption'
 import type { BoardProps } from '../registry'
 
 interface NardiView {
@@ -23,7 +24,7 @@ type Step = {
  * Nardi board. Shows the server's view from the player's side (their home board bottom right)
  * and offers exactly the server's legal steps: pick a checker, then one of its highlighted targets.
  */
-export default function NardiBoard({ state, onAction, pending }: BoardProps) {
+export default function NardiBoard({ state, onAction, pending, players }: BoardProps) {
   const { t } = useTranslation()
   const view = state.view as unknown as NardiView
   const me = state.seat ?? 0
@@ -135,7 +136,7 @@ export default function NardiBoard({ state, onAction, pending }: BoardProps) {
             ? selected === null
               ? t('nardi.pickChecker')
               : t('nardi.pickTarget')
-            : t('nardi.waiting')}
+            : (waitingCaption(state, players, t) ?? '')}
         </p>
       </div>
 

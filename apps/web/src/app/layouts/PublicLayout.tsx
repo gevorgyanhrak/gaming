@@ -26,6 +26,7 @@ import {
   UserIcon,
 } from '@/shared/ui/icons'
 import { Skeleton } from '@/shared/ui/Skeleton'
+import { useRefreshOnLanguageChange } from '../useRefreshOnLanguageChange'
 
 const navLink = ({ isActive }: { isActive: boolean }) =>
   `rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
@@ -54,6 +55,7 @@ const iconButton =
  */
 export function PublicLayout() {
   const { t } = useTranslation()
+  useRefreshOnLanguageChange()
   const config = usePublicConfig()
   const user = useCurrentUser()
   const { pathname } = useLocation()

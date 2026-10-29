@@ -39,6 +39,12 @@ export function useMessage() {
 }
 
 /** Only same-app paths are allowed as post-login redirects (no open redirects). */
+/** `path` with the page to continue to afterwards, if there is one. */
+export function withNext(path: string, next: string | null | undefined): string {
+  if (!next) return path
+  return `${path}${path.includes('?') ? '&' : '?'}next=${encodeURIComponent(next)}`
+}
+
 export function safeRedirect(target: string | null | undefined, fallback = '/dashboard'): string {
   return target && target.startsWith('/') && !target.startsWith('//') && !target.startsWith('/\\')
     ? target

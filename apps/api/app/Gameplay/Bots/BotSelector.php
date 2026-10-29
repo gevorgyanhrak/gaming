@@ -28,8 +28,10 @@ class BotSelector
     }
 
     /**
-     * $count bots for one table, all different while there are enough; with fewer bots than seats the
-     * same bots sit down more than once.
+     * $count bots for one table, every one a different bot (so no two seats share a name). When too few
+     * bots play the game at this difficulty, other bots that play the game fill the seats; they still
+     * play at the table's difficulty, which is set per seat. Only when the game has fewer bots than
+     * seats does the same bot sit down more than once.
      *
      * @return list<BotProfile>
      *
@@ -38,15 +40,58 @@ class BotSelector
     public function pickMany(Game $game, BotDifficulty $difficulty, int $count): array
     {
         $picked = [];
+
         for ($i = 0; $i < $count; $i++) {
+            $seated = array_map(fn (BotProfile $b) => $b->id, $picked);
             try {
-                $picked[] = $this->pick($game, $difficulty, array_map(fn (BotProfile $b) => $b->id, $picked));
+                $picked[] = $this->pick($game, $difficulty, $seated);
             } catch (InvalidArgumentException $e) {
-                $picked[] = $picked[$i % max(1, count($picked))] ?? throw $e;
+                if ($picked === []) {
+                    throw $e;
+                }
+                $picked[] = $this->anyFor($game, $seated) ?? $picked[$i % count($picked)];
             }
         }
 
         return $picked;
+    }
+
+    /**
+     * Games and difficulties with fewer enabled bots than their biggest table needs, for the admin panel.
+     *
+     * @return list<array{game: string, difficulty: BotDifficulty, bots: int, needed: int}>
+     */
+    public function shortages(): array
+    {
+        $shortages = [];
+        foreach (Game::query()->where('is_enabled', true)->orderBy('sort_order')->get() as $game) {
+            $needed = max(1, $game->max_players - 1);
+            foreach (BotDifficulty::cases() as $difficulty) {
+                $bots = BotProfile::query()->where('is_enabled', true)
+                    ->whereHas('gameProfiles', fn ($q) => $q->where('game_id', $game->id)->where('difficulty', $difficulty)->where('is_enabled', true))
+                    ->count();
+                if ($bots > 0 && $bots < $needed) {
+                    $shortages[] = ['game' => $game->name, 'difficulty' => $difficulty, 'bots' => $bots, 'needed' => $needed];
+                }
+            }
+        }
+
+        return $shortages;
+    }
+
+    /**
+     * Any enabled bot that plays the game, at whatever difficulty, other than those already seated.
+     *
+     * @param  list<int>  $exclude
+     */
+    private function anyFor(Game $game, array $exclude): ?BotProfile
+    {
+        return BotProfile::query()
+            ->where('is_enabled', true)
+            ->whereNotIn('id', $exclude)
+            ->whereHas('gameProfiles', fn ($q) => $q->where('game_id', $game->id)->where('is_enabled', true))
+            ->inRandomOrder()
+            ->first();
     }
 
     /**

@@ -3,11 +3,11 @@ import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation } from 'react-router'
+import { Link, useLocation, useSearchParams } from 'react-router'
 import { z } from 'zod'
 import { login } from '@/features/auth/api'
 import { AuthCard } from '@/features/auth/components/AuthCard'
-import { applyServerErrors, useMessage } from '@/features/auth/forms'
+import { applyServerErrors, useMessage, withNext } from '@/features/auth/forms'
 import { useSetCurrentUser } from '@/features/auth/hooks'
 import { loginField } from '@/features/auth/schemas'
 import { Alert } from '@/shared/ui/Alert'
@@ -26,6 +26,7 @@ export function LoginPage() {
   const { t } = useTranslation()
   const message = useMessage()
   const location = useLocation()
+  const [params] = useSearchParams()
   const setCurrentUser = useSetCurrentUser()
   const [formError, setFormError] = useState<string | null>(null)
   const notice = (location.state as { notice?: string } | null)?.notice
@@ -49,6 +50,7 @@ export function LoginPage() {
   })
 
   const { errors } = form.formState
+  const next = params.get('next')
 
   return (
     <AuthCard
@@ -57,13 +59,17 @@ export function LoginPage() {
       footer={
         <>
           {t('auth.noAccount')}{' '}
-          <Link to="/register" className="font-semibold text-accent-text hover:underline">
+          <Link
+            to={withNext('/register', next)}
+            className="font-semibold text-accent-text hover:underline"
+          >
             {t('auth.signUp')}
           </Link>
         </>
       }
     >
       <form onSubmit={(e) => void onSubmit(e)} noValidate className="space-y-4">
+        {next?.startsWith('/join/') ? <Alert tone="info">{t('join.signInFirst')}</Alert> : null}
         {notice === 'password-reset' ? <Alert tone="success">{t('auth.resetDone')}</Alert> : null}
         {formError ? <Alert tone="danger">{message(formError)}</Alert> : null}
 

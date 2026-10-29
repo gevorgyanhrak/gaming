@@ -114,12 +114,11 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
             ) : null}
             {tableSize !== undefined ? (
               <Segmented
+                fill
                 label={t('play.players')}
                 value={tableSize}
-                options={tableSizes.map((n) => ({
-                  value: n,
-                  label: t('play.playersCount', { count: n }),
-                }))}
+                // Just the number: the legend says what it counts, and 2–6 fits on one line.
+                options={tableSizes.map((n) => ({ value: n, label: String(n) }))}
                 onChange={setPlayers}
               />
             ) : null}
@@ -164,13 +163,14 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
           Icon={BotIcon}
           title={t('play.playBot')}
           action={{
-            label: t('play.playBot'),
+            label: t('play.startBot'),
             disabled: busy || modeId === undefined,
             run: () => modeId !== undefined && bot.mutate(modeId),
           }}
         >
-          <div className="mt-3">
+          <div>
             <Segmented
+              fill
               label={t('play.botDifficulty')}
               value={difficulty}
               options={(['easy', 'medium', 'hard'] as const).map((d) => ({
@@ -187,17 +187,17 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
           Icon={FriendsIcon}
           title={t('play.playWithFriend')}
           action={{
-            label: t('play.playWithFriend'),
+            label: t('play.createTable'),
             disabled: busy || modeId === undefined,
             run: () => modeId !== undefined && friend.mutate(modeId),
           }}
         >
-          <p className="mt-1 text-sm text-muted">{t('play.friendHint')}</p>
+          <p className="text-sm text-muted">{t('play.friendHint')}</p>
         </ModeCard>
 
         <ModeCard index={2} Icon={TicketIcon} title={t('play.joinTitle')}>
           <form
-            className="mt-3 flex items-end gap-2"
+            className="flex items-end gap-2"
             onSubmit={(e) => {
               e.preventDefault()
               if (code.trim()) join.mutate()
@@ -211,7 +211,12 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
               />
             </div>
-            <Button type="submit" variant="gold" disabled={join.isPending || !code.trim()}>
+            <Button
+              type="submit"
+              variant="outline"
+              className="min-h-11"
+              disabled={join.isPending || !code.trim()}
+            >
               {t('play.join')}
             </Button>
           </form>
@@ -222,8 +227,9 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
 }
 
 /**
- * One way to play, as a panel: a brass medallion, the title and its options, and an arrow that
- * starts it. Panels rise in one after another.
+ * One way to play, as a panel: a brass medallion and the title, its options, and a button that
+ * starts it. On phones the options and button take the card's full width. Panels rise in one after
+ * another.
  */
 function ModeCard({
   index,
@@ -238,28 +244,33 @@ function ModeCard({
   action?: { label: string; disabled: boolean; run: () => void }
   children: ReactNode
 }) {
+  const titleId = useId()
   return (
     <section
-      className="club-panel flex items-center gap-4 rounded-3xl p-4 transition hover:border-gold/40 motion-safe:animate-rise sm:gap-5 sm:p-5"
+      aria-labelledby={titleId}
+      className="club-panel grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-3 rounded-3xl p-4 transition hover:border-gold/40 motion-safe:animate-rise sm:items-start sm:gap-x-5 sm:p-5"
       style={{ animationDelay: `${150 + index * 110}ms` }}
     >
-      <span className="club-medal flex size-14 shrink-0 items-center justify-center self-start rounded-full text-[#3a2410] sm:size-20">
-        <Icon className="size-7 sm:size-10" />
+      <span className="club-medal flex size-12 shrink-0 items-center justify-center rounded-full text-[#3a2410] sm:row-span-3 sm:size-20">
+        <Icon className="size-6 sm:size-10" />
       </span>
-      <div className="min-w-0 flex-1">
-        <h3 className="text-xl font-extrabold text-gold sm:text-2xl">{title}</h3>
-        {children}
-      </div>
+      <h3 id={titleId} className="text-xl font-extrabold text-gold sm:text-2xl">
+        {title}
+      </h3>
+      <div className="col-span-2 min-w-0 sm:col-span-1 sm:col-start-2">{children}</div>
       {action ? (
-        <button
-          type="button"
-          aria-label={action.label}
-          disabled={action.disabled}
-          onClick={action.run}
-          className="flex size-12 shrink-0 items-center justify-center rounded-full border border-gold/40 bg-surface-raised text-gold transition hover:translate-x-0.5 hover:border-gold hover:bg-gold hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <ChevronIcon className="size-6" />
-        </button>
+        <div className="col-span-2 sm:col-span-1 sm:col-start-2 sm:justify-self-end">
+          <Button
+            variant="outline"
+            disabled={action.disabled}
+            onClick={action.run}
+            aria-describedby={titleId}
+            className="min-h-11 w-full sm:w-auto"
+          >
+            {action.label}
+            <ChevronIcon className="size-5" />
+          </Button>
+        </div>
       ) : null}
     </section>
   )

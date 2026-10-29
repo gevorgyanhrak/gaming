@@ -60,7 +60,7 @@ describe('Room', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'play 0' }))
 
     expect(await screen.findByText('version 1')).toBeInTheDocument()
-    expect(screen.getByText('Waiting for the other player')).toBeInTheDocument()
+    expect(screen.getByText('Waiting for Aram')).toBeInTheDocument()
     expect(body).toMatchObject({ expected_version: 0, action: { type: 'place', cell: 0 } })
     expect(body.client_action_id).toMatch(/^[0-9a-f-]{36}$/)
   })
@@ -163,13 +163,45 @@ describe('Room', () => {
       }),
       roomStateFixture({ status: 'finished', seats_to_act: [], legal_actions: [] }),
     )
-    renderRoute('/rooms/room-1')
 
-    expect(await screen.findByText('You won!')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Play again' })).toHaveAttribute(
+    let body: Record<string, unknown> = {}
+    server.use(
+      http.post('*/api/v1/rooms', async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>
+        return HttpResponse.json({ data: roomFixture({ id: 'room-2' }) }, { status: 201 })
+      }),
+    )
+    const { router } = renderRoute('/rooms/room-1')
+
+    await screen.findByRole('heading', { name: 'You won!' })
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'You won!' })).toHaveFocus())
+    expect(screen.queryByText(/^Waiting/)).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Back to lobby' })).toHaveAttribute(
       'href',
       '/games/tictactoe',
     )
+    expect(screen.getByText('Same settings: Classic · Level: Easy')).toBeInTheDocument()
+
+    // The same game again: same mode, table size and bot level.
+    await userEvent.click(screen.getByRole('button', { name: 'Play again' }))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/rooms/room-2'))
+    expect(body).toMatchObject({ game_mode_id: 1, type: 'bot', bot_difficulty: 'easy' })
+  })
+
+  it('offers only the lobby after a private game', async () => {
+    serveRoom(
+      roomFixture({
+        type: 'private',
+        status: 'finished',
+        participants: roomFixture().participants.map((p) => ({ ...p, result: 'draw' })),
+      }),
+      roomStateFixture({ status: 'finished', seats_to_act: [], legal_actions: [] }),
+    )
+    renderRoute('/rooms/room-1')
+
+    expect(await screen.findByRole('heading', { name: "It's a draw." })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Play again' })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Back to lobby' })).toBeInTheDocument()
   })
 
   it('asks for confirmation before resigning', async () => {

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useCountdown } from '@/features/play/useCountdown'
 import { suitSymbols, useCardLabel, type Suit } from '../cards/cards'
 import { CardBack, PlayingCard as Card } from '../cards/PlayingCard'
+import { waitingCaption } from '@/features/play/turnCaption'
 import type { BoardProps } from '../registry'
 
 interface DurakView {
@@ -110,7 +111,7 @@ export default function DurakBoard({
   const status = !myTurn
     ? view.taking && view.defender === me
       ? t('durak.youTake')
-      : t('durak.waiting')
+      : (waitingCaption(state, players, t) ?? '')
     : view.defender === me
       ? t('durak.defend')
       : view.table.length === 0

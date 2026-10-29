@@ -4,7 +4,9 @@ import { Link } from 'react-router'
 import { Card } from '@/shared/ui/Card'
 import { Skeleton } from '@/shared/ui/Skeleton'
 import { GameIcon } from '@/features/catalog/components/GameArt'
-import { fetchMyRooms, fetchMyStats, myRoomsKey, type GameStat } from '../api'
+import { fetchMyRooms, fetchMyStats, myRoomsKey, myStatsKey } from '../api'
+import { recordCounts, winRate } from '../records'
+import { GameRecord } from './GameRecord'
 import { RoomSummary } from './RoomSummary'
 
 /** Dashboard sections: games to resume and per-game statistics. Hidden while there is nothing to show. */
@@ -15,23 +17,11 @@ export function DashboardGames() {
     queryFn: ({ signal }) => fetchMyRooms(signal),
   })
   const stats = useQuery({
-    queryKey: ['me', 'stats'],
+    queryKey: myStatsKey,
     queryFn: ({ signal }) => fetchMyStats(signal),
   })
 
   if (rooms.isPending || stats.isPending) return <Skeleton className="h-32 w-full" />
-
-  const percent = new Intl.NumberFormat(i18n.language, { style: 'percent' })
-  const winRate = (row: GameStat) => (row.played > 0 ? percent.format(row.wins / row.played) : '—')
-  const counts = (row: GameStat) => [
-    { key: 'played', label: t('dashboard.played'), value: row.played },
-    { key: 'wins', label: t('dashboard.wins'), value: row.wins },
-    { key: 'losses', label: t('dashboard.losses'), value: row.losses },
-    { key: 'draws', label: t('dashboard.draws'), value: row.draws },
-    { key: 'timedOut', label: t('dashboard.timedOut'), value: row.abandoned },
-  ]
-  const streakTone = (row: GameStat) =>
-    row.current_streak >= 2 ? 'text-accent-text' : 'text-muted'
 
   return (
     <div className="grid gap-6">
@@ -55,7 +45,7 @@ export function DashboardGames() {
                 <th scope="col" className="pb-2 font-medium">
                   {t('dashboard.game')}
                 </th>
-                {counts(stats.data[0]!).map(({ key, label }) => (
+                {recordCounts(stats.data[0]!, t).map(({ key, label }) => (
                   <th key={key} scope="col" className="pb-2 pl-3 text-right font-medium">
                     {label}
                   </th>
@@ -84,12 +74,14 @@ export function DashboardGames() {
                       {row.game.name}
                     </span>
                   </th>
-                  {counts(row).map(({ key, value }) => (
+                  {recordCounts(row, t).map(({ key, value }) => (
                     <td key={key} className="py-2.5 pl-3 text-right">
                       {value}
                     </td>
                   ))}
-                  <td className="py-2.5 pl-3 text-right font-semibold">{winRate(row)}</td>
+                  <td className="py-2.5 pl-3 text-right font-semibold">
+                    {winRate(row, i18n.language)}
+                  </td>
                   <td
                     className={`py-2.5 pl-3 text-right ${row.current_streak >= 2 ? 'text-accent-text' : ''}`}
                   >
@@ -108,38 +100,7 @@ export function DashboardGames() {
                 key={row.game.slug}
                 className="border-t border-border py-3 first:border-t-0 first:pt-0"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <span className="flex items-center gap-2 font-medium">
-                    <GameIcon
-                      slug={row.game.slug}
-                      name={row.game.name}
-                      className="size-5 text-gold"
-                    />
-                    {row.game.name}
-                  </span>
-                  <span className="text-right">
-                    <span className="block text-lg leading-tight font-bold tabular-nums">
-                      {winRate(row)}
-                    </span>
-                    <span className="block text-xs text-muted">{t('dashboard.winRate')}</span>
-                  </span>
-                </div>
-                <dl className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm">
-                  {counts(row).map(({ key, label, value }) => (
-                    <div key={key} className="flex gap-1 whitespace-nowrap">
-                      <dt className="text-muted">{label}</dt>
-                      <dd className="font-semibold tabular-nums">{value}</dd>
-                    </div>
-                  ))}
-                </dl>
-                {row.best_streak > 0 ? (
-                  <p className={`mt-1 text-sm ${streakTone(row)}`}>
-                    {t('dashboard.streakLine', {
-                      current: row.current_streak,
-                      best: row.best_streak,
-                    })}
-                  </p>
-                ) : null}
+                <GameRecord row={row} />
               </li>
             ))}
           </ul>

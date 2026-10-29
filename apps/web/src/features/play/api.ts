@@ -25,6 +25,21 @@ export type BotDifficulty = 'easy' | 'medium' | 'hard'
 export const matchmakingKey = ['matchmaking'] as const
 /** Games the player is currently in (GET /me/rooms). */
 export const myRoomsKey = ['me', 'rooms'] as const
+/** Per-game statistics (GET /me/stats). */
+export const myStatsKey = ['me', 'stats'] as const
+/** A page of finished games (GET /me/games). */
+export const myGamesKey = (page: number) => ['me', 'games', page] as const
+
+/**
+ * Queries whose answers carry translated names (games, modes) but whose keys don't hold the language:
+ * rooms (not their state), the player's rooms, games and statistics, and public profiles.
+ */
+export function translatedQuery(key: readonly unknown[]): boolean {
+  const [scope, name] = key
+  if (scope === 'rooms') return key.length === 2
+  if (scope === 'me') return name === 'rooms' || name === 'games' || name === 'stats'
+  return scope === 'users'
+}
 
 type RoomResponse = { data: Room }
 const unwrap = <T>(r: { data: T }) => r.data

@@ -48,7 +48,7 @@ describe('NardiBoard', () => {
 
     // Absolute point 1 holds seat 1's two back checkers; seat 1 sees it as their point 24.
     expect(screen.getByRole('button', { name: 'Point 24: 2 checkers, yours' })).toBeInTheDocument()
-    expect(screen.getByText('Waiting for the other player.')).toBeInTheDocument()
+    expect(screen.getByText('Waiting for the other player')).toBeInTheDocument()
   })
 
   it('bears off through the off tray', async () => {

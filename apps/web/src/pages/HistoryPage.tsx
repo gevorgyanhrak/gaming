@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { fetchMyGames } from '@/features/play/api'
+import { fetchMyGames, myGamesKey } from '@/features/play/api'
 import { RoomSummary } from '@/features/play/components/RoomSummary'
 import { Button } from '@/shared/ui/Button'
 import { Container } from '@/shared/ui/Container'
@@ -12,7 +12,7 @@ export function HistoryPage() {
   const { t } = useTranslation()
   const [page, setPage] = useState(1)
   const games = useQuery({
-    queryKey: ['me', 'games', page],
+    queryKey: myGamesKey(page),
     queryFn: ({ signal }) => fetchMyGames(page, signal),
   })
 

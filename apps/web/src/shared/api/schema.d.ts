@@ -772,6 +772,7 @@ export interface components {
                 name: string;
             };
             mode: {
+                id: number;
                 slug: string;
                 name: string;
             };
@@ -784,6 +785,11 @@ export interface components {
             participants: {
                 seat: number;
                 is_bot: boolean;
+                /**
+                 * @description The level a bot plays at; null for people.
+                 * @enum {string|null}
+                 */
+                bot_difficulty: "easy" | "medium" | "hard" | null;
                 name: string | null;
                 username: string | null;
                 avatar_url: string | null;

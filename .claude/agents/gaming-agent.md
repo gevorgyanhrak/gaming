@@ -109,6 +109,14 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   at most one per new state version via the pure `soundFor` (result > your turn when hidden or > 2
   seats > capture > move) plus a low-time warning at 10 s; honours `preferences.sound`. The room tab
   title shows "● Your turn · {game}".
+- After a game `GameOverPanel` (RoomPage) offers Play again with the same mode/seats/bot level
+  (`room.mode.id`, `participants[].bot_difficulty`). Turn captions come from `waitingCaption`
+  (`features/play/turnCaption.ts`). Invite links: `/join/:code` (`JoinPage`); `withNext` keeps the
+  destination through login/register/verify. Translated server data refetches on language change
+  (`useRefreshOnLanguageChange` + `translatedQuery`).
+- Bots: `BotSelector::pickMany` never seats the same bot twice while the game has enough bots (borrows
+  other levels; difficulty is per seat); admin Bots list warns about shortages. A chess-clock flag-fall
+  is a `loss`; per-turn timer timeouts and leaving are `abandoned` ("Timed out").
 - Chess and Checkers share a classic beige/brown board (`#e3d0ac` / `#8b7355`) in a `.table-rim` wood frame, with
   checkers men in 3D (`.checker-white` / `.checker-black`: radial-gradient rim and dish), coordinates on the edge
   squares, a "Move: White/Black" heading, and a width capped by viewport height so it fits without scrolling.

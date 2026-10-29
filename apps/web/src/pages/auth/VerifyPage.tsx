@@ -9,7 +9,7 @@ import { sendVerificationCode, verifyCode, type Channel } from '@/features/auth/
 import { AuthCard } from '@/features/auth/components/AuthCard'
 import { CodeField } from '@/features/auth/components/CodeField'
 import { ResendCodeButton } from '@/features/auth/components/ResendCodeButton'
-import { applyServerErrors, useMessage } from '@/features/auth/forms'
+import { applyServerErrors, safeRedirect, useMessage } from '@/features/auth/forms'
 import { useCurrentUser, useSetCurrentUser } from '@/features/auth/hooks'
 import { codeField } from '@/features/auth/schemas'
 import { Alert } from '@/shared/ui/Alert'
@@ -39,7 +39,7 @@ export function VerifyPage() {
     mutationFn: (values: Values) => verifyCode(channel, values.code),
     onSuccess: (updated) => {
       setCurrentUser(updated)
-      void navigate('/dashboard', { replace: true })
+      void navigate(safeRedirect(params.get('next')), { replace: true })
     },
     onError: (error) => setFormError(applyServerErrors(error, form.setError, ['code'])),
   })

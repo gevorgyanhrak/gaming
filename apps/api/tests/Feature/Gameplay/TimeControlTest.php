@@ -11,6 +11,7 @@ use App\Gameplay\Rooms\RoomStates;
 use App\Gameplay\Rooms\RoomStateStore;
 use App\Models\GameRoom;
 use App\Models\User;
+use App\Models\UserGameStat;
 use Illuminate\Support\Facades\Queue;
 
 /** A tic-tac-toe room with a 60 s + 2 s chess clock. */
@@ -85,8 +86,12 @@ it('ends the game when a clock runs out', function () {
     (new TurnTimeoutJob($room->id, 0))->handle(app(GameActionService::class));
 
     $room->refresh()->load('participants');
+    // A loss on time, not a walk-out: it counts in the player's losses.
     expect($room->end_reason)->toBe('timeout')
-        ->and($room->participants->firstWhere('seat', $first)->result)->toBe(ParticipantResult::Abandoned);
+        ->and($room->participants->firstWhere('seat', $first)->result)->toBe(ParticipantResult::Loss)
+        ->and($room->participants->firstWhere('seat', 1 - $first)->result)->toBe(ParticipantResult::Win)
+        ->and(UserGameStat::query()->where('user_id', $room->participants->firstWhere('seat', $first)->user_id)->sole())
+        ->losses->toBe(1)->abandoned->toBe(0);
 });
 
 it('counts a move that arrives after the clock ran out as a loss on time', function () {
@@ -102,7 +107,7 @@ it('counts a move that arrives after the clock ran out as a loss on time', funct
 
     $room->refresh()->load('participants');
     expect($room->end_reason)->toBe('timeout')
-        ->and($room->participants->firstWhere('seat', 1 - $first)->result)->toBe(ParticipantResult::Abandoned);
+        ->and($room->participants->firstWhere('seat', 1 - $first)->result)->toBe(ParticipantResult::Loss);
 });
 
 it('has no clocks with per-turn timers', function () {

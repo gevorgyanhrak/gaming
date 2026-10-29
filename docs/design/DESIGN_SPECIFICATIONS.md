@@ -286,3 +286,356 @@ finished/aborted → PlayerList with results above the board, as now.
    hearing sounds after release. Keep on (recommended: low volume, it's what the toggle promised) or
    ship with default off? PM.
 3. The new hy strings (here and in TASK-002/003) should get a native-speaker check before release.
+
+---
+
+# Batch B2 · Keep playing
+
+Written 2026-10-29 by the UI/UX agent from the code (`apps/web/src`, backend `RoomController`,
+`RoomResource`, `RoomPresenter`, `Matchmaker`, `SetLocaleFromRequest`, `EnsureContactVerified`) and
+the audit. Screens were **not** opened in a browser for this phase; px figures are worked out from the
+Tailwind classes and must be confirmed in the design review. Order: TASK-026, TASK-006 + TASK-028
+(one view, build together), TASK-007, TASK-024, TASK-008.
+
+---
+
+## TASK-026 · Names follow the language switch
+
+**Components:** new `app/useRefreshOnLanguageChange.ts` (called once in `app/App.tsx` with its
+`QueryClient`); `features/play/api.ts` exports a `translatedQuery(key)` predicate next to the keys.
+No UI change. `features/catalog/queries.ts` and `features/content/queries.ts` already put the locale
+in the key and stay as they are.
+
+**Facts:** `apiRequest` (`shared/api/http.ts`) sends `Accept-Language: i18n.language` on every
+request; the API answers in that locale. Translated game/mode names arrive in `GET /rooms/{id}`
+(`roomKeys.room`), `/me/rooms` (`myRoomsKey`), `/me/games` (`['me','games',page]`), `/me/stats`
+(`['me','stats']`, DashboardGames + GamePage hero) and `/users/{username}` (`['users',username]`,
+`stats[].game.name`). None of these keys has the locale. `GET /rooms/{id}/state` has no translated
+text (ids, view, result codes). Language changes via `LanguageSwitcher` and `useSetCurrentUser`.
+
+**Decision: invalidate on `languageChanged`, not locale-in-key, for these queries.**
+- Locale in `roomKeys.room` makes a new empty query on switch: `room.isPending` → RoomPage returns its
+  skeleton, the lazy board unmounts and loses local state (selected piece, raise amount, resign
+  confirm), and every `setQueryData`/`invalidateQueries` site (useRoom, realtime handler,
+  ActiveGamesBar, PlayPanel) would need the locale threaded through.
+- Invalidation keeps cached data on screen (`isFetching`, not `isPending`): only the words change.
+- `roomKeys.state` is never touched, so `version` is unchanged and `useGameSounds` (effect on
+  `[roomId, version]`, "version ≤ prev → nothing") stays silent.
+
+**Behaviour**
+1. `i18n.on('languageChanged', h)` in a `useEffect`, `i18n.off` on cleanup; remember the last
+   language and ignore events where it did not change (i18next also emits during init).
+2. `invalidateQueries({ predicate: q => translatedQuery(q.queryKey) })`: `['rooms', id]` with length 2
+   only (not `state`); `['me', 'rooms' | 'games' | 'stats', …]`; `['users', …]`. Use the exported key
+   helpers, not new literals.
+3. Default `refetchType: 'active'`: visible queries refetch now, inactive ones refetch on next mount;
+   `cancelRefetch` drops an in-flight old-language response.
+4. Recommended in the same change: `placeholderData: keepPreviousData` in `useGames`/`useGame`, so the
+   locale-keyed catalog keeps the old names during its fetch instead of flashing a skeleton.
+
+**Visible result:** History rows, dashboard cards, ActiveGamesBar, profile records and the room header
+update in place; the tab title (`room.tab.*`, re-rendered by `t`) gets the new `{{game}}` when the room
+refetch returns. No loading state, layout shift or focus change. Refetch error → old names stay,
+no error UI. `<html lang>` already follows (`shared/i18n/index.ts`).
+
+**Acceptance criteria**
+1. `/history`, an active bot room and `/dashboard`: en → ru → hy updates game and mode names and the tab
+   title without reload; the board and a selected piece stay.
+2. Network: no extra requests on navigation without a switch; one request per active translated query
+   per switch; no `/state` request caused by the switch.
+3. Sound on: switching language mid-game plays nothing.
+4. Tests: MSW answers by `Accept-Language`; `await i18n.changeLanguage('ru')` → ru name appears; a
+   second test asserts `roomKeys.state` is not invalidated.
+
+---
+
+## TASK-006 · Game-over panel with "Play again"
+
+Built with TASK-028 (same view). **Components:** new `features/play/components/GameOverPanel.tsx` +
+`features/play/playAgain.ts` (`usePlayAgain(room)`); `pages/RoomPage.tsx` (drops the finished/aborted/
+`leftTable` `Alert`s and the footer "Play again"); `PlayPanel.tsx` (remembers the bot level). Reuses
+`MatchmakingStatus`, `useGame`, `Button`/`ButtonLink`, `Alert`, `TrophyIcon`, `labels.ts`.
+
+**"Play again" = existing endpoints only.** Mode id from `useGame(room.game.slug).data.modes` (`RoomResource.mode` has only slug/name; enabled only while the panel shows):
+| `room.type` | Action |
+|---|---|
+| `bot` | `createBotRoom(modeId, level, room.seats)` → `/rooms/{id}` (`room.seats` = you + bots → `opponents`) |
+| `matchmaking` | `startMatchmaking(modeId)`; `result.room` → navigate; else `setQueryData(matchmakingKey, result)` and show `<MatchmakingStatus />` inside the panel (search, bot offer, cancel, navigates on match) |
+| `private` | `ButtonLink` `/games/{slug}` as today (a new table needs the friend to rejoin; rematch = TASK-016) |
+
+**Bot level — exact match needs backend** (B2-1): `RoomResource` has no difficulty (stored in
+`game_participants.bot_difficulty`, not returned). Until then `PlayPanel` saves the level per game when
+it creates a bot game (`localStorage play.botLevel.{slug}`, try/catch) and preselects it next time; Play
+again uses it, else `medium` (PlayPanel's and accept-bot's default), and always prints the level used.
+Accepted bot offers are `type: bot` too. Mode gone or game not playable → Play again = lobby link.
+
+**Layout:** under the room header, before PlayerList and the board — not over the board, so the final
+position / last trick stays visible without a dismiss control.
+`section.club-frame mx-auto w-full max-w-xl rounded-3xl p-5 sm:p-6 text-center motion-safe:animate-rise`:
+- eyebrow `text-xs font-semibold uppercase tracking-wider text-muted` `room.over`;
+- `h2 text-2xl sm:text-3xl font-extrabold`: `room.outcome.*` (win: `text-gold`, `TrophyIcon` in a
+  `club-medal size-12` above; else `text-fg`). No result `room.finished`; aborted `room.aborted`; left a
+  table that plays on `room.leftTable`. Then `mt-1 text-sm text-muted` `room.endReason.*` (finished);
+- actions `mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center`: `Button` primary (green) "Play
+  again" + `ButtonLink` secondary `room.backToLobby` → `/games/{slug}`, `min-h-11 w-full sm:w-auto`.
+  Aborted: only Back to lobby, as primary. Footer keeps only the dashboard link;
+- `mt-3 text-xs text-muted`: `room.sameSettings` "Blitz · Level: Hard · 4 players" (mode · `play.botHint`
+  · `play.playersCount` if seats > 2) or "Blitz · Find an opponent"; none for private/aborted. While
+  searching, `MatchmakingStatus` replaces the actions and this line.
+
+**Responsive:** 390: full width, buttons stacked (Play again first), ≈ 210 px tall; a Chess board starts
+below it (fine after the game). 820 / 1440: `max-w-xl` centred, buttons in one row.
+
+**States:** creating → Play again `disabled aria-busy`; `useGame` loading → disabled; error → `Alert
+tone="danger"` under the buttons with `message(error.message)` (too many games, no bot, unavailable),
+403 adds the `/verify` link as in PlayPanel. Hover/focus-visible: Button defaults.
+
+**Motion / a11y:** `animate-rise` once, none under reduced motion; no confetti (club mood); end sound is
+TASK-001. `section aria-labelledby` its heading; heading `tabIndex={-1}`, focused once per room id when
+the panel first renders; it replaces the `role="status"` alert, so the outcome is read once. Gold on
+frame ≥ 7:1, muted 6.8:1, white on green 4.99:1 (computed).
+
+| key | en | ru | hy |
+|---|---|---|---|
+| room.over | Game over | Игра окончена | Խաղն ավարտվեց |
+| room.backToLobby | Back to lobby | Назад в лобби | Վերադառնալ լոբբի |
+| room.sameSettings | Same settings: | Те же настройки: | Նույն կարգավորումները՝ |
+
+**Acceptance criteria**
+1. Finished bot game, all five games: one tap opens a new room with the same mode, seats and remembered
+   level (fixture Poker, 4 seats, hard → body `opponents: 3`, `bot_difficulty: hard`).
+2. Finished matchmaking game: POST `/matchmaking` with the same `game_mode_id`; status shows in the
+   panel; a match navigates to the new room.
+3. Private and aborted rooms: lobby link, no POST. Left table: panel with `room.leftTable` + actions.
+4. Focus on the panel heading at game end and on opening a finished room; errors show in the panel.
+5. 390 px en/ru/hy: no horizontal scroll, buttons ≥ 44 px. RoomPage tests per room type.
+
+---
+
+## TASK-028 · Turn caption that tells the truth
+
+**Where the caption lives:** `room.theirTurn` ("Waiting for the other player") in the RoomPage header
+badge (active only), and each board's own line: `chess.waiting` (`ChessBoard.tsx`, `aria-live`),
+`checkers.waiting` (`CheckersBoard.tsx`), `nardi.waiting` (`NardiBoard.tsx`), `durak.waiting`
+(`DurakBoard.tsx`). They show whenever my seat is not in `seats_to_act` — so also on finished games
+(`seats_to_act` empty). Poker already says `poker.waitingFor` with the acting name: unchanged.
+
+**Components:** new `features/play/turnCaption.ts`, used by `RoomPage.tsx` and the four boards. Boards
+read the existing `players` prop (RoomPage already passes names by seat to every board).
+
+```ts
+/** null = no waiting caption (game over, nobody to act, or it is my turn). */
+export function waitingCaption(state: RoomState, players: BoardProps['players'], t: TFunction): string | null
+// state.result !== null || seats_to_act.length === 0 → null
+// my seat in seats_to_act → null (the board shows my own prompt)
+// exactly one other seat acts → name ? t('room.waitingFor', { name }) : t('room.theirTurn')
+// more than one → t('room.waitingForOthers')
+```
+- Boards: replace the `*.waiting` branch; when it returns null on a finished game, render the line
+  empty (keep the `aria-live` element mounted so nothing jumps). Durak's `durak.youTake` branch stays.
+- Header badge: `myTurn ? room.yourTurn : waitingCaption(...) ?? room.theirTurn` (it only renders
+  while active). No game-slug checks in RoomPage.
+- Finished: no caption anywhere; the TASK-006 panel says how it ended.
+
+**Typography / layout:** unchanged classes per board (`text-sm text-muted` etc.); names come in
+`truncate`-safe lines already (header badge right-aligned: add `max-w-48 truncate` to its `p` so a long
+display name can't push the badge to a second line at 390).
+
+**Copy:** ru/hy use the colon form already used by Poker, so names need no case endings; no count in
+the text, so no plural forms are needed.
+| key | en | ru | hy |
+|---|---|---|---|
+| room.waitingFor | Waiting for {{name}} | Ждём: {{name}} | Սպասում ենք՝ {{name}} |
+| room.waitingForOthers | Waiting for the other players | Ждём других игроков | Սպասում ենք մյուս խաղացողներին |
+`chess.waiting`, `checkers.waiting`, `nardi.waiting`, `durak.waiting` become unused → delete in all
+three locales. `room.theirTurn` stays as the no-name fallback.
+
+**Accessibility:** the board line stays `aria-live="polite"`; the header badge stays `role="status"`.
+
+**Acceptance criteria**
+1. Finished games in all five games show no "Waiting…"/"Ход соперника" text.
+2. 2-player their turn: "Waiting for Alex" in header and board caption.
+3. Durak/Poker, one other seat acting: that name; several acting: "Waiting for the other players".
+4. en/ru/hy present; RoomPage has no `'durak'`/`'poker'` checks. Unit tests for `waitingCaption`
+   (finished, mine, one, many, missing name) + RoomPage tests finished / 2-player / 4-player.
+
+---
+
+## TASK-007 · Own profile with records and recent games
+
+**Components:** `pages/ProfilePage.tsx` (two sections under `ProfileView`); new
+`features/play/components/GameRecords.tsx` = the per-game block extracted from `DashboardGames`' narrow
+list (`GameRecordCard`) + shared `winRate`/`counts` helpers; `DashboardGames.tsx` uses them (output
+unchanged); `RoomSummary.tsx` as is; `EmptyState`, `Skeleton`, `QueryErrorState`. `ProfileView` is
+unchanged (shared with `PublicProfilePage`).
+
+**Data (no new endpoint):** `/me/stats` via key `['me','stats']` — the dashboard's and GamePage hero's
+query, so numbers match and come from cache. `/me/games?page=1` via `['me','games',1]` — History's page
+1 (20 per page, no `per_page`); show the first 5, newest first.
+
+**Layout** (`Container py-10 space-y-8`):
+1. `ProfileView` card as now.
+2. Records `section aria-labelledby`: `h2 text-xl font-bold` `profile.records`; grid
+   `mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3`; each `article.rounded-2xl border border-border
+   bg-surface p-4`: line 1 `GameIcon size-5 text-gold` + `h3 font-medium` name … right: win rate
+   `text-2xl font-bold tabular-nums` over "Win rate" `text-xs text-muted`; line 2 the dashboard `dl`
+   pairs (Played/Wins/Losses/Draws/Timed out, `whitespace-nowrap`, wrapping); line 3 `streakLine` if
+   `best_streak > 0` (`text-accent-text` when current ≥ 2). Under the grid `dashboard.statsNote`.
+3. Recent games `section`: `h2` `profile.recent`; `ul space-y-2` of 5 `RoomSummary`; then
+   `dashboard.history` link → `/history` when `meta.total > 5`.
+
+**Responsive:** 390: one column (card inner ≈ 326 px). 820: two columns (≈ 382 px). 1440: three
+(≈ 357 px). The `dl` wraps; no horizontal scroll in hy.
+
+**States:** each section loads and fails on its own: `Skeleton h-40` / `h-48`; `QueryErrorState` with
+retry. No stats rows → both sections replaced by one `EmptyState` `profile.noGames` with a primary
+`ButtonLink` `dashboard.play` → `/games`. Hover/focus on RoomSummary rows: existing styles. Records
+cards are not interactive.
+
+**Motion:** none. **Accessibility:** sections labelled by their h2; card names are h3; numbers in
+`dt`/`dd`; GameIcon `aria-hidden`.
+
+| key | en | ru | hy |
+|---|---|---|---|
+| profile.records | Records | Результаты по играм | Արդյունքներ ըստ խաղերի |
+| profile.recent | Recent games | Последние игры | Վերջին խաղերը |
+| profile.noGames | No games yet. Play one and your records will show here. | Пока нет сыгранных игр. Сыграйте, и здесь появятся ваши результаты. | Դեռ խաղեր չկան։ Խաղացեք, և այստեղ կհայտնվեն ձեր արդյունքները։ |
+
+**Acceptance criteria**
+1. Same fixture → the same numbers on `/profile` and `/dashboard` (shared component test).
+2. Five newest finished games, each with badge + reason; "See all games" only when total > 5.
+3. New player: the empty state with the link to `/games`, no empty cards or headings.
+4. 390 / 820 en, ru, hy: no horizontal scroll; 1440: three columns.
+5. Dashboard → profile within `staleTime`: no second `/me/stats` request.
+
+---
+
+## TASK-024 · Shareable invite link
+
+**Components:** new `pages/JoinPage.tsx`; `app/routes.tsx` (`join/:code` under `AuthRoute`);
+`features/play/components/WaitingTable.tsx`; `shared/ui/icons.tsx` (+ `LinkIcon`, `ShareIcon`, 24 px
+line style); `pages/auth/LoginPage.tsx`, `RegisterPage.tsx`, `VerifyPage.tsx` (keep `next`). API:
+existing `joinRoom` → `POST /rooms/join`; no change.
+
+**Facts:** `RequireAuth` sends guests to `/login?next=<path>`; `RequireGuest` follows `next`
+(`safeRedirect`, same-app paths only). But the login page's "Sign up" link drops `next`, register goes
+to `/verify?channel=…&sent=1` and Verify then to `/dashboard`, so a **new** player (the usual invitee)
+would lose the table. Join is idempotent for someone already seated; a room that has started or is full
+returns 422 `invite_invalid` ("This invite code is not valid or the room is full."); an unverified
+contact returns 403 `verification_required` when the platform requires it.
+
+**Flow:** link = `${location.origin}/join/${code}`. JoinPage: `code.trim().toUpperCase()`, one
+`joinRoom` per mount (ref guard against StrictMode), success → `navigate('/rooms/{id}', { replace })`.
+Guest → login (`next=/join/CODE`) → back → joined. Carry `next`: Login "Sign up" → `/register?next=`,
+Register "Log in" → `/login?next=`, register redirect `/verify?channel=…&sent=1&next=…`, Verify success
+→ `safeRedirect(next)`. Login/Register show `Alert tone="info"` `join.signInFirst` when `next` starts
+with `/join/`.
+
+**JoinPage states** (`<title>` `join.title`): joining → `Container py-12`, `Skeleton h-40` + `p
+role="status"` `join.joining`; 422 → `EmptyState` titled with the server message + `ButtonLink`
+`dashboard.play` → `/games`; 403 → message + link `/verify?next=/join/CODE`; network → `QueryErrorState`.
+
+**WaitingTable** (invite still shown only to seated players of a waiting room):
+- `room.waiting` copy mentions the link; code unchanged (`font-mono text-3xl text-gold`); under it a
+  link-style `Button` `min-h-11 text-sm font-medium text-accent-text` `room.copyCode`.
+- Primary gold `Button w-full`: if `navigator.share` exists → `ShareIcon` `room.share` (`share({ title,
+  text: room.shareText, url })`; `AbortError` silent, other errors → copy), else `LinkIcon` `room.copyLink`.
+- Below the oval (`mt-16 sm:mt-20 flex flex-wrap justify-center gap-2`, clears the bottom seat):
+  secondary `room.copyLink` (only when Share is primary) + secondary `room.cancel` (moved out of the frame).
+- Feedback: the pressed button reads `room.linkCopied` / `room.codeCopied` for 2 s (no extra row), an
+  `sr-only role="status"` repeats it. Clipboard missing/rejected → read-only `TextField`
+  `room.copyFallback` with the link appears under the buttons, focused and selected.
+
+**Responsive / a11y:** 390: oval 286 × 381 px, frame content ≈ 198 px wide; header + text + code + Copy
+code + primary ≈ 320 px fits (Close room is no longer inside). 820 / 1440: 2:1 oval, same order. All
+buttons have visible text, 44 px targets, global focus outline; JoinPage status is polite.
+
+| key | en | ru | hy |
+|---|---|---|---|
+| room.waiting | Send your friend the link or this code: | Отправьте другу ссылку или этот код: | Ուղարկեք ընկերոջը հղումը կամ այս կոդը՝ |
+| room.share | Share invite | Поделиться приглашением | Կիսվել հրավերով |
+| room.copyLink | Copy link | Скопировать ссылку | Պատճենել հղումը |
+| room.linkCopied | Link copied | Ссылка скопирована | Հղումը պատճենվեց |
+| room.codeCopied | Code copied | Код скопирован | Կոդը պատճենվեց |
+| room.copyFallback | Copy this link | Скопируйте ссылку | Պատճենեք այս հղումը |
+| room.shareText | Join my {{game}} table. | Садись за мой стол: {{game}}. | Միացիր իմ սեղանին՝ {{game}}։ |
+| join.title | Join a table | Присоединиться к столу | Միանալ սեղանին |
+| join.joining | Joining the table… | Садимся за стол… | Միանում ենք սեղանին… |
+| join.signInFirst | Log in or sign up to join your friend's table. | Войдите или зарегистрируйтесь, чтобы сесть за стол друга. | Մուտք գործեք կամ գրանցվեք՝ ընկերոջ սեղանին միանալու համար։ |
+
+**Acceptance criteria**
+1. Signed in, `/join/ABC123` (MSW) → one POST, lands on `/rooms/{id}` (replace: Back doesn't re-join).
+2. Signed out → login → back at the table; sign-up + verify path also ends at the table.
+3. Invalid/started/full code → the server message and a link to `/games`; 403 → verify link with `next`.
+4. Share shown only when `navigator.share` exists; copy shows "Link copied"; clipboard failure shows
+   the selectable field. 390 px en/ru/hy: frame content does not overflow the oval.
+
+---
+
+## TASK-008 · Clear play actions in the lobby
+
+**Components:** `features/play/components/PlayPanel.tsx` (`ModeCard`, its use), `shared/ui/Segmented.tsx`
+(new `fill` prop), `shared/ui/Button.tsx` (new `outline` variant), locales.
+
+**Today at 390:** card content = 358 − 32 padding − 56 medal − 2×16 gap − 48 chevron ≈ **190 px** for the
+title and the level pills; "Easy Medium Hard" needs ≈ 204 px (ru ≈ 258) → wraps (UX-014). The only
+action is a 48 px chevron with the label in `aria-label` (UX-008). The players pills (Poker 2–6,
+"2 players" × 5 ≈ 420 px) wrap too.
+
+**ModeCard layout (all cards):** `section.club-panel rounded-3xl p-4 sm:p-5`, inner
+`grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 sm:gap-x-5`:
+- row 1: medal (`size-12`, `sm:size-20 sm:row-span-3`) + `h3` title (`text-xl sm:text-2xl text-gold`),
+  vertically centred on phones;
+- body (`children`) `col-span-2 sm:col-span-1 sm:col-start-2`: full card width on phones (326 px);
+- action `col-span-2 sm:col-start-2 sm:justify-self-end`: `Button variant="outline"`
+  `min-h-11 w-full sm:w-auto` = visible text + `ChevronIcon size-5`; `aria-describedby` the title.
+- New `outline` variant: `border border-gold/40 bg-surface-raised text-gold hover:border-gold
+  hover:bg-gold hover:text-black` (the old chevron's look; gold on surface-raised 7.0:1, black on gold
+  9.8:1). The green PLAY stays the one primary action of the page; the Join submit also moves from
+  `gold` to `outline` so the three cards match.
+- Labels: bot `play.startBot`, friend `play.createTable`, join `play.join` (existing). Titles unchanged.
+
+**Segmented `fill`:** `div` becomes `flex w-full flex-nowrap`, labels `flex-1 text-center`, `min-h-11
+sm:min-h-0 py-2.5 sm:py-1.5` (44 px phone targets). Level pills: 326 / 3 ≈ 105 px each, "Сложный" fits.
+Players pills (hero) show only the number with `fill`; the legend `play.players` gives the meaning
+(screen readers read "Players at the table, 4, radio"). `play.playersCount` stays for the settings
+line in TASK-006.
+
+**Responsive:** 390: one column, medal and title on one row, pills and button full width. 820 (`sm`):
+medal left spanning three rows, button right-aligned under the pills. 1440: right column of the
+lobby grid (≈ 500 px), same as 820.
+
+**States:** hover = border gold/40 → gold (card) and button fill; focus-visible global outline on the
+button and pills (`has-focus-visible` as now); disabled `opacity-50` + `cursor-not-allowed` while a
+request is pending; errors stay in the existing Alert above.
+
+**Motion:** keep the staggered `animate-rise`; drop the button `hover:translate-x-0.5` (it moved a
+44 px target); reduced motion → none.
+
+| key | en | ru | hy |
+|---|---|---|---|
+| play.startBot | Start game | Начать игру | Սկսել խաղը |
+| play.createTable | Create table | Создать стол | Ստեղծել սեղան |
+
+**Acceptance criteria**
+1. At 390 and 1440 each ModeCard shows a text action without hover; no icon-only button remains.
+2. 390 × 844 in en, ru, hy: the three level pills are on one line (equal tops) and the 2–6 players
+   pills on one line; no horizontal scroll.
+3. Pills and buttons ≥ 44 px tall at 390; keyboard: Tab reaches each pill group and button with a
+   visible focus ring.
+4. PlayPanel test: buttons found by visible name "Start game" / "Create table".
+
+---
+
+## Open questions (B2)
+
+1. **Bot level is not in the room payload** (`game_participants.bot_difficulty` exists, `RoomResource`
+   doesn't return it). TASK-006 uses the last level saved on this device, else Medium. Adding
+   `bot_difficulty` to the bot participants in `RoomResource` is a small non-breaking backend change
+   (+ `make types`) that makes "same level" exact on any device → PM / owner (B4 go-ahead).
+2. **Public profile stats already come from the API:** `PublicProfileController` loads `gameStats` and
+   `PublicUserResource` returns `stats` for any active user. TASK-015 is listed as "new public API field
+   (privacy)", but the data is already public. PM: decide whether that is intended; if so, TASK-015 is
+   frontend only (reuse `GameRecords` from TASK-007); if not, remove it from the API.
+3. Native-speaker check for the new hy strings, especially `room.backToLobby` ("լոբբի" loanword) and
+   `room.shareText`.

@@ -74,7 +74,7 @@ Validation 2026-10-29: **APPROVED** — 6-player Poker oval fully on the first s
 Order: TASK-026 first (P1, wrong language in the main locales), then TASK-006 + TASK-028 together
 (both change the finished-room view), then TASK-007, TASK-024, TASK-008.
 
-### TASK-026 · Names follow the language switch                 P1 · S · PLANNED · B2
+### TASK-026 · Names follow the language switch                 P1 · S · READY_FOR_REVIEW · B2
 Problem: after switching language, game and mode names on History and in the room stay in the old
 language until a reload (hy UI showing "Шашки · Русские шашки", title "● Ваш ход · Շախմատ").
 User story: As a ru/hy player, I want everything on screen in the language I just picked.
@@ -91,7 +91,7 @@ Acceptance criteria:
 Tests: component test: change `i18n.language`, assert the refetched name (MSW returns per-locale names).
 Depends on: —   Approval: none
 
-### TASK-028 · Turn caption that tells the truth               P2 · S · PLANNED · B2
+### TASK-028 · Turn caption that tells the truth               P2 · S · READY_FOR_REVIEW · B2
 Problem: the board caption says "Waiting for the other player" on finished games (chess on time) and at
 3–6 player tables, where it isn't one "other" player. Replaces TD-004 (P3, raised: it misleads on
 finished games). Evidence: DESIGN_REVIEW.md B1 P3, TD-004, IMPLEMENTATION_REPORT B1 known issues.
@@ -106,7 +106,7 @@ Acceptance criteria:
 Tests: RoomPage tests: finished, 2-player their turn, 4-player their turn.
 Depends on: build with TASK-006 (same view)   Approval: none
 
-### TASK-006 · Game-over panel with "Play again"               P1 · M · PLANNED · B2
+### TASK-006 · Game-over panel with "Play again"               P1 · M · READY_FOR_REVIEW · B2
 Problem: after a game the only way on is back to the game page. Evidence: UX-007, OPP-001.
 Scope: panel over the board with outcome, reason, "Play again" (same mode, table size and bot level
 for bot games; new matchmaking ticket for online games) and "Back to lobby". Rematch against the same
@@ -114,16 +114,16 @@ human is TASK-016 (backend). Evidence: UX-007.
 Acceptance: one tap from a finished bot game starts an equivalent new game; focus moves to the panel;
 works for all five games. Tests: RoomPage test for finished state actions.
 
-### TASK-007 · Own profile with records and recent games       P1 · M · PLANNED · B2
+### TASK-007 · Own profile with records and recent games       P1 · M · READY_FOR_REVIEW · B2
 Scope: `ProfileView`: per-game record cards from `/me/stats` (incl. streaks, OPP-008) and the last 5 games (`RoomSummary`);
 empty state for new players. Public profile stats are TASK-015 (backend). Evidence: UX-005.
 Acceptance: records match the dashboard; empty state shown with a link to the games.
 
-### TASK-008 · Clear play actions in the lobby                 P2 · S · PLANNED · B2
+### TASK-008 · Clear play actions in the lobby                 P2 · S · READY_FOR_REVIEW · B2
 Scope: `ModeCard` shows a visible text action; bot level pills don't wrap at 390 px.
 Evidence: UX-008, UX-014. Acceptance: action label visible without hover; pills on one line at 390 px.
 
-### TASK-024 · Shareable invite link                         P1 · S · PLANNED · B2
+### TASK-024 · Shareable invite link                         P1 · S · READY_FOR_REVIEW · B2
 Problem: a friend has to type the invite code. Evidence: OPP-007.
 Scope: `/join/:code` route that joins via the existing `POST /rooms/join` (guests go through login
 and come back); "Copy link" + Web Share on phones in `WaitingTable`. No API change.
@@ -206,7 +206,7 @@ Ordered by the PM's recommendation.
 | TASK-023 · Fair-play: completion rate, cooldown for serial leavers | OPP-011 | P2 | M | moderation behaviour |
 | Later | friends (OPP-012), preset chat (OPP-013), spectating (OPP-014), tutorials (OPP-010), puzzles/analysis (OPP-015), achievements (OPP-020), PWA (OPP-018), more chess time controls (OPP-021), durak 2×2 (OPP-022) | P2–P3 | — | see PRODUCT_RESEARCH §4 |
 
-### TASK-030 · Unique bot names at a table                     P1 · S · PLANNED · B4
+### TASK-030 · Unique bot names at a table                     P1 · S · READY_FOR_REVIEW · B4
 Problem: a 6-player Poker bot table showed "Alex" four times; Durak repeats "David". Players can't tell
 seats apart, and it looks fake. Replaces TD-002. Evidence: IMPLEMENTATION_REPORT B1, DESIGN_REVIEW B1 P5.
 Scope: `BotSelector::pick` excludes bots already seated in the room; seed enough bot profiles per game
@@ -220,7 +220,7 @@ Tests: feature test filling a 6-seat table with bots.   Depends on: —
 Approval: none by the README list (no new domain/table, not breaking); backend → owner go-ahead to run
 outside the frontend autonomous mode.
 
-### TASK-031 · Chess loss on time counts as a loss              P1 · S · PLANNED · B4
+### TASK-031 · Chess loss on time counts as a loss              P1 · S · READY_FOR_REVIEW · B4
 Problem: when a chess clock runs out, the player's result is "Timed out" (abandoned) instead of "Lost";
 chess players expect a loss on time. `GameActionService::end` passes every `TIMEOUT` seat to
 `GameFinisher` as abandoned. Evidence: DESIGN_SPECIFICATIONS.md open question 1; chess convention
