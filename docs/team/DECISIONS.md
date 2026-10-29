@@ -9,6 +9,22 @@ Newest first. Format: date · decision · why · who.
 
 ## Decided
 
+- 2026-10-29 · Go-ahead for the backend fixes TASK-030 (distinct bots per table) and TASK-031 (chess
+  flag-fall = loss): "do all necessary things" · small, non-breaking fixes found in B1 · owner. PM reads it
+  as covering these two only; other B4 items still wait (backlog "Decisions needed" 1).
+- 2026-10-29 · Room API addition: `RoomResource` returns `mode.id` and `participants[].bot_difficulty`
+  (null for people), additive and non-breaking, types regenerated. "Play again" repeats the exact level
+  on any device instead of a device-local guess; accepted deviation from the TASK-006 spec (open question
+  1) · bot level is chosen by the player and already shown in the lobby; `GameModeResource` already
+  exposes mode ids · team (PM).
+- 2026-10-29 · Design system: the gold gradient lettering class is `.text-gold-gradient`, used only on
+  large headings; `text-gold` is Tailwind's plain gold colour. Never give the gradient class to an
+  element with a background (it clips the background to the text: cause of B1's invisible tiles and
+  B2's unreadable hover) · team (UI/UX + developer, PM accepts).
+- 2026-10-29 · Per-game records on public profiles are public by design (the API already returns them,
+  as on Chess.com/Lichess); TASK-015 becomes frontend only and moves to B3. A "hide my stats" option would
+  be a new backend item for the owner · team (PM).
+- 2026-10-29 · Batch B2 (TASK-026, 006, 028, 007, 008, 024) and TASK-030/031 validated and APPROVED · PM.
 - 2026-10-29 · Sound stays **on by default** (`sound ?? true`) at low volume (master 0.25, synthesized);
   existing players hear sounds after release and can switch them off in Settings · the toggle already
   promised sound, and the your-turn cue is the point of TASK-001/004 (spec B1 open question 2) · team (PM).

@@ -320,6 +320,121 @@ None found in the B2-touched screens:
 - At the waiting table at 390 the frame overlaps the left and right empty seats by a few px.
 - hy dates still use English formatting.
 
+### Re-review — 2026-10-29 (commit `3306db4`)
+
+Scope: TASK-008 and TASK-024, plus a regression look at the `.text-gold` → `.text-gold-gradient`
+rename and at plain-gold elements. Same setup (local stack, headless Chrome, `player2`). Hover and
+focus were forced with CDP `CSS.forcePseudoState`.
+
+The developer's root-cause fix differs from my correction, and it is better. The component class
+is now `.text-gold-gradient` and is used only on big headings. `text-gold` everywhere else is
+Tailwind's plain colour. A scan of every element on `/`, `/dashboard`, `/games`, `/games/chess`,
+`/games/poker`, `/history`, Checkers and Poker rooms and the waiting table found no element with
+`background-clip: text` other than `.text-gold-gradient`.
+
+**TASK-008: checked**
+
+| Check | Result |
+|---|---|
+| Start game, Create table, Join (code typed) at rest, 1440 | `background-clip: border-box`, fill `#33231a`, label `rgb(214 171 78)` = gold on surface-raised 7.0:1 ✓ |
+| Same three, forced `:hover` | fill gold `rgb(214 171 78)`, label black = 9.8:1 ✓ (`b2r-startgame-hover-1440`) |
+| Forced `:focus-visible` | solid `accent-text` outline ✓ (`b2r-startgame-focus-visible-1440`) |
+| Table-size pills, 390 en/ru/hy | **59×44** each, 2–6 on one line ✓ |
+| Level pills, 390 | 101×44, one line ✓ |
+| Card buttons, 390 | 322×44; Join 62–94×44 ✓ |
+| Horizontal scroll at 390 | none ✓ |
+
+TASK-008 is now **APPROVED**.
+
+Nit (optional): `max-w-xs` now applies to every `fill` group. At ≥ `sm` the level pills in the
+"Play against a bot" card stop about 40 px short of the card's right edge, where the Start game
+button ends. `sm:max-w-none` on the level group would line them up.
+
+**TASK-024: checked**
+
+| Check | Result |
+|---|---|
+| 390 en / ru / hy: frame | `scrollWidth 234 = clientWidth 234`; title `194 = 194` (the hy title wraps to two lines inside the frame); medal and dots hidden below `sm` ✓ |
+| 390, Copy link / Close room | 44 px in en and hy; ru Copy link 60 px (two lines) ✓ |
+| 390, Copy code | 44 px ✓ |
+| 390, horizontal scroll | none ✓ |
+| hy, clipboard rejects | fallback field focused and fully selected; frame still within width ✓ |
+| 1440 / 390, Share stubbed | Share invite 44 px; secondary Copy link 96×44 and Close room 110×44 under the oval ✓ |
+| Closed room | panel without the "Game over" eyebrow, above the player list (panel top 174, list 340) ✓ |
+
+TASK-024 is now **APPROVED**. Still optional: in the fallback state the frame covers the top of my
+own seat's avatar at 390.
+
+**TASK-006 minor fixes: checked**
+- On finished Checkers and 6-player Poker the panel is above `PlayerList` (Poker: panel 174, list
+  476).
+- No eyebrow on a closed room.
+- TASK-006 is now **APPROVED**.
+
+**Regression look: gradient headings (`.text-gold-gradient`)**
+
+| Heading | Where checked | Computed |
+|---|---|---|
+| Landing h1 | `/`, 390 + 1440 | `background-clip: text`, `color: transparent`, gradient ✓ |
+| Games h1 | `/games` | same ✓ |
+| Dashboard welcome | `/dashboard` | same ✓ |
+| Game page h1 | `/games/chess` | same ✓ |
+| Carousel slide titles | dashboard, games, landing | same ✓ |
+| Lobby card titles | `/games/chess`, `/games/poker` | same ✓ |
+
+All read as a real top-to-bottom gold gradient. They look better than before: the old `text-gold`
+colour utility painted solid gold over the gradient. Gradient stops on the darkest backgrounds:
+- gold-light 12.6–12.9:1;
+- gold 7.9–8.1:1;
+- gold-dark 5.1–5.2:1 on `bg`/surface (4.5:1 on `surface-raised`).
+
+All are above 3:1 for large text ✓.
+
+The game-over "You won!" heading was not seen live (no win on this account). It uses the same
+class, which renders correctly everywhere else.
+
+**Regression look: plain gold (`text-gold`)**
+
+All of these compute `border-box` with solid `rgb(214 171 78)` and look unchanged or better:
+
+| Element | Result |
+|---|---|
+| History/profile icon tiles | gold/15 fill visible ✓ |
+| Records icons | ✓ |
+| Lobby hero stat icons and numbers | ✓ |
+| Carousel arrows | their `bg` 70% fill is now painted ✓ |
+| Nav active item ("History", bottom tab bar) | ✓ |
+| Poker stacks on a finished table ("995", "990", "1,000") | ✓ |
+| Checkers black pieces | radial-gradient body intact, crown colour gold ✓ |
+| Invite code | ✓ |
+
+No king appeared, so the crown itself was not seen; its colour comes from the same piece class.
+
+Screenshots:
+- lobby: `b2r-btns-rest-1440`, `b2r-btns-hover-1440`, `b2r-startgame-hover-1440`,
+  `b2r-startgame-focus-visible-1440`, `b2r-lobby-390-pills`, `b2r-lobby-390-hy`,
+  `b2r-gamepage-chess-1440`;
+- waiting table: `b2r-private-390-en`, `b2r-private-390-ru`, `b2r-private-390-hy`,
+  `b2r-private-390-hy-fallback`, `b2r-private-1440-share`, `b2r-private-aborted-390`;
+- headings and gold elements: `b2r-dashboard-1440`, `b2r-dashboard-390`, `b2r-games-1440`,
+  `b2r-landing-1440`, `b2r-landing-390`, `b2r-history-390`, `b2r-checkers-390`,
+  `b2r-poker-finished-390`.
+
+The account was left in English with no active game.
+
+**Final B2 verdicts:**
+
+| Task | Verdict |
+|---|---|
+| TASK-026 | APPROVED (catalog now keeps the previous language's data during a switch) |
+| TASK-006 | APPROVED (panel above the player list; no eyebrow on a closed room) |
+| TASK-028 | APPROVED |
+| TASK-007 | APPROVED |
+| TASK-024 | APPROVED |
+| TASK-008 | APPROVED |
+| TASK-030 | APPROVED |
+
+
 ---
 
 ## B1 · TASK-001…005 — 2026-10-29
