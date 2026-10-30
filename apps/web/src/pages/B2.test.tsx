@@ -177,4 +177,31 @@ describe('Invite link', () => {
     expect(await screen.findByRole('button', { name: 'Link copied' })).toBeInTheDocument()
     vi.unstubAllGlobals()
   })
+
+  it('seats you at the bottom of the waiting table, whichever seat you joined', async () => {
+    const host = { ...roomFixture().participants[0]!, seat: 0, name: 'Levon', username: 'levon' }
+    const me = { ...roomFixture().participants[0]!, seat: 1, name: 'Alice', username: 'alice' }
+    server.use(
+      signedInAs(userFixture({ id: 1, username: 'alice' })),
+      http.get('*/api/v1/rooms/room-1', () =>
+        HttpResponse.json({
+          data: roomFixture({
+            type: 'private',
+            status: 'waiting',
+            seats: 4,
+            invite_code: 'ABC123',
+            participants: [host, me],
+          }),
+        }),
+      ),
+    )
+    renderRoute('/rooms/room-1')
+
+    const seats = within(await screen.findByRole('list', { name: 'Players' })).getAllByRole(
+      'listitem',
+    )
+    const seatOf = (name: string) => seats.find((li) => li.textContent?.includes(name))!
+    expect(seatOf('Alice').style.top).toBe('100%')
+    expect(seatOf('Levon').style.top).not.toBe('100%')
+  })
 })

@@ -105,6 +105,13 @@ export function RoomPage() {
           })
         : data.game.name
 
+  // Your seat: from the game state once it runs, before that from the room's players, so everyone
+  // who joins a table sees themselves at the bottom.
+  const tableSeat =
+    view?.seat ??
+    data.participants.find((p) => !p.is_bot && user && p.username === user.username)?.seat ??
+    0
+
   return (
     <Container className="space-y-6 py-8">
       <title>{tabTitle}</title>
@@ -143,7 +150,7 @@ export function RoomPage() {
       </header>
 
       {data.status === 'waiting' ? (
-        <WaitingTable room={data} mySeat={view?.seat ?? 0} onLeave={leave} />
+        <WaitingTable room={data} mySeat={tableSeat} onLeave={leave} />
       ) : null}
 
       {data.status === 'finished' || data.status === 'aborted' || leftTable ? (
