@@ -9,6 +9,13 @@ Newest first. Format: date · decision · why · who.
 
 ## Decided
 
+- 2026-10-30 · Durak table: keep the club room with a thin wood rail around a **rectangular** green
+  felt fitted to the screen height (no oval; Poker keeps its oval); one tap plays a card; stickers/emoji
+  out of scope · owner chose the recommended options (B3a open questions 1, 2, 4).
+- 2026-10-30 · Poker pauses between hands so the result can be seen: 3 s after a fold win, 5 s after
+  a showdown, nobody acts and no clock runs (B3a-1, server-side) · owner.
+- 2026-10-30 · Owner asked for a Durak redesign (references: popular Durak apps) and a Poker hand
+  result "you can feel" (TASK-035, TASK-036, P1) · owner.
 - 2026-10-29 · Go-ahead for the backend fixes TASK-030 (distinct bots per table) and TASK-031 (chess
   flag-fall = loss): "do all necessary things" · small, non-breaking fixes found in B1 · owner. PM reads it
   as covering these two only; other B4 items still wait (backlog "Decisions needed" 1).

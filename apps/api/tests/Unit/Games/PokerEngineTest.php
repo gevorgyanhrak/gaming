@@ -3,6 +3,7 @@
 use App\Enums\BotDifficulty;
 use App\Gameplay\Engine\Action;
 use App\Gameplay\Engine\GameSetup;
+use App\Gameplay\Exceptions\IllegalAction;
 use App\Gameplay\Random\SecureRandom;
 use App\Games\Poker\Bot\PokerBot;
 use App\Games\Poker\Engine\PokerEngine;
@@ -18,6 +19,12 @@ function holdemAct(array $state, string $type, ?int $amount = null): array
     $action = new Action($type, $amount === null ? [] : ['amount' => $amount]);
 
     return (new PokerEngine)->apply($state, $state['to_act'], $action, new SecureRandom)->state;
+}
+
+/** Deal the next hand once the pause after a hand is over. */
+function holdemNext(array $state): array
+{
+    return (new PokerEngine)->resume($state, new SecureRandom)->state;
 }
 
 /** Total chips: stacks, the pot and chips of players who left. */
@@ -126,15 +133,72 @@ it('deals the flop when the betting round closes, the big blind first to act aft
         ->and(holdemChips($state))->toBe(2000);
 });
 
-it('gives an uncontested pot to the last player and deals the next hand', function () {
+it('gives an uncontested pot to the last player, pauses, then deals the next hand', function () {
+    $engine = new PokerEngine;
     $state = holdem();
     $button = $state['button'];
+    $board = $state['board'];
     $state = holdemAct($state, 'fold');
 
-    expect($state['hand'])->toBe(2)
+    expect($state['street'])->toBe('over')
+        ->and($engine->seatsToAct($state))->toBe([])
+        ->and($engine->outcome($state))->toBeNull()
+        ->and($engine->pauseMs($state))->toBe(3000)
+        ->and($state['hand'])->toBe(1)
+        ->and($state['board'])->toBe($board)
         ->and($state['last_hand']['pots'])->toBe([['amount' => 15, 'winners' => [1 - $button], 'hand' => null]])
-        ->and($state['button'])->toBe(1 - $button)
+        ->and($state['last_hand']['payouts'][1 - $button])->toBe(15)
+        ->and($state['last_hand']['payouts'][$button])->toBe(0)
         ->and(holdemChips($state))->toBe(2000);
+
+    $transition = $engine->resume($state, new SecureRandom);
+    $state = $transition->state;
+    expect($state['hand'])->toBe(2)
+        ->and($state['street'])->toBe('preflop')
+        ->and($state['button'])->toBe(1 - $button)
+        ->and($engine->pauseMs($state))->toBeNull()
+        ->and($engine->seatsToAct($state))->toHaveCount(1)
+        ->and($transition->events)->toBe([['type' => 'next_hand', 'hand' => 2]])
+        ->and(holdemChips($state))->toBe(2000);
+    expect(fn () => $engine->resume($state, new SecureRandom))->toThrow(IllegalAction::class);
+});
+
+it('pauses longer after a showdown and uses the mode\'s pause lengths', function () {
+    $state = riverSpot([['AS', 'AD'], ['KS', 'KD']], ['2C', '7H', '9D', 'JC', '3S'], [50, 50], [950, 950]);
+    $state = holdemAct(holdemAct($state, 'check'), 'check');
+    expect((new PokerEngine)->pauseMs($state))->toBe(5000);
+
+    $quick = holdemAct(holdem(2, ['fold_pause_ms' => 1500, 'showdown_pause_ms' => 4000]), 'fold');
+    expect((new PokerEngine)->pauseMs($quick))->toBe(1500)
+        ->and((new PokerEngine)->viewFor($quick, 0))->not->toHaveKey('pause_ms');
+});
+
+it('ends the game without a pause when the hand leaves one player with chips', function () {
+    // Both all-in on the river: the first check runs the hand to showdown.
+    $state = riverSpot([['AS', 'AD'], ['KS', 'KD']], ['2C', '7H', '9D', 'JC', '3S'], [1000, 1000], [0, 0]);
+    $state = holdemAct($state, 'check');
+    $engine = new PokerEngine;
+
+    expect($engine->outcome($state)?->winners)->toBe([0])
+        ->and($engine->pauseMs($state))->toBeNull()
+        ->and($state['last_hand']['payouts'])->toBe([2000, 0]);
+});
+
+it('ends the game when a player leaves during the pause and only one is left', function () {
+    $engine = new PokerEngine;
+    $state = holdemAct(holdem(3), 'fold');
+    $state = holdemAct($state, 'fold');
+    expect($state['street'])->toBe('over');
+
+    $leaver = $state['last_hand']['pots'][0]['winners'][0];
+    $state = $engine->depart($state, $leaver, new SecureRandom)->state;
+    expect($engine->outcome($state))->toBeNull()
+        ->and($engine->pauseMs($state))->not->toBeNull()
+        ->and(holdemChips($state))->toBe(3000);
+
+    $state = $engine->depart($state, ($leaver + 1) % 3, new SecureRandom)->state;
+    expect($engine->outcome($state)?->winners)->toBe([($leaver + 2) % 3])
+        ->and($engine->pauseMs($state))->toBeNull();
 });
 
 it('splits main and side pots at showdown', function () {
@@ -151,6 +215,7 @@ it('splits main and side pots at showdown', function () {
         ['amount' => 300, 'winners' => [0], 'hand' => 'pair'],
         ['amount' => 400, 'winners' => [1], 'hand' => 'pair'],
     ])
+        ->and($state['last_hand']['payouts'])->toBe([300, 400, 0])
         ->and($state['last_hand']['shown'])->toHaveCount(3)
         ->and(holdemChips($state))->toBe(2100);
 });
@@ -165,13 +230,14 @@ it('splits a tied pot, the odd chip going left of the button', function () {
     );
     $state = holdemAct(holdemAct(holdemAct($state, 'check'), 'check'), 'check');
 
-    expect($state['last_hand']['pots'])->toBe([['amount' => 165, 'winners' => [0, 1, 2], 'hand' => 'straight_flush']]);
+    expect($state['last_hand']['pots'])->toBe([['amount' => 165, 'winners' => [0, 1, 2], 'hand' => 'straight_flush']])
+        ->and($state['last_hand']['payouts'])->toBe([55, 55, 55]);
 });
 
 it('doubles the blinds every level', function () {
     $state = holdem(2, ['level_hands' => 2]);
     foreach (range(1, 2) as $hand) {
-        $state = holdemAct($state, 'fold');
+        $state = holdemNext(holdemAct($state, 'fold'));
     }
 
     expect($state['hand'])->toBe(3)->and($state['blinds'])->toBe([10, 20]);
@@ -209,6 +275,11 @@ it('plays random sit-and-gos to the end without losing a chip', function (int $s
     foreach (range(1, 4) as $game) {
         $state = holdem($seats, ['level_hands' => 5]);
         for ($i = 0; $i < 5000 && $engine->outcome($state) === null; $i++) {
+            if ($engine->pauseMs($state) !== null) {
+                $state = $engine->resume($state, $random)->state;
+
+                continue;
+            }
             $seat = $state['to_act'];
             $legal = $engine->legalActions($state, $seat);
             expect($legal)->not->toBeEmpty();
@@ -232,6 +303,11 @@ it('never puts hidden cards in the events every player receives', function () {
     $state = holdem(4, ['level_hands' => 3]);
 
     for ($i = 0; $i < 400 && $engine->outcome($state) === null; $i++) {
+        if ($engine->pauseMs($state) !== null) {
+            $state = $engine->resume($state, $random)->state;
+
+            continue;
+        }
         $seat = $state['to_act'];
         $legal = $engine->legalActions($state, $seat);
         $action = $legal[$random->int(0, count($legal) - 1)];
@@ -264,6 +340,11 @@ it('has bots act legally and the medium bot beat loose play heads-up', function 
         $mediumSeat = $game % 2;
         $state = holdem(2, ['level_hands' => 10]);
         for ($i = 0; $i < 3000 && $engine->outcome($state) === null; $i++) {
+            if ($engine->pauseMs($state) !== null) {
+                $state = $engine->resume($state, $random)->state;
+
+                continue;
+            }
             $seat = $state['to_act'];
             $level = $seat === $mediumSeat ? BotDifficulty::Medium : BotDifficulty::Easy;
             $action = $bot->chooseAction($engine->viewFor($state, $seat), $engine->legalActions($state, $seat), $level, $random);
@@ -285,6 +366,11 @@ it('has the hard bot act legally at a full table', function () {
     foreach (range(1, 30) as $step) {
         if ($engine->outcome($state) !== null) {
             break;
+        }
+        if ($engine->pauseMs($state) !== null) {
+            $state = $engine->resume($state, $random)->state;
+
+            continue;
         }
         $seat = $state['to_act'];
         $action = (new PokerBot)->chooseAction($engine->viewFor($state, $seat), $engine->legalActions($state, $seat), BotDifficulty::Hard, $random);

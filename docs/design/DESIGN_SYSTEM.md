@@ -27,8 +27,14 @@ black text.
 - `.club-room` page background, `.club-frame` the app window (sticky header, rounded, gold hairline).
 - `.club-panel` cards and panels (translucent wood with a faint gold border), radius `rounded-2xl`/`3xl`.
 - `.club-medal` round brass medallion behind an icon.
-- `.table-rim` wood rim + `.table-felt` baize: oval for card tables (Durak, Poker, waiting table),
-  square frame for Chess/Checkers boards (squares `#e3d0ac` / `#8b7355`).
+- `.table-rim` wood rim + `.table-felt` baize: oval for Poker and the waiting table; a rounded
+  rectangle fitted to the screen height for Durak (`useFitHeight`); square frame for Chess/Checkers
+  boards (squares `#e3d0ac` / `#8b7355`).
+- Cards (`PlayingCard`, `CardBack`): sizes `xs` 32×46, `sm`, `md`, `lg`, and `fluid` (width from the
+  parent's `--card-w`, text scales with it).
+- Role bubbles on card tables (`games/durak/DurakSeat.tsx` `Bubble`): attacking `bg-turn`, defending
+  white, taking and the final "durak" `bg-take`, out `bg-beaten`, passed/done black — all with black
+  or white text at ≥ 4.5:1.
 - `.checker-white` / `.checker-black` raised draughts men; `.card-back` card backs.
 
 ## Components (`apps/web/src/shared/ui`)
@@ -42,6 +48,9 @@ checked = gold), `TextField`, `Alert`, `Badge`, `Skeleton`, `States` (`EmptyStat
   `text-xs uppercase tracking-wider text-muted`.
 - One primary action per view (big green PLAY or gold CTA); secondary actions `secondary`.
 - Your turn: gold badge in the room header + gold ring on the acting seat + countdown ring.
+- A round won inside a game (a poker hand): the winner's nameplate glows gold, "+N" above the seat,
+  chips slide to it, a plate in the middle says who won with what; `handWin` (quieter win chime) only
+  for your own wins. Calm, never casino: no coin showers or "big win" words.
 - Motion: `animate-rise` on entry, carousel 700 ms ease-out, view transitions for game art and title;
   everything off under `prefers-reduced-motion`.
 - Layout: `Container` max width, 16 px gutter on phones; phone tab bar for signed-in users; boards are

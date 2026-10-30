@@ -3,6 +3,214 @@
 One section per reviewed task or batch, newest first (format: `.claude/agents/ui-ux-agent.md`).
 Paths are under `apps/web/src`.
 
+## B3a · TASK-035 Durak table, TASK-036 Poker hand result (+ TASK-029) — 2026-10-30
+
+Reviewed by the UI/UX agent against `DESIGN_SPECIFICATIONS.md` (Batch B3a), the owner's answers
+(wood rail with green felt, server pause between hands, one tap plays a card, no stickers) and
+`IMPLEMENTATION_REPORT.md#b3a`. Implementation: the uncommitted working tree on `main` after
+`1005d83`.
+
+| Task | Verdict |
+|---|---|
+| TASK-035 Durak table redesign | **NEEDS REVISION** (3 fixes) → **APPROVED** after re-review |
+| TASK-036 Poker hand result (+ TASK-029 bets) | **NEEDS REVISION** (2 fixes) → **APPROVED** after re-review |
+
+### What I checked
+
+- **Code:** `useFitHeight`, `handLayout`, `DurakHand`, `DurakSeat`, `TablePiles`, the new
+  `DurakBoard` layout, `useBoutMotion` (read only), `result.ts`, `HandResult.tsx` and the
+  `PokerBoard` diff.
+- **Live:** local stack, headless Chrome over CDP, `player2`; the developer's screenshots in
+  `scratchpad/b3a/`. My screenshots are `scratchpad/review/b3r-*`.
+- **Durak, 3 players:** 390×844, 820×1180, 1280×720, 1440×900. Then an 11-card hand at 390 (2 rows),
+  resign → finished table.
+- **Durak, 6 players in hy:** 390×844 and 1280×720, a 2-pair bout, a turn change, leave → finished.
+- **Poker, 6 players:**
+  - hand results at 390 (someone else wins) and 1440 (my win, "You win 150 chips · with two pair");
+  - reduced motion (`reducedcheck.mjs`);
+  - bet/board/nameplate overlap checks at 390.
+
+**Not checked live:**
+- The `handWin` sound (instrumented by the developer, plus unit tests).
+- Split and side pots (component tests only).
+- ru strings on the new screens.
+- The Durak fly/slide motion frame by frame.
+- Keyboard focus after playing a card (code read: it goes to the next playable card, the button or
+  the hand).
+- Poker at 820.
+
+### Deviations from the spec
+
+| # | Deviation | Verdict |
+|---|---|---|
+| 1 | The result stays up for the whole server pause, also after a reload; only a hand that ends while the page is open animates and is announced | **Accepted.** The table *is* paused, so a static result is the truth; there's no client minimum to tune |
+| 2 | `last_hand.payouts` is a list by seat | **Accepted** (same information) |
+| 3 | Desktop bout area `left-44 right-24`; card size = the larger of a one-row and a two-row fit | **Accepted.** Live: 64 px at 390 with 1–2 pairs, 96 px at 1280 and 1440 with 1 pair. My single formula was too small |
+| 4 | Hand rows capped at 3, strips < 32 px only with about 30 cards at 390 | **Accepted.** Live: 11 cards → 2 rows, strips 46 px, every strip hits its own card |
+| 5 | Poker phone board cards 40 px | **Accepted as a size**, but the overlap it was meant to fix is still there (TASK-036 fix 1) |
+| 6 | Phone bets at `spot(seat, 20, 30)` | **Not accepted as is.** Bets no longer cover nameplates (TASK-029 AC met), but they now cover board cards and the hand-info line (fix 1) |
+
+---
+
+### TASK-035 · Durak table redesign — NEEDS REVISION
+
+**Working as specified (seen live):**
+
+| Check | Result |
+|---|---|
+| Fit, 3 players, scrolled to top | stage 182–774 at 390 (tab bar at 786); 214–1110 at 820 (tab bar 1122); 222–708 at 1280×720; 222–888 at 1440×900. Hand and action button inside the stage at all four sizes. No horizontal scroll ✓ |
+| Rectangle table | wood rail and green felt (owner answer) ✓ |
+| Phone seats | compact: bubble, avatar with timer ring, BOT pill, name, mini backs + count ✓ |
+| Desktop seats | panels left/top/right per `PLACES`; 6 players = left + 3 top + right ✓ |
+| Seat labels | e.g. "Mariam has 5 cards, Bot, attacking"; `aria-current` on the acting seat ✓ |
+| Piles | deck with the sideways trump + trump chip; with an empty deck the chip stays ("Կապուկը դատարկ է" visible on desktop); discard with count ✓ |
+| Empty table | no centre text ✓ |
+| Hand, my turn | playable cards lifted with a gold ring, others dimmed ✓ |
+| One tap plays | ✓ |
+| Hand with 11 cards at 390 | 2 rows (6/5), strips ≥ 46 px; `elementFromPoint` returns the right card (the one "miss" in `handcheck.js` was a lifted neighbour in the same row, a script artefact) ✓ |
+| Action button | one gold button with the phase label (Take / Let them take / Done "Բիտա"), 48 px at 390, 56 px on desktop, right of the hand from 1024 px ✓ |
+| Finished table | no status line or action row; bubbles gone except the loser's (when the loser is me, the panel and PlayerList say "Lost") ✓ |
+| Kept from earlier tasks | tab titles ("Lost · Durak"), game-over panel with Play again (3 and 6 players), Bot pills ✓ |
+
+**Problems:**
+
+1. **The stage overflows the screen after a turn change in Armenian (seen live).**
+   - In a 6-player game at 390×844 in hy, with my turn ("Ձեր քայլն է") the stage is 182–774. After I
+     played, the header badge became "Սպասում ենք՝ Anna", too wide to share a row with the title, so
+     the header wrapped.
+   - The stage moved to **248–840** without re-measuring: the hand and action button sit **under the
+     tab bar** (786) until the next resize.
+   - `useFitHeight` measures only on mount and on `resize`. Any height change above the stage has the
+     same effect: header wrap with long names or hy/ru captions, the `act.error` alert, the
+     left-table panel.
+2. **Phone bubbles are clipped at the felt edges in hy.**
+   - With 5 opponents (62 px columns), the first and last columns' two-line bubbles ("պաշտպանվում է",
+     "վերցնում է") are cut by the felt's `overflow-hidden`: "պաշտպ…", "վերցնու…"
+     (`b3r-durak6-390-hy.png`, `b3r-durak6-390-hy-shifted.png`).
+   - The cause is `max-w-[calc(100%+0.75rem)]` on a column that already touches the edge.
+3. **The phone status hint is cut and covered in hy.**
+   - `durak.throwIn` in hy needs 3 lines at 390. `line-clamp-2` ends it at "…կամ…", so the instruction
+     loses its second half.
+   - The lifted playable cards (`-translate-y-2.5`) overlap the bubble's bottom edge
+     (`b3r-durak6-390-hy-shifted.png`).
+
+**Corrections:**
+1. `features/play/useFitHeight.ts`: also re-measure when layout above the stage changes. Observe
+   `document.body` (or the room page container) with a `ResizeObserver` and call `measure` throttled
+   by `requestAnimationFrame`.
+
+   Recommended alongside, for a stable header: in `pages/RoomPage.tsx` keep the room header on one
+   row on phones (`flex-nowrap`; title block `min-w-0`, h1/mode `truncate`; badge `shrink-0
+   max-w-[55%]`; its caption already truncates).
+
+   **Check:** at 390×844 in hy with 6 players, the stage bottom ≤ tab bar top in both "Your turn" and
+   "Waiting for …" states, and after an action error.
+2. `games/durak/DurakSeat.tsx` `Bubble` (small): keep it inside its column with `max-w-full`,
+   `[overflow-wrap:anywhere]`, still `line-clamp-2`.
+
+   **Check:** in hy with 5 opponents at 390, every bubble rect lies inside the felt rect and its
+   text isn't clipped.
+3. `games/durak/DurakBoard.tsx` status line on phones: `line-clamp-3` and enough gap to the hand
+   (`DurakHand` `LIFT` + 4 px, or `mt-1` on the hand) so a lifted card never covers the bubble.
+
+   **Check:** in hy at 390 the full `durak.throwIn` text shows, and no hand card overlaps the
+   status rect.
+
+**Nits (optional):**
+- At 1280×720 with 6 players the bout zone is only 93 px tall; a defended pair spills about 15 px
+  past it (no collision seen).
+- On a finished table you lost, your own "durak" bubble isn't shown (the status row is hidden). The
+  panel and PlayerList already say it.
+
+---
+
+### TASK-036 · Poker hand result (+ TASK-029) — NEEDS REVISION
+
+**Working as specified (seen live):**
+
+| Check | Result |
+|---|---|
+| Hand ends at 390, other winner | header "Next hand · 5 seconds left"; final board (5 cards); plate "Mariam won 240 chips · with a pair"; gold glow and **"+240"** on Mariam; shown hands face up at their seats; action panel "Next hand in 5 seconds"; one announcement "Hand 13: Mariam won 240 chips — with a pair" ✓ |
+| My win at 1440 | plate "**You win 150 chips** · with two pair" in the gold gradient; "+150" over my seat; my shown cards ringed gold; no horizontal scroll ✓ |
+| Server pause (B3a-1) | 5 s after a showdown, then the next deal; bots wait ✓ |
+| `payouts` (B3a-2) | present ✓ |
+| Reduced motion (emulated) | plate and "+N" shown, `transformAnimations: []` ✓ |
+| Last hand panel | my rows in gold ✓ |
+| Bets vs nameplates (TASK-029 AC) | 0 overlaps at 1440 and 390 ✓ |
+| Tone | no casino wording or effects ✓ |
+
+**Problems (390×844, 6 seats; `b3r-poker-390-bets.png`, `b3r-poker-390-over.png`):**
+
+1. **Bets cover the board, and the board slips under the side nameplates.**
+   - With the elliptical bet radius, Anna's "Bet 10" sits on the first board slot and David's
+     "Bet 10" on the "Hand 2 · blinds 5/10" line. Measured: 2 bet-over-board-card overlaps and 1
+     bet-over-info overlap. Mid-hand earlier, "Bet 40" hid the 8♥ on the flop.
+   - Board cards and slots still overlap the upper side nameplates by a few px: 2 overlaps, both
+     mid-hand and in the result (the J♥ under Anna's plate).
+   - A bet that hides a community card is worse than one touching a nameplate.
+2. **The split-pot headline isn't exact.** For a split someone else won, `summarize` prints
+   "Split pot: A, B — {floor} each" even when `payouts` (exact, odd chip included) are there. The
+   "+N" at the seats is exact, so the plate can disagree with it by one chip.
+
+**Corrections:**
+1. `games/poker/PokerBoard.tsx` phone layout (`< 640`, ≥ 5 seats): place bets and the board so that
+   nothing overlaps. Extend `betcheck.js` to: bet ∩ board card/slot, bet ∩ pot pill / result plate /
+   hand-info line, board card/slot ∩ nameplate. All must be 0 at 390×844 with 6 seats during
+   pre-flop, flop and river and in the result.
+
+   Suggested route (the check is the criterion):
+   - move the centre section lower on phones (e.g. `top-[55%]`), so the board row clears the upper
+     side nameplates;
+   - put side seats' bets beside their nameplate on the inner side (per-seat offsets instead of one
+     ellipse);
+   - drop to 36 px board cards only if still needed.
+
+   2–4-seat tables and 1440 stay unchanged.
+2. `games/poker/result.ts`: for a split pot, use `payouts` when present. If all shares are equal,
+   keep "— N each"; otherwise list them ("Split pot: Anna 76, Igor 75"). A new key
+   `poker.result.splitUneven` in en/ru/hy, or reuse `poker.won` per winner.
+
+**Nit (optional):** shown cards are `xs` at every width; the spec has `sm` from `sm:`. At 1440 the
+shown hands are hard to read (`b3r-poker-1440-over.png`).
+
+### Regressions
+
+None found:
+- Chess/Checkers untouched;
+- the game-over panel and Play again work for 3- and 6-player Durak;
+- tab titles, the B1 sounds' rules (reduced-motion run silent) and Bot pills unchanged;
+- no horizontal scroll at any checked size.
+
+The account was left in English with no active game.
+
+### Re-review — 2026-10-30 (B3a revision)
+
+Scope: only the five fixes above. Same setup (local stack, headless Chrome, `player2`).
+
+| Fix | Check | Result |
+|---|---|---|
+| TASK-035 · 1 (fit after layout changes) | 6 players, hy, 390×844; 70 samples over turn changes. The header showed "Ձեր քայլն է" and "Սպասում ենք՝ Anna/Mariam/Alex/Igor/David" | stage bottom never below 774 (tab bar 786) ✓. The header stays on one row (the badge truncates, e.g. "Սպասում ենք՝ An…"; the board line still shows the full name) |
+| TASK-035 · 2 (bubbles) | every role bubble seen (գրոհող, պաշտպան, վերցնում, պաս): text rect vs bubble rect, bubble rect vs felt | all one line, text fits, all inside the felt ✓ |
+| TASK-035 · 3 (hint) | `p[aria-live]` overflow and the gap to the topmost hand card over the same 70 samples | never cut (3 lines allowed); smallest gap 16 px ✓ |
+| TASK-036 · 1 (phone overlaps) | 6 seats at 390. My own check counts bet ∩ board card/slot, bet ∩ pot/plate/info, bet ∩ nameplate, board ∩ nameplate, centre ∩ nameplate. Run: 6 distinct mid-hand layouts, then 200 samples over ~60 s, then a result | 0 in every settled layout and in the result ✓. One sample showed 1 bet ∩ nameplate that I couldn't reproduce in the 200 that followed: a bet chip mid-transition (500 ms `left/top`) |
+| TASK-036 · 1 (result at 390) | `b3rr-poker-390-result.png` | "Anna won 140 chips · with a pair", "+140", 36 px board clear of all plates, no horizontal scroll ✓ |
+| TASK-036 · 2 (split plate) | code + tests | uses `payouts`: "— 75 chips each" when equal, "Split pot: Aram 76, Levon 75" otherwise; new `poker.result.splitShares` in en/ru/hy ✓. The odd-pot fallback without `payouts` still says "each" with the floor; the server always sends `payouts` now, so that path is dead |
+
+**Nit (optional, not blocking):** phone role bubbles are now 9.6 px (`text-[0.6rem]`), small but on
+high-contrast pills. If the hy words stay short, `0.65rem` would read better.
+
+**Final verdicts:**
+
+| Task | Verdict |
+|---|---|
+| TASK-035 Durak table redesign | **APPROVED** |
+| TASK-036 Poker hand result (+ TASK-029) | **APPROVED** |
+
+The account was left in English with no active game.
+
+
+---
+
 ## B2 · TASK-026, 006, 028, 007, 024, 008 (+ TASK-030) — 2026-10-29
 
 Reviewed by the UI/UX agent against `DESIGN_SPECIFICATIONS.md` (Batch B2) and

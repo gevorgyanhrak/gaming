@@ -4,6 +4,7 @@ namespace App\Gameplay\Rooms;
 
 use App\Gameplay\Contracts\GameEngine;
 use App\Gameplay\Contracts\HandlesDepartures;
+use App\Gameplay\Contracts\PausesBetweenRounds;
 use App\Gameplay\Engine\Action;
 use App\Gameplay\Engine\GameSetup;
 use App\Gameplay\GameRegistry;
@@ -55,6 +56,11 @@ class RoomStates
         foreach ($moves->where('seq', '>', 0) as $move) {
             $version = $move->seq;
 
+            if ($move->type === GameMove::RESUME && $engine instanceof PausesBetweenRounds) {
+                $state = $engine->resume($state, new ReplayRandom($move->rng ?? []))->state;
+
+                continue;
+            }
             if ($move->participant === null) {
                 continue;
             }
@@ -73,7 +79,36 @@ class RoomStates
         $seats = $room->isActive() ? $engine->seatsToAct($state) : [];
 
         // Chess clocks are stored on the room. Per-turn deadlines aren't: a rebuilt room gives the
-        // seats to act a full turn.
-        return new RoomState($version, $state, $seats, TimeControl::for($room)->deadline($room->clock, $seats, now()->getTimestampMs()), $room->clock);
+        // seats to act a full turn (and a pause its full length).
+        return new RoomState($version, $state, $seats, $this->deadline($room, $state, $seats, now()->getTimestampMs()), $room->clock);
+    }
+
+    /**
+     * Unix time by which the seats to act must move or, while the game pauses between rounds,
+     * when the next round starts.
+     *
+     * @param  array<string, mixed>  $state
+     * @param  list<int>  $seats
+     */
+    public function deadline(GameRoom $room, array $state, array $seats, int $nowMs): ?int
+    {
+        $pause = $this->pauseMs($room, $state, $seats);
+
+        return $pause === null
+            ? TimeControl::for($room)->deadline($room->clock, $seats, $nowMs)
+            : (int) ceil(($nowMs + $pause) / 1000);
+    }
+
+    /**
+     * How long an active room waits before its next round, or null when it isn't paused.
+     *
+     * @param  array<string, mixed>  $state
+     * @param  list<int>  $seats
+     */
+    public function pauseMs(GameRoom $room, array $state, array $seats): ?int
+    {
+        $engine = $this->engine($room);
+
+        return $room->isActive() && $seats === [] && $engine instanceof PausesBetweenRounds ? $engine->pauseMs($state) : null;
     }
 }

@@ -108,9 +108,11 @@ export function RoomPage() {
   return (
     <Container className="space-y-6 py-8">
       <title>{tabTitle}</title>
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span className="flex size-11 items-center justify-center rounded-xl bg-gold/15">
+      {/* One row on every width: the game's name stays whole and a long status (a name, another
+          language) truncates instead of wrapping, so the table below doesn't move. */}
+      <header className="flex items-center justify-between gap-3">
+        <div className="flex shrink-0 items-center gap-3">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gold/15">
             <GameIcon slug={data.game.slug} name={data.game.name} className="size-6 text-gold" />
           </span>
           <div>
@@ -120,16 +122,19 @@ export function RoomPage() {
         </div>
         {data.status === 'active' && view ? (
           <div
-            className={`rounded-2xl px-4 py-2 text-right ${myTurn ? 'bg-linear-to-b from-gold-light via-gold to-gold-dark text-black shadow-lg shadow-gold/20' : 'border border-border bg-surface'}`}
+            className={`min-w-0 rounded-2xl px-4 py-2 text-right ${myTurn ? 'bg-linear-to-b from-gold-light via-gold to-gold-dark text-black shadow-lg shadow-gold/20' : 'border border-border bg-surface'}`}
             role="status"
           >
             <p className="max-w-48 truncate font-semibold">
               {myTurn
                 ? t('room.yourTurn')
-                : (waitingCaption(view, playerNames, t) ?? t('room.theirTurn'))}
+                : view.seats_to_act.length === 0
+                  ? // A pause between rounds (poker hands); the time left is when the next starts.
+                    t(traitsOf(data.game.slug).nextRound ?? 'room.nextRound')
+                  : (waitingCaption(view, playerNames, t) ?? t('room.theirTurn'))}
             </p>
             {secondsLeft !== null && !clocks ? (
-              <p className={`text-sm ${myTurn ? 'text-black/70' : 'text-muted'}`}>
+              <p className={`truncate text-sm ${myTurn ? 'text-black/70' : 'text-muted'}`}>
                 {t('room.secondsLeft', { count: secondsLeft })}
               </p>
             ) : null}

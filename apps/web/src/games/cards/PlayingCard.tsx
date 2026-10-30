@@ -1,15 +1,22 @@
 import type { CSSProperties } from 'react'
 import { rankText, suitOf, suitSymbols } from './cards'
 
-export type CardSize = 'sm' | 'md' | 'lg'
+export type CardSize = 'xs' | 'sm' | 'md' | 'lg' | 'fluid'
 
 const sizes: Record<CardSize, { box: string; corner: string; pip: string }> = {
+  xs: { box: 'h-[46px] w-8 rounded-[4px]', corner: 'text-[0.55rem]', pip: 'text-base' },
   sm: { box: 'h-16 w-11 rounded-md', corner: 'text-[0.7rem]', pip: 'text-xl' },
   md: { box: 'h-24 w-16 rounded-lg', corner: 'text-sm', pip: 'text-3xl' },
   lg: {
     box: 'h-28 w-20 rounded-lg sm:h-32 sm:w-[5.5rem]',
     corner: 'text-base',
     pip: 'text-4xl sm:text-5xl',
+  },
+  // Sized by the parent through --card-w (tables that fit the screen); the text scales with it.
+  fluid: {
+    box: 'h-[calc(var(--card-w)*1.43)] w-(--card-w) rounded-[calc(var(--card-w)*0.1)]',
+    corner: 'text-[length:calc(var(--card-w)*0.22)]',
+    pip: 'text-[length:calc(var(--card-w)*0.55)]',
   },
 }
 

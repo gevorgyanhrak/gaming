@@ -33,8 +33,13 @@ describe('DurakBoard', () => {
       />,
     )
 
-    expect(screen.getByText('12 cards in the deck')).toBeInTheDocument()
-    expect(screen.getByLabelText('Seat 2 has 5 cards')).toBeInTheDocument()
+    expect(
+      screen.getByRole('group', { name: /^12 cards in the deck\. Trump: ♠/ }),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Seat 2 has 5 cards, defending')).toHaveTextContent('defending')
+    // Nothing to take or finish yet: no action button, and no visible "empty table" text.
+    expect(screen.queryByRole('button', { name: /Take|Done|Pass/ })).not.toBeInTheDocument()
+    expect(screen.getByText('The table is empty.')).toHaveClass('sr-only')
     expect(screen.getByText('Your attack: lead a card.')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Queen of clubs' }))
 
@@ -88,12 +93,16 @@ describe('DurakBoard', () => {
       />,
     )
 
-    expect(screen.getByLabelText('Levon has 4 cards')).toHaveTextContent('defending')
-    expect(screen.getByLabelText('Levon has 4 cards')).not.toHaveTextContent('Bot')
+    expect(screen.getByRole('list', { name: 'Opponents' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Levon has 4 cards, defending')).toHaveTextContent('defending')
+    expect(screen.getByLabelText('Levon has 4 cards, defending')).not.toHaveTextContent('Bot')
     // Bots are marked at their seat, since the room page doesn't list the players at card tables.
     expect(screen.getByLabelText('Aram has 6 cards, Bot')).toHaveAttribute('aria-current', 'step')
     expect(screen.getByLabelText('Aram has 6 cards, Bot')).toHaveTextContent('Bot')
-    expect(screen.getByLabelText('Ani has 0 cards')).toHaveTextContent('out')
+    expect(screen.getByLabelText('Ani has 0 cards, out')).toHaveTextContent('out')
+    expect(
+      screen.getByRole('listitem', { name: '9 of clubs, beaten by King of clubs' }),
+    ).toBeInTheDocument()
   })
 
   it('lets the attacker finish the bout', async () => {
@@ -111,6 +120,49 @@ describe('DurakBoard', () => {
 
     expect(screen.getByRole('img', { name: 'beaten by King of clubs' })).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Done' }))
+    expect(onAction).toHaveBeenCalledWith({ type: 'done' })
+  })
+
+  it('marks only the loser once the game is over, with no status or action', () => {
+    render(
+      <DurakBoard
+        state={roomStateFixture({
+          seat: 0,
+          seats_to_act: [],
+          result: { end_reason: 'completed', seats: ['win', 'loss', 'win'] },
+          view: view({ hand: [], hand_counts: [0, 4, 0], deck_count: 0, passed: [2] }),
+          legal_actions: [],
+        })}
+        onAction={vi.fn()}
+        pending={false}
+        players={{ 1: 'Levon', 2: 'Aram' }}
+      />,
+    )
+
+    expect(screen.getByLabelText('Levon has 4 cards, durak')).toHaveTextContent('durak')
+    expect(screen.getByLabelText('Aram has 0 cards')).not.toHaveTextContent(/out|passed/)
+    expect(screen.queryByText('Your attack: lead a card.')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Take|Done|Pass/ })).not.toBeInTheDocument()
+  })
+
+  it('lets the attacker throw in before the take, or let them take', async () => {
+    const onAction = vi.fn()
+    render(
+      <DurakBoard
+        state={roomStateFixture({
+          view: view({ taking: true, table: [{ attack: '9C', defense: null }] }),
+          legal_actions: [{ type: 'attack', card: '9H' }, { type: 'done' }],
+        })}
+        onAction={onAction}
+        pending={false}
+        players={{ 1: 'Levon' }}
+      />,
+    )
+
+    expect(screen.getByLabelText('Levon has 5 cards, taking')).toBeInTheDocument()
+    expect(screen.getByRole('listitem', { name: '9 of clubs, not beaten' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '9 of hearts' })).toBeEnabled()
+    await userEvent.click(screen.getByRole('button', { name: 'Let them take' }))
     expect(onAction).toHaveBeenCalledWith({ type: 'done' })
   })
 })

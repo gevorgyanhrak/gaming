@@ -103,6 +103,14 @@ interface BotStrategy {
 }
 ```
 
+Optional engine contracts (same folder): `HandlesTimeouts` (a default move instead of losing on time),
+`DecidesTimeouts` (what running out of time means), `HandlesDepartures` (a leaver is taken out and the
+game goes on), `ValidatesActions` (range actions such as poker raises) and `PausesBetweenRounds`
+(a break in which nobody acts, e.g. poker shows a hand's result before the next deal: while
+`pauseMs()` isn't null and no seat is to act, `GameScheduler` queues `ResumeRoundJob`, which calls
+`resume()` through `GameActionService::resume`; the step is logged as a `resume` move with no
+participant and replayed like any other; the room's `deadline` is the end of the pause).
+
 ### Frontend structure (`apps/web/src`)
 
 ```

@@ -3,6 +3,7 @@
 use App\Enums\BotDifficulty;
 use App\Enums\RoomStatus;
 use App\Gameplay\Bots\BotTurnJob;
+use App\Gameplay\Lifecycle\ResumeRoundJob;
 use App\Gameplay\Rooms\RoomStates;
 use App\Gameplay\Rooms\RoomStateStore;
 use App\Models\BotProfile;
@@ -56,6 +57,10 @@ it('plays a full game against a bot through the API', function (string $slug) {
                 'expected_version' => $state['version'],
                 'action' => $action,
             ])->assertOk();
+        } elseif ($state['seats_to_act'] === []) {
+            // A pause between rounds (poker hands): the job that ends it was queued.
+            Queue::assertPushed(ResumeRoundJob::class, fn (ResumeRoundJob $job) => $job->version === $state['version']);
+            app()->call([new ResumeRoundJob($room->id, $state['version']), 'handle']);
         } else {
             app()->call([new BotTurnJob($room->id, $state['version'], $state['seats_to_act'][0]), 'handle']);
         }

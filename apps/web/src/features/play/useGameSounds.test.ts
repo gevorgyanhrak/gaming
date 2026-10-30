@@ -92,3 +92,27 @@ describe('capture checks', () => {
     expect(traitsOf('unknown')).toEqual({ seatsOnBoard: false, material: 'wood' })
   })
 })
+
+describe('poker hands', () => {
+  const poker = traitsOf('poker')
+  const hand = (number: number, winners: number[]) => ({
+    last_hand: { number, pots: [{ amount: 50, winners }] },
+  })
+  type View = Record<string, unknown>
+  const step = (before: View, after: View, extra: object = {}) =>
+    soundFor(
+      { version: 1, seat: 0, seats_to_act: [], view: before, result: null },
+      { version: 2, seat: 0, seats_to_act: [], view: after, result: null, ...extra },
+      { traits: poker, seats: 3, hidden: false, sawWaiting: false },
+    )
+
+  it('plays the hand win when I take a pot, nothing special when someone else does', () => {
+    expect(step(hand(1, [1]), hand(2, [0, 2]))).toBe('handWin')
+    expect(step(hand(1, [0]), hand(2, [1]))).toBe('move')
+    expect(step(hand(2, [0]), hand(2, [0]))).toBe('move')
+  })
+
+  it('plays only the game result when the hand ends the game', () => {
+    expect(step(hand(1, [1]), hand(2, [0]), { result: { seats: { 0: 'win' } } })).toBe('win')
+  })
+})

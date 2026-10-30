@@ -155,7 +155,7 @@ owner-requested TASK-035 (Durak table) and TASK-036 (Poker hand result), then th
 larger visual TASK-009, then TASK-010, TASK-011, TASK-013, and TASK-025 last (hypothesis; only once
 real traffic exists).
 
-### TASK-035 · Durak table redesign                            P1 · M · DESIGN_IN_PROGRESS · B3
+### TASK-035 · Durak table redesign                            P1 · M · APPROVED (design) · B3
 Problem: on desktop the Durak table is taller than the screen, so the player's own hand is cut off,
 while the felt is mostly empty; it doesn't look or feel like the Durak apps players know.
 User story: As a Durak player, I want the whole table, my hand and the one action I need on one screen,
@@ -182,7 +182,7 @@ Acceptance criteria (PM draft; the spec may refine):
 Tests: DurakBoard component tests (seats, statuses, action button per phase); browser check at the four
 sizes with 2, 4 and 6 players.   Depends on: —   Approval: owner-requested (go-ahead 2026-10-30)
 
-### TASK-036 · Poker hand result you can feel                   P1 · M · DESIGN_IN_PROGRESS · B3
+### TASK-036 · Poker hand result you can feel                   P1 · M · APPROVED (design) · B3
 Problem: after winning a hand the player didn't notice: the result is only in a box below the table.
 User story: As a poker player, I want to see clearly that I won a hand and how many chips I got, so a
 win feels like a win.

@@ -197,6 +197,7 @@ export function PublicLayout() {
       {user.data ? (
         <nav
           aria-label={t('nav.shortcuts')}
+          data-tabbar
           className="fixed inset-x-0 bottom-0 z-20 flex border-t border-gold/20 bg-[#1f140f]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
         >
           <NavLink to="/dashboard" className={tabLink}>

@@ -6,6 +6,7 @@ use App\Enums\ParticipantResult;
 use App\Gameplay\Contracts\DecidesTimeouts;
 use App\Gameplay\Contracts\HandlesDepartures;
 use App\Gameplay\Contracts\HandlesTimeouts;
+use App\Gameplay\Contracts\PausesBetweenRounds;
 use App\Gameplay\Contracts\ValidatesActions;
 use App\Gameplay\Engine\Action;
 use App\Gameplay\Engine\ActionResult;
@@ -133,6 +134,37 @@ class GameActionService
     }
 
     /**
+     * Ends the pause between rounds scheduled at $version (see PausesBetweenRounds).
+     */
+    public function resume(GameRoom $room, int $version): void
+    {
+        $this->store->locked($room, function () use ($room, $version) {
+            $room->refresh()->load(['game', 'participants']);
+
+            if (! $room->isActive() || $room->state_version !== $version) {
+                return;
+            }
+
+            $current = $this->states->current($room);
+            $engine = $this->states->engine($room);
+
+            if (! $engine instanceof PausesBetweenRounds || $this->states->pauseMs($room, $current->state, $current->seatsToAct) === null) {
+                return;
+            }
+
+            $random = new RecordingRandom;
+            $transition = $engine->resume($current->state, $random);
+
+            $this->record($room, $current, null, $transition, [
+                'type' => GameMove::RESUME,
+                'payload' => null,
+                'rng' => $random->draws() ?: null,
+                'client_action_id' => null,
+            ], fn () => $current->clock);
+        });
+    }
+
+    /**
      * The player left the game: they lose, or at a bigger table that goes on they are taken out.
      */
     public function abandon(GameRoom $room, GameParticipant $participant): void
@@ -196,12 +228,13 @@ class GameActionService
 
     /**
      * Log a move, finish the game if the engine says it's over, store the new state and notify.
+     * $actor is null for steps nobody took (the end of a pause).
      *
      * @param  array<string, mixed>  $move  game_moves columns
      * @param  callable(list<int>): (array{remaining: list<int>, since: int}|null)  $nextClock
      * @param  (callable(): void)|null  $alsoInTransaction
      */
-    private function record(GameRoom $room, RoomState $current, GameParticipant $actor, Transition $transition, array $move, callable $nextClock, ?callable $alsoInTransaction = null): ActionResult
+    private function record(GameRoom $room, RoomState $current, ?GameParticipant $actor, Transition $transition, array $move, callable $nextClock, ?callable $alsoInTransaction = null): ActionResult
     {
         $engine = $this->states->engine($room);
         $outcome = $engine->outcome($transition->state);
@@ -210,7 +243,7 @@ class GameActionService
         $clock = $nextClock($seats);
 
         DB::transaction(function () use ($room, $actor, $move, $version, $outcome, $clock, $alsoInTransaction) {
-            $room->moves()->create([...$move, 'seq' => $version, 'participant_id' => $actor->id]);
+            $room->moves()->create([...$move, 'seq' => $version, 'participant_id' => $actor?->id]);
             $room->forceFill(['state_version' => $version, 'clock' => $clock])->save();
 
             if ($alsoInTransaction !== null) {
@@ -221,7 +254,7 @@ class GameActionService
             }
         });
 
-        $state = new RoomState($version, $transition->state, $seats, TimeControl::for($room)->deadline($clock, $seats, now()->getTimestampMs()), $clock);
+        $state = new RoomState($version, $transition->state, $seats, $this->states->deadline($room, $transition->state, $seats, now()->getTimestampMs()), $clock);
         $this->store->put($room, $state);
 
         $this->afterChange($room, $state, $transition->events);

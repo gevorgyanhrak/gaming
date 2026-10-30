@@ -1,15 +1,12 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCountdown } from '@/features/play/useCountdown'
+import { useMediaQuery } from '@/shared/lib/useMediaQuery'
 import { useCardLabel } from '../cards/cards'
 import { CardBack, PlayingCard } from '../cards/PlayingCard'
 import type { BoardProps } from '../registry'
-
-interface Pot {
-  amount: number
-  winners: number[]
-  hand: string | null
-}
+import { ChipFlight, ResultPlate } from './HandResult'
+import { handKeys, summarize, type LastHand } from './result'
 
 interface PokerView {
   stacks: number[]
@@ -18,38 +15,26 @@ interface PokerView {
   hand: number
   blinds: [number, number]
   board: string[]
-  street: 'preflop' | 'flop' | 'turn' | 'river'
+  /** "over": the pause after a hand, showing its result until the next deal. */
+  street: 'preflop' | 'flop' | 'turn' | 'river' | 'over'
   bets: number[]
   folded: boolean[]
   current_bet: number
   to_act: number | null
   hand_cards: string[]
   pot: number
-  last_hand: {
-    number: number
-    board: string[]
-    shown: Record<string, string[]>
-    pots: Pot[]
-  } | null
+  last_hand: LastHand | null
 }
 
 type PokerAction = { type: 'fold' | 'check' | 'call' } | { type: 'raise'; min: number; max: number }
 
-const handKeys = {
-  high_card: 'poker.hand.highCard',
-  pair: 'poker.hand.pair',
-  two_pair: 'poker.hand.twoPair',
-  three_of_a_kind: 'poker.hand.threeOfAKind',
-  straight: 'poker.hand.straight',
-  flush: 'poker.hand.flush',
-  full_house: 'poker.hand.fullHouse',
-  four_of_a_kind: 'poker.hand.fourOfAKind',
-  straight_flush: 'poker.hand.straightFlush',
-} as const
-
 /**
  * Hold'em table: seats with stacks and bets, the board and pot, your hole cards, and the server's
  * legal actions (fold / check / call, and raises anywhere in the allowed range). Play chips only.
+ *
+ * When a hand ends the server pauses before the next deal; the table then shows the result: who won
+ * how much and with what, the shown cards, chips sliding to the winners. Only a hand that ends while
+ * the page is open animates (not one already over on load).
  */
 export default function PokerBoard({
   state,
@@ -67,6 +52,7 @@ export default function PokerBoard({
     (a): a is Extract<PokerAction, { type: 'raise' }> => a.type === 'raise',
   )
   const [amount, setAmount] = useState<number | null>(null)
+  const [handOnLoad] = useState(() => view.last_hand?.number ?? 0)
 
   const owe = Math.max(0, view.current_bet - (view.bets[me] ?? 0))
   const callAmount = Math.min(owe, view.stacks[me] ?? 0)
@@ -95,11 +81,28 @@ export default function PokerBoard({
   const turnShare =
     secondsLeft !== null && timer.total ? Math.min(1, secondsLeft / timer.total) : null
 
+  const last = view.last_hand
+  const result =
+    last && (view.street === 'over' || state.result) ? summarize(last, state.seat, name, t) : null
+  const fresh = !!result && !!last && last.number > handOnLoad
+  const boardCards = result && last ? last.board : view.board
+
   const seats = view.stacks.length
-  // Round the oval from your seat at the bottom; x and y in percent of the table.
-  const spot = (seat: number, radius: number) => {
+  // Round the oval from your seat at the bottom; x and y in percent of the table (radii may differ).
+  const spot = (seat: number, radius: number, radiusY = radius) => {
     const angle = Math.PI / 2 + ((seat - me) * 2 * Math.PI) / seats
-    return { left: `${50 + radius * Math.cos(angle)}%`, top: `${50 + radius * Math.sin(angle)}%` }
+    return { left: `${50 + radius * Math.cos(angle)}%`, top: `${50 + radiusY * Math.sin(angle)}%` }
+  }
+  // Wide tables: bets sit on the felt between a seat and the middle. The tall phone oval has no
+  // room for that next to the board, so there a bet sits at its own seat, on the side facing the
+  // middle: under the top seat, above yours, beside the others.
+  const narrow = useMediaQuery('(max-width: 639px)')
+  const betBeside = (seat: number) => {
+    const angle = Math.PI / 2 + ((seat - me) * 2 * Math.PI) / seats
+    const [x, y] = [Math.cos(angle), Math.sin(angle)]
+    if (y < -0.7) return 'top-full mt-1 left-1/2 -translate-x-1/2'
+    if (y > 0.7) return 'bottom-full mb-1 left-1/2 -translate-x-1/2'
+    return `${x < 0 ? 'left-full ml-1' : 'right-full mr-1'} top-1/2 -translate-y-1/2`
   }
 
   return (
@@ -112,33 +115,55 @@ export default function PokerBoard({
 
           <section
             aria-label={t('poker.board')}
-            className="absolute inset-x-[5%] top-1/2 flex -translate-y-1/2 flex-col items-center gap-2 text-center sm:inset-x-[12%] sm:gap-3"
+            className="absolute inset-x-[5%] top-[38%] flex flex-col items-center gap-2 text-center sm:inset-x-[12%] sm:top-1/2 sm:-translate-y-1/2 sm:gap-3"
           >
-            <div className="flex justify-center gap-1 sm:gap-2 max-sm:[&>span>span]:h-16 max-sm:[&>span>span]:w-11 max-sm:[&>span>span]:rounded-md">
-              {view.board.map((card) => (
+            <div className="flex justify-center gap-1 sm:gap-2 max-sm:[&>span>span]:h-[50px] max-sm:[&>span>span]:w-9 max-sm:[&>span>span]:rounded-md">
+              {boardCards.map((card) => (
                 <span key={card} className="motion-safe:animate-card-in">
                   <PlayingCard card={card} label={labels.card(card)} />
                 </span>
               ))}
-              {Array.from({ length: 5 - view.board.length }, (_, i) => (
+              {Array.from({ length: result ? 0 : 5 - boardCards.length }, (_, i) => (
                 <span key={i} aria-hidden="true">
-                  <span className="block h-16 w-11 rounded-md border border-dashed border-white/25 bg-black/10 sm:h-24 sm:w-16 sm:rounded-lg" />
+                  <span className="block h-[50px] w-9 rounded-md border border-dashed border-white/25 bg-black/10 sm:h-24 sm:w-16 sm:rounded-lg" />
                 </span>
               ))}
             </div>
-            <p className="flex items-center gap-2 rounded-full bg-black/45 px-4 py-1.5 text-sm font-bold sm:text-base">
-              <ChipStack amount={view.pot} />
-              {t('poker.potAmount', { count: view.pot })}
-            </p>
+            {result ? (
+              <ResultPlate summary={result} />
+            ) : (
+              <p className="flex items-center gap-2 rounded-full bg-black/45 px-4 py-1.5 text-sm font-bold sm:text-base">
+                <ChipStack amount={view.pot} />
+                {t('poker.potAmount', { count: view.pot })}
+              </p>
+            )}
             <p className="text-xs text-white/65">
               {t('poker.handInfo', { hand: view.hand, small: view.blinds[0], big: view.blinds[1] })}
             </p>
           </section>
+          <p className="sr-only" role="status">
+            {fresh ? result.announcement : ''}
+          </p>
+
+          {fresh && last
+            ? [...result.winners].map(([seat, chips], i) => (
+                <ChipFlight
+                  key={`${last.number}-${seat}`}
+                  to={spot(seat, 42)}
+                  delay={250 + i * 150}
+                >
+                  <ChipStack amount={chips ?? last.pots[0]?.amount ?? 0} />
+                </ChipFlight>
+              ))
+            : null}
 
           <ul aria-label={t('poker.seats')}>
             {view.stacks.map((stack, seat) => {
               const acting = view.to_act === seat
               const gone = view.out[seat] || view.folded[seat]
+              const won = result?.winners.has(seat) ?? false
+              const gain = result?.winners.get(seat)
+              const shown = result ? last?.shown[String(seat)] : undefined
               const bet = view.bets[seat] ?? 0
               const status = view.out[seat]
                 ? t('poker.out')
@@ -161,8 +186,47 @@ export default function PokerBoard({
                     }`}
                     style={spot(seat, 50)}
                   >
+                    {bet > 0 && narrow ? (
+                      <span className={`${betChip} absolute z-20 ${betBeside(seat)}`}>
+                        <ChipStack amount={bet} />
+                        {t('poker.bet', { amount: bet })}
+                      </span>
+                    ) : null}
                     <div className="relative isolate">
-                      <Avatar name={name(seat)} acting={acting} share={acting ? turnShare : null} />
+                      <Avatar
+                        name={name(seat)}
+                        acting={acting}
+                        share={acting ? turnShare : null}
+                        winner={won}
+                      />
+                      {won && gain != null ? (
+                        <span
+                          className={`absolute bottom-full left-1/2 z-30 mb-1 -translate-x-1/2 rounded-full bg-black/75 px-2 text-sm font-extrabold whitespace-nowrap text-gold-light tabular-nums ${
+                            fresh
+                              ? 'motion-safe:animate-rise motion-safe:[animation-delay:850ms]'
+                              : ''
+                          }`}
+                        >
+                          +{gain.toLocaleString()}
+                        </span>
+                      ) : null}
+                      {shown ? (
+                        // Cards shown at the showdown, in front of the avatar while the result is up.
+                        <span className="absolute top-1/2 left-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2">
+                          {shown.map((card, i) => (
+                            <span
+                              key={card}
+                              className={`${i === 0 ? '-rotate-6' : '-ml-3 rotate-6'} ${won ? 'rounded-[5px] ring-2 ring-gold' : ''}`}
+                            >
+                              <PlayingCard
+                                card={card}
+                                label={labels.card(card)}
+                                size={narrow ? 'xs' : 'sm'}
+                              />
+                            </span>
+                          ))}
+                        </span>
+                      ) : null}
                       {view.button === seat ? (
                         <span
                           title={t('poker.dealer')}
@@ -171,7 +235,7 @@ export default function PokerBoard({
                           D
                         </span>
                       ) : null}
-                      {seat !== me && !gone ? (
+                      {seat !== me && !gone && !shown && !won ? (
                         // Their two cards, face down, peeking out behind the avatar.
                         <span
                           aria-hidden="true"
@@ -182,7 +246,13 @@ export default function PokerBoard({
                         </span>
                       ) : null}
                     </div>
-                    <div className="relative -mt-2 min-w-24 rounded-lg border border-gold/35 bg-[#1c120d]/90 px-2.5 py-1 text-center shadow-lg backdrop-blur">
+                    <div
+                      className={`relative -mt-2 min-w-20 rounded-lg border bg-[#1c120d]/90 px-2.5 py-1 text-center shadow-lg backdrop-blur sm:min-w-24 ${
+                        won
+                          ? 'border-gold shadow-[0_0_0_2px_var(--color-gold),0_0_24px_rgb(214_171_78/0.55)]'
+                          : 'border-gold/35'
+                      }`}
+                    >
                       <span className="block max-w-28 truncate text-xs font-semibold sm:text-sm">
                         {name(seat)}
                       </span>
@@ -202,10 +272,10 @@ export default function PokerBoard({
                     </div>
                   </div>
 
-                  {bet > 0 ? (
+                  {bet > 0 && !narrow ? (
                     <span
-                      className="absolute z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-full bg-black/55 py-0.5 pr-2.5 pl-1 text-xs font-bold whitespace-nowrap tabular-nums transition-[left,top] duration-500 motion-safe:animate-card-in"
-                      style={spot(seat, 30)}
+                      className={`${betChip} absolute z-10 -translate-x-1/2 -translate-y-1/2 transition-[left,top] duration-500`}
+                      style={spot(seat, 28)}
                     >
                       <ChipStack amount={bet} />
                       {t('poker.bet', { amount: bet })}
@@ -307,7 +377,13 @@ export default function PokerBoard({
             className="w-full rounded-md bg-[#fdebc8] px-3 py-2 text-center text-sm text-black"
             aria-live="polite"
           >
-            {view.to_act === null ? ' ' : t('poker.waitingFor', { name: name(view.to_act) })}
+            {view.street === 'over' && !state.result
+              ? secondsLeft !== null
+                ? t('poker.nextHandIn', { count: secondsLeft })
+                : t('poker.nextHand')
+              : view.to_act === null
+                ? ' '
+                : t('poker.waitingFor', { name: name(view.to_act) })}
           </p>
         )}
       </div>
@@ -322,7 +398,12 @@ export default function PokerBoard({
           </h2>
           <ul className="space-y-1">
             {view.last_hand.pots.map((pot, i) => (
-              <li key={i}>
+              <li
+                key={i}
+                className={
+                  state.seat !== null && pot.winners.includes(state.seat) ? 'text-gold' : ''
+                }
+              >
                 {t('poker.won', {
                   names: pot.winners.map(name).join(', '),
                   count: pot.amount,
@@ -368,14 +449,29 @@ function ChipStack({ amount }: { amount: number }) {
   )
 }
 
-/** A round avatar with the player's initial; the acting player's ring shows the time left. */
-function Avatar({ name, acting, share }: { name: string; acting: boolean; share: number | null }) {
+/**
+ * A round avatar with the player's initial; the acting player's ring shows the time left, a hand
+ * winner's ring is gold.
+ */
+function Avatar({
+  name,
+  acting,
+  share,
+  winner = false,
+}: {
+  name: string
+  acting: boolean
+  share: number | null
+  winner?: boolean
+}) {
   const ring =
     acting && share !== null
       ? `conic-gradient(var(--color-turn) ${share * 360}deg, rgb(255 255 255 / 0.15) 0)`
       : acting
         ? 'var(--color-turn)'
-        : 'rgb(214 171 78 / 0.45)'
+        : winner
+          ? 'var(--color-gold)'
+          : 'rgb(214 171 78 / 0.45)'
   return (
     <span
       className="block rounded-full p-[3px] shadow-lg shadow-black/50"
@@ -388,6 +484,10 @@ function Avatar({ name, acting, share }: { name: string; acting: boolean; share:
     </span>
   )
 }
+
+/** A bet in front of a seat. */
+const betChip =
+  'flex items-center gap-1.5 rounded-full bg-black/55 py-0.5 pr-2.5 pl-1 text-xs font-bold whitespace-nowrap tabular-nums motion-safe:animate-card-in'
 
 const actionButton =
   'rounded-xl border px-3 py-3 text-sm font-bold shadow-lg shadow-black/40 transition hover:brightness-110 active:translate-y-px disabled:opacity-60 sm:text-base'

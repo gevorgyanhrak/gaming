@@ -34,6 +34,9 @@ class GameMove extends Model
     /** The player left the game page and didn't come back in time. */
     public const ABANDON = 'abandon';
 
+    /** The end of a pause between rounds (see PausesBetweenRounds); no participant. */
+    public const RESUME = 'resume';
+
     /**
      * @return array<string, string>
      */

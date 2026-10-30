@@ -2,6 +2,67 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## B3a revision after design review — 2026-10-30 · READY_FOR_REVIEW
+
+- TASK-035 fix 1: `useFitHeight` also re-measures when the page above changes (ResizeObserver on
+  `body`, one rAF); the room header stays on one row (title whole, status truncates). 6 players, hy,
+  390, 24 turn changes: table bottom ≤ 774, tab bar at 786.
+- TASK-035 fix 2: compact bubbles `text-[0.6rem]`, `max-w-[calc(100%+0.5rem)]`, word wrapping only
+  (the `inline-block` that defeated `line-clamp` is now only on the large bubble). hy role words
+  shortened to fit a 62 px column: գրոհող, պաշտպան, վերցնում (native check). All roles one line; none
+  clipped by the felt.
+- TASK-035 fix 3: status hint `line-clamp-3`; 18 px above the hand for lifted cards (gap to the hint
+  ≥ 16 px measured).
+- TASK-036 fix 1: phones — board cards 36×50 anchored at 38 % of the table, plate ≤ 70 % wide; bets sit
+  at their seat on the side facing the middle (`betBeside`: under the top seat, above yours, beside the
+  others) instead of on the felt. 390, 6 seats: 0 overlaps among bets, board cards, pot/plate, info line,
+  nameplates and avatars in 6 mid-hand samples and a result.
+- TASK-036 fix 2: split-pot plate uses `payouts` ("Split pot: Aram, Levon — 75 chips each", or
+  "Split pot: Aram 76, Levon 75" when shares differ; new `poker.result.splitShares`).
+- Nit: showdown cards `sm` on desktop. Not done: the 1280×720 six-player bout height (93 px).
+Checks: typecheck ✓ lint ✓ format ✓ vitest 117 passed ✓ build ✓.
+
+## B3a · TASK-035 Durak table, TASK-036 Poker hand result, B3a-1/2 + BUG-001 — 2026-10-30 · READY_FOR_REVIEW
+
+Owner answers (2026-10-30): wood rail, green felt, server pause between hands, one tap to play.
+
+| Item | Changes |
+|---|---|
+| BUG-001 | `shared/lib/uuid.ts` `randomId()` (fallback to `getRandomValues` where `crypto.randomUUID` is missing: plain HTTP on the LAN); used for `client_action_id` (pushed earlier, f40b59d) |
+| B3a-1 pause (API) | New contract `Gameplay/Contracts/PausesBetweenRounds` (`pauseMs`, `resume`). `PokerEngine::finishHand` pays, busts, then stops at `street: 'over'`, `to_act: null` (game end: no pause); `pause_ms` [3000 fold, 5000 showdown] from mode options `fold_pause_ms`/`showdown_pause_ms`, hidden from views; leaving during the pause ends the game if one player is left. `GameScheduler` queues `Lifecycle/ResumeRoundJob` for a paused room; `GameActionService::resume` records a `resume` move (no participant); `RoomStates::rebuild` replays it; `RoomStates::deadline` = end of the pause (the room's `deadline`) |
+| B3a-2 payouts (API) | `last_hand.payouts`: chips per seat (list indexed by seat, odd chips included) |
+| TASK-036 | `games/poker/result.ts` `summarize(last_hand)` (winners + exact amounts, headline, hand or "everyone else folded", side pots, announcement); `HandResult.tsx` `ResultPlate`, `ChipFlight` (WAAPI, off under reduced motion); `PokerBoard`: during `street 'over'` the final board, the plate instead of the pot, gold glow + "+N" on winners, shown cards face up at their seats, chips to winners, one sr-only announcement, "Next hand in N seconds"; only a hand that ends while the page is open animates/announces. `handWin` sound (`sounds.ts`) via trait `roundWon`; room header says "Next hand" during the pause (trait `nextRound`, generic `room.nextRound`). TASK-029: bets at an elliptical radius on phones (`spot(seat, 20, 30)`), `max-w-[30%] truncate`; phone board cards 40 px |
+| TASK-035 | `DurakBoard` rewritten: rectangle table fitted by `features/play/useFitHeight` (`[data-tabbar]` in PublicLayout), grid areas; `DurakSeat.tsx` (`CompactSeat` row on phones, `PanelSeat` on ≥ 1024 via `shared/lib/useMediaQuery`, `Bubble`, `Avatar`); `TablePiles.tsx` (deck with sideways trump + trump badge, discard); bout pairs with `PlayingCard size="fluid"` (`boutCard`: larger of one/two rows); `DurakHand.tsx` + pure `handLayout.ts` (≤ 3 rows, strips ≥ 40/44 px, each strip its own button); `useBoutMotion.ts` (played cards fly from the player; finished bouts slide to discard/taker; bout announcements). Finished table: only the loser's "durak" bubble, no status/action. Bubbles fixed for contrast (taking/out black text). `PlayingCard` sizes `xs`, `fluid`; `Button` takes `ref` |
+| i18n | `poker.result.*`, `poker.nextHand(In)`, `room.nextRound`, `durak.opponents/notBeaten/deckEmpty/role.durak/bout.*` in en/ru/hy |
+
+**Deviations from the spec:** with the server pause, the result shows for the whole pause, also after a
+reload (the table *is* paused), but only a hand that ended while the page was open animates and is
+announced; no client-side minimum duration is needed. `payouts` is a list by seat, not an object. On
+desktop the bout area is the space between deck and discard (`left-44 right-24`) and the card size is
+the larger of one row or two rows (the spec's single formula gave 60 px cards at 1440).
+
+**Tests run:** API `make test-api` **295 passed** (new: pause/resume/payouts/game-end/leave-in-pause
+engine tests; feature test pause → `ResumeRoundJob` (stale job ignored) → hand 2, `resume` move
+replayed; play-through resumes pauses) · `make lint-api` ✓. Web typecheck ✓ lint ✓ format ✓ vitest
+**117 passed** (new: poker result moment/fold win/reload/next hand/summarize split & side pots, `handWin`
+rules, durak finished/taking/labels, `handLayout`, `fitHeight`, `randomId`) · build ✓.
+
+**Browser check (headless Chrome, local stack):**
+- Durak 3 players, 390×844: stage 184–774 (tab bar from 786), hand inside, no horizontal scroll;
+  14-card hand → 2 rows of 7, min strip 44 px, `elementFromPoint` hits the right card for all 14;
+  finished: only "Anna … durak" bubble, title "Won · Durak". 1440×900: stage to 888, bout cards 96 px,
+  side panels, Pass/Take button right of the hand.
+- Durak 6 players in hy at 390: five seats 62 px wide, avatars aligned (bubbles may wrap to 2 lines), no
+  horizontal scroll; 1280×720: stage 222–708 inside 720.
+- Poker 6 players: hand end at 390 → header "Next hand · 5 seconds left", plate "Igor won 120 chips ·
+  with a pair", "+120", three shown hands, announcement "Hand 1: Igor won 120 chips — with a pair". My
+  win at 1440 → "You win 100 chips · with a full house" (gold), "+100", 3 triangle oscillators
+  (`handWin`). Bets vs nameplates: 0 overlaps at 390 and 1440 (was 1 at 390). Reduced motion: plate and
+  "+N" shown, no transform animations.
+
+**Not checked live:** a split pot (component test only); Durak with a real second person; the bout
+fly/slide motion was not inspected frame by frame (it runs; nothing breaks without it).
+
 ## B2 revision after design review — 2026-10-29 · READY_FOR_REVIEW
 
 - Root cause of TASK-008's unreadable hover (and B1's invisible icon tiles): the custom `.text-gold`

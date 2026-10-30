@@ -1,3 +1,4 @@
+import type { ParseKeys } from 'i18next'
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react'
 import type { GameAction, RoomState } from '@/features/play/api'
 
@@ -36,6 +37,10 @@ export interface GameTraits {
   material: 'wood' | 'cards'
   /** Whether the step from one view to the next took something (only where it's cheap to see). */
   capture?: (prev: View, next: View) => boolean
+  /** Whether the step finished a round inside the game (a poker hand) that `seat` won. */
+  roundWon?: (prev: View, next: View, seat: number) => boolean
+  /** What the header calls the pause before the next round (a translation key). */
+  nextRound?: ParseKeys
 }
 
 const pieces = (view: View) =>
@@ -55,7 +60,20 @@ export const traits: Partial<Record<string, GameTraits>> = {
   nardi: { seatsOnBoard: false, material: 'wood', capture: (a, b) => sum(b.bar) > sum(a.bar) },
   // The defender gives up and takes the cards.
   durak: { seatsOnBoard: true, material: 'cards', capture: (a, b) => !a.taking && !!b.taking },
-  poker: { seatsOnBoard: true, material: 'cards' },
+  poker: {
+    seatsOnBoard: true,
+    material: 'cards',
+    roundWon: (a, b, seat) => {
+      const before = a.last_hand as { number: number } | null
+      const after = b.last_hand as { number: number; pots: { winners: number[] }[] } | null
+      return (
+        !!after &&
+        after.number > (before?.number ?? 0) &&
+        after.pots.some((pot) => pot.winners.includes(seat))
+      )
+    },
+    nextRound: 'poker.nextHand',
+  },
 }
 
 export const traitsOf = (slug: string): GameTraits =>

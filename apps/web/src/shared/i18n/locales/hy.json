@@ -318,7 +318,8 @@
     "linkCopied": "Հղումը պատճենվեց",
     "codeCopied": "Կոդը պատճենվեց",
     "copyFallback": "Պատճենեք այս հղումը",
-    "shareText": "Միացիր իմ սեղանին՝ {{game}}։"
+    "shareText": "Միացիր իմ սեղանին՝ {{game}}։",
+    "nextRound": "Հաջորդ խաղափուլը"
   },
   "history": {
     "title": "Խաղերի պատմություն",
@@ -413,17 +414,26 @@
     "opponentCards_one": "{{name}}-ն ունի {{count}} քարտ",
     "opponentCards_other": "{{name}}-ն ունի {{count}} քարտ",
     "role": {
-      "attacker": "գրոհում է",
-      "defender": "պաշտպանվում է",
-      "taking": "վերցնում է",
+      "attacker": "գրոհող",
+      "defender": "պաշտպան",
+      "taking": "վերցնում",
       "passed": "պաս",
       "out": "դուրս է",
-      "left": "լքել է"
+      "left": "լքել է",
+      "durak": "դուրակ"
     },
     "pass": "Պաս",
     "discardPile": "Բիտա",
     "discarded_one": "Բիտա՝ {{count}}",
-    "discarded_other": "Բիտա՝ {{count}}"
+    "discarded_other": "Բիտա՝ {{count}}",
+    "opponents": "Մրցակիցներ",
+    "notBeaten": "{{card}}, ծածկված չէ",
+    "deckEmpty": "Կապուկը դատարկ է",
+    "bout": {
+      "beaten": "Բիտա։ Քարտերը դուրս են գնում։",
+      "took": "{{name}}՝ վերցնում է քարտերը։",
+      "youTook": "Դուք վերցնում եք քարտերը։"
+    }
   },
   "cards": {
     "card": "{{rank}} {{suit}}",
@@ -481,7 +491,23 @@
       "fullHouse": "ֆուլ-հաուս",
       "fourOfAKind": "կարե",
       "straightFlush": "ստրիտ-ֆլեշ"
-    }
+    },
+    "result": {
+      "youWin_one": "Դուք շահեցիք {{count}} ժետոն",
+      "youWin_other": "Դուք շահեցիք {{count}} ժետոն",
+      "withHand": "Կոմբինացիա՝ {{hand}}",
+      "othersFolded": "Մյուսները պաս ասացին",
+      "split_one": "Բանկը կիսվեց՝ {{names}} — {{count}}-ական ժետոն",
+      "split_other": "Բանկը կիսվեց՝ {{names}} — {{count}}-ական ժետոն",
+      "sidePot": "Կողմնակի բանկ",
+      "more_one": "և ևս {{count}} բանկ",
+      "more_other": "և ևս {{count}} բանկ",
+      "announce": "Բաժանում {{hand}}՝ {{text}}",
+      "splitShares": "Բանկը կիսվեց՝ {{shares}}"
+    },
+    "nextHand": "Հաջորդ բաժանումը",
+    "nextHandIn_one": "Հաջորդ բաժանումը {{count}} վայրկյանից",
+    "nextHandIn_other": "Հաջորդ բաժանումը {{count}} վայրկյանից"
   },
   "activeGame": {
     "playing": "Դուք խաղի մեջ եք՝ {{game}}։",

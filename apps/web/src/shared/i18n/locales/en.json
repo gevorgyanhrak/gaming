@@ -318,7 +318,8 @@
     "linkCopied": "Link copied",
     "codeCopied": "Code copied",
     "copyFallback": "Copy this link",
-    "shareText": "Join my {{game}} table."
+    "shareText": "Join my {{game}} table.",
+    "nextRound": "Next round"
   },
   "history": {
     "title": "Game history",
@@ -418,12 +419,21 @@
       "taking": "taking",
       "passed": "passed",
       "out": "out",
-      "left": "left"
+      "left": "left",
+      "durak": "durak"
     },
     "pass": "Pass",
     "discardPile": "Discard pile",
     "discarded_one": "Discarded: {{count}}",
-    "discarded_other": "Discarded: {{count}}"
+    "discarded_other": "Discarded: {{count}}",
+    "opponents": "Opponents",
+    "notBeaten": "{{card}}, not beaten",
+    "deckEmpty": "Deck is empty",
+    "bout": {
+      "beaten": "Beaten. The cards go to the discard pile.",
+      "took": "{{name}} takes the cards.",
+      "youTook": "You take the cards."
+    }
   },
   "cards": {
     "card": "{{rank}} of {{suit}}",
@@ -481,7 +491,23 @@
       "fullHouse": "a full house",
       "fourOfAKind": "four of a kind",
       "straightFlush": "a straight flush"
-    }
+    },
+    "result": {
+      "youWin_one": "You win {{count}} chip",
+      "youWin_other": "You win {{count}} chips",
+      "withHand": "with {{hand}}",
+      "othersFolded": "Everyone else folded",
+      "split_one": "Split pot: {{names}} — {{count}} chip each",
+      "split_other": "Split pot: {{names}} — {{count}} chips each",
+      "sidePot": "Side pot",
+      "more_one": "and {{count}} more pot",
+      "more_other": "and {{count}} more pots",
+      "announce": "Hand {{hand}}: {{text}}",
+      "splitShares": "Split pot: {{shares}}"
+    },
+    "nextHand": "Next hand",
+    "nextHandIn_one": "Next hand in {{count}} second",
+    "nextHandIn_other": "Next hand in {{count}} seconds"
   },
   "activeGame": {
     "playing": "You are in a game of {{game}}.",

@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from 'react'
+import type { ComponentProps } from 'react'
 import { Link, type LinkProps } from 'react-router'
 
 const variants = {
@@ -23,7 +23,7 @@ export function Button({
   className = '',
   type = 'button',
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
+}: ComponentProps<'button'> & { variant?: Variant }) {
   return <button type={type} className={`${base} ${variants[variant]} ${className}`} {...props} />
 }
 

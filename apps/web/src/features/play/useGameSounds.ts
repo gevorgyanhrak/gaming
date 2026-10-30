@@ -17,8 +17,8 @@ interface Context {
 
 /**
  * The one sound (if any) that the step from `prev` to `next` deserves. Nothing on a first load or a
- * refetch of the same version; the game's end wins over everything, then the start of my turn
- * (when it could go unnoticed), then a capture, then a plain move.
+ * refetch of the same version; the game's end wins over everything, then a round I won (a poker
+ * hand), then the start of my turn (when it could go unnoticed), then a capture, then a plain move.
  */
 export function soundFor(prev: Snapshot | null, next: Snapshot, ctx: Context): Sound | null {
   const seat = next.seat
@@ -32,6 +32,7 @@ export function soundFor(prev: Snapshot | null, next: Snapshot, ctx: Context): S
     const outcome = next.result.seats[seat]
     return outcome === 'win' ? 'win' : outcome === 'draw' ? 'draw' : outcome ? 'loss' : null
   }
+  if (ctx.traits.roundWon?.(prev.view, next.view, seat)) return 'handWin'
   if (myTurn && !prev.seats_to_act.includes(seat) && (ctx.hidden || ctx.seats > 2)) {
     return 'yourTurn'
   }

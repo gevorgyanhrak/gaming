@@ -328,7 +328,8 @@
     "linkCopied": "Ссылка скопирована",
     "codeCopied": "Код скопирован",
     "copyFallback": "Скопируйте ссылку",
-    "shareText": "Садись за мой стол: {{game}}."
+    "shareText": "Садись за мой стол: {{game}}.",
+    "nextRound": "Следующий раунд"
   },
   "history": {
     "title": "История игр",
@@ -434,14 +435,23 @@
       "taking": "берёт",
       "passed": "пас",
       "out": "вышел",
-      "left": "покинул стол"
+      "left": "покинул стол",
+      "durak": "дурак"
     },
     "pass": "Пас",
     "discardPile": "Бито",
     "discarded_one": "Бито: {{count}}",
     "discarded_few": "Бито: {{count}}",
     "discarded_many": "Бито: {{count}}",
-    "discarded_other": "Бито: {{count}}"
+    "discarded_other": "Бито: {{count}}",
+    "opponents": "Соперники",
+    "notBeaten": "{{card}}, не побита",
+    "deckEmpty": "Колода пуста",
+    "bout": {
+      "beaten": "Бито. Карты уходят в отбой.",
+      "took": "{{name}} забирает карты.",
+      "youTook": "Вы забираете карты."
+    }
   },
   "cards": {
     "card": "{{rank}} {{suit}}",
@@ -505,7 +515,31 @@
       "fullHouse": "фулл-хаус",
       "fourOfAKind": "каре",
       "straightFlush": "стрит-флеш"
-    }
+    },
+    "result": {
+      "youWin_one": "Вы выиграли {{count}} фишку",
+      "youWin_few": "Вы выиграли {{count}} фишки",
+      "youWin_many": "Вы выиграли {{count}} фишек",
+      "youWin_other": "Вы выиграли {{count}} фишки",
+      "withHand": "Комбинация: {{hand}}",
+      "othersFolded": "Остальные сбросили карты",
+      "split_one": "Банк поделён: {{names}} — по {{count}} фишке",
+      "split_few": "Банк поделён: {{names}} — по {{count}} фишки",
+      "split_many": "Банк поделён: {{names}} — по {{count}} фишек",
+      "split_other": "Банк поделён: {{names}} — по {{count}} фишки",
+      "sidePot": "Побочный банк",
+      "more_one": "и ещё {{count}} банк",
+      "more_few": "и ещё {{count}} банка",
+      "more_many": "и ещё {{count}} банков",
+      "more_other": "и ещё {{count}} банка",
+      "announce": "Раздача {{hand}}: {{text}}",
+      "splitShares": "Банк поделён: {{shares}}"
+    },
+    "nextHand": "Следующая раздача",
+    "nextHandIn_one": "Следующая раздача через {{count}} секунду",
+    "nextHandIn_few": "Следующая раздача через {{count}} секунды",
+    "nextHandIn_many": "Следующая раздача через {{count}} секунд",
+    "nextHandIn_other": "Следующая раздача через {{count}} секунды"
   },
   "activeGame": {
     "playing": "У вас идёт партия: {{game}}.",

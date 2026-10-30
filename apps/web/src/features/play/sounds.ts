@@ -5,7 +5,8 @@
  * then, and wherever audio is unavailable, sounds are silently dropped.
  */
 
-export type Sound = 'move' | 'capture' | 'yourTurn' | 'lowTime' | 'win' | 'draw' | 'loss'
+export type Sound =
+  'move' | 'capture' | 'yourTurn' | 'lowTime' | 'handWin' | 'win' | 'draw' | 'loss'
 export type Material = 'wood' | 'cards'
 
 const MASTER = 0.25
@@ -134,6 +135,12 @@ const recipes: Record<Sound, Recipe> = {
   lowTime: (ctx, out, at) => {
     tone(ctx, out, at, { type: 'triangle', freq: 523, peak: 0.45, decay: 0.08 })
     tone(ctx, out, at + 0.15, { type: 'triangle', freq: 523, peak: 0.45, decay: 0.08 })
+  },
+  // Winning a round inside a game (a poker hand): the win triad, quieter and shorter.
+  handWin: (ctx, out, at) => {
+    tone(ctx, out, at, { type: 'triangle', freq: 523, peak: 0.33, decay: 0.2 })
+    tone(ctx, out, at + 0.1, { type: 'triangle', freq: 659, peak: 0.33, decay: 0.2 })
+    tone(ctx, out, at + 0.2, { type: 'triangle', freq: 784, peak: 0.33, decay: 0.25 })
   },
   win: (ctx, out, at) => {
     tone(ctx, out, at, { type: 'triangle', freq: 523, peak: 0.55, decay: 0.2 })

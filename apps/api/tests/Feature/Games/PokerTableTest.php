@@ -5,6 +5,8 @@ use App\Enums\ParticipantResult;
 use App\Enums\RoomStatus;
 use App\Gameplay\Actions\GameActionService;
 use App\Gameplay\Bots\BotSelector;
+use App\Gameplay\Engine\Action;
+use App\Gameplay\Lifecycle\ResumeRoundJob;
 use App\Gameplay\Lifecycle\TurnTimeoutJob;
 use App\Gameplay\Rooms\RoomStates;
 use App\Gameplay\Rooms\RoomStateStore;
@@ -176,4 +178,50 @@ it('never shows other players’ cards through the API', function () {
             $seat === $mine ? expect($body)->toContain('"'.$card.'"') : expect($body)->not->toContain('"'.$card.'"');
         }
     }
+});
+
+it('pauses after a hand so everyone sees the result, then deals the next one', function () {
+    $this->freezeSecond();
+    [$room, $alice, $bob, $carol] = pokerTable();
+    $room->load(['game', 'participants']);
+    $actions = app(GameActionService::class);
+    $states = app(RoomStates::class);
+
+    // Two folds end the first hand.
+    foreach (range(1, 2) as $fold) {
+        $current = $states->current($room->refresh()->load(['game', 'participants']));
+        $actor = $room->participants->firstWhere('seat', $current->seatsToAct[0]);
+        $actions->submit($room, $actor, new Action('fold'), $current->version);
+    }
+
+    $paused = $states->current($room->refresh()->load(['game', 'participants']));
+    expect($paused->seatsToAct)->toBe([])
+        ->and($paused->state['street'])->toBe('over')
+        ->and($paused->deadline)->toBe(now()->addSeconds(3)->getTimestamp())
+        ->and($paused->state['last_hand']['number'])->toBe(1);
+    Queue::assertPushed(ResumeRoundJob::class, fn (ResumeRoundJob $job) => $job->version === $paused->version);
+    Queue::assertNotPushed(TurnTimeoutJob::class, fn (TurnTimeoutJob $job) => $job->version === $paused->version);
+
+    $view = $this->actingAs($alice)->getJson("/api/v1/rooms/{$room->public_id}/state")->assertOk()->json('data');
+    expect($view['view']['street'])->toBe('over')
+        ->and($view['view'])->not->toHaveKey('pause_ms')
+        ->and($view['view']['last_hand']['payouts'])->toHaveCount(3)
+        ->and($view['legal_actions'])->toBe([]);
+
+    // A stale job does nothing; the scheduled one deals hand 2.
+    (new ResumeRoundJob($room->id, $paused->version - 1))->handle($actions);
+    expect($room->refresh()->state_version)->toBe($paused->version);
+    (new ResumeRoundJob($room->id, $paused->version))->handle($actions);
+
+    $next = $states->current($room->refresh()->load(['game', 'participants']));
+    expect($next->version)->toBe($paused->version + 1)
+        ->and($next->state['hand'])->toBe(2)
+        ->and($next->seatsToAct)->toHaveCount(1)
+        ->and($room->moves()->where('seq', $next->version)->sole())
+        ->type->toBe('resume')
+        ->participant_id->toBeNull();
+
+    // The move log replays the pause and the new deal.
+    app(RoomStateStore::class)->forget($room);
+    expect($states->rebuild($room)->state)->toBe($next->state);
 });

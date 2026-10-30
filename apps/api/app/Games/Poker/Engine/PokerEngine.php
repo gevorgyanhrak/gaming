@@ -5,6 +5,7 @@ namespace App\Games\Poker\Engine;
 use App\Gameplay\Contracts\GameEngine;
 use App\Gameplay\Contracts\HandlesDepartures;
 use App\Gameplay\Contracts\HandlesTimeouts;
+use App\Gameplay\Contracts\PausesBetweenRounds;
 use App\Gameplay\Contracts\ValidatesActions;
 use App\Gameplay\Engine\Action;
 use App\Gameplay\Engine\GameSetup;
@@ -22,14 +23,16 @@ use App\Gameplay\Random\RandomSource;
  * legalActions() describes raises as {type: raise, min, max}; any amount in between is accepted,
  * and max (all-in) always is. A raise short of the minimum (all-in) doesn't reopen the betting for
  * players who already acted, but they must still call or fold. Hands start, streets are dealt and
- * pots (with side pots) are paid out by the engine; a timed-out player checks or folds.
+ * pots (with side pots) are paid out by the engine; a timed-out player checks or folds. After each
+ * hand the table pauses (street "over", nobody to act) so everyone sees who won: pause_ms[0] after
+ * a fold win, pause_ms[1] after a showdown; then resume() deals the next hand.
  *
  * State: stacks, out (busted or left), button, hand (number), blinds [sb, bb], deck and hole
  * (hidden), board, street, bets (this street), committed (this hand), folded, acted, current_bet,
- * min_raise, to_act, last_hand (the previous hand's showdown and payouts), forfeited (chips of
- * players who left), result.
+ * min_raise, to_act, last_hand (the last finished hand's board, showdown, pots and per-seat
+ * payouts), forfeited (chips of players who left), pause_ms, result.
  */
-final class PokerEngine implements GameEngine, HandlesDepartures, HandlesTimeouts, ValidatesActions
+final class PokerEngine implements GameEngine, HandlesDepartures, HandlesTimeouts, PausesBetweenRounds, ValidatesActions
 {
     public function initialState(GameSetup $setup, RandomSource $random): array
     {
@@ -58,6 +61,7 @@ final class PokerEngine implements GameEngine, HandlesDepartures, HandlesTimeout
             'last_hand' => null,
             'busted' => [],
             'forfeited' => 0,
+            'pause_ms' => [(int) ($options['fold_pause_ms'] ?? 3000), (int) ($options['showdown_pause_ms'] ?? 5000)],
             'result' => null,
         ];
 
@@ -173,6 +177,16 @@ final class PokerEngine implements GameEngine, HandlesDepartures, HandlesTimeout
         $state['stacks'][$seat] = 0;
         $state['busted'][] = $seat;
 
+        if ($state['street'] === 'over') {
+            // Between hands: nothing to fold into; the game ends if only one player is left.
+            $active = array_keys(array_filter($state['out'], fn (bool $out) => ! $out));
+            if (count($active) <= 1) {
+                $state['result'] = ['winners' => $active, 'reason' => 'last_standing'];
+            }
+
+            return new Transition($state, $events);
+        }
+
         if ($state['result'] === null && ($wasToAct || count($this->inHand($state)) <= 1)) {
             $state = $this->advance($state, $seat, $random, $events);
         }
@@ -186,7 +200,7 @@ final class PokerEngine implements GameEngine, HandlesDepartures, HandlesTimeout
     public function viewFor(array $state, ?int $seat): array
     {
         $view = $state;
-        unset($view['deck'], $view['hole'], $view['base_blinds'], $view['level_hands']);
+        unset($view['deck'], $view['hole'], $view['base_blinds'], $view['level_hands'], $view['pause_ms']);
         $view['hand_cards'] = $seat === null ? [] : $state['hole'][$seat];
         $view['pot'] = array_sum($state['committed']);
 
@@ -199,6 +213,32 @@ final class PokerEngine implements GameEngine, HandlesDepartures, HandlesTimeout
     public function outcome(array $state): ?Outcome
     {
         return $state['result'] === null ? null : new Outcome($state['result']['winners'], $state['result']['reason']);
+    }
+
+    /**
+     * @param  array<string, mixed>  $state
+     */
+    public function pauseMs(array $state): ?int
+    {
+        if ($state['result'] !== null || $state['street'] !== 'over') {
+            return null;
+        }
+        [$fold, $showdown] = $state['pause_ms'] ?? [3000, 5000];
+
+        return ($state['last_hand']['shown'] ?? []) === [] ? $fold : $showdown;
+    }
+
+    /**
+     * @param  array<string, mixed>  $state
+     */
+    public function resume(array $state, RandomSource $random): Transition
+    {
+        if ($this->pauseMs($state) === null) {
+            throw new IllegalAction('There is no pause to end.');
+        }
+        $state = $this->startHand($state, $random, moveButton: true);
+
+        return new Transition($state, [['type' => 'next_hand', 'hand' => $state['hand']]]);
     }
 
     /**
@@ -318,6 +358,7 @@ final class PokerEngine implements GameEngine, HandlesDepartures, HandlesTimeout
         }
 
         $pots = [];
+        $payouts = array_fill(0, count($state['stacks']), 0);
         $levels = array_values(array_unique(array_filter($state['committed'])));
         sort($levels);
         $previous = 0;
@@ -338,11 +379,13 @@ final class PokerEngine implements GameEngine, HandlesDepartures, HandlesTimeout
 
             $top = max(array_map(fn (int $s) => $scores[$s][0], $eligible));
             $winners = array_values(array_filter($eligible, fn (int $s) => $scores[$s][0] === $top));
-            $this->pay($state, $winners, $amount);
+            foreach ($this->pay($state, $winners, $amount) as $winner => $share) {
+                $payouts[$winner] += $share;
+            }
             $pots[] = ['amount' => $amount, 'winners' => $winners, 'hand' => $scores[$winners[0]][1]];
         }
 
-        $state['last_hand'] = ['number' => $state['hand'], 'board' => $state['board'], 'shown' => $shown, 'pots' => $this->mergePots($pots)];
+        $state['last_hand'] = ['number' => $state['hand'], 'board' => $state['board'], 'shown' => $shown, 'pots' => $this->mergePots($pots), 'payouts' => $payouts];
 
         return $state;
     }
@@ -355,7 +398,9 @@ final class PokerEngine implements GameEngine, HandlesDepartures, HandlesTimeout
     {
         $pot = array_sum($state['committed']);
         $state['stacks'][$winner] += $pot;
-        $state['last_hand'] = ['number' => $state['hand'], 'board' => $state['board'], 'shown' => [], 'pots' => [['amount' => $pot, 'winners' => [$winner], 'hand' => null]]];
+        $payouts = array_fill(0, count($state['stacks']), 0);
+        $payouts[$winner] = $pot;
+        $state['last_hand'] = ['number' => $state['hand'], 'board' => $state['board'], 'shown' => [], 'pots' => [['amount' => $pot, 'winners' => [$winner], 'hand' => null]], 'payouts' => $payouts];
 
         return $state;
     }
@@ -365,15 +410,20 @@ final class PokerEngine implements GameEngine, HandlesDepartures, HandlesTimeout
      *
      * @param  array<string, mixed>  $state
      * @param  list<int>  $winners
+     * @return array<int, int> chips paid per seat
      */
-    private function pay(array &$state, array $winners, int $amount): void
+    private function pay(array &$state, array $winners, int $amount): array
     {
         $n = count($state['stacks']);
         usort($winners, fn (int $a, int $b) => (($a - $state['button'] - 1 + $n) % $n) <=> (($b - $state['button'] - 1 + $n) % $n));
         $share = intdiv($amount, count($winners));
+        $paid = [];
         foreach ($winners as $i => $seat) {
-            $state['stacks'][$seat] += $share + ($i < $amount % count($winners) ? 1 : 0);
+            $paid[$seat] = $share + ($i < $amount % count($winners) ? 1 : 0);
+            $state['stacks'][$seat] += $paid[$seat];
         }
+
+        return $paid;
     }
 
     /**
@@ -398,7 +448,7 @@ final class PokerEngine implements GameEngine, HandlesDepartures, HandlesTimeout
     }
 
     /**
-     * Bust players without chips; end the game or deal the next hand.
+     * Bust players without chips; end the game, or pause before the next hand (see resume()).
      *
      * @param  array<string, mixed>  $state
      * @param  list<array<string, mixed>>  $events
@@ -416,7 +466,13 @@ final class PokerEngine implements GameEngine, HandlesDepartures, HandlesTimeout
         $state['committed'] = array_fill(0, count($state['stacks']), 0);
         $state['bets'] = array_fill(0, count($state['stacks']), 0);
 
-        return $this->startHand($state, $random, moveButton: true);
+        if (count(array_filter($state['out'], fn (bool $out) => ! $out)) <= 1) {
+            return $this->startHand($state, $random, moveButton: true);    // ends the game
+        }
+        $state['street'] = 'over';
+        $state['to_act'] = null;
+
+        return $state;
     }
 
     /**

@@ -62,6 +62,12 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
 - Tests run against the `testing` database only; the guard in `Tests\TestCase` must never be weakened.
 - After changing a response shape: add Scramble `@var` hints where needed, run `make types`, commit
   `apps/web/src/shared/api/schema.d.ts`.
+- Optional engine contracts in `app/Gameplay/Contracts`: `HandlesTimeouts`, `DecidesTimeouts`,
+  `HandlesDepartures`, `ValidatesActions`, `PausesBetweenRounds` (poker's pause after a hand:
+  `GameScheduler` queues `ResumeRoundJob` → `GameActionService::resume` → a `resume` move with no
+  participant, replayed by `RoomStates::rebuild`; `RoomStates::deadline` gives the pause end). Tests that
+  drive a game by hand must resume pauses (`ResumeRoundJob` / `$engine->resume`), and queue workers need
+  `make restart` to load new job classes.
 
 ## Frontend (React) — see the `react` and `javascript` skills
 - Server state in TanStack Query (current user is `['me']`); no copies of server state in local stores.
@@ -102,7 +108,8 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   green PLAY (matchmaking) + `ModeCard`s (bot, friend, invite code) rising in with `animate-rise`.
   Games without uploaded art use the SVG scenes in `GameArt.tsx`; few short choices are
   `Segmented` radio pills. Never imply real money, coins, VIP or a shop: play-for-fun only.
-- Game traits (`games/registry.ts` `traitsOf(slug)`: `seatsOnBoard`, `material`, `capture`) let the room
+- Game traits (`games/registry.ts` `traitsOf(slug)`: `seatsOnBoard`, `material`, `capture`, `roundWon`
+  (poker hand won → `handWin` sound), `nextRound` (header caption while nobody acts in a pause)) let the room
   page and sounds avoid slug checks. Durak/Poker (`seatsOnBoard`) hide `PlayerList` while active and show
   "Bot" pills at seats (`BoardProps.bots`).
 - Sounds: `features/play/sounds.ts` synthesizes them with Web Audio (no files); `useGameSounds` picks
@@ -122,12 +129,25 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   squares, a "Move: White/Black" heading, and a width capped by viewport height so it fits without scrolling.
   Chess uses the solid glyphs for both sides (with U+FE0E so the pawn never renders as an emoji), cream
   with a dark stroke for white; the move list sits beside the board on desktop.
-- Card tables are oval: `.table-rim` (wood) around `.table-felt` (baize). Poker seats sit round the
-  rim by angle from your seat at the bottom (`spot(seat, radius)`), bets part-way to the centre. A private room waits on
-  `WaitingTable` (seats round the rim, invite code in the middle). Durak places every grid item
-  explicitly (row and column) so the oval can share the middle row with the seats. Durak seats the others in panels left, across and right in
-  table order (`PLACES`; the player after you sits on your left), with your hand as a straight row that
-  overlaps more as it grows and one wide action button under it; on phones the opponents stack on top.
+- Poker's table is oval: `.table-rim` (wood) around `.table-felt` (baize); seats sit round the rim by
+  angle from your seat at the bottom (`spot(seat, rx, ry)`), bets part-way to the centre (nearer sideways
+  on the tall phone oval). After each hand the server pauses (`street: 'over'`, `PausesBetweenRounds`) and
+  `games/poker/HandResult.tsx` + `result.ts` (`summarize` of `last_hand`, incl. `payouts`) show the result:
+  plate, gold glow, "+N", shown cards, chips sliding (WAAPI); only a hand that ends while the page is open
+  animates or is announced. A private room waits on `WaitingTable`.
+- Durak's table is a rounded rectangle sized to the screen by `features/play/useFitHeight` (viewport −
+  top − `[data-tabbar]`), a CSS grid with areas top/table/me (wide screens add left/right panel columns
+  via `useMediaQuery('(min-width: 1024px)')`). Phones: one row of `CompactSeat`s; desktop: `PanelSeat`s
+  by `PLACES`. Deck (trump sideways) and discard sit in the table area's corners (`TablePiles.tsx`);
+  pairs use `PlayingCard size="fluid"` with `--card-w` from container units (`boutCard`). Your hand is
+  `DurakHand` (absolute-positioned rows from the pure `handLayout`, ≤ 3 rows, each card's visible strip
+  is its own button). Motion comes from views only (`useBoutMotion`: cards fly in from the player,
+  finished bouts slide to the discard or the taker; off under reduced motion). On a finished table only
+  the loser's "durak" bubble shows.
+- `Button` accepts `ref` (React 19 prop). Refs passed into custom hooks must be named `…Ref` or the
+  React Compiler lint rejects writes to them.
+- Pages opened over plain HTTP on the LAN have no `crypto.randomUUID`: use `randomId()`
+  (`shared/lib/uuid.ts`).
 - To look at a board without the Docker stack: a temporary (uncommitted) Vite page rendering the board
   with `roomStateFixture`, screenshotted with Playwright's cached `chrome-headless-shell` — delete it after.
 - When generic skill advice conflicts with the established conventions of this repo, follow the repo.
