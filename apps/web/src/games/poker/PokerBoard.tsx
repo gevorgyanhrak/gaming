@@ -95,12 +95,13 @@ export default function PokerBoard({
   }
   // Wide tables: bets sit on the felt between a seat and the middle. The tall phone oval has no
   // room for that next to the board, so there a bet sits at its own seat, on the side facing the
-  // middle: under the top seat, above yours, beside the others.
+  // middle: under the top seat and seats level with the board, above yours, beside the others.
   const narrow = useMediaQuery('(max-width: 639px)')
   const betBeside = (seat: number) => {
     const angle = Math.PI / 2 + ((seat - me) * 2 * Math.PI) / seats
     const [x, y] = [Math.cos(angle), Math.sin(angle)]
-    if (y < -0.7) return 'top-full mt-1 left-1/2 -translate-x-1/2'
+    // Seats across the top, and seats level with the board (4 seats): under the nameplate.
+    if (y < -0.7 || Math.abs(y) < 0.3) return 'top-full mt-1 left-1/2 -translate-x-1/2'
     if (y > 0.7) return 'bottom-full mb-1 left-1/2 -translate-x-1/2'
     return `${x < 0 ? 'left-full ml-1' : 'right-full mr-1'} top-1/2 -translate-y-1/2`
   }

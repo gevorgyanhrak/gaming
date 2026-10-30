@@ -2,8 +2,8 @@
 
 The single task tracker (format and statuses: `docs/team/README.md`). Sources: `UI_UX_AUDIT.md`
 (UX-NNN), `PRODUCT_RESEARCH.md` (OPP-NNN), `TECHNICAL_DEBT.md` (TD-NNN).
-Last planning: 2026-10-30 (owner feedback: BUG-001 fixed; TASK-035 Durak table and TASK-036 Poker hand result
-added at the top of B3). Before: 2026-10-29 B1/B2 validated, TASK-030/031 approved, TASK-033…034 added.
+Last planning: 2026-10-30 (TASK-035, TASK-036, TASK-029 validated APPROVED (79a053d); TASK-037 added; owner
+feedback earlier the same day: BUG-001 fixed, TASK-035/036 added at the top of B3). Before: 2026-10-29 B1/B2 validated, TASK-030/031 approved, TASK-033…034 added.
 
 ## Batches
 
@@ -11,7 +11,7 @@ added at the top of B3). Before: 2026-10-29 B1/B2 validated, TASK-030/031 approv
 |---|---|---|---|
 | B1 | Honest and clear: fix what misleads or loses games — **done 2026-10-29** (all APPROVED) | TASK-001…005 | none (frontend) |
 | B2 | Keep playing: after-game flow, profiles, invites — **done 2026-10-29** (all APPROVED) | TASK-026, TASK-006, TASK-028, TASK-007, TASK-008, TASK-024 | none (frontend) |
-| B3 | Polish and consistency (**next**; owner go-ahead so far only for TASK-035/036) | order: TASK-033, TASK-035, TASK-036, TASK-032, TASK-015, TASK-027, TASK-029, TASK-034, TASK-012, TASK-009, TASK-010, TASK-011, TASK-013, TASK-025 | none (frontend) |
+| B3 | Polish and consistency (in progress; TASK-035, TASK-036, TASK-029 **done 2026-10-30**; owner go-ahead so far only for TASK-035/036) | order: TASK-033, ~~TASK-035~~, ~~TASK-036~~, TASK-037, TASK-032, TASK-015, TASK-027, ~~TASK-029~~, TASK-034, TASK-012, TASK-009, TASK-010, TASK-011, TASK-013, TASK-025 | none (frontend) |
 | B4 | New capabilities and backend fixes | TASK-014, TASK-016…023 (TASK-030, TASK-031 **done 2026-10-29**) | **owner** (go-ahead for backend work) |
 
 ## Bugs
@@ -155,7 +155,7 @@ owner-requested TASK-035 (Durak table) and TASK-036 (Poker hand result), then th
 larger visual TASK-009, then TASK-010, TASK-011, TASK-013, and TASK-025 last (hypothesis; only once
 real traffic exists).
 
-### TASK-035 · Durak table redesign                            P1 · M · APPROVED (design) · B3
+### TASK-035 · Durak table redesign                            P1 · M · APPROVED · B3
 Problem: on desktop the Durak table is taller than the screen, so the player's own hand is cut off,
 while the felt is mostly empty; it doesn't look or feel like the Durak apps players know.
 User story: As a Durak player, I want the whole table, my hand and the one action I need on one screen,
@@ -181,8 +181,9 @@ Acceptance criteria (PM draft; the spec may refine):
      `'durak'` checks in `RoomPage`.
 Tests: DurakBoard component tests (seats, statuses, action button per phase); browser check at the four
 sizes with 2, 4 and 6 players.   Depends on: —   Approval: owner-requested (go-ahead 2026-10-30)
+Validation 2026-10-30: **APPROVED** (79a053d, design re-review APPROVED) — AC 1 seen with 3 players at all four sizes and 6 players at 390 (hy, 70 samples, stage ≤ 774 < tab bar 786) and 1280×720; AC 2–4 seen live (compact/panel seats with bubble, timer ring, Bot pill, count; one 48/56 px action button; 11- and 14-card hands, every strip hits its card); AC 5: tab titles, caption, Game-over panel, Bot pills kept, no slug checks in `RoomPage` (grep); owner answers met (rectangular felt in a wood rail, one tap plays). Not seen live: 2 and 4 players, ru strings, keyboard focus → TASK-033; nits → TASK-037; hy role words → owner native check.
 
-### TASK-036 · Poker hand result you can feel                   P1 · M · APPROVED (design) · B3
+### TASK-036 · Poker hand result you can feel                   P1 · M · APPROVED · B3
 Problem: after winning a hand the player didn't notice: the result is only in a box below the table.
 User story: As a poker player, I want to see clearly that I won a hand and how many chips I got, so a
 win feels like a win.
@@ -205,6 +206,7 @@ Acceptance criteria (PM draft; the spec may refine):
   5. en/ru/hy strings; no chip value language (chips are per-table play chips).
 Tests: PokerBoard tests for single winner, split pot and fold-win; feature test for the pause if added.
 Depends on: —   Approval: owner-requested (go-ahead 2026-10-30)
+Validation 2026-10-30: **APPROVED** (79a053d, design re-review APPROVED) — AC 1: winner glow, "+N" and hand name on the table, held for the server pause (3 s fold / 5 s showdown, owner decision; feature test incl. stale resume job, API 295 passed per developer); AC 2: stacks update, split plate uses exact `payouts` (component tests only); AC 3: 6 seats at 390 (0 overlaps in 200 samples + result) and 1440, reduced motion shows plate and "+N" without animation; AC 4: one announcement per hand seen; AC 5: en/ru/hy keys, "chips" wording only. Web vitest 117 passed (re-run by PM). Not seen live: split pot, ru, Poker at 820 → TASK-033; `handWin` by ear → owner.
 
 ### TASK-009 · Nardi board in the club style                   P2 · M · PLANNED · B3
 Scope: wood frame, matching checkers/points, "Move" heading, fit-to-screen sizing like Chess/Checkers;
@@ -246,12 +248,31 @@ Added 2026-10-29 (B2 review, pre-existing): in hy the lobby hero stat labels run
 390 and 1440 (wrap or abbreviate, no overlap).
 Tests: unit test of the helper for en/ru/hy, including the fallback path.   Approval: none
 
-### TASK-029 · Poker bet chips clear the nameplates on phones   P3 · S · PLANNED · B3
+### TASK-029 · Poker bet chips clear the nameplates on phones   P3 · S · APPROVED · B3
 Problem: at 390 px the "Bet 5" chip overlaps the right-hand nameplate ("David 995").
 Evidence: DESIGN_REVIEW.md B1 P4.
 Acceptance criteria: at 390×844 and 1440×900 with 6 players, no bet chip overlaps a nameplate, stack
 or Bot pill (checked by bounding boxes) on any seat; 2- and 4-player tables unchanged.
 Tests: browser check at both sizes (screenshots in the implementation report).   Approval: none
+Validation 2026-10-30: **APPROVED** (done inside TASK-036) — 6 seats: 0 bet ∩ nameplate/stack/Bot pill at 390 and 1440 (re-review, settled layouts). Note: the phone bet placement (`betBeside`, `PokerBoard.tsx`) applies at every seat count below 640 px, so 2- and 4-seat phone tables did change, against this task's "unchanged" clause and the B3a spec; accepted as a consistent phone layout on condition that the 2/4-seat overlap check in TASK-033 passes (else a new task).
+
+### TASK-037 · Durak table follow-ups                           P3 · S · PLANNED · B3
+Problem: two small issues left after TASK-035's review (optional nits). (a) At 1280×720 with 6 players
+the bout area is only 93 px tall and a defended pair spills about 15 px past it (no collision seen yet).
+(b) Phone role bubbles are 9.6 px text (`text-[0.6rem]` in `games/durak/DurakSeat.tsx`), small even on
+high-contrast pills. Evidence: DESIGN_REVIEW.md B3a nit and re-review nit; IMPLEMENTATION_REPORT B3a
+revision ("Not done: … 93 px").
+Scope: (a) give the bout area more height on short desktops with 6 players (e.g. smaller top panels or
+a two-row card size that fits); (b) raise compact bubbles to `0.65rem` (reviewer suggestion) while the
+hy role words stay short.
+Acceptance criteria:
+  1. 1280×720 and 1366×768, 6 players, 2–6 bout pairs: every bout card lies inside the bout area and
+     nothing overlaps seats, piles or the hand; whole table still fits the screen.
+  2. 390×844, 6 players, en/ru/hy: bubble text ≥ 0.65rem, one line where it fits, every bubble inside
+     the felt (same checks as the B3a re-review).
+  3. No change at 1440×900 and with 2–4 players beyond the bubble size.
+Tests: `fitHeight`/layout unit tests where testable; browser check at the listed sizes.
+Depends on: TASK-035   Approval: none
 
 ### TASK-032 · No end sound after you left a table              P3 · S · PLANNED · B3
 Problem: a player who left a Durak/Poker table that plays on hears the final "loss" much later. Spec
@@ -270,7 +291,10 @@ guest `/join/<code>` → register → verify → seated; join with 403 (unverifi
 matchmaking Play again (two accounts); a finished private game's panel; profile empty state with a new
 account; admin Bots list shortage notice (temporarily deactivate bots locally); a win ("You won!" heading,
 win sound); chess flag-fall live → "Lost · On time"; Nardi sounds and caption; real Web Share on a phone
-(owner's device if headless has none).
+(owner's device if headless has none). Added 2026-10-30 from B3a: Durak with 2 and 4 players at
+390/820/1280×720/1440 (fit, hand, action button) and with a second human; ru strings on the new Durak and
+Poker screens; Poker 2- and 4-seat tables at 390 (bet ∩ board/plate/nameplate = 0) and Poker at 820; a
+live split pot; keyboard focus after playing a Durak card.
 Acceptance criteria:
   1. Each path above is recorded in DESIGN_REVIEW.md as pass/fail with a screenshot name.
   2. A RoomPage test is added for matchmaking Play again (POST `/matchmaking` with the room's
@@ -284,7 +308,8 @@ Evidence: DESIGN_REVIEW.md B2 re-review nits and "Pre-existing issues seen".
 Scope: (a) bot level pill group full card width from `sm` (`sm:max-w-none`; the 320 px cap stays on
 phones); (b) waiting table at 390: the clipboard-fallback field must not cover my own seat's avatar
 (e.g. hide "Copy code" while the field shows); (c) waiting-table frame no longer overlaps the empty
-side seats at 390; (d) moved to TASK-035 (2026-10-30).
+side seats at 390; (d) **done** in TASK-035 (APPROVED 2026-10-30): a finished Durak table shows no role
+pills, only the loser's "durak" bubble.
 Acceptance criteria:
   1. ≥ 640 px: level pills end where the Start game button ends; 390 px unchanged (one line, 44 px).
   2. 390 en/ru/hy, clipboard rejected: own avatar fully visible, field selected, no horizontal scroll.
@@ -370,7 +395,10 @@ Validation 2026-10-29: **APPROVED** — `GameActionService::end` marks abandoned
 4. Owner checks for B1/B2 (not blocking the approvals): listen to the sounds (Settings → Sound effects
    plays a preview; then a bot game) and say if volume/character should change; have a native speaker
    check the new hy strings (`room.tab.*`, `room.endReasonShort.*`, `dashboard.*`, `settings.soundHint`,
-   B2: `room.backToLobby` — "լոբբի" loanword — and `room.shareText`); try a Web Share invite on a phone.
+   B2: `room.backToLobby` — "լոբբի" loanword — and `room.shareText`; B3a: the new `durak.*` and
+   `poker.result.*` / `poker.nextHand*` / `room.nextRound` strings, especially the shortened Durak role
+   words գրոհող (attacker), պաշտպան (defender), վերցնում (taking), shortened to fit 62 px seats); try a
+   Web Share invite on a phone; listen to the new Poker `handWin` sound.
 5. Content: the Poker game description is still English in hy — admin catalog text (Admin → Games),
    needs an Armenian text from the owner or a translator.
 (Decided 2026-10-29: autonomous mode for B1–B3; TD-001 deleted; sound on by default; TASK-030/031

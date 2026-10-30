@@ -9,6 +9,9 @@ Newest first. Format: date · decision · why · who.
 
 ## Decided
 
+- 2026-10-30 · TASK-035, TASK-036 and TASK-029 validated and APPROVED (79a053d). Accepted: the Poker
+  phone bet placement applies to every table size below 640 px (not only 5–6 seats), on condition that
+  the 2/4-seat check in TASK-033 passes · one consistent phone layout · PM.
 - 2026-10-30 · Durak table: keep the club room with a thin wood rail around a **rectangular** green
   felt fitted to the screen height (no oval; Poker keeps its oval); one tap plays a card; stickers/emoji
   out of scope · owner chose the recommended options (B3a open questions 1, 2, 4).

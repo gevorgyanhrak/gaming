@@ -20,6 +20,9 @@ One section per task or batch, newest first. Paths under `apps/web/src`.
 - TASK-036 fix 2: split-pot plate uses `payouts` ("Split pot: Aram, Levon — 75 chips each", or
   "Split pot: Aram 76, Levon 75" when shares differ; new `poker.result.splitShares`).
 - Nit: showdown cards `sm` on desktop. Not done: the 1280×720 six-player bout height (93 px).
+- PM condition (TASK-029, 2026-10-30): phone bets beside the seat checked live at 2, 4 and 6 seats at
+  390. At 4 seats the side seats sit level with the board, so their bets go under the nameplate
+  (`betBeside`, |sin| < 0.3); after that 0 overlaps at all three sizes.
 Checks: typecheck ✓ lint ✓ format ✓ vitest 117 passed ✓ build ✓.
 
 ## B3a · TASK-035 Durak table, TASK-036 Poker hand result, B3a-1/2 + BUG-001 — 2026-10-30 · READY_FOR_REVIEW
