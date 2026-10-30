@@ -1,5 +1,6 @@
 import { apiRequest } from '@/shared/api/http'
 import type { ApiResponse, Schemas } from '@/shared/api/types'
+import { randomId } from '@/shared/lib/uuid'
 
 export type ParticipantResult = 'win' | 'loss' | 'draw' | 'abandoned'
 export type RoomStatus = 'waiting' | 'active' | 'finished' | 'aborted'
@@ -79,7 +80,7 @@ export const fetchRoomState = (id: string, signal?: AbortSignal) =>
 export const submitAction = (id: string, action: GameAction, expectedVersion: number) =>
   apiRequest<{ data: RoomState }>(`/api/v1/rooms/${encodeURIComponent(id)}/actions`, {
     method: 'POST',
-    body: { client_action_id: crypto.randomUUID(), expected_version: expectedVersion, action },
+    body: { client_action_id: randomId(), expected_version: expectedVersion, action },
   }).then(unwrap)
 
 /** "Still on the game page" (see usePresence). */
