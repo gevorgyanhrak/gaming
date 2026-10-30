@@ -37,6 +37,8 @@ when it's your turn in a background tab (players time out), and dead ends after 
 | UX-016 | Modes panel: empty tall box, player count written twice | P3 | S |
 | UX-017 | Dashboard banner repeats the carousel and the tab bar | P3 | S |
 | UX-018 | Landing copy undersells ("get ready to play") | P3 | S |
+| UX-019 | Durak table taller than the screen: hand cut off, felt mostly empty (2026-10-30) | P1 | M |
+| UX-020 | Poker: a won hand is only reported below the table, so players miss it (2026-10-30) | P1 | M |
 
 ---
 
@@ -155,3 +157,35 @@ when it's your turn in a background tab (players time out), and dead ends after 
 ### UX-018 · Landing copy — P3 · S
 - "Pick a game, learn the rules and get ready to play." dates from before games were playable. Say
   what's true now: play people or bots instantly, five games, free.
+
+---
+
+## Addendum 2026-10-30 · Card tables (owner feedback)
+
+Research with sources: `RESEARCH_TABLES.md`. Specs: `DESIGN_SPECIFICATIONS.md` B3a (TASK-035, TASK-036).
+
+### UX-019 · Durak table doesn't fit and wastes the felt — P1 · M
+- **Where:** `games/durak/DurakBoard.tsx`.
+- **Now (measured):**
+  - At 390×844 the page is 1401 px tall and my hand starts at y = 916, under the tab bar.
+  - At 1440×900 the hand (782–926) is cut by the fold.
+  - The oval's corners are empty, the opponent panel floats above the rim, and "The table is empty."
+    sits mid-felt.
+- **Problem:** the cards you play with and the one button you need are off screen. You scroll on
+  every turn.
+- **Recommendation:** a rounded-rectangle felt with a thin wood rail, fitted to the viewport height;
+  compact seats with status bubbles; deck + sideways trump left, discard right; hand rows with
+  ≥ 40 px strips; one gold action button. Owner references and other Durak apps follow the same
+  anatomy.
+- **Acceptance:** see TASK-035 (whole table, hand and button visible at 390×844, 820×1180, 1280×720,
+  1440×900 with 2–6 players).
+
+### UX-020 · Poker hand win goes unnoticed — P1 · M
+- **Where:** `games/poker/PokerBoard.tsx` ("Last hand" panel); `PokerEngine::finishHand` deals the
+  next hand in the same transition.
+- **Now:** the result appears only in a panel below the action bar. The table itself never shows who
+  won.
+- **Problem:** winning doesn't feel like anything; players can't follow the game.
+- **Recommendation:** an on-table result moment (winner glow, pot slides to the winner, "+N", hand
+  name, shown cards). A short server pause between hands is flagged as a backend change.
+- **Acceptance:** see TASK-036.

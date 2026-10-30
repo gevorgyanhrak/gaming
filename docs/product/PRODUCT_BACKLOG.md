@@ -2,8 +2,8 @@
 
 The single task tracker (format and statuses: `docs/team/README.md`). Sources: `UI_UX_AUDIT.md`
 (UX-NNN), `PRODUCT_RESEARCH.md` (OPP-NNN), `TECHNICAL_DEBT.md` (TD-NNN).
-Last planning: 2026-10-29 (B1 and B2 validated; TASK-030/031 approved; B2 follow-ups added as TASK-033…034;
-TASK-015 moved to B3 as frontend only).
+Last planning: 2026-10-30 (owner feedback: BUG-001 fixed; TASK-035 Durak table and TASK-036 Poker hand result
+added at the top of B3). Before: 2026-10-29 B1/B2 validated, TASK-030/031 approved, TASK-033…034 added.
 
 ## Batches
 
@@ -11,8 +11,19 @@ TASK-015 moved to B3 as frontend only).
 |---|---|---|---|
 | B1 | Honest and clear: fix what misleads or loses games — **done 2026-10-29** (all APPROVED) | TASK-001…005 | none (frontend) |
 | B2 | Keep playing: after-game flow, profiles, invites — **done 2026-10-29** (all APPROVED) | TASK-026, TASK-006, TASK-028, TASK-007, TASK-008, TASK-024 | none (frontend) |
-| B3 | Polish and consistency (**next**) | order: TASK-033, TASK-032, TASK-015, TASK-027, TASK-029, TASK-034, TASK-012, TASK-009, TASK-010, TASK-011, TASK-013, TASK-025 | none (frontend) |
+| B3 | Polish and consistency (**next**; owner go-ahead so far only for TASK-035/036) | order: TASK-033, TASK-035, TASK-036, TASK-032, TASK-015, TASK-027, TASK-029, TASK-034, TASK-012, TASK-009, TASK-010, TASK-011, TASK-013, TASK-025 | none (frontend) |
 | B4 | New capabilities and backend fixes | TASK-014, TASK-016…023 (TASK-030, TASK-031 **done 2026-10-29**) | **owner** (go-ahead for backend work) |
+
+## Bugs
+
+### BUG-001 · Moves fail over plain HTTP ("crypto.randomUUID is not a function")   P0 · S · APPROVED
+Reported by the owner 2026-10-30: playing Durak from another device on the LAN (app opened by its
+network address over HTTP), every move failed. Cause: `crypto.randomUUID` exists only on secure origins
+(HTTPS/localhost). Fix f40b59d (pushed): `randomId()` in `apps/web/src/shared/lib/uuid.ts` falls back to a
+v4 UUID from `crypto.getRandomValues`; `features/play/api.ts` uses it; `uuid.test.ts` covers both paths.
+Validation 2026-10-30: **APPROVED** — fix and test read; no other `randomUUID` call left in `apps/web/src`
+(grep). Production is documented as HTTPS (`docs/DEPLOYMENT.md`), so this hit LAN/dev use, but it
+blocked the owner's testing on phones.
 
 ---
 
@@ -139,10 +150,61 @@ Validation 2026-10-29: **APPROVED** — signed-in join, guest → login with `ne
 
 ## B3 · Polish and consistency
 
-Order (PM, 2026-10-29): TASK-033 first (verify what B1/B2 shipped before polishing), then the
-honesty/locale fixes TASK-032, TASK-015, TASK-027, then layout TASK-029, TASK-034, TASK-012, then the
+Order (PM, updated 2026-10-30): TASK-033 first (verify what B1/B2 shipped before polishing), then the
+owner-requested TASK-035 (Durak table) and TASK-036 (Poker hand result), then the honesty/locale fixes TASK-032, TASK-015, TASK-027, then layout TASK-029, TASK-034, TASK-012, then the
 larger visual TASK-009, then TASK-010, TASK-011, TASK-013, and TASK-025 last (hypothesis; only once
 real traffic exists).
+
+### TASK-035 · Durak table redesign                            P1 · M · DESIGN_IN_PROGRESS · B3
+Problem: on desktop the Durak table is taller than the screen, so the player's own hand is cut off,
+while the felt is mostly empty; it doesn't look or feel like the Durak apps players know.
+User story: As a Durak player, I want the whole table, my hand and the one action I need on one screen,
+so I can play without scrolling or hunting for buttons.
+Why: owner request 2026-10-30 ("i think we need change durak ui") with two reference screenshots of
+popular Durak apps; Durak is a core game for the ru/hy audience (PRODUCT_RESEARCH §3.4).
+Reference pattern (owner screenshots): full-bleed felt, opponents around the top, a large fanned hand at
+the bottom, one big primary action button, a status bubble per player (attacking / defending / took /
+passed).
+Scope: Durak board layout and its seat/hand/action components; frontend only. Absorbs TASK-034 (d)
+(no role pills on a finished table). No coins, shop or VIP elements even if the references show them
+(DECISIONS.md standing rule). Out of scope: rule changes, perevodnoy (TASK-020).
+Spec: DESIGN_SPECIFICATIONS.md#task-035 (UI/UX agent writing it)
+Acceptance criteria (PM draft; the spec may refine):
+  1. At 1440×900, 1280×720, 820×1180 and 390×844 the whole table, all opponents, my full hand and the
+     action button are visible without page scroll, for 2–6 players.
+  2. Each player shows name, card count, Bot pill and a status bubble; whose turn it is and the turn
+     timer are visible at the seat.
+  3. One primary action button shows the action available now (e.g. Take / Done / Pass); it is ≥ 44 px
+     and keyboard reachable.
+  4. Hands up to 12+ cards stay selectable on a phone (fan overlaps, tap targets still usable).
+  5. Existing behaviour kept: sounds, tab title, turn caption, Game-over panel, en/ru/hy, no
+     `'durak'` checks in `RoomPage`.
+Tests: DurakBoard component tests (seats, statuses, action button per phase); browser check at the four
+sizes with 2, 4 and 6 players.   Depends on: —   Approval: owner-requested (go-ahead 2026-10-30)
+
+### TASK-036 · Poker hand result you can feel                   P1 · M · DESIGN_IN_PROGRESS · B3
+Problem: after winning a hand the player didn't notice: the result is only in a box below the table.
+User story: As a poker player, I want to see clearly that I won a hand and how many chips I got, so a
+win feels like a win.
+Why: owner request 2026-10-30 ("after won i did not know, i want user feeling win, see winners chips
+count"). The data already exists in the view (`last_hand`: pots, winners, hand name, shown cards).
+Scope: an on-table result moment after each hand: winner seat highlighted, chips move from the pot to the
+winner, "+N" at the winner's stack, hand name (e.g. "Two pair"), shown cards at showdown; split pots
+name every winner. Tone: warm and clear, not casino-flashy (no confetti/coin showers; recreational rule).
+Plays the win sound for my own win only. Check TASK-029 (bet chip overlap) in the same spec.
+Backend: if the next hand starts too quickly to see the result, the spec flags a pause between hands;
+that is poker engine/timing work (not an approval-list item) and ships with this owner-requested task.
+Spec: DESIGN_SPECIFICATIONS.md#task-036 (UI/UX agent writing it)
+Acceptance criteria (PM draft; the spec may refine):
+  1. After every hand the winning seat(s) are highlighted on the table with "+N" and the hand name
+     (or "Others folded"); visible for at least the spec's minimum time before the next deal.
+  2. Stacks update to the new amounts; split pots show each winner's share.
+  3. Readable at 390×844 and 1440×900 with 6 players; respects `prefers-reduced-motion` (no movement,
+     result still shown).
+  4. Screen readers get one polite announcement per hand result.
+  5. en/ru/hy strings; no chip value language (chips are per-table play chips).
+Tests: PokerBoard tests for single winner, split pot and fold-win; feature test for the pause if added.
+Depends on: —   Approval: owner-requested (go-ahead 2026-10-30)
 
 ### TASK-009 · Nardi board in the club style                   P2 · M · PLANNED · B3
 Scope: wood frame, matching checkers/points, "Move" heading, fit-to-screen sizing like Chess/Checkers;
@@ -222,12 +284,11 @@ Evidence: DESIGN_REVIEW.md B2 re-review nits and "Pre-existing issues seen".
 Scope: (a) bot level pill group full card width from `sm` (`sm:max-w-none`; the 320 px cap stays on
 phones); (b) waiting table at 390: the clipboard-fallback field must not cover my own seat's avatar
 (e.g. hide "Copy code" while the field shows); (c) waiting-table frame no longer overlaps the empty
-side seats at 390; (d) finished Durak table hides the seat role pills ("defending").
+side seats at 390; (d) moved to TASK-035 (2026-10-30).
 Acceptance criteria:
   1. ≥ 640 px: level pills end where the Start game button ends; 390 px unchanged (one line, 44 px).
   2. 390 en/ru/hy, clipboard rejected: own avatar fully visible, field selected, no horizontal scroll.
   3. 390: frame and empty seats don't overlap (bounding boxes).
-  4. Finished Durak: no role pills; active Durak unchanged.
 Tests: Segmented/WaitingTable/Durak component tests where testable; browser check otherwise.
 Depends on: —   Approval: none
 
