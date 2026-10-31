@@ -8,6 +8,7 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Platform\Auth\VerificationCodes;
+use App\Platform\Fishka\FishkaWallets;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -18,12 +19,12 @@ class RegisterController extends Controller
     /**
      * Create an account with an email address or a phone number, log in, and send a verification code.
      */
-    public function __invoke(RegisterRequest $request, VerificationCodes $codes): JsonResponse
+    public function __invoke(RegisterRequest $request, VerificationCodes $codes, FishkaWallets $wallets): JsonResponse
     {
         $channel = $request->channel();
         $destination = $request->string($channel->column())->toString();
 
-        $user = DB::transaction(function () use ($request, $channel, $destination) {
+        $user = DB::transaction(function () use ($request, $channel, $destination, $wallets) {
             $user = User::create([
                 'username' => $request->validated('username'),
                 $channel->column() => $destination,
@@ -34,6 +35,8 @@ class RegisterController extends Controller
                 $user->forceFill(['terms_accepted_at' => now()])->save();
             }
             $user->profile()->create();
+            // The welcome bonus, once per account.
+            $wallets->open($user);
 
             return $user;
         });

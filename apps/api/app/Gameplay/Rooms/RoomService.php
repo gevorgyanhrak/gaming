@@ -7,6 +7,7 @@ use App\Enums\RoomStatus;
 use App\Enums\RoomType;
 use App\Gameplay\Actions\RoomEvents;
 use App\Gameplay\Engine\GameSetup;
+use App\Gameplay\Lifecycle\GameFinisher;
 use App\Gameplay\Lifecycle\GameScheduler;
 use App\Gameplay\Lifecycle\RoomPresence;
 use App\Gameplay\Lifecycle\TimeControl;
@@ -16,6 +17,7 @@ use App\Models\GameMode;
 use App\Models\GameMove;
 use App\Models\GameRoom;
 use App\Models\User;
+use App\Platform\Fishka\InsufficientFishkas;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -29,6 +31,7 @@ class RoomService
         private readonly RoomStates $states,
         private readonly GameScheduler $scheduler,
         private readonly RoomEvents $events,
+        private readonly RoomStakes $stakes,
     ) {}
 
     /**
@@ -81,7 +84,7 @@ class RoomService
             }
 
             if ($room->participantFor($user) === null) {
-                $this->seat($room, $room->participants->count(), $user);
+                DB::transaction(fn () => $this->seat($room, $room->participants->count(), $user));
                 $room->load('participants');
             }
 
@@ -91,8 +94,14 @@ class RoomService
 
     public function start(GameRoom $room): GameRoom
     {
-        $room->load(['game', 'participants']);
+        $room->load(['game', 'mode', 'participants']);
         $engine = $this->states->engine($room);
+        // Games played for chips start each person with their buy-in (kept in the options, so a replay
+        // of the move log starts the same way).
+        $stacks = $this->stakes->stacks($room);
+        if ($stacks !== null) {
+            $room->forceFill(['options' => [...($room->options ?? []), 'stacks' => $stacks]])->save();
+        }
         $random = new RecordingRandom;
         $initial = $engine->initialState(new GameSetup($room->seats, $room->options ?? []), $random);
 
@@ -100,13 +109,22 @@ class RoomService
         $nowMs = now()->getTimestampMs();
         $clock = $time->start($room->seats, $nowMs);
 
-        DB::transaction(function () use ($room, $random, $clock) {
+        // The deal can decide a game before anyone acts (poker: a player all-in on the blind for their
+        // whole 1-Fishka buy-in loses or wins the first hand by itself).
+        $outcome = $engine->outcome($initial);
+
+        DB::transaction(function () use ($room, $random, $clock, $outcome, $initial) {
             $room->moves()->create(['seq' => 0, 'type' => GameMove::START, 'rng' => $random->draws() ?: null]);
             $room->forceFill(['status' => RoomStatus::Active, 'started_at' => now(), 'state_version' => 0, 'clock' => $clock])->save();
+
+            if ($outcome !== null) {
+                app(GameFinisher::class)->finish($room, $outcome, 'completed');
+                $this->stakes->settle($room, $initial);
+            }
         });
 
-        $seats = $engine->seatsToAct($initial);
-        $state = new RoomState(0, $initial, $seats, $time->deadline($clock, $seats, $nowMs), $clock);
+        $seats = $outcome === null ? $engine->seatsToAct($initial) : [];
+        $state = new RoomState(0, $initial, $seats, $this->states->deadline($room, $initial, $seats, $nowMs), $clock);
         $this->store->put($room, $state);
 
         app(RoomPresence::class)->started($room);
@@ -134,12 +152,18 @@ class RoomService
     }
 
     /**
+     * Seat a person (who pays the seat's Fishkas, see RoomStakes) or a bot. Call inside a database
+     * transaction, so a seat that can't be paid for is never taken.
+     *
      * @param  User|array{bot: BotProfile, difficulty: BotDifficulty}  $player
+     *
+     * @throws InsufficientFishkas
      */
     private function seat(GameRoom $room, int $seat, User|array $player): void
     {
         if ($player instanceof User) {
-            $room->participants()->create(['seat' => $seat, 'user_id' => $player->id]);
+            $participant = $room->participants()->create(['seat' => $seat, 'user_id' => $player->id]);
+            $this->stakes->take($room, $participant, $player);
 
             return;
         }

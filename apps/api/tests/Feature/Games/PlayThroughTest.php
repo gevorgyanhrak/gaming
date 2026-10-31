@@ -1,12 +1,15 @@
 <?php
 
 use App\Enums\BotDifficulty;
+use App\Enums\FishkaTransactionType as Type;
 use App\Enums\RoomStatus;
 use App\Gameplay\Bots\BotTurnJob;
 use App\Gameplay\Lifecycle\ResumeRoundJob;
 use App\Gameplay\Rooms\RoomStates;
 use App\Gameplay\Rooms\RoomStateStore;
 use App\Models\BotProfile;
+use App\Models\FishkaTransaction;
+use App\Models\FishkaWallet;
 use App\Models\Game;
 use App\Models\GameRoom;
 use App\Models\User;
@@ -71,8 +74,22 @@ it('plays a full game against a bot through the API', function (string $slug) {
         ->and($room->end_reason)->toBe('completed')
         ->and(UserGameStat::query()->where('user_id', $player->id)->sole()->played)->toBe(1);
 
-    // The move log replays to the same final position.
+    // Fishkas: the entry fee once; poker instead takes a buy-in and pays the final chips back.
     $live = app(RoomStates::class)->current($room->load(['game', 'participants']))->state;
+    $seat = $room->participants->firstWhere('user_id', $player->id)->seat;
+    $ledger = FishkaTransaction::query()->where('user_id', $player->id)->orderBy('id')->get();
+    $balance = FishkaWallet::query()->findOrFail($player->id)->balance;
+    if ($slug === 'poker') {
+        // Nothing to pay back (no ledger entry) when the player lost every chip.
+        $cashOut = $live['stacks'][$seat] > 0 ? [Type::PokerWinning] : [];
+        expect($ledger->pluck('type')->all())->toBe([Type::RegistrationBonus, Type::PokerBet, ...$cashOut])
+            ->and($balance)->toBe(5000 - 1000 + $live['stacks'][$seat]);
+    } else {
+        expect($ledger->pluck('type')->all())->toBe([Type::RegistrationBonus, Type::GameEntryFee])
+            ->and($balance)->toBe(4500);
+    }
+
+    // The move log replays to the same final position.
     app(RoomStateStore::class)->forget($room);
     expect(app(RoomStates::class)->rebuild($room)->state)->toBe($live);
 })->with('games');

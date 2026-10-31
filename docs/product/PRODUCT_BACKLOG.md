@@ -14,6 +14,15 @@ feedback earlier the same day: BUG-001 fixed, TASK-035/036 added at the top of B
 | B3 | Polish and consistency (in progress; TASK-035, TASK-036, TASK-029 **done 2026-10-30**; owner go-ahead so far only for TASK-035/036) | order: TASK-033, ~~TASK-035~~, ~~TASK-036~~, TASK-037, TASK-032, TASK-015, TASK-027, ~~TASK-029~~, TASK-034, TASK-012, TASK-009, TASK-010, TASK-011, TASK-013, TASK-025 | none (frontend) |
 | B4 | New capabilities and backend fixes | TASK-014, TASK-016…023 (TASK-030, TASK-031 **done 2026-10-29**) | **owner** (go-ahead for backend work) |
 
+## Fishkas (owner spec 2026-10-30)
+
+### TASK-038 · Fishka currency: wallet, bonuses, entry fees, poker buy-in, admin   P0 · L · READY_FOR_REVIEW (QA fixes done)
+Owner's spec, pasted 2026-10-30, with the owner's choices: poker buy-in/cash-out, bots with house chips.
+Welcome 5,000 · daily 1,000 · entry fee 500 (poker: buy-in ≥ 1, up to the table stack) · "out of
+Fishkas" popup bonus 5,000 at most every 24 h while the balance is below the fee · header balance with
+animation · /wallet history · admin add/deduct/set with reason, transaction tab, existing ban/unban.
+Acceptance: the owner's 16 test scenarios (QA report `docs/qa/QA_REPORT_FISHKA.md`).
+
 ## Bugs
 
 ### BUG-001 · Moves fail over plain HTTP ("crypto.randomUUID is not a function")   P0 · S · APPROVED

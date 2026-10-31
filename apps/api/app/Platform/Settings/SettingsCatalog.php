@@ -49,6 +49,14 @@ final class SettingsCatalog
             new SettingDefinition('matchmaking.abandon_after_seconds', SettingType::Integer, 15, public: true, rules: ['required', 'integer', 'min:0', 'max:600']),
             new SettingDefinition('matchmaking.max_concurrent_games', SettingType::Integer, 1, rules: ['required', 'integer', 'min:1', 'max:10']),
 
+            // Fishkas (free play currency; never bought or cashed out)
+            new SettingDefinition('fishka.registration_bonus', SettingType::Integer, 5000, rules: ['required', 'integer', 'min:0', 'max:1000000']),
+            new SettingDefinition('fishka.daily_bonus', SettingType::Integer, 1000, rules: ['required', 'integer', 'min:0', 'max:1000000']),
+            new SettingDefinition('fishka.entry_fee', SettingType::Integer, 500, public: true, rules: ['required', 'integer', 'min:0', 'max:1000000']),
+            new SettingDefinition('fishka.refill_bonus', SettingType::Integer, 5000, public: true, rules: ['required', 'integer', 'min:0', 'max:1000000']),
+            new SettingDefinition('fishka.refill_cooldown_hours', SettingType::Integer, 24, public: true, rules: ['required', 'integer', 'min:0', 'max:720']),
+            new SettingDefinition('fishka.timezone', SettingType::String, 'Asia/Yerevan', rules: ['required', 'timezone:all']),
+
             // Security
             new SettingDefinition('security.session_lifetime_minutes', SettingType::Integer, (int) config('session.lifetime'), rules: ['required', 'integer', 'min:15', 'max:43200']),
         ];

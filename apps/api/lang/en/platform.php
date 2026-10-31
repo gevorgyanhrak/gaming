@@ -4,6 +4,8 @@ return [
     'auth' => [
         'registration_closed' => 'Registration is currently closed.',
         'inactive' => 'This account is not active.',
+        'banned' => 'Your account has been blocked. Contact support if you think this is a mistake.',
+        'banned_until' => 'Your account is blocked until :date. Contact support if you think this is a mistake.',
         'invalid_login' => 'Enter a valid email address or an international phone number starting with +.',
         'phone_country' => 'Phone numbers from this country are not supported yet.',
         'username_reserved' => 'This username is reserved.',
@@ -67,5 +69,12 @@ return [
         'not_in_progress' => 'This game is not in progress.',
         'no_bot_offer' => 'There is no bot game to accept. You may have been matched with a player.',
         'out_of_date' => 'The game has moved on. Refresh and try again.',
+    ],
+    'fishka' => [
+        'insufficient' => 'You need :needed Fishkas to play this game.',
+        'bonus_not_needed' => 'You still have enough Fishkas to play.',
+        'bonus_cooldown' => 'The free Fishka bonus is not available yet.',
+        'adjust_invalid' => 'Enter an amount of zero or more and a reason.',
+        'adjust_below_zero' => 'The balance cannot go below zero (it is :balance).',
     ],
 ];

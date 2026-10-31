@@ -252,13 +252,35 @@ it('checks or folds for a player who runs out of time', function () {
     expect($engine->timeoutAction($state, $state['to_act']))->toEqual(new Action('check'));
 });
 
+it('starts each seat with its buy-in, bots with the table stack', function () {
+    $state = holdem(3, ['stacks' => [250, null, 1]]);
+
+    expect(array_sum($state['stacks']) + array_sum($state['committed']))->toBe(1251)
+        ->and((new PokerEngine)->buyIn(['starting_chips' => 1000]))->toBe(1000);
+});
+
+it('counts a seat\'s chips as its stack plus an unfolded stake in the hand', function () {
+    $engine = new PokerEngine;
+    $state = holdem(3);
+    $blind = array_search(10, $state['bets'], true);
+
+    expect($engine->chipsOf($state, $blind))->toBe(1000);
+
+    $folded = $state['to_act'];
+    $state = holdemAct($state, 'fold');
+    expect($engine->chipsOf($state, $folded))->toBe($state['stacks'][$folded]);
+});
+
 it('takes a leaving player out and plays on', function () {
     $engine = new PokerEngine;
     $state = holdem(3);
     $leaver = $state['to_act'];
 
     $state = $engine->depart($state, $leaver, new SecureRandom)->state;
+    // They keep their stack (it leaves play and is paid back to them).
     expect($state['out'][$leaver])->toBeTrue()
+        ->and($state['stacks'][$leaver])->toBe(1000)
+        ->and($engine->chipsOf($state, $leaver))->toBe(1000)
         ->and($state['to_act'])->not->toBe($leaver)
         ->and($engine->outcome($state))->toBeNull()
         ->and(holdemChips($state))->toBe(3000);

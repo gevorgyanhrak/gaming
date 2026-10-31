@@ -111,6 +111,27 @@ class ManageSettings extends Page
                     TextInput::make('matchmaking.max_concurrent_games')->label('Games a player can play at once')
                         ->numeric()->integer()->required()->minValue(1)->maxValue(10),
                 ]),
+                Section::make('Fishkas')->columns(2)
+                    ->description('Free play currency. Fishkas are never sold, cashed out or sent between players.')
+                    ->schema([
+                        TextInput::make('fishka.registration_bonus')->label('Welcome bonus')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(1000000)
+                            ->helperText('Given once, when the account is created.'),
+                        TextInput::make('fishka.daily_bonus')->label('Daily bonus')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(1000000)
+                            ->helperText('Given on the first sign-in or visit of each day.'),
+                        TextInput::make('fishka.entry_fee')->label('Game entry fee')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(1000000)
+                            ->helperText('Charged once per game, when the seat is taken. Poker uses a buy-in instead.'),
+                        TextInput::make('fishka.refill_bonus')->label('"Out of Fishkas" bonus')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(1000000)
+                            ->helperText('Offered when a player cannot pay the entry fee.'),
+                        TextInput::make('fishka.refill_cooldown_hours')->label('Hours between "out of Fishkas" bonuses')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(720),
+                        Select::make('fishka.timezone')->label('Day starts in time zone')->searchable()->required()
+                            ->options(fn () => array_combine(timezone_identifiers_list(), timezone_identifiers_list()))
+                            ->helperText('Decides when a new day (and a new daily bonus) begins.'),
+                    ]),
                 Section::make('Security')->columns(2)->schema([
                     TextInput::make('security.session_lifetime_minutes')->label('Session lifetime (minutes)')
                         ->numeric()->integer()->required()->minValue(15)->maxValue(43200)

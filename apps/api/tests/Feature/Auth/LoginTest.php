@@ -36,15 +36,18 @@ it('rejects input that is neither an email nor a phone number', function () {
         ->assertJsonValidationErrors('login');
 });
 
-it('does not log in banned or deactivated users', function (string $state) {
+it('does not log in banned or deactivated users, and says why', function (string $state, string $message) {
     User::factory()->{$state}()->create(['email' => 'alice@example.com']);
 
     $this->postJson('/api/v1/auth/login', ['login' => 'alice@example.com', 'password' => 'password1'])
         ->assertUnprocessable()
-        ->assertJsonValidationErrors(['login' => __('platform.auth.inactive')]);
+        ->assertJsonValidationErrors(['login' => __($message)]);
 
     $this->getJson('/api/v1/me')->assertUnauthorized();
-})->with(['banned', 'deactivated']);
+})->with([
+    'banned' => ['banned', 'platform.auth.banned'],
+    'deactivated' => ['deactivated', 'platform.auth.inactive'],
+]);
 
 it('locks out after repeated failures', function () {
     User::factory()->create(['email' => 'alice@example.com']);

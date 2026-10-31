@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property bool $is_active
  * @property ParticipantResult|null $result
  * @property int|null $score
+ * @property int $stake Fishkas paid for the seat (entry fee or poker buy-in).
  * @property-read GameRoom $room
  * @property-read User|null $user
  * @property-read BotProfile|null $bot

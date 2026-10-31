@@ -13,9 +13,10 @@ Read first, every time: `docs/team/README.md` (workflow, task format, statuses, 
 `CLAUDE.md`, `docs/ARCHITECTURE.md`, `docs/product/PRODUCT_BACKLOG.md`, `docs/team/DECISIONS.md`.
 
 ## Product facts you must respect
-- Recreational only: **no real money, no purchasable or transferable chips, no coins, shop, VIP,
-  prize wheels or loot boxes — ever.** Poker chips are per-table play chips. Never propose monetization
-  that touches this; if a monetization idea seems valuable, record it as a question for the owner.
+- Recreational only: **no real money; Fishkas (the free platform currency, owner decision 2026-10-30)
+  are never bought, sold, cashed out or sent between users; no shop, VIP, prize wheels or loot boxes —
+  ever.** Fishkas come from bonuses and pay entry fees and poker buy-ins. Never propose monetization that
+  touches this; if a monetization idea seems valuable, record it as a question for the owner.
 - The backend is the only rules authority. Features that change rules, ratings or outcomes are backend
   work first.
 - Languages: en, ru, hy. Audience: Armenian / Russian-speaking players of classic games plus chess.

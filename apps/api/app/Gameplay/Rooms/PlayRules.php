@@ -6,7 +6,10 @@ use App\Gameplay\GameRegistry;
 use App\Models\GameMode;
 use App\Models\GameParticipant;
 use App\Models\User;
+use App\Platform\Fishka\InsufficientFishkas;
 use App\Platform\Settings\Settings;
+use Closure;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -17,12 +20,13 @@ class PlayRules
     public function __construct(
         private readonly GameRegistry $registry,
         private readonly Settings $settings,
+        private readonly RoomStakes $stakes,
     ) {}
 
     /**
      * @param  'bot'|'private'|'matchmaking'  $kind
      *
-     * @throws ValidationException
+     * @throws ValidationException|InsufficientFishkas
      */
     public function ensureCanStart(User $user, GameMode $mode, string $kind): void
     {
@@ -43,5 +47,22 @@ class PlayRules
         if ($active >= (int) $this->settings->get('matchmaking.max_concurrent_games')) {
             throw ValidationException::withMessages(['game_mode_id' => __('platform.play.too_many_games')]);
         }
+
+        $this->stakes->ensureCanAfford($user, $mode);
+    }
+
+    /**
+     * Run $start (the checks above, then creating or joining the game) for one request of this player
+     * at a time. Rapid repeated clicks then queue up: the next one finds the game already started and
+     * fails the "games at once" check, instead of starting and paying for another game.
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $start
+     * @return T
+     */
+    public function exclusively(User $user, Closure $start): mixed
+    {
+        return Cache::lock("play:start:{$user->id}", 15)->block(10, $start);
     }
 }

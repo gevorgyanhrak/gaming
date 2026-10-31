@@ -41,6 +41,8 @@ export interface GameTraits {
   roundWon?: (prev: View, next: View, seat: number) => boolean
   /** What the header calls the pause before the next round (a translation key). */
   nextRound?: ParseKeys
+  /** Played with the players' own Fishkas as chips (a buy-in) instead of the entry fee. */
+  buyIn?: boolean
 }
 
 const pieces = (view: View) =>
@@ -73,6 +75,7 @@ export const traits: Partial<Record<string, GameTraits>> = {
       )
     },
     nextRound: 'poker.nextHand',
+    buyIn: true,
   },
 }
 

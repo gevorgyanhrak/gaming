@@ -9,6 +9,8 @@ use App\Http\Middleware\EnsureContactVerified;
 use App\Http\Middleware\EnsureNotInMaintenance;
 use App\Http\Middleware\SetLocaleFromRequest;
 use App\Http\Middleware\TouchLastActive;
+use App\Platform\Fishka\FishkaBonusUnavailable;
+use App\Platform\Fishka\InsufficientFishkas;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -50,6 +52,20 @@ return Application::configure(basePath: dirname(__DIR__))
             'message' => $e->getMessage(),
             'current_version' => $e->currentVersion,
         ], 409));
+
+        // Fishka outcomes the client handles with the "out of Fishkas" popup: never reported.
+        $exceptions->dontReport([InsufficientFishkas::class, FishkaBonusUnavailable::class]);
+        $exceptions->render(fn (InsufficientFishkas $e) => response()->json([
+            'message' => $e->getMessage(),
+            'code' => 'insufficient_fishkas',
+            'balance' => $e->balance,
+            'needed' => $e->needed,
+        ], 422));
+        $exceptions->render(fn (FishkaBonusUnavailable $e) => response()->json([
+            'message' => $e->getMessage(),
+            'code' => 'fishka_bonus_unavailable',
+            'available_at' => $e->availableAt?->toIso8601String(),
+        ], 422));
 
         // Generic body: the default message names the Eloquent model class that was not found.
         $exceptions->render(fn (NotFoundHttpException $e, Request $request) => $request->is('api/*')

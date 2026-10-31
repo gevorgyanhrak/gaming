@@ -7,6 +7,7 @@ use App\Gameplay\Contracts\DecidesTimeouts;
 use App\Gameplay\Contracts\HandlesDepartures;
 use App\Gameplay\Contracts\HandlesTimeouts;
 use App\Gameplay\Contracts\PausesBetweenRounds;
+use App\Gameplay\Contracts\PlaysForChips;
 use App\Gameplay\Contracts\ValidatesActions;
 use App\Gameplay\Engine\Action;
 use App\Gameplay\Engine\ActionResult;
@@ -19,6 +20,8 @@ use App\Gameplay\Lifecycle\GameFinisher;
 use App\Gameplay\Lifecycle\GameScheduler;
 use App\Gameplay\Lifecycle\TimeControl;
 use App\Gameplay\Random\RecordingRandom;
+use App\Gameplay\Random\SecureRandom;
+use App\Gameplay\Rooms\RoomStakes;
 use App\Gameplay\Rooms\RoomState;
 use App\Gameplay\Rooms\RoomStates;
 use App\Gameplay\Rooms\RoomStateStore;
@@ -43,6 +46,7 @@ class GameActionService
         private readonly GameFinisher $finisher,
         private readonly GameScheduler $scheduler,
         private readonly RoomEvents $events,
+        private readonly RoomStakes $stakes,
     ) {}
 
     /**
@@ -221,8 +225,10 @@ class GameActionService
             'payload' => ['type' => $type, 'departed' => true],
             'rng' => $random->draws() ?: null,
             'client_action_id' => $clientActionId,
-        ], fn () => $current->clock, function () use ($room, $leaver, $type) {
+        ], fn () => $current->clock, function () use ($room, $leaver, $type, $transition) {
             $this->finisher->finishParticipant($leaver, $room->game_id, $type === GameMove::ABANDON ? ParticipantResult::Abandoned : ParticipantResult::Loss);
+            // A game played for chips goes on without them: their chips go back to their wallet.
+            $this->stakes->cashOut($room, $leaver, $transition->state);
         });
     }
 
@@ -242,7 +248,7 @@ class GameActionService
         $seats = $outcome === null ? $engine->seatsToAct($transition->state) : [];
         $clock = $nextClock($seats);
 
-        DB::transaction(function () use ($room, $actor, $move, $version, $outcome, $clock, $alsoInTransaction) {
+        DB::transaction(function () use ($room, $actor, $move, $version, $outcome, $clock, $alsoInTransaction, $transition) {
             $room->moves()->create([...$move, 'seq' => $version, 'participant_id' => $actor?->id]);
             $room->forceFill(['state_version' => $version, 'clock' => $clock])->save();
 
@@ -251,6 +257,7 @@ class GameActionService
             }
             if ($outcome !== null) {
                 $this->finisher->finish($room, $outcome, 'completed');
+                $this->stakes->settle($room, $transition->state);
             }
         });
 
@@ -285,11 +292,17 @@ class GameActionService
             $outcome = $engine->timeoutOutcome($current->state, $loser->seat);
         }
 
+        // A game played for chips settles as if the player had left the table: chips they already put
+        // into the hand stay in the pot for the others (see HandlesDepartures), only their stack goes back.
+        $final = $engine instanceof PlaysForChips && $engine instanceof HandlesDepartures
+            ? $engine->depart($current->state, $loser->seat, new SecureRandom)->state
+            : $current->state;
+
         // Running out of a game clock (chess) is a plain loss on time; a missed per-turn timer counts as
         // walking away from the game.
         $abandoned = $type === GameMove::ABANDON || ($type === GameMove::TIMEOUT && $current->clock === null);
 
-        DB::transaction(function () use ($room, $loser, $type, $version, $clientActionId, $outcome, $abandoned) {
+        DB::transaction(function () use ($room, $loser, $type, $version, $clientActionId, $outcome, $abandoned, $final) {
             $room->moves()->create([
                 'seq' => $version,
                 'participant_id' => $loser->id,
@@ -304,6 +317,7 @@ class GameActionService
                 $type,
                 $abandoned && ! $outcome->isDraw() ? [$loser->seat] : [],
             );
+            $this->stakes->settle($room, $final);
         });
 
         $state = new RoomState($version, $current->state, [], null, $current->clock);

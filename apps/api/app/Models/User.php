@@ -95,11 +95,44 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     }
 
     /**
+     * @return HasOne<FishkaWallet, $this>
+     */
+    public function fishkaWallet(): HasOne
+    {
+        return $this->hasOne(FishkaWallet::class);
+    }
+
+    /**
+     * @return HasMany<FishkaTransaction, $this>
+     */
+    public function fishkaTransactions(): HasMany
+    {
+        return $this->hasMany(FishkaTransaction::class);
+    }
+
+    /**
      * @return HasMany<UserBan, $this>
      */
     public function bans(): HasMany
     {
         return $this->hasMany(UserBan::class)->latest('id');
+    }
+
+    /**
+     * Why the account can't be used, for the person signing in: blocked (until when, if the ban ends),
+     * or otherwise not active.
+     */
+    public function inactiveMessage(): string
+    {
+        if ($this->status !== UserStatus::Banned) {
+            return __('platform.auth.inactive');
+        }
+
+        $until = $this->bans()->active()->first()?->expires_at;
+
+        return $until === null
+            ? __('platform.auth.banned')
+            : __('platform.auth.banned_until', ['date' => $until->locale(app()->getLocale())->isoFormat('LLL')]);
     }
 
     /**

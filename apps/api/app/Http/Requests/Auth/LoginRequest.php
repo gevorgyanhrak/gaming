@@ -56,7 +56,7 @@ class LoginRequest extends FormRequest
         if (! $user->isActive()) {
             Auth::guard('web')->logout();
 
-            throw ValidationException::withMessages(['login' => __('platform.auth.inactive')]);
+            throw ValidationException::withMessages(['login' => $user->inactiveMessage()]);
         }
 
         return $user;

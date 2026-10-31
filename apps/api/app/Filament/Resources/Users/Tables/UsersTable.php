@@ -32,6 +32,7 @@ class UsersTable
                     ->state(fn ($record) => $record->phone === null ? null : $record->phone_verified_at !== null)
                     ->toggleable(),
                 TextColumn::make('roles.name')->label('Roles')->badge()->toggleable(),
+                TextColumn::make('fishkaWallet.balance')->label('Fishkas')->numeric()->placeholder('—')->toggleable(),
                 TextColumn::make('created_at')->label('Registered')->dateTime()->sortable(),
                 TextColumn::make('last_active_at')->label('Last active')->since()->sortable(),
             ])

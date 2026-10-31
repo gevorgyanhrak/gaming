@@ -1,13 +1,15 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
+import { createQueryClient } from '@/app/queryClient'
 import { routes } from '@/app/routes'
+import { closeOutOfFishkas } from '@/features/wallet/outOfFishkas'
 
-/** Renders the real route tree at `path`, with a fresh, non-retrying query client. */
+/** Renders the real route tree at `path`, with the app's query client (fresh, non-retrying). */
 export function renderRoute(path: string) {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  })
+  const queryClient = createQueryClient()
+  queryClient.setDefaultOptions({ queries: { retry: false } })
+  closeOutOfFishkas()
   const router = createMemoryRouter(routes, { initialEntries: [path] })
 
   return {

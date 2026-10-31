@@ -8,10 +8,12 @@ use App\Enums\RoomType;
 use App\Gameplay\Bots\BotSelector;
 use App\Gameplay\Rooms\PlayRules;
 use App\Gameplay\Rooms\RoomService;
+use App\Gameplay\Rooms\RoomStakes;
 use App\Models\BotProfile;
 use App\Models\GameMode;
 use App\Models\GameRoom;
 use App\Models\User;
+use App\Platform\Fishka\InsufficientFishkas;
 use App\Platform\Settings\Settings;
 use Closure;
 use Illuminate\Contracts\Cache\LockProvider;
@@ -46,6 +48,7 @@ class Matchmaker
         private readonly PlayRules $rules,
         private readonly BotSelector $bots,
         private readonly Settings $settings,
+        private readonly RoomStakes $stakes,
     ) {}
 
     /**
@@ -54,6 +57,11 @@ class Matchmaker
      * @return Ticket|GameRoom The ticket while waiting, or the room if matched right away.
      */
     public function join(User $user, GameMode $mode): Ticket|GameRoom
+    {
+        return $this->rules->exclusively($user, fn () => $this->queueUp($user, $mode));
+    }
+
+    private function queueUp(User $user, GameMode $mode): Ticket|GameRoom
     {
         $this->rules->ensureCanStart($user, $mode, 'matchmaking');
         $this->leave($user);
@@ -132,6 +140,11 @@ class Matchmaker
      */
     public function acceptBot(User $user, BotDifficulty $difficulty): ?GameRoom
     {
+        return $this->rules->exclusively($user, fn () => $this->startBotGame($user, $difficulty));
+    }
+
+    private function startBotGame(User $user, BotDifficulty $difficulty): ?GameRoom
+    {
         $modeId = $this->modeOf($user->id);
         $mode = $modeId !== null ? GameMode::query()->with('game')->find($modeId) : null;
 
@@ -190,7 +203,11 @@ class Matchmaker
 
                     if ($mode->game->bot_fallback_mode === BotFallbackMode::Auto) {
                         $user = User::query()->find($userId);
-                        $room = $user === null ? null : $this->botRoom($mode, $user, BotDifficulty::Medium);
+                        try {
+                            $room = $user === null ? null : $this->botRoom($mode, $user, BotDifficulty::Medium);
+                        } catch (InsufficientFishkas) {
+                            $room = null;
+                        }
                         unset($queue[$userId]);
                         $this->store()->forget($this->userKey($userId));
                         if ($room !== null) {
@@ -232,7 +249,10 @@ class Matchmaker
             }
 
             $tickets = array_slice($queue, 0, $size, true);
-            $players = User::query()->whereIn('id', array_keys($tickets))->get()->sortBy(fn (User $u) => $tickets[$u->id]->joinedAt)->values()->all();
+            // Someone whose Fishkas ran out while waiting (another game, an admin change) leaves the queue.
+            $players = User::query()->whereIn('id', array_keys($tickets))->get()
+                ->filter(fn (User $u) => $this->stakes->canAfford($u, $mode))
+                ->sortBy(fn (User $u) => $tickets[$u->id]->joinedAt)->values()->all();
 
             foreach (array_keys($tickets) as $userId) {
                 unset($queue[$userId]);
@@ -243,7 +263,11 @@ class Matchmaker
                 continue;
             }
 
-            $room = $this->rooms->createStarted($mode, RoomType::Matchmaking, $players);
+            try {
+                $room = $this->rooms->createStarted($mode, RoomType::Matchmaking, $players);
+            } catch (InsufficientFishkas) {
+                continue;   // A balance changed in the meantime; nobody was charged.
+            }
             $this->notifyMatched($room);
         }
 

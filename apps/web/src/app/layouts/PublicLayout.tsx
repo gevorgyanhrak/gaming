@@ -8,6 +8,9 @@ import { useCurrentUser } from '@/features/auth/hooks'
 import { GameIcon } from '@/features/catalog/components/GameArt'
 import { useGames } from '@/features/catalog/queries'
 import { ActiveGamesBar } from '@/features/play/components/ActiveGamesBar'
+import { FishkaBalance } from '@/features/wallet/components/FishkaBalance'
+import { OutOfFishkasDialog } from '@/features/wallet/components/OutOfFishkasDialog'
+import { useWalletSync } from '@/features/wallet/hooks'
 import { MaintenanceScreen } from '@/features/platform/MaintenanceScreen'
 import { useFavicon } from '@/features/platform/useFavicon'
 import { usePublicConfig } from '@/features/platform/usePublicConfig'
@@ -119,7 +122,10 @@ export function PublicLayout() {
               {user.isPending ? (
                 <Skeleton className="size-9 rounded-full" />
               ) : user.data ? (
-                <UserMenu user={user.data} />
+                <>
+                  <FishkaBalance />
+                  <UserMenu user={user.data} />
+                </>
               ) : (
                 <>
                   <NavLink to="/login" className={navLink}>
@@ -135,6 +141,7 @@ export function PublicLayout() {
         </header>
 
         {user.data ? <VerificationBanner user={user.data} /> : null}
+        {user.data ? <WalletSync /> : null}
         {user.data && !inMaintenance ? <ActiveGamesBar /> : null}
 
         <main className="flex-1">
@@ -322,4 +329,10 @@ function SideNav({ home, signedIn }: { home: string; signedIn: boolean }) {
       ) : null}
     </nav>
   )
+}
+
+/** Balance updates from the server, and the "out of Fishkas" popup, while signed in. */
+function WalletSync() {
+  useWalletSync()
+  return <OutOfFishkasDialog />
 }

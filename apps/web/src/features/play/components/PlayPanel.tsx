@@ -26,6 +26,9 @@ import {
   startMatchmaking,
   type BotDifficulty,
 } from '../api'
+import { traitsOf } from '@/games/registry'
+import { FishkaIcon } from '@/features/wallet/components/FishkaIcon'
+import { useWallet } from '@/features/wallet/hooks'
 import { MatchmakingStatus } from './MatchmakingStatus'
 
 /**
@@ -33,7 +36,8 @@ import { MatchmakingStatus } from './MatchmakingStatus'
  * and panels for the other ways in: a bot, a friend's private table, an invite code.
  */
 export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const wallet = useWallet()
   const message = useMessage()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -124,6 +128,16 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
             ) : null}
           </div>
         ) : null}
+
+        <p className="flex items-center justify-center gap-2 text-sm font-semibold text-gold-light">
+          <FishkaIcon className="size-5" />
+          {traitsOf(game.slug).buyIn
+            ? t('fishka.buyIn')
+            : t('fishka.entryFee', {
+                count: wallet.data?.entry_fee ?? 500,
+                amount: (wallet.data?.entry_fee ?? 500).toLocaleString(i18n.language),
+              })}
+        </p>
 
         {error ? (
           <Alert tone="danger">

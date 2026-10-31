@@ -19,3 +19,4 @@ Records are immutable once accepted; a changed decision gets a new record that s
 | [0012](0012-one-time-codes-for-both-channels.md) | One-time codes for both channels | Accepted |
 | [0013](0013-admin-managed-settings.md) | Admin-managed platform settings | Accepted |
 | [0014](0014-separate-admin-guard.md) | Separate session guard for the admin panel | Accepted |
+| [0015](0015-fishka-wallet-ledger.md) | Fishka wallets: locked balance row, append-only ledger | Accepted |

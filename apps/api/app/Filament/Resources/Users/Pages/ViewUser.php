@@ -5,20 +5,25 @@ namespace App\Filament\Resources\Users\Pages;
 use App\Enums\UserStatus;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
+use App\Platform\Fishka\FishkaWallets;
 use App\Platform\Moderation\ModerationException;
 use App\Platform\Moderation\UserModeration;
 use Closure;
 use Database\Seeders\RoleSeeder;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\ValidationException;
 
 /**
- * Account details plus moderation. All actions go through UserModeration (rules + audit log).
+ * Account details plus moderation. Moderation goes through UserModeration and Fishka changes through
+ * FishkaWallets::adjust (both audited).
  *
  * @property User $record
  */
@@ -62,6 +67,16 @@ class ViewUser extends ViewRecord
                 ->requiresConfirmation()
                 ->visible(fn () => $this->canModerate() && $this->record->status === UserStatus::Deactivated)
                 ->action(fn () => $this->moderate(fn (UserModeration $m, User $actor) => $m->activate($this->record, $actor), 'Account activated.')),
+            ActionGroup::make([
+                $this->fishkaAction('addFishkas', 'Add Fishkas', 'credit', 'heroicon-o-plus-circle', 'Fishkas to add'),
+                $this->fishkaAction('deductFishkas', 'Deduct Fishkas', 'debit', 'heroicon-o-minus-circle', 'Fishkas to deduct'),
+                $this->fishkaAction('setFishkas', 'Set exact balance', 'set', 'heroicon-o-pencil-square', 'New balance'),
+            ])
+                ->label('Fishkas')
+                ->icon('heroicon-o-banknotes')
+                ->button()
+                ->color('warning')
+                ->visible(fn () => $this->canModerate()),
             Action::make('roles')
                 ->label('Manage roles')
                 ->icon('heroicon-o-shield-check')
@@ -77,6 +92,36 @@ class ViewUser extends ViewRecord
                     'Roles updated.',
                 )),
         ];
+    }
+
+    /**
+     * @param  'credit'|'debit'|'set'  $mode
+     */
+    private function fishkaAction(string $name, string $label, string $mode, string $icon, string $amountLabel): Action
+    {
+        return Action::make($name)
+            ->label($label)
+            ->icon($icon)
+            ->modalDescription(fn () => 'Current balance: '.number_format(app(FishkaWallets::class)->wallet($this->record)->balance).' Fishkas.')
+            ->schema([
+                TextInput::make('amount')->label($amountLabel)->required()->numeric()->integer()->minValue($mode === 'set' ? 0 : 1)->maxValue(10_000_000),
+                Textarea::make('reason')->required()->maxLength(500)->helperText('Saved with the change and shown in the transaction history.'),
+            ])
+            ->action(function (array $data) use ($mode) {
+                /** @var User $actor */
+                $actor = auth('admin')->user();
+                try {
+                    $entry = app(FishkaWallets::class)->adjust($this->record, $actor, $mode, (int) $data['amount'], $data['reason']);
+                } catch (ValidationException $e) {
+                    Notification::make()->danger()->title(collect($e->errors())->flatten()->first() ?? 'Not changed.')->send();
+
+                    return;
+                }
+                $this->record->refresh();
+                Notification::make()->success()
+                    ->title($entry === null ? 'Balance unchanged.' : 'Balance is now '.number_format($entry->balance_after).' Fishkas.')
+                    ->send();
+            });
     }
 
     private function canModerate(): bool

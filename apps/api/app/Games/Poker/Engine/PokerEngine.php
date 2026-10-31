@@ -6,6 +6,7 @@ use App\Gameplay\Contracts\GameEngine;
 use App\Gameplay\Contracts\HandlesDepartures;
 use App\Gameplay\Contracts\HandlesTimeouts;
 use App\Gameplay\Contracts\PausesBetweenRounds;
+use App\Gameplay\Contracts\PlaysForChips;
 use App\Gameplay\Contracts\ValidatesActions;
 use App\Gameplay\Engine\Action;
 use App\Gameplay\Engine\GameSetup;
@@ -15,9 +16,11 @@ use App\Gameplay\Exceptions\IllegalAction;
 use App\Gameplay\Random\RandomSource;
 
 /**
- * No-limit Texas hold'em as a sit-and-go for 2–10 seats with play chips: everyone starts with the
- * same stack, blinds double every `level_hands` hands, and hands are dealt until one player has all
- * the chips. Chips exist only inside this game; they have no value and never leave it.
+ * No-limit Texas hold'em as a sit-and-go for 2–10 seats. The chips are the players' own Fishkas
+ * (PlaysForChips): each person starts with their buy-in (`options.stacks`, at most `starting_chips`),
+ * bots with `starting_chips` from the house. Blinds double every `level_hands` hands and hands are dealt
+ * until one player has all the chips in play. A player who leaves keeps their stack (it leaves play and
+ * is paid back to them).
  *
  * Actions of the seat to act: fold, check, call, and raise {amount: the total bet this street}.
  * legalActions() describes raises as {type: raise, min, max}; any amount in between is accepted,
@@ -30,17 +33,18 @@ use App\Gameplay\Random\RandomSource;
  * State: stacks, out (busted or left), button, hand (number), blinds [sb, bb], deck and hole
  * (hidden), board, street, bets (this street), committed (this hand), folded, acted, current_bet,
  * min_raise, to_act, last_hand (the last finished hand's board, showdown, pots and per-seat
- * payouts), forfeited (chips of players who left), pause_ms, result.
+ * payouts), forfeited (unused, kept for older states), pause_ms, result.
  */
-final class PokerEngine implements GameEngine, HandlesDepartures, HandlesTimeouts, PausesBetweenRounds, ValidatesActions
+final class PokerEngine implements GameEngine, HandlesDepartures, HandlesTimeouts, PausesBetweenRounds, PlaysForChips, ValidatesActions
 {
     public function initialState(GameSetup $setup, RandomSource $random): array
     {
         $seats = $setup->seats;
         $options = $setup->options;
 
+        $start = $this->buyIn($options);
         $state = [
-            'stacks' => array_fill(0, $seats, (int) ($options['starting_chips'] ?? 1000)),
+            'stacks' => array_map(fn (int $seat) => (int) ($options['stacks'][$seat] ?? $start), range(0, $seats - 1)),
             'out' => array_fill(0, $seats, false),
             'button' => $random->int(0, $seats - 1),
             'hand' => 0,
@@ -163,7 +167,8 @@ final class PokerEngine implements GameEngine, HandlesDepartures, HandlesTimeout
     }
 
     /**
-     * The player leaves the table: their hand is folded and their chips leave play.
+     * The player leaves the table: their hand is folded and their stack leaves play (it stays in
+     * `stacks` for chipsOf(); chips already in this hand's pot stay in it).
      *
      * @param  array<string, mixed>  $state
      */
@@ -173,8 +178,6 @@ final class PokerEngine implements GameEngine, HandlesDepartures, HandlesTimeout
         $wasToAct = $state['to_act'] === $seat;
         $state['folded'][$seat] = true;
         $state['out'][$seat] = true;
-        $state['forfeited'] += $state['stacks'][$seat];
-        $state['stacks'][$seat] = 0;
         $state['busted'][] = $seat;
 
         if ($state['street'] === 'over') {
@@ -213,6 +216,25 @@ final class PokerEngine implements GameEngine, HandlesDepartures, HandlesTimeout
     public function outcome(array $state): ?Outcome
     {
         return $state['result'] === null ? null : new Outcome($state['result']['winners'], $state['result']['reason']);
+    }
+
+    /**
+     * @param  array<string, mixed>  $options
+     */
+    public function buyIn(array $options): int
+    {
+        return (int) ($options['starting_chips'] ?? 1000);
+    }
+
+    /**
+     * The stack, plus what the seat put into the current hand unless they folded it (folded chips stay
+     * in the pot for the others). Between hands and at the end nothing is in a pot.
+     *
+     * @param  array<string, mixed>  $state
+     */
+    public function chipsOf(array $state, int $seat): int
+    {
+        return $state['stacks'][$seat] + ($state['folded'][$seat] ? 0 : $state['committed'][$seat]);
     }
 
     /**

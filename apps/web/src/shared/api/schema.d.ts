@@ -266,7 +266,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** The authenticated user's account */
+        /**
+         * The authenticated user's account. The first visit of the day (a session that is still signed in
+         *     counts as signing in) brings the daily Fishka bonus
+         */
         get: operations["v1.me.show"];
         put?: never;
         post?: never;
@@ -631,6 +634,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me/wallet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The signed-in player's Fishkas: balance, totals, the entry fee, and whether the "out of
+         *          * Fishkas" bonus can be taken now
+         */
+        get: operations["v1.me.wallet.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/wallet/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The Fishka ledger, newest first (paginated) */
+        get: operations["v1.me.wallet.transactions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/wallet/refill": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Take the "out of Fishkas" bonus: only while the balance can't pay a game's entry fee, and not
+         *     again before the cooldown has passed (422 with code "fishka_bonus_unavailable" otherwise)
+         */
+        post: operations["v1.me.wallet.refill"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -673,6 +733,17 @@ export interface components {
             /** @description Tables for more than two (poker): bots to play against, or seats in a private room. */
             opponents?: number | null;
             seats?: number | null;
+        };
+        /** FishkaTransactionResource */
+        FishkaTransactionResource: {
+            id: number;
+            /** @enum {string} */
+            type: "registration_bonus" | "daily_login_bonus" | "game_entry_fee" | "game_entry_refund" | "poker_bet" | "poker_winning" | "admin_credit" | "admin_debit" | "insufficient_balance_bonus";
+            amount: number;
+            balance_after: number;
+            description: string | null;
+            reference_id: string | null;
+            created_at: string;
         };
         /** ForgotPasswordRequest */
         ForgotPasswordRequest: {
@@ -726,6 +797,11 @@ export interface components {
             current_streak: number;
             best_streak: number;
             last_played_at: string | null;
+        };
+        /** InsufficientFishkas */
+        InsufficientFishkas: {
+            balance: number;
+            needed: number;
         };
         /** LoginRequest */
         LoginRequest: {
@@ -1719,6 +1795,14 @@ export interface operations {
             };
         };
         responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["InsufficientFishkas"];
+                };
+            };
             /** @description `RoomResource` */
             201: {
                 headers: {
@@ -1757,7 +1841,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["RoomResource"];
-                    };
+                    } | (Record<string, never> | components["schemas"]["InsufficientFishkas"]);
                 };
             };
             401: components["responses"]["AuthenticationException"];
@@ -2080,6 +2164,118 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.me.wallet.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            balance: number;
+                            total_earned: number;
+                            total_spent: number;
+                            entry_fee: number;
+                            refill: {
+                                available: boolean;
+                                available_at: string | null;
+                                amount: number;
+                            };
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.me.wallet.transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `FishkaTransactionResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["FishkaTransactionResource"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.me.wallet.refill": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            balance: number;
+                            total_earned: number;
+                            total_spent: number;
+                            entry_fee: number;
+                            refill: {
+                                available: boolean;
+                                available_at: string | null;
+                                amount: number;
+                            };
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
         };
     };
 }

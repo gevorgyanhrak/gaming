@@ -12,6 +12,7 @@ use App\Gameplay\Lifecycle\RoomPresence;
 use App\Gameplay\Rooms\PlayRules;
 use App\Gameplay\Rooms\RoomPresenter;
 use App\Gameplay\Rooms\RoomService;
+use App\Gameplay\Rooms\RoomStakes;
 use App\Gameplay\Rooms\RoomStates;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Rooms\CreateRoomRequest;
@@ -22,6 +23,7 @@ use App\Models\GameRoom;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
@@ -40,26 +42,31 @@ class RoomController extends Controller
         $mode = GameMode::query()->with('game')->findOrFail($request->integer('game_mode_id'));
         $type = $request->string('type')->toString();
 
-        $rules->ensureCanStart($user, $mode, $type);
+        // One start at a time per player: a double click can't open (and pay for) two games.
+        $room = $rules->exclusively($user, function () use ($rules, $rooms, $bots, $user, $mode, $type, $request) {
+            $rules->ensureCanStart($user, $mode, $type);
 
-        if ($type === 'bot') {
-            $difficulty = BotDifficulty::from($request->string('bot_difficulty')->toString());
-            $opponents = $request->integer('opponents', 1);
-            $this->ensurePlayers($mode, 1 + $opponents, 'opponents');
+            if ($type === 'bot') {
+                $difficulty = BotDifficulty::from($request->string('bot_difficulty')->toString());
+                $opponents = $request->integer('opponents', 1);
+                $this->ensurePlayers($mode, 1 + $opponents, 'opponents');
 
-            try {
-                $picked = $bots->pickMany($mode->game, $difficulty, $opponents);
-            } catch (InvalidArgumentException) {
-                throw ValidationException::withMessages(['bot_difficulty' => __('platform.play.no_bot')]);
+                try {
+                    $picked = $bots->pickMany($mode->game, $difficulty, $opponents);
+                } catch (InvalidArgumentException) {
+                    throw ValidationException::withMessages(['bot_difficulty' => __('platform.play.no_bot')]);
+                }
+                $players = [$user, ...array_map(fn (BotProfile $bot) => ['bot' => $bot, 'difficulty' => $difficulty], $picked)];
+
+                $room = $rooms->createStarted($mode, RoomType::Bot, $players, $user);
+            } else {
+                $seats = $request->integer('seats', $mode->max_players);
+                $this->ensurePlayers($mode, $seats, 'seats');
+                $room = $rooms->createWaiting($mode, $user, $this->inviteCode(), $seats);
             }
-            $players = [$user, ...array_map(fn (BotProfile $bot) => ['bot' => $bot, 'difficulty' => $difficulty], $picked)];
 
-            $room = $rooms->createStarted($mode, RoomType::Bot, $players, $user);
-        } else {
-            $seats = $request->integer('seats', $mode->max_players);
-            $this->ensurePlayers($mode, $seats, 'seats');
-            $room = $rooms->createWaiting($mode, $user, $this->inviteCode(), $seats);
-        }
+            return $room;
+        });
 
         return RoomResource::make($this->loaded($room))->response()->setStatusCode(201);
     }
@@ -82,15 +89,17 @@ class RoomController extends Controller
             throw ValidationException::withMessages(['invite_code' => __('platform.play.invite_invalid')]);
         }
 
-        if ($room->participantFor($user) === null) {
-            $rules->ensureCanStart($user, $room->mode, 'private');
-        }
+        $room = $rules->exclusively($user, function () use ($rules, $rooms, $room, $user) {
+            if ($room->participantFor($user) === null) {
+                $rules->ensureCanStart($user, $room->mode, 'private');
+            }
 
-        try {
-            $room = $rooms->join($room, $user);
-        } catch (InvalidArgumentException) {
-            throw ValidationException::withMessages(['invite_code' => __('platform.play.invite_invalid')]);
-        }
+            try {
+                return $rooms->join($room, $user);
+            } catch (InvalidArgumentException) {
+                throw ValidationException::withMessages(['invite_code' => __('platform.play.invite_invalid')]);
+            }
+        });
 
         return new RoomResource($this->loaded($room));
     }
@@ -137,7 +146,7 @@ class RoomController extends Controller
     /**
      * Leave a room: resigns an active game, or leaves (the creator: closes) a waiting room.
      */
-    public function leave(Request $request, GameRoom $room, GameActionService $actions): JsonResponse
+    public function leave(Request $request, GameRoom $room, GameActionService $actions, RoomStakes $stakes): JsonResponse
     {
         /** @var User $user */
         $user = $request->user();
@@ -147,12 +156,19 @@ class RoomController extends Controller
         if ($participant !== null && $participant->is_active && $room->isActive()) {
             $actions->submit($room, $participant, new Action('resign'), clientActionId: (string) Str::uuid());
         } elseif ($participant !== null && $room->status === RoomStatus::Waiting) {
-            if ($room->created_by === $user->id) {
-                $room->participants()->update(['is_active' => false]);
-                $room->forceFill(['status' => RoomStatus::Aborted, 'finished_at' => now()])->save();
-            } else {
-                $participant->delete();
-            }
+            // The game never started: entry fees and buy-ins go back.
+            DB::transaction(function () use ($room, $user, $participant, $stakes) {
+                if ($room->created_by === $user->id) {
+                    foreach ($room->participants as $seated) {
+                        $stakes->refund($room, $seated);
+                    }
+                    $room->participants()->update(['is_active' => false]);
+                    $room->forceFill(['status' => RoomStatus::Aborted, 'finished_at' => now()])->save();
+                } else {
+                    $stakes->refund($room, $participant);
+                    $participant->delete();
+                }
+            });
         }
 
         return response()->json(['data' => new RoomResource($this->loaded($room->refresh()))]);

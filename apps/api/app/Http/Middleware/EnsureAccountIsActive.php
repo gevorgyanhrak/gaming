@@ -26,7 +26,7 @@ class EnsureAccountIsActive
             }
 
             return response()->json([
-                'message' => __('platform.auth.inactive'),
+                'message' => $user->inactiveMessage(),
                 'status' => $user->status->value,
             ], 403);
         }

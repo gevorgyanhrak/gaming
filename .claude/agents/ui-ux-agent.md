@@ -28,7 +28,9 @@ for card tables, wood-framed classic boards for chess/checkers. Tokens live in
 new visual style without a written reason in `docs/team/DECISIONS.md`.
 
 ## Hard rules
-- No coins, VIP, shop, prize wheels, entry fees or anything that looks like gambling for value.
+- No VIP, shop, prize wheels, purchases or anything that looks like gambling for value. Fishkas (free
+  currency: bonuses, entry fees, poker buy-ins; owner decision 2026-10-30) are shown calmly, never as
+  money: no "win big", jackpots or coin showers.
 - Never design a control for a feature the backend does not support; mark it "needs backend" and hand
   it to the PM agent.
 - Accessibility: WCAG 2.2 AA contrast (compute it), visible focus, 44px touch targets on phones, labels

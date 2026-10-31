@@ -53,6 +53,8 @@ export function useLogout() {
 
   return useMutation({
     mutationFn: logout,
+    // Signing out leaves no wallet to refresh (see the mutation cache in app/queryClient.ts).
+    meta: { signsOut: true },
     // Even if the request fails (e.g. the session already expired), forget everything user-specific.
     // Not queryClient.clear(): it detaches queries that mounted components still observe.
     onSettled: () => {

@@ -49,6 +49,14 @@ class UserInfolist
                         TextEntry::make('last_active_at')->label('Last active')->dateTime()->placeholder('Never'),
                         TextEntry::make('terms_accepted_at')->label('Terms accepted')->dateTime()->placeholder('—'),
                     ]),
+                Section::make('Fishkas')
+                    ->columnSpanFull()
+                    ->columns(3)
+                    ->schema([
+                        TextEntry::make('fishkaWallet.balance')->label('Balance')->numeric()->placeholder('0 (wallet opens on the next visit)'),
+                        TextEntry::make('fishkaWallet.total_earned')->label('Total earned')->numeric()->placeholder('0'),
+                        TextEntry::make('fishkaWallet.total_spent')->label('Total spent')->numeric()->placeholder('0'),
+                    ]),
                 Section::make('Games')
                     ->columnSpanFull()
                     ->schema([

@@ -2,6 +2,57 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## TASK-038 · QA fixes — 2026-10-31 · READY_FOR_REVIEW
+
+From `docs/qa/QA_REPORT_FISHKA.md` (44 checks, 39 pass, 10 bugs):
+1. High · rapid "Start game" clicks opened several paid games → `PlayRules::exclusively` (per-player
+   cache lock) around every start: bot/private create, join, matchmaking join, accept-bot. Live: 3
+   simultaneous starts → 201, 422, 422; one fee.
+2. Medium · heads-up poker resign returned chips already in the pot → `GameActionService::end` settles
+   chip games from the position after the leaver departs (`HandlesDepartures`); test: the pot goes to the
+   other player, total conserved.
+3. High · popup off-screen/under the tab bar → rendered into `<body>` with a portal (the frame's backdrop
+   blur made `fixed` relative to it). Live 390: sheet 430–828, both buttons hit-testable.
+4. Medium · double-click on the bonus showed an error → one request per click burst (ref guard). Live:
+   one bonus entry, success state, no error.
+5. Low · "You have 5,000 left" while loading → shown only while 0 < balance < fee.
+6. Low · banned users saw "not active" → `User::inactiveMessage()`: "Your account has been blocked…"
+   (with the end date for temporary bans), at login and when a session is cut off.
+7. Low · 401 on `/me/wallet` after logout → the logout mutation is marked `meta.signsOut`; the cache
+   skips the wallet refresh.
+8. Low · "Total spent −0" → a plain 0 when nothing moved.
+9. Low · "1 Fishkas" → plural forms (en one/other, ru one/few/many/other).
+10. Low · hy dates/numbers in English in headless Chrome: the headless browser's locale data; not changed.
+Not tested by QA, open: the real midnight rollover, leaving a multi-seat poker table mid-hand live.
+
+## TASK-038 · Fishka currency — 2026-10-30 · IN_REVIEW (QA)
+
+Backend (`apps/api`):
+- Migration `2026_10_30_100000_create_fishka_tables`: `fishka_wallets`, `fishka_transactions` (CHECKs,
+  unique idempotency key, indexes), `game_participants.stake`. ADR 0015.
+- `Platform/Fishka/FishkaWallets` (open/welcome, claimDaily, refill + status, charge, chargeUpTo, credit,
+  adjust; row lock, no negatives, idempotency, audit, `WalletUpdated` broadcast), `InsufficientFishkas`
+  and `FishkaBonusUnavailable` (422 with `code`), settings `fishka.*` + admin section.
+- `Gameplay/Rooms/RoomStakes` + `Contracts/PlaysForChips`; `PlayRules` affordability check; `RoomService`
+  charges in `seat()` (join now transactional), poker `options.stacks`, games decided at the deal finish
+  at once; refunds on waiting-room leave/close; cash-outs in `GameActionService` (depart, end, finish);
+  `Matchmaker` drops players who can't pay. Poker engine: per-seat stacks, a leaver keeps their stack,
+  `buyIn()`, `chipsOf()`.
+- Bonuses: welcome in `RegisterController`, daily in `SessionController::store` and `MeController::show`.
+- API: `GET /me/wallet`, `GET /me/wallet/transactions`, `POST /me/wallet/refill`.
+- Admin: ViewUser "Fishkas" actions (add/deduct/set with reason), Fishka section, transactions relation
+  manager, Fishkas column; blocking reuses ban/unban.
+
+Frontend (`apps/web/src`): `features/wallet` (api, hooks, popup store, `FishkaIcon`, `FishkaBalance`,
+`OutOfFishkasDialog`), `pages/WalletPage`, header + layout wiring, MutationCache opens the popup on
+`insufficient_fishkas` and refreshes the wallet after every mutation, `ApiError.code`, lobby cost line,
+en/ru/hy strings, `fishka-bump`/`fishka-delta` animations.
+
+Tests: API `tests/Feature/Fishka/FishkaTest.php` (14), play-through accounting for all five games,
+poker engine buy-in/chipsOf/leaver tests → `make test-api` **311 passed**; web `pages/Fishka.test.tsx`
+(header follows `wallet.updated`, popup → bonus → play, cooldown, history) → vitest **122 passed**;
+lint, PHPStan, typecheck, format, build ✓.
+
 ## B3a revision after design review — 2026-10-30 · READY_FOR_REVIEW
 
 - TASK-035 fix 1: `useFitHeight` also re-measures when the page above changes (ResizeObserver on

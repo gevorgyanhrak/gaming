@@ -89,7 +89,8 @@ May run without asking (autonomous mode):
 Needs the owner's explicit approval first:
 - new backend domains or tables (ratings, friends, chat, spectating, achievements), breaking API
   changes, destructive database changes, changes to accepted ADRs;
-- anything touching chips, payments or monetization (the platform is recreational only, forever);
+- anything touching Fishka amounts or rules, chips, payments or monetization (the platform is
+  recreational only, forever: Fishkas are free and never bought, sold, cashed out or transferred);
 - removing an existing feature; production infrastructure or deploys; new third-party services.
 
 Never: invent research, test results or competitor features; register on or bypass logins of other

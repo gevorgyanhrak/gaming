@@ -2,17 +2,28 @@ export type FieldErrors = Record<string, string[]>
 
 /**
  * A failed API call, normalized from Laravel's JSON error format
- * (`{ message, errors? }`). `status` is 0 when the server could not be reached.
+ * (`{ message, errors?, code? }`). `status` is 0 when the server could not be reached. `code` names
+ * outcomes the client reacts to (e.g. "insufficient_fishkas"); `body` keeps the rest of the payload.
  */
 export class ApiError extends Error {
   readonly status: number
   readonly fieldErrors: FieldErrors
+  readonly code: string | null
+  readonly body: Record<string, unknown>
 
-  constructor(status: number, message: string, fieldErrors: FieldErrors = {}) {
+  constructor(
+    status: number,
+    message: string,
+    fieldErrors: FieldErrors = {},
+    code: string | null = null,
+    body: Record<string, unknown> = {},
+  ) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     this.fieldErrors = fieldErrors
+    this.code = code
+    this.body = body
   }
 
   get isNetworkError(): boolean {
@@ -28,7 +39,9 @@ export class ApiError extends Error {
     const message = typeof body.message === 'string' ? body.message : `Request failed (${status})`
     const errors = isRecord(body.errors) ? toFieldErrors(body.errors) : {}
 
-    return new ApiError(status, message, errors)
+    const code = typeof body.code === 'string' ? body.code : null
+
+    return new ApiError(status, message, errors, code, body)
   }
 }
 

@@ -81,6 +81,10 @@ export const routes: RouteObject[] = [
             lazy: () => import('@/pages/RoomPage').then((m) => ({ Component: m.RoomPage })),
           },
           {
+            path: 'wallet',
+            lazy: () => import('@/pages/WalletPage').then((m) => ({ Component: m.WalletPage })),
+          },
+          {
             path: 'history',
             lazy: () => import('@/pages/HistoryPage').then((m) => ({ Component: m.HistoryPage })),
           },

@@ -1,4 +1,5 @@
 import { http, HttpResponse } from 'msw'
+import type { Wallet } from '@/features/wallet/api'
 import type { CurrentUser } from '@/features/auth/api'
 import type { Room, RoomState } from '@/features/play/api'
 import type { GameDetail, GameSummary } from '@/features/catalog/queries'
@@ -75,7 +76,20 @@ export function signedInAs(user: CurrentUser = userFixture()) {
   return http.get('*/api/v1/me', () => HttpResponse.json({ data: user }))
 }
 
+/** A wallet summary (GET /me/wallet). */
+export function walletFixture(overrides: Partial<Wallet> = {}): Wallet {
+  return {
+    balance: 5000,
+    total_earned: 5000,
+    total_spent: 0,
+    entry_fee: 500,
+    refill: { available: false, available_at: null, amount: 5000 },
+    ...overrides,
+  }
+}
+
 export const handlers = [
+  http.get('*/api/v1/me/wallet', () => HttpResponse.json({ data: walletFixture() })),
   // Visitors are guests unless a test uses signedInAs().
   http.get('*/api/v1/me', unauthenticated),
   http.get('*/sanctum/csrf-cookie', () => new HttpResponse(null, { status: 204 })),

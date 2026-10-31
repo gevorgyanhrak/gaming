@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\V1\Me\PasswordController;
 use App\Http\Controllers\Api\V1\Me\ProfileController;
 use App\Http\Controllers\Api\V1\Me\RoomsController;
 use App\Http\Controllers\Api\V1\Me\SettingsController;
+use App\Http\Controllers\Api\V1\Me\WalletController;
 use App\Http\Controllers\Api\V1\OnlineController;
 use App\Http\Controllers\Api\V1\PublicProfileController;
 use App\Http\Controllers\Api\V1\Rooms\ActionController;
@@ -77,6 +78,9 @@ Route::prefix('v1')->name('v1.')->group(function () {
                 Route::get('rooms', [RoomsController::class, 'index'])->name('rooms.index');
                 Route::get('games', [HistoryController::class, 'games'])->name('games');
                 Route::get('stats', [HistoryController::class, 'stats'])->name('stats');
+                Route::get('wallet', [WalletController::class, 'show'])->name('wallet.show');
+                Route::get('wallet/transactions', [WalletController::class, 'transactions'])->name('wallet.transactions');
+                Route::post('wallet/refill', [WalletController::class, 'refill'])->middleware('throttle:verification')->name('wallet.refill');
             });
 
         Route::get('stats/online', OnlineController::class)->middleware('throttle:lookups')->name('stats.online');

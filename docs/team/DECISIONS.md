@@ -9,6 +9,13 @@ Newest first. Format: date · decision · why · who.
 
 ## Decided
 
+- 2026-10-30 · **Fishkas**: a free platform currency replaces per-table play chips. Welcome bonus 5,000,
+  daily bonus 1,000 (first sign-in/visit per day, Asia/Yerevan), 500 entry fee per game, poker buy-in
+  with your own Fishkas (≥ 1, up to the table stack) paid back on leaving or at the end, bots sit with
+  house chips, and a 5,000 "out of Fishkas" bonus at most once per 24 h while the balance is below the
+  fee. Admins can add/deduct/set balances with a reason. All amounts are admin settings. Fishkas are
+  never bought, sold, cashed out or sent between users. Supersedes the 2026-10-28 "no entry fees" line
+  below for entry fees only · owner (spec 2026-10-30; buy-in and house-chip options chosen 2026-10-30).
 - 2026-10-30 · TASK-035, TASK-036 and TASK-029 validated and APPROVED (79a053d). Accepted: the Poker
   phone bet placement applies to every table size below 640 px (not only 5–6 seats), on condition that
   the 2/4-seat check in TASK-033 passes · one consistent phone layout · PM.

@@ -15,7 +15,8 @@
     "historyShort": "History",
     "menu": "Menu",
     "close": "Close menu",
-    "back": "Back"
+    "back": "Back",
+    "wallet": "Wallet"
   },
   "landing": {
     "title": "Classic board and card games, in one place",
@@ -534,5 +535,53 @@
     "title": "Join a table",
     "joining": "Joining the table…",
     "signInFirst": "Log in or sign up to join your friend's table."
+  },
+  "fishka": {
+    "amount_one": "{{count}} Fishka",
+    "amount_other": "{{count}} Fishkas",
+    "balanceLabel": "Your Fishkas: {{amount}}. Open your wallet",
+    "gained_one": "+{{amount}} Fishka",
+    "gained_other": "+{{amount}} Fishkas",
+    "spent_one": "−{{amount}} Fishka",
+    "spent_other": "−{{amount}} Fishkas",
+    "outTitle": "Your Fishkas Have Run Out!",
+    "outBody": "You don’t have enough Fishkas to play this game.",
+    "outZero": "Your balance has reached zero.",
+    "outLeft_one": "You have {{amount}} left; a game costs {{fee}}.",
+    "outLeft_other": "You have {{amount}} left; a game costs {{fee}}.",
+    "outCta": "Get a new bonus and continue playing!",
+    "getBonus_one": "Get {{amount}} Free Fishka",
+    "getBonus_other": "Get {{amount}} Free Fishkas",
+    "adding": "Adding Fishkas…",
+    "cancel": "Cancel",
+    "nextBonus": "The next free bonus is available {{time}}.",
+    "addedTitle_one": "+{{amount}} Fishka!",
+    "addedTitle_other": "+{{amount}} Fishkas!",
+    "addedBody_one": "Your balance is now {{amount}} Fishka. Try the game again.",
+    "addedBody_other": "Your balance is now {{amount}} Fishkas. Try the game again.",
+    "continue": "Continue",
+    "walletTitle": "Your Fishkas",
+    "balance": "Balance",
+    "totalEarned": "Total earned",
+    "totalSpent": "Total spent",
+    "history": "History",
+    "historyEmpty": "No Fishka transactions yet.",
+    "note": "Fishkas are free play money: they can’t be bought, sold or cashed out.",
+    "rules_one": "Each game costs {{fee}} Fishka when you take your seat. At Poker you bring your own Fishkas to the table instead (up to the table’s stack) and take your chips back when you leave.",
+    "rules_other": "Each game costs {{fee}} Fishkas when you take your seat. At Poker you bring your own Fishkas to the table instead (up to the table’s stack) and take your chips back when you leave.",
+    "entryFee_one": "Entry: {{amount}} Fishka",
+    "entryFee_other": "Entry: {{amount}} Fishkas",
+    "buyIn": "Buy-in: your own Fishkas",
+    "type": {
+      "registration_bonus": "Welcome bonus",
+      "daily_login_bonus": "Daily bonus",
+      "game_entry_fee": "Game entry",
+      "game_entry_refund": "Entry refunded",
+      "poker_bet": "Poker buy-in",
+      "poker_winning": "Poker chips back",
+      "admin_credit": "Added by support",
+      "admin_debit": "Removed by support",
+      "insufficient_balance_bonus": "Free Fishka bonus"
+    }
   }
 }

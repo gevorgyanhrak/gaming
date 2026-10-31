@@ -103,9 +103,19 @@ interface BotStrategy {
 }
 ```
 
+Fishkas (free platform currency, owner decision 2026-10-30): `app/Platform/Fishka/FishkaWallets` is the
+only writer of balances — one `fishka_wallets` row per user (locked for every change, never negative)
+and an append-only `fishka_transactions` ledger with idempotency keys for one-time changes (welcome,
+daily and "out of Fishkas" bonuses, a seat's fee, a cash-out). `app/Gameplay/Rooms/RoomStakes` charges a
+seat when a person takes it: the entry fee, or a buy-in for `PlaysForChips` engines (poker; chips paid
+back on leaving/at the end); refunds when a waiting room is left. `PlayRules` refuses to start a game
+the player can't afford (422 `insufficient_fishkas`). Amounts and the day's time zone are settings
+(`fishka.*`); `wallet.updated` is broadcast on the owner's channel.
+
 Optional engine contracts (same folder): `HandlesTimeouts` (a default move instead of losing on time),
 `DecidesTimeouts` (what running out of time means), `HandlesDepartures` (a leaver is taken out and the
-game goes on), `ValidatesActions` (range actions such as poker raises) and `PausesBetweenRounds`
+game goes on), `ValidatesActions` (range actions such as poker raises), `PlaysForChips` (players buy in
+with Fishkas: `buyIn()`, per-seat `options.stacks`, `chipsOf()` for cash-out) and `PausesBetweenRounds`
 (a break in which nobody acts, e.g. poker shows a hand's result before the next deal: while
 `pauseMs()` isn't null and no seat is to act, `GameScheduler` queues `ResumeRoundJob`, which calls
 `resume()` through `GameActionService::resume`; the step is logged as a `resume` move with no
@@ -255,4 +265,4 @@ stay available); staff bypass it.
 | Hidden-information leaks | Per-seat views; bots get views only; tests assert no leaked cards |
 | SMS cost and fraud | Country allowlist, CAPTCHA, limits, provider spending caps |
 | PHP bot performance (chess hard level) | Time-boxed search, dedicated queue, Stockfish later |
-| Simulated gambling (poker) | Chips have no value and can't be bought or transferred; age gate; legal review of terms |
+| Simulated gambling (poker, Fishka fees) | Fishkas are free: given as bonuses, spent on entry fees and poker buy-ins, never bought, sold, cashed out or sent between users; no shop or prizes of value; age gate; legal review of terms |
