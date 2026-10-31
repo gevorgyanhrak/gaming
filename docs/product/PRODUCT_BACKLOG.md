@@ -2,7 +2,8 @@
 
 The single task tracker (format and statuses: `docs/team/README.md`). Sources: `UI_UX_AUDIT.md`
 (UX-NNN), `PRODUCT_RESEARCH.md` (OPP-NNN), `TECHNICAL_DEBT.md` (TD-NNN).
-Last planning: 2026-10-30 (TASK-035, TASK-036, TASK-029 validated APPROVED (79a053d); TASK-037 added; owner
+Last planning: 2026-10-31 (TASK-038 Fishkas validated APPROVED (53018b3); follow-up TASK-039 added).
+Before: 2026-10-30 (TASK-035, TASK-036, TASK-029 validated APPROVED (79a053d); TASK-037 added; owner
 feedback earlier the same day: BUG-001 fixed, TASK-035/036 added at the top of B3). Before: 2026-10-29 B1/B2 validated, TASK-030/031 approved, TASK-033…034 added.
 
 ## Batches
@@ -11,17 +12,37 @@ feedback earlier the same day: BUG-001 fixed, TASK-035/036 added at the top of B
 |---|---|---|---|
 | B1 | Honest and clear: fix what misleads or loses games — **done 2026-10-29** (all APPROVED) | TASK-001…005 | none (frontend) |
 | B2 | Keep playing: after-game flow, profiles, invites — **done 2026-10-29** (all APPROVED) | TASK-026, TASK-006, TASK-028, TASK-007, TASK-008, TASK-024 | none (frontend) |
-| B3 | Polish and consistency (in progress; TASK-035, TASK-036, TASK-029 **done 2026-10-30**; owner go-ahead so far only for TASK-035/036) | order: TASK-033, ~~TASK-035~~, ~~TASK-036~~, TASK-037, TASK-032, TASK-015, TASK-027, ~~TASK-029~~, TASK-034, TASK-012, TASK-009, TASK-010, TASK-011, TASK-013, TASK-025 | none (frontend) |
+| B3 | Polish and consistency (in progress; TASK-039 Fishka follow-ups first; TASK-035, TASK-036, TASK-029 **done 2026-10-30**; owner go-ahead so far only for TASK-035/036) | order: TASK-039, TASK-033, ~~TASK-035~~, ~~TASK-036~~, TASK-037, TASK-032, TASK-015, TASK-027, ~~TASK-029~~, TASK-034, TASK-012, TASK-009, TASK-010, TASK-011, TASK-013, TASK-025 | none (frontend) |
 | B4 | New capabilities and backend fixes | TASK-014, TASK-016…023 (TASK-030, TASK-031 **done 2026-10-29**) | **owner** (go-ahead for backend work) |
 
 ## Fishkas (owner spec 2026-10-30)
 
-### TASK-038 · Fishka currency: wallet, bonuses, entry fees, poker buy-in, admin   P0 · L · READY_FOR_REVIEW (QA fixes done)
+### TASK-038 · Fishka currency: wallet, bonuses, entry fees, poker buy-in, admin   P0 · L · APPROVED
 Owner's spec, pasted 2026-10-30, with the owner's choices: poker buy-in/cash-out, bots with house chips.
 Welcome 5,000 · daily 1,000 · entry fee 500 (poker: buy-in ≥ 1, up to the table stack) · "out of
 Fishkas" popup bonus 5,000 at most every 24 h while the balance is below the fee · header balance with
 animation · /wallet history · admin add/deduct/set with reason, transaction tab, existing ban/unban.
 Acceptance: the owner's 16 test scenarios (QA report `docs/qa/QA_REPORT_FISHKA.md`).
+Validation 2026-10-31: **APPROVED** (53018b3, local) — QA ran 44 checks (39 pass); all 10 bugs are fixed
+and I read each fix in code: per-player start lock `PlayRules::exclusively` on bot/private create, join,
+matchmaking and accept-bot (+ wallet row `FOR UPDATE`, ADR 0015); chip games settle from the
+post-departure state; popup portalled to `<body>`; ref guard on the refill; `inactiveMessage()`;
+`meta.signsOut`; plurals. Web vitest 122 passed (re-run by PM); API 311 passed (developer's run, not
+re-run). Rule check: nothing can be bought, sold or cashed out; amounts are admin settings; admin
+changes are audited; ADR 0015 accepted.
+Gaps, stated honestly (none blocks; follow-ups in TASK-039 and Decisions needed 6–7):
+  - The owner's original spec text with the 16 scenarios and "Final Requirements" is not in the repo;
+    I validated against the QA report's mapping, DECISIONS.md and ADR 0015. It should be saved as
+    `docs/product/briefs/TASK-038.md` so each scenario can be traced.
+  - The 5 failed QA checks (3.3, 6.7, 7.5, 8.4, 9.7) were re-checked by the developer (live + tests),
+    not by an independent QA re-run.
+  - Scenario 16 (parallel requests): no true parallel-request test; protected by the wallet row lock and
+    the per-player start lock, checked live with 3 simultaneous starts (201, 422, 422; one fee).
+  - The real midnight rollover (Asia/Yerevan) is untested; "next day" was simulated in tinker.
+  - Leaving a multi-seat Poker table mid-hand (`depart()`) not checked live (code read by QA only); no
+    full Poker game to a natural bust-out; matchmaking bot fallback with too few Fishkas untested.
+  - Refill at 499: by the code +5,000 (→ 5,499), not "up to 5,000"; owner to confirm (Decisions 7).
+  - hy dates/numbers on /wallet render in English (QA bug 10, unconfirmed headless ICU) → TASK-027.
 
 ## Bugs
 
@@ -252,6 +273,8 @@ Acceptance criteria:
   1. hy UI shows Armenian month names on History, dashboard ("member since"), profile and content pages.
   2. en and ru output unchanged (or only the agreed short form).
   3. The "since" sentence reads grammatically in hy (native check, see Decisions needed).
+Added 2026-10-31 (QA_REPORT_FISHKA bug 10): /wallet history dates and numbers in hy (first confirm in a
+desktop Chrome that it's not only the headless build's ICU data).
 Added 2026-10-29 (B2 review, pre-existing): in hy the lobby hero stat labels run together
 ("ՀԱՂԹԱՆԱԿՆԵՐՊԱՐՏՈՒԹՅՈՒՆՆԵՐ") → 4. hy stat labels on the game page are separated and readable at
 390 and 1440 (wrap or abbreviate, no overlap).
@@ -282,6 +305,24 @@ Acceptance criteria:
   3. No change at 1440×900 and with 2–4 players beyond the bubble size.
 Tests: `fitHeight`/layout unit tests where testable; browser check at the listed sizes.
 Depends on: TASK-035   Approval: none
+
+### TASK-039 · Fishka verification follow-ups                  P1 · S · PLANNED · B3
+Problem: TASK-038 was approved with gaps that touch balances; they should be closed before real
+players rely on Fishkas. Evidence: TASK-038 validation, QA_REPORT_FISHKA.md "Not tested, or limits".
+Scope (QA + developer; backend tests are fine, no rule or amount changes):
+  (a) independent QA re-run of checks 3.3, 6.7, 7.5, 8.4, 9.7 at 390 and 1440;
+  (b) feature test for the day boundary with a frozen clock (`Carbon::setTestNow`) at 23:59:59 and
+      00:00:00 Asia/Yerevan: one daily bonus per local day, none twice across the boundary;
+  (c) a contention test for starts: with the `play:start:{user}` lock held, a second start fails with a
+      422 (not a 500 from `LockTimeoutException`), and no fee is charged;
+  (d) live: 4-seat Poker, leave mid-hand → own stack paid back, chips in the pot stay with the others,
+      table total conserved; one full Poker game to a natural bust-out; matchmaking bot fallback with a
+      balance below the fee.
+Acceptance criteria:
+  1. QA_REPORT_FISHKA.md gets a re-test section: (a) all PASS with screenshot names.
+  2. (b) and (c) are automated tests that pass in `make test-api`.
+  3. (d) recorded with ledger before/after amounts; any failure becomes a BUG entry.
+Depends on: TASK-038   Approval: none (no Fishka amount or rule change)
 
 ### TASK-032 · No end sound after you left a table              P3 · S · PLANNED · B3
 Problem: a player who left a Durak/Poker table that plays on hears the final "loss" much later. Spec
@@ -410,6 +451,13 @@ Validation 2026-10-29: **APPROVED** — `GameActionService::end` marks abandoned
    Web Share invite on a phone; listen to the new Poker `handWin` sound.
 5. Content: the Poker game description is still English in hy — admin catalog text (Admin → Games),
    needs an Armenian text from the owner or a translator.
+6. Fishkas move between players through Poker: with buy-in/cash-out, a player can lose chips on
+   purpose at a private table to a friend (chip dumping), so Fishkas — including the 5,000 "out of
+   Fishkas" bonus every 24 h — can effectively be sent between users, which the Fishka rule forbids.
+   Accept as part of poker, or restrict (e.g. private poker tables cash out only the buy-in, or a
+   daily cap on net poker winnings from private tables)? Needs the owner (Fishka rules).
+7. "Out of Fishkas" bonus at a balance of 1–499: it adds 5,000 (499 → 5,499). Confirm, or should it top
+   up to 5,000? Also: please paste the original Fishka spec into `docs/product/briefs/TASK-038.md`.
 (Decided 2026-10-29: autonomous mode for B1–B3; TD-001 deleted; sound on by default; TASK-030/031
 go-ahead; room API fields for Play again; `.text-gold-gradient`; public profile stats are public. See
 DECISIONS.md.)

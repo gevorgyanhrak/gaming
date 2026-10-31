@@ -4,6 +4,7 @@ use App\Enums\BotDifficulty;
 use App\Enums\FishkaTransactionType as Type;
 use App\Enums\RoomStatus;
 use App\Filament\Resources\Users\Pages\ViewUser;
+use App\Gameplay\Rooms\PlayRules;
 use App\Gameplay\Rooms\RoomStates;
 use App\Models\AuditLog;
 use App\Models\BotProfile;
@@ -17,9 +18,11 @@ use App\Platform\Fishka\InsufficientFishkas;
 use App\Platform\Moderation\UserModeration;
 use Database\Seeders\GameModeSeeder;
 use Database\Seeders\GameSeeder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Testing\TestResponse;
+use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -301,3 +304,12 @@ it('never charges twice for the same seat and never goes below zero', function (
     expect(fn () => $wallets->charge($user, 101, Type::GameEntryFee))->toThrow(InsufficientFishkas::class);
     expect(balanceOf($user))->toBe(100);
 });
+
+it('answers a start that waits too long for the player\'s previous one like a second game', function () {
+    $user = playerWith(5000);
+    Cache::lock("play:start:{$user->id}", 30)->get();
+
+    expect(fn () => app(PlayRules::class)->exclusively($user, fn () => 'started', wait: 1))
+        ->toThrow(ValidationException::class);
+    expect(balanceOf($user))->toBe(5000);
+})->skip(fn () => config('cache.default') !== 'array', 'Uses the array cache store.');

@@ -35,7 +35,7 @@ export function FishkaBalance() {
     <Link
       to="/wallet"
       aria-label={t('fishka.balanceLabel', { amount: format(balance) })}
-      className="relative flex min-h-10 items-center gap-1.5 rounded-full border border-gold/35 bg-black/30 py-1 pr-3 pl-1.5 text-sm font-bold text-gold-light shadow-inner transition hover:border-gold"
+      className="relative flex min-h-11 items-center gap-1.5 rounded-full border border-gold/35 bg-black/30 py-1 pr-3 pl-1.5 text-sm font-bold text-gold-light shadow-inner transition hover:border-gold"
     >
       <FishkaIcon className="size-6 shrink-0" />
       <span

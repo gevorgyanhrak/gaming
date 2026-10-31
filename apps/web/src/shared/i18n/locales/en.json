@@ -582,6 +582,7 @@
       "admin_credit": "Added by support",
       "admin_debit": "Removed by support",
       "insufficient_balance_bonus": "Free Fishka bonus"
-    }
+    },
+    "ok": "OK"
   }
 }

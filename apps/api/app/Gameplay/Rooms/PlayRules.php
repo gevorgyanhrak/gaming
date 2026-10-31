@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Platform\Fishka\InsufficientFishkas;
 use App\Platform\Settings\Settings;
 use Closure;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
@@ -59,10 +60,16 @@ class PlayRules
      * @template T
      *
      * @param  Closure(): T  $start
+     * @param  int  $wait  Seconds to wait for the player's previous start.
      * @return T
      */
-    public function exclusively(User $user, Closure $start): mixed
+    public function exclusively(User $user, Closure $start, int $wait = 10): mixed
     {
-        return Cache::lock("play:start:{$user->id}", 15)->block(10, $start);
+        try {
+            return Cache::lock("play:start:{$user->id}", 15)->block($wait, $start);
+        } catch (LockTimeoutException) {
+            // Another start of theirs is still running: the same answer as a second game.
+            throw ValidationException::withMessages(['game_mode_id' => __('platform.play.too_many_games')]);
+        }
     }
 }

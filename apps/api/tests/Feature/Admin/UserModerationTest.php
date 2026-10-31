@@ -107,3 +107,35 @@ it('signs a banned player out of the app on their next request', function () {
     $this->app['auth']->forgetGuards();
     $this->actingAs($player->refresh(), 'web')->getJson('/api/v1/me')->assertForbidden();
 });
+
+it('lets staff edit a player\'s details, asking to verify a new email again, audited', function () {
+    $admin = signInToAdmin('moderator');
+    $player = User::factory()->create(['email' => 'old@example.com', 'email_verified_at' => now()]);
+
+    Livewire::test(ViewUser::class, ['record' => $player->getRouteKey()])
+        ->callAction('editDetails', data: [
+            'username' => 'renamed_player', 'email' => 'New@Example.com', 'phone' => null,
+            'locale' => 'hy', 'display_name' => 'Renamed', 'country' => 'am', 'bio' => 'Hello',
+        ])
+        ->assertNotified('Details saved.');
+
+    $player->refresh();
+    expect($player->only(['username', 'email', 'locale']))->toBe(['username' => 'renamed_player', 'email' => 'new@example.com', 'locale' => 'hy'])
+        ->and($player->email_verified_at)->toBeNull()
+        ->and($player->profile->only(['display_name', 'country', 'bio']))->toBe(['display_name' => 'Renamed', 'country' => 'AM', 'bio' => 'Hello'])
+        ->and(AuditLog::query()->where('action', 'user.updated')->sole())
+        ->actor_id->toBe($admin->id);
+});
+
+it('refuses details that clash with another account or leave no way to sign in', function () {
+    signInToAdmin('moderator');
+    User::factory()->create(['username' => 'taken_name']);
+    $player = User::factory()->create(['username' => 'keeper']);
+
+    Livewire::test(ViewUser::class, ['record' => $player->getRouteKey()])
+        ->callAction('editDetails', data: ['username' => 'taken_name', 'email' => $player->email])
+        ->callAction('editDetails', data: ['username' => 'keeper', 'email' => null, 'phone' => null]);
+
+    expect($player->refresh()->username)->toBe('keeper')
+        ->and($player->email)->not->toBeNull();
+});

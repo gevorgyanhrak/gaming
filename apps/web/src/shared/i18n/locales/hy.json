@@ -582,6 +582,7 @@
       "admin_credit": "Ավելացրել է աջակցությունը",
       "admin_debit": "Հանել է աջակցությունը",
       "insufficient_balance_bonus": "Անվճար բոնուս"
-    }
+    },
+    "ok": "Լավ"
   }
 }

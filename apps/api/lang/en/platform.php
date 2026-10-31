@@ -52,6 +52,7 @@ return [
         'default_message' => 'We are doing some maintenance. Please check back soon.',
     ],
     'moderation' => [
+        'needs_login' => 'The account needs an email address or a phone number to sign in with.',
         'not_yourself' => 'You cannot moderate your own account.',
         'super_admin_only' => 'Only super admins can do this for staff accounts.',
         'keep_own_super_admin' => 'You cannot remove your own super admin role.',

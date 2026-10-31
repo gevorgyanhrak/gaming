@@ -11,6 +11,10 @@ export function renderRoute(path: string) {
   queryClient.setDefaultOptions({ queries: { retry: false } })
   closeOutOfFishkas()
   const router = createMemoryRouter(routes, { initialEntries: [path] })
+  // Mount into #root like index.html, so code that addresses the app container (modals) works.
+  document.getElementById('root')?.remove()
+  const container = document.body.appendChild(document.createElement('div'))
+  container.id = 'root'
 
   return {
     router,
@@ -18,6 +22,7 @@ export function renderRoute(path: string) {
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
       </QueryClientProvider>,
+      { container },
     ),
   }
 }

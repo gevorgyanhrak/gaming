@@ -9,6 +9,10 @@ Newest first. Format: date · decision · why · who.
 
 ## Decided
 
+- 2026-10-31 · TASK-038 (Fishkas, 53018b3) validated APPROVED with stated gaps (no parallel-request
+  test, midnight rollover, multi-seat poker leave live, no independent QA re-run of the 5 fixed fails);
+  closing them is TASK-039 (P1). Chip dumping through private Poker and the refill amount at 1–499 are
+  open owner questions (backlog Decisions needed 6–7) · PM.
 - 2026-10-30 · **Fishkas**: a free platform currency replaces per-table play chips. Welcome bonus 5,000,
   daily bonus 1,000 (first sign-in/visit per day, Asia/Yerevan), 500 entry fee per game, poker buy-in
   with your own Fishkas (≥ 1, up to the table stack) paid back on leaving or at the end, bots sit with

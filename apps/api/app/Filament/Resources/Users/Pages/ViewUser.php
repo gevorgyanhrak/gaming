@@ -14,6 +14,7 @@ use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -77,6 +78,45 @@ class ViewUser extends ViewRecord
                 ->button()
                 ->color('warning')
                 ->visible(fn () => $this->canModerate()),
+            Action::make('editDetails')
+                ->label('Edit details')
+                ->icon('heroicon-o-pencil')
+                ->visible(fn () => $this->canModerate() || $this->record->is(auth('admin')->user()))
+                ->fillForm(fn () => [
+                    'username' => $this->record->username,
+                    'email' => $this->record->email,
+                    'phone' => $this->record->phone,
+                    'locale' => $this->record->locale,
+                    'display_name' => $this->record->profile->display_name,
+                    'country' => $this->record->profile->country,
+                    'bio' => $this->record->profile->bio,
+                ])
+                ->schema([
+                    TextInput::make('username')->required()->maxLength(20),
+                    TextInput::make('email')->email()->maxLength(255)->helperText('Changing it asks the player to verify it again.'),
+                    TextInput::make('phone')->tel()->maxLength(32)->helperText('International format, e.g. +374 77 123456.'),
+                    Select::make('locale')->label('Language')->options(array_combine(config('platform.supported_locales'), config('platform.supported_locales'))),
+                    TextInput::make('display_name')->label('Display name')->maxLength(40),
+                    TextInput::make('country')->label('Country code')->maxLength(2)->helperText('Two letters, e.g. AM.'),
+                    Textarea::make('bio')->maxLength(500),
+                ])
+                ->action(function (array $data) {
+                    /** @var User $actor */
+                    $actor = auth('admin')->user();
+                    try {
+                        app(UserModeration::class)->updateDetails($this->record, $actor, [...$data, 'country' => filled($data['country'] ?? null) ? strtoupper($data['country']) : null]);
+                    } catch (ValidationException $e) {
+                        Notification::make()->danger()->title(collect($e->errors())->flatten()->first() ?? 'Not saved.')->send();
+
+                        return;
+                    } catch (ModerationException $e) {
+                        Notification::make()->danger()->title($e->getMessage())->send();
+
+                        return;
+                    }
+                    $this->record->refresh();
+                    Notification::make()->success()->title('Details saved.')->send();
+                }),
             Action::make('roles')
                 ->label('Manage roles')
                 ->icon('heroicon-o-shield-check')

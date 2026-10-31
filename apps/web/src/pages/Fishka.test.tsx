@@ -132,9 +132,14 @@ describe('Fishkas', () => {
     const dialog = await screen.findByRole('dialog')
     expect(dialog).toHaveTextContent('You have 120 left; a game costs 500.')
     expect(await within(dialog).findByText(/^The next free bonus is available/)).toBeInTheDocument()
-    expect(within(dialog).getByRole('button', { name: 'Get 5,000 Free Fishkas' })).toBeDisabled()
-    await userEvent.keyboard('{Escape}')
+    // Nothing to take now: no bonus button and no "get a new bonus" line, just OK.
+    expect(within(dialog).queryByRole('button', { name: /Free Fishkas/ })).not.toBeInTheDocument()
+    expect(dialog).not.toHaveTextContent('Get a new bonus')
+    // The page behind can't be reached while the popup is open.
+    expect(document.getElementById('root')).toHaveAttribute('inert')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'OK' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(document.getElementById('root')).not.toHaveAttribute('inert')
   })
 
   it('lists the wallet history', async () => {

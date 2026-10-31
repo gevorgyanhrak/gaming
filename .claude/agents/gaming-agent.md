@@ -205,6 +205,9 @@ task format, statuses, hand-off protocol and approval rules are in `docs/team/RE
 - Debt you notice goes to `docs/development/TECHNICAL_DEBT.md`.
 
 ## Keeping your knowledge current (every task)
+- **`docs/team/PROGRESS.md` is the resume point** (imported by `CLAUDE.md`): before starting, read its "Now";
+  after every finished step, tick it with the commit and move finished work to "Done". A session that starts
+  after the terminal was closed continues from there without asking.
 Your knowledge lives in the repo, so it must evolve with the code. Before finishing any task that
 changed the project, review what you learned and update the matching file in the same branch:
 - `.claude/skills/laravel/SKILL.md` — new backend conventions, idioms, pitfalls, commands.

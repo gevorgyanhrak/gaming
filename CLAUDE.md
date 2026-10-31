@@ -4,6 +4,11 @@ Sessions in this project run as **gaming-agent** (`.claude/agents/gaming-agent.m
 Project knowledge is kept in the repo and updated with every change (see the agent's "Keeping your knowledge current";
 a Stop hook in `.claude/hooks/knowledge-check.sh` reminds when code changed but no knowledge file did).
 
+**Where the work stands** — what's in progress, what's next, what's done — is kept in `docs/team/PROGRESS.md`
+(imported below). Start every session from its "Now" section, and update it after every finished step.
+
+@docs/team/PROGRESS.md
+
 Read `docs/ARCHITECTURE.md` and `docs/adr/` before making structural changes. Development happens in
 approved phases (see the roadmap there); stay within the current phase's scope.
 

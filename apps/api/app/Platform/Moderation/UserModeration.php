@@ -5,8 +5,13 @@ namespace App\Platform\Moderation;
 use App\Enums\UserStatus;
 use App\Models\User;
 use App\Platform\Audit\AuditLogger;
+use App\Platform\Auth\AccountRules;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use libphonenumber\PhoneNumberUtil;
 use Spatie\Permission\PermissionRegistrar;
 
 /**
@@ -111,6 +116,57 @@ class UserModeration
         }
 
         return $users->count();
+    }
+
+    /**
+     * Staff edit a player's account details. A changed email or phone has to be verified again. The
+     * account keeps at least one way to sign in. Audited with the names of the changed fields.
+     *
+     * @param  array<string, mixed>  $data  username, email, phone, locale, display_name, country, bio
+     *
+     * @throws ValidationException|ModerationException
+     */
+    public function updateDetails(User $target, User $actor, array $data): void
+    {
+        if (! $target->is($actor)) {
+            $this->authorize($target, $actor);
+        }
+
+        $data = AccountRules::normalize(array_map(fn ($value) => is_string($value) && trim($value) === '' ? null : $value, $data));
+        $validated = Validator::make($data, [
+            'username' => AccountRules::username($target),
+            'email' => filled($data['email'] ?? null) ? AccountRules::email($target) : ['nullable'],
+            'phone' => filled($data['phone'] ?? null) ? AccountRules::phone($target) : ['nullable'],
+            'locale' => ['nullable', Rule::in(config('platform.supported_locales'))],
+            'display_name' => ['nullable', 'string', 'max:40'],
+            'country' => ['nullable', 'string', Rule::in(PhoneNumberUtil::getInstance()->getSupportedRegions())],
+            'bio' => ['nullable', 'string', 'max:500'],
+        ])->after(function ($validator) use ($data) {
+            if (blank($data['email'] ?? null) && blank($data['phone'] ?? null)) {
+                $validator->errors()->add('email', __('platform.moderation.needs_login'));
+            }
+        })->validate();
+
+        $account = ['username' => $validated['username'], 'email' => $validated['email'] ?? null, 'phone' => $validated['phone'] ?? null, 'locale' => $validated['locale'] ?? $target->locale];
+        $profile = ['display_name' => $validated['display_name'] ?? null, 'country' => $validated['country'] ?? null, 'bio' => $validated['bio'] ?? null];
+        $changed = [
+            ...array_keys(array_filter($account, fn ($value, $key) => $target->{$key} !== $value, ARRAY_FILTER_USE_BOTH)),
+            ...array_keys(array_filter($profile, fn ($value, $key) => $target->profile->{$key} !== $value, ARRAY_FILTER_USE_BOTH)),
+        ];
+        if ($changed === []) {
+            return;
+        }
+
+        DB::transaction(function () use ($target, $account, $profile) {
+            $target->forceFill([
+                ...$account,
+                'email_verified_at' => $account['email'] === $target->email ? $target->email_verified_at : null,
+                'phone_verified_at' => $account['phone'] === $target->phone ? $target->phone_verified_at : null,
+            ])->save();
+            $target->profile()->updateOrCreate([], $profile);
+        });
+
+        $this->audit->record('user.updated', $target, ['fields' => $changed], $actor);
     }
 
     private function authorize(User $target, User $actor): void

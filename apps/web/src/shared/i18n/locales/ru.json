@@ -634,6 +634,7 @@
       "admin_credit": "Начислено поддержкой",
       "admin_debit": "Списано поддержкой",
       "insufficient_balance_bonus": "Бесплатный бонус"
-    }
+    },
+    "ok": "Понятно"
   }
 }

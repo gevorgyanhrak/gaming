@@ -3,6 +3,114 @@
 One section per reviewed task or batch, newest first (format: `.claude/agents/ui-ux-agent.md`).
 Paths are under `apps/web/src`.
 
+## TASK-038 · Fishka currency UI — 2026-10-31
+
+Reviewed by the UI/UX agent. Owner spec of 2026-10-30, recorded in `DECISIONS.md` and ADR 0015:
+Fishkas are free, never bought, sold or cashed out, and the entry fee is an owner decision that
+supersedes the old "no entry fees" line.
+
+Implementation: `53018b3` + the QA fixes in the working tree; `IMPLEMENTATION_REPORT.md` (TASK-038
+sections); `docs/qa/QA_REPORT_FISHKA.md`.
+
+**Verdict: NEEDS REVISION** (4 fixes, all small).
+
+### What I checked
+- **Code:** `FishkaIcon`, `FishkaBalance`, `OutOfFishkasDialog`, `WalletPage`, the PlayPanel cost
+  line, the `fishka-*` keyframes, en/ru/hy `fishka.*`.
+- **Live (headless Chrome, `player2`, 5,000 Fishkas):**
+  - header pill on `/dashboard` at 390 and 1440;
+  - `/wallet` at 390 and 1440 in en, and at 390 in ru and hy;
+  - Durak and Poker lobby cost lines in en/ru/hy;
+  - the popup opened through its own store (`openOutOfFishkas`) at 390 and 1440 in en/ru/hy, plus
+    keyboard (Tab ×6, Escape) via CDP key events.
+- **Screenshots:** `review/f-*`, plus the coordinator's `b3a/popup-390*.png` and QA's
+  `qa/06-*`/`07-*`.
+- **Not seen live:**
+  - the success state (seen in `popup-390-added.png`);
+  - the cooldown state after the portal fix (seen pre-fix in `qa/07-cooldown-499-390.png`);
+  - the header bump and "+N/−N" animation (code read: `motion-safe`, the delta hidden under reduced
+    motion, the change announced via `role="status"`).
+
+### What works
+- **Design-system fit:**
+  - The gold chip icon reads as a club play chip.
+  - The popup is a `club-frame` sheet with a `club-medal`, gold primary and secondary Cancel.
+  - The wallet uses `club-panel` and the gold-gradient title.
+  - The copy is calm and plain ("free play money: they can't be bought, sold or cashed out"), with no
+    jackpot, coin shower or "win big" wording.
+  - The owner's popup copy is used verbatim.
+- **Layout:**
+  - At 390 the popup is a bottom sheet (16–374 × 430–828) above the tab bar.
+  - At 1440 it is centred (448 px wide).
+  - No horizontal scroll on any checked page.
+  - Popup buttons are 48/44 px.
+  - The wallet "Get bonus" button is `min-h-11`.
+- **Accessibility:**
+  - The pill's name is "Your Fishkas: 5,000. Open your wallet".
+  - The dialog has `role="dialog"`, `aria-modal`, `aria-labelledby` and `aria-describedby`.
+  - Focus moves to the dialog on open and returns to the opener after Escape.
+  - The loading state uses `aria-busy`.
+- **Contrast:**
+  - gold-light balance ≥ 11:1;
+  - muted text ≥ 6.8:1;
+  - the "+N/−N" pill on black/80: green 6.0:1, red 4.8:1.
+- **Strings:**
+  - en/ru/hy complete, including ru plurals ("Получить 5 000 бесплатных фишек", "Вход: 500 фишек").
+  - hy numbers show "5,000": QA bug 10, the headless browser's locale data.
+
+### Problems and fixes
+
+1. **The popup doesn't keep keyboard focus (seen live).**
+   - With the dialog open, Tab goes Cancel → `body` → Menu → logo → Fishka pill → Account menu: the
+     page behind stays reachable while `aria-modal="true"` says it isn't.
+   - **Fix (`features/wallet/components/OutOfFishkasDialog.tsx`):**
+     - trap Tab/Shift+Tab inside the panel;
+     - while open, set `inert` on the app root (`#root`) and lock body scroll;
+     - also ignore Escape while `busy`, as the backdrop click already does.
+   - **Check:** 6 Tabs stay inside the dialog; Escape closes and returns focus to the button that
+     opened it.
+2. **The cooldown state contradicts itself.**
+   - When the free bonus isn't available, the sheet still ends its body with "Get a new bonus and
+     continue playing!" and shows the gold "Get 5,000 Free Fishkas" as a disabled primary above
+     "The next free bonus is available …" (`qa/07-cooldown-499-390.png`).
+   - A disabled main action plus an invitation to use it reads as broken.
+   - **Fix (same file):** when `!refill.available`:
+     - drop `fishka.outCta`;
+     - show the next-bonus time as the body's last line (`text-accent-text`, as now);
+     - show a single gold `fishka.continue`/"OK" that closes the sheet, instead of the disabled
+       primary + Cancel.
+
+     If `available_at` is null and the bonus isn't available (balance ≥ fee, a race), show only
+     Cancel.
+   - Seen live: with a 5,000 balance the sheet showed a disabled primary and no explanation.
+3. **Gain/loss amounts in the history miss AA.**
+   - The 16 px bold amounts use `text-take` (#d9483b) and `text-beaten` (#2f9e5b) on `club-panel`
+     (≈ #3a271f effective).
+   - The red is ≈ 3.3–4.3:1 and the green ≈ 4.4:1, below 4.5:1 for normal-size text.
+   - **Fix (`pages/WalletPage.tsx` `Entry` and, for consistency, `Stat`):**
+     - gains `text-success` (#2fbf71, ≥ 6.3:1);
+     - losses a lighter red, e.g. `#f87171` (≥ 5.4:1 on `surface-raised`), added as a token if it's
+       reused.
+
+     The sign (+/−) already carries the meaning without colour.
+4. **The header pill is a 40 px target on phones** (92×40 measured at 390).
+   - **Fix (`FishkaBalance.tsx`):** `min-h-11` (44 px) below `lg`, or keep 40 visually and extend the
+     hit area with padding/`::after` to 44.
+
+### Nits (optional)
+- **`/wallet` at ≥ 640 px:** the two total tiles sit in a 3-column grid, leaving an empty third
+  column (`f-wallet-1440.jpg`); use `sm:grid-cols-2`.
+- **History rows:** the small balance-after number has no label for screen readers; add sr-only
+  "Balance:" before it.
+- **Phone sheet:** add bottom safe-area padding (`pb-[max(1rem,env(safe-area-inset-bottom))]`) for
+  phones with a home indicator.
+- **Header at 390:** the brand truncates to "Game Platfo…" now that the pill sits beside it.
+  Pre-existing (UX-011), but the pill makes it more visible.
+
+The account was left in English with no active game and the popup closed.
+
+---
+
 ## B3a · TASK-035 Durak table, TASK-036 Poker hand result (+ TASK-029) — 2026-10-30
 
 Reviewed by the UI/UX agent against `DESIGN_SPECIFICATIONS.md` (Batch B3a), the owner's answers

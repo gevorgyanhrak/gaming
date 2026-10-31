@@ -49,15 +49,28 @@ function Dialog() {
   }, [refetch])
 
   const busy = refill.isPending
+  const busyRef = useRef(busy)
+  useEffect(() => {
+    busyRef.current = busy
+  }, [busy])
+
+  // Modal: the app behind is inert (no focus, no clicks) and doesn't scroll; Escape closes unless the
+  // bonus is being added; focus returns to where it was.
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null
+    const app = document.getElementById('root')
+    const overflow = document.body.style.overflow
+    app?.setAttribute('inert', '')
+    document.body.style.overflow = 'hidden'
     panel.current?.focus()
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') closeOutOfFishkas()
+      if (event.key === 'Escape' && !busyRef.current) closeOutOfFishkas()
     }
     document.addEventListener('keydown', onKey)
     return () => {
       document.removeEventListener('keydown', onKey)
+      app?.removeAttribute('inert')
+      document.body.style.overflow = overflow
       opener?.focus()
     }
   }, [])
@@ -70,6 +83,8 @@ function Dialog() {
       )
     : null
   const canTake = !!data?.refill.available && !busy
+  // Known not to be available (taken recently, or still enough to play): say when, offer only "OK".
+  const waiting = !!data && !data.refill.available
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center">
@@ -85,7 +100,7 @@ function Dialog() {
         aria-labelledby="out-of-fishkas-title"
         aria-describedby="out-of-fishkas-body"
         tabIndex={-1}
-        className="club-frame relative w-full max-w-md rounded-3xl p-6 text-center outline-none motion-safe:animate-rise"
+        className="club-frame relative mb-[env(safe-area-inset-bottom)] w-full max-w-md rounded-3xl p-6 text-center outline-none motion-safe:animate-rise"
       >
         <span className="club-medal mx-auto mb-4 flex size-16 items-center justify-center rounded-full">
           <FishkaIcon className="size-10" />
@@ -126,9 +141,9 @@ function Dialog() {
                 : data?.balance === 0
                   ? t('fishka.outZero')
                   : null}{' '}
-              {t('fishka.outCta')}
+              {waiting ? null : t('fishka.outCta')}
             </p>
-            {nextAt && !data?.refill.available ? (
+            {waiting && nextAt ? (
               <p className="mt-3 text-sm text-accent-text">
                 {t('fishka.nextBonus', { time: nextAt })}
               </p>
@@ -139,25 +154,33 @@ function Dialog() {
               </div>
             ) : null}
             <div className="mt-6 flex flex-col gap-2">
-              <Button
-                variant="gold"
-                className="min-h-12 w-full text-base"
-                disabled={!canTake}
-                aria-busy={busy}
-                onClick={take}
-              >
-                {busy
-                  ? t('fishka.adding')
-                  : t('fishka.getBonus', { count: amount, amount: format(amount) })}
-              </Button>
-              <Button
-                variant="secondary"
-                className="min-h-11 w-full"
-                disabled={busy}
-                onClick={closeOutOfFishkas}
-              >
-                {t('fishka.cancel')}
-              </Button>
+              {waiting ? (
+                <Button variant="secondary" className="min-h-11 w-full" onClick={closeOutOfFishkas}>
+                  {t('fishka.ok')}
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    variant="gold"
+                    className="min-h-12 w-full text-base"
+                    disabled={!canTake}
+                    aria-busy={busy}
+                    onClick={take}
+                  >
+                    {busy
+                      ? t('fishka.adding')
+                      : t('fishka.getBonus', { count: amount, amount: format(amount) })}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    className="min-h-11 w-full"
+                    disabled={busy}
+                    onClick={closeOutOfFishkas}
+                  >
+                    {t('fishka.cancel')}
+                  </Button>
+                </>
+              )}
             </div>
           </>
         )}
