@@ -20,13 +20,13 @@ Steps (tick when done, with the commit):
       socket isn't connected (room state 3 s, wallet 5 s); local Sanctum accepts any 192.168.* origin.
       Verified live: a full hand with 3 bots, UI caption in sync at every version — edd04cf.
 - [x] 2. Poker uses the real balance: buy-in = whole balance (no 1,000 cap); bots get the people's average
-      stack — backend in COMMIT_GROUPS. (Table/header display: step 4b.)
+      stack — backend in b90cd47. (Table/header display: step 4b.)
 - [x] 3. Central group configuration: `play_groups` table (migration seeds 10 groups), `PlayGroups` service,
-      `TableTerms`, admin "Play groups" (edit limits/open, audited) — COMMIT_GROUPS.
+      `TableTerms`, admin "Play groups" (edit limits/open, audited) — b90cd47.
 - [x] 4. Backend for groups (poker AND other games): entry by minimum balance (not charged), bet range
       validation, poker blinds = group min bet, rooms carry group + stake, matchmaking queues per mode+group,
       stake games: winners share the pot / draw returns bets (ledger `game_stake`, `game_payout`) —
-      COMMIT_GROUPS. Tests: tests/Feature/Fishka/GroupsTest.php, PlayGroupAdminTest.
+      b90cd47. Tests: tests/Feature/Fishka/GroupsTest.php, PlayGroupAdminTest.
 - [ ] 4b. Frontend groups: group picker on every game page (all 5 with min balance / bets, locked ones
       greyed with "need N"), bet slider for bot/private tables, matchmaking per group, group badge + stake on
       the room page and waiting table, Play again keeps group + bet, poker shows whole-balance buy-in.
