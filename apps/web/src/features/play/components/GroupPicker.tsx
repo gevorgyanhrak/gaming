@@ -27,14 +27,14 @@ export function GroupPicker({
       <legend className="mb-2 text-xs font-semibold tracking-wider text-muted uppercase">
         {t('play.group')}
       </legend>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {groups.map((group) => {
           const open = canEnter(group, balance)
           const color = groupColor(group)
           return (
             <label
               key={group.slug}
-              className={`relative flex min-h-11 cursor-pointer flex-col gap-0.5 rounded-xl border bg-black/25 p-2.5 text-left transition has-checked:border-gold has-checked:bg-gold/10 has-checked:shadow-[0_0_0_2px_rgb(214_171_78/0.35)] has-focus-visible:outline-2 has-focus-visible:outline-accent-text ${
+              className={`relative flex min-h-11 min-w-0 cursor-pointer flex-col gap-0.5 rounded-xl border bg-black/25 p-2.5 text-left transition has-checked:border-gold has-checked:bg-gold/10 has-checked:shadow-[0_0_0_2px_rgb(214_171_78/0.35)] has-focus-visible:outline-2 has-focus-visible:outline-accent-text ${
                 open
                   ? 'border-border hover:border-gold/60'
                   : 'cursor-not-allowed border-border/60 opacity-55'
@@ -49,14 +49,16 @@ export function GroupPicker({
                 onChange={() => onChange(group.slug)}
                 className="sr-only"
               />
-              <span className="flex items-center gap-1.5 text-sm font-bold">
+              <span className="flex min-w-0 items-center gap-1.5 text-sm font-bold">
                 <span
                   aria-hidden="true"
                   className="size-3 shrink-0 rounded-full shadow-[inset_0_-2px_0_rgb(0_0_0/0.25)]"
                   style={{ background: color }}
                 />
-                {t(`groups.${group.slug}` as 'groups.beginner')}
-                {open ? null : <LockIcon className="ml-auto size-4 text-muted" />}
+                <span className="min-w-0 truncate">
+                  {t(`groups.${group.slug}` as 'groups.beginner')}
+                </span>
+                {open ? null : <LockIcon className="ml-auto size-4 shrink-0 text-muted" />}
               </span>
               <span className="text-xs text-muted">
                 {open
