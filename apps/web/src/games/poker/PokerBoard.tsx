@@ -46,7 +46,7 @@ export default function PokerBoard({
   players = {},
   bots = {},
 }: BoardProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const labels = useCardLabel()
   const view = state.view as unknown as PokerView
   const me = state.seat ?? 0
@@ -230,7 +230,7 @@ export default function PokerBoard({
                               : ''
                           }`}
                         >
-                          +{gain.toLocaleString()}
+                          +{gain.toLocaleString(i18n.language)}
                         </span>
                       ) : null}
                       {shown ? (
@@ -280,7 +280,7 @@ export default function PokerBoard({
                         {name(seat)}
                       </span>
                       <span className="block text-xs font-bold text-gold tabular-nums">
-                        {stack.toLocaleString()}
+                        {stack.toLocaleString(i18n.language)}
                       </span>
                       {seat !== me && bots[seat] ? (
                         <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-1.5 py-0.5 text-[0.65rem] leading-none font-semibold tracking-wide text-white/85 uppercase">

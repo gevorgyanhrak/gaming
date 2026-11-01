@@ -248,12 +248,15 @@ class GameActionService
         $seats = $outcome === null ? $engine->seatsToAct($transition->state) : [];
         $clock = $nextClock($seats);
 
-        DB::transaction(function () use ($room, $actor, $move, $version, $outcome, $clock, $alsoInTransaction, $transition) {
+        DB::transaction(function () use ($room, $actor, $move, $version, &$outcome, $clock, $alsoInTransaction, $transition, $engine) {
             $room->moves()->create([...$move, 'seq' => $version, 'participant_id' => $actor?->id]);
             $room->forceFill(['state_version' => $version, 'clock' => $clock])->save();
 
             if ($alsoInTransaction !== null) {
                 $alsoInTransaction();
+            }
+            if ($outcome === null && $engine instanceof PlaysForChips) {
+                $outcome = $this->retireBusted($room, $engine, $transition->state);
             }
             if ($outcome !== null) {
                 $this->finisher->finish($room, $outcome, 'completed');
@@ -261,12 +264,40 @@ class GameActionService
             }
         });
 
-        $state = new RoomState($version, $transition->state, $seats, $this->states->deadline($room, $transition->state, $seats, now()->getTimestampMs()), $clock);
+        if ($outcome !== null) {
+            $seats = [];
+        }
+        $deadline = $room->isActive() ? $this->states->deadline($room, $transition->state, $seats, now()->getTimestampMs()) : null;
+        $state = new RoomState($version, $transition->state, $seats, $deadline, $clock);
         $this->store->put($room, $state);
 
         $this->afterChange($room, $state, $transition->events);
 
         return new ActionResult($version);
+    }
+
+    /**
+     * At a table played for chips, a person left with no chips is out: their game is over (a loss) while
+     * the others play on. When only bots are left, the game ends with them — nobody would watch it.
+     *
+     * @param  array<string, mixed>  $state
+     */
+    private function retireBusted(GameRoom $room, PlaysForChips $engine, array $state): ?Outcome
+    {
+        $people = $room->participants->filter(fn (GameParticipant $p) => $p->user_id !== null && $p->is_active);
+        $busted = $people->filter(fn (GameParticipant $p) => $engine->chipsOf($state, $p->seat) === 0);
+        foreach ($busted as $participant) {
+            $this->finisher->finishParticipant($participant, $room->game_id, ParticipantResult::Loss);
+        }
+        if ($busted->isEmpty() || $busted->count() < $people->count()) {
+            return null;
+        }
+
+        $winners = $room->participants
+            ->filter(fn (GameParticipant $p) => $p->is_active && $engine->chipsOf($state, $p->seat) > 0)
+            ->pluck('seat')->values()->all();
+
+        return new Outcome($winners, 'last_standing');
     }
 
     /** Whether the game can go on without $leaver: the engine supports it and another person still plays. */

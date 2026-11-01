@@ -8,6 +8,7 @@ use App\Gameplay\Bots\BotSelector;
 use App\Gameplay\Engine\Action;
 use App\Gameplay\Lifecycle\ResumeRoundJob;
 use App\Gameplay\Lifecycle\TurnTimeoutJob;
+use App\Gameplay\Rooms\RoomState;
 use App\Gameplay\Rooms\RoomStates;
 use App\Gameplay\Rooms\RoomStateStore;
 use App\Models\BotProfile;
@@ -40,6 +41,31 @@ function pokerTable(): array
     }
 
     return [GameRoom::query()->where('public_id', $room['id'])->sole(), $alice, $bob, $carol];
+}
+
+/**
+ * $user loses all their chips in the current hand (they fold with nothing left behind), and the next
+ * player to act moves, which finishes the step.
+ */
+function bust(GameRoom $room, User $user): void
+{
+    $states = app(RoomStates::class);
+    $actions = app(GameActionService::class);
+    $room->refresh()->load(['game', 'participants']);
+    $seat = $room->participants->firstWhere('user_id', $user->id);
+    $current = $states->current($room);
+    if ($current->seatsToAct === [$seat->seat]) {
+        $actions->submit($room, $seat, new Action('fold'), $current->version);
+        $current = $states->current($room->refresh()->load(['game', 'participants']));
+    }
+
+    $state = $current->state;
+    $state['stacks'][$seat->seat] = 0;
+    $state['folded'][$seat->seat] = true;
+    app(RoomStateStore::class)->put($room, new RoomState($current->version, $state, $current->seatsToAct, $current->deadline, $current->clock));
+
+    $next = $room->participants->firstWhere('seat', $current->seatsToAct[0]);
+    $actions->submit($room, $next, $states->engine($room)->timeoutAction($state, $next->seat), $current->version);
 }
 
 beforeEach(fn () => Queue::fake());
@@ -226,4 +252,35 @@ it('pauses after a hand so everyone sees the result, then deals the next one', f
     // The move log replays the pause and the new deal.
     app(RoomStateStore::class)->forget($room);
     expect($states->rebuild($room)->state)->toBe($next->state);
+});
+
+it('ends a person’s game when they lose all their chips while the others play on', function () {
+    [$room, $alice] = pokerTable();
+
+    bust($room, $alice);
+    $room->refresh()->load('participants');
+    $seat = $room->participants->firstWhere('user_id', $alice->id);
+
+    expect($room->status)->toBe(RoomStatus::Active)
+        ->and($seat->result)->toBe(ParticipantResult::Loss)
+        ->and($seat->is_active)->toBeFalse()
+        ->and(UserGameStat::query()->where('user_id', $alice->id)->sole()->losses)->toBe(1);
+});
+
+it('ends a bot table when the person at it has lost all their chips', function () {
+    $mode = pokerMode();
+    BotProfile::factory()->create()->gameProfiles()->create(['game_id' => $mode->game->id, 'difficulty' => BotDifficulty::Easy]);
+    $player = User::factory()->create();
+    $id = $this->actingAs($player)->postJson('/api/v1/rooms', ['game_mode_id' => $mode->id, 'type' => 'bot', 'bot_difficulty' => 'easy', 'opponents' => 2])
+        ->assertCreated()->json('data.id');
+    $room = GameRoom::query()->where('public_id', $id)->sole();
+
+    bust($room, $player);
+    $room->refresh()->load('participants');
+
+    expect($room->status)->toBe(RoomStatus::Finished)
+        ->and($room->participants->firstWhere('user_id', $player->id)->result)->toBe(ParticipantResult::Loss)
+        ->and($room->participants->whereNull('user_id')->pluck('result')->unique()->all())->toBe([ParticipantResult::Win])
+        ->and(UserGameStat::query()->where('user_id', $player->id)->sole()->played)->toBe(1);
+    Queue::assertNotPushed(ResumeRoundJob::class, fn (ResumeRoundJob $job) => $job->version === $room->state_version);
 });

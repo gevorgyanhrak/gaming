@@ -27,12 +27,15 @@ export function GameOverPanel({
   room,
   result,
   leftTable,
+  outOfChips = false,
 }: {
   room: Room
   /** The player's own result, if they had a seat. */
   result: ParticipantResult | null
   /** The player left a table that plays on without them. */
   leftTable: boolean
+  /** …because they lost all their chips (poker), not because they walked away. */
+  outOfChips?: boolean
 }) {
   const { t } = useTranslation()
   const message = useMessage()
@@ -70,10 +73,13 @@ export function GameOverPanel({
   const title = aborted
     ? t('room.aborted')
     : leftTable
-      ? t('room.leftTable')
-      : result
-        ? t(outcomeLabel[result])
-        : t('room.finished')
+      ? t(outOfChips ? 'room.outOfChips' : 'room.leftTable')
+      : result === 'abandoned' && room.end_reason === 'abandon'
+        ? // Recorded as abandoned for leaving the page too, not only for a missed turn timer.
+          t('room.outcome.left')
+        : result
+          ? t(outcomeLabel[result])
+          : t('room.finished')
   const reason = !aborted && room.end_reason ? endReasonLabel[room.end_reason] : undefined
   const canPlayAgain = !aborted && room.type !== 'private'
   const lobby = `/games/${room.game.slug}`

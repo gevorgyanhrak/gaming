@@ -9,7 +9,7 @@ decisions are in `ARCHITECTURE.md` and `adr/`.
 |---|---|---|
 | Web (SPA) | `apps/web` build output (`dist/`), static files behind a CDN or nginx | any |
 | API | `docker/php/Dockerfile` target `prod` (php-fpm) behind nginx (`docker/nginx/default.conf`) | stateless, any number |
-| Queue workers | same image, `php artisan horizon` | one Horizon per host; processes auto-balance (`config/horizon.php`) |
+| Queue workers | same image, `php artisan horizon` | one Horizon per host (`config/horizon.php`): `supervisor-game` for the `game` queue (4 processes, polls every 0.25 s) and `supervisor-1` for `default` + `notifications` (up to 6, auto-balanced) |
 | WebSockets | same image, `php artisan reverb:start --host=0.0.0.0 --port=8080` | one, or several with `REVERB_SCALING_ENABLED=true` |
 | Scheduler | same image, `php artisan schedule:work` | **exactly one** |
 | MySQL 8.4 | managed service or own instance, InnoDB, utf8mb4 | primary (+ replica for backups) |

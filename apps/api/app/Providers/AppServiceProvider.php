@@ -61,7 +61,9 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('auth', fn (Request $request) => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('lookups', fn (Request $request) => Limit::perMinute(30)->by($request->ip()));
         RateLimiter::for('verification', fn (Request $request) => Limit::perMinute(10)->by($byUserOrIp($request)));
-        RateLimiter::for('account', fn (Request $request) => Limit::perMinute(30)->by($byUserOrIp($request)));
+        // The player's own account: /me and /me/* (wallet, rooms, stats) together. Every page load reads
+        // several of them, and the wallet is polled while live updates are down.
+        RateLimiter::for('account', fn (Request $request) => Limit::perMinute(60)->by($byUserOrIp($request)));
         // Board games are bursty (Nardi doubles are four quick steps plus state refreshes).
         RateLimiter::for('game', fn (Request $request) => Limit::perMinute(240)->by($byUserOrIp($request)));
         RateLimiter::for('game-actions', fn (Request $request) => Limit::perMinute(120)->by($byUserOrIp($request)));

@@ -1078,6 +1078,11 @@ export interface operations {
                             status: "waiting" | "active" | "finished" | "aborted";
                             version: number;
                             seat: number | null;
+                            /**
+                             * @description False once the viewer's own game is over while the table plays on (they left, or lost
+                             *     all their chips); their result is on the room.
+                             */
+                            playing: boolean;
                             seats_to_act: number[];
                             deadline: string | null;
                             server_time: string;
@@ -1915,6 +1920,11 @@ export interface operations {
                             status: "waiting" | "active" | "finished" | "aborted";
                             version: number;
                             seat: number | null;
+                            /**
+                             * @description False once the viewer's own game is over while the table plays on (they left, or lost
+                             *     all their chips); their result is on the room.
+                             */
+                            playing: boolean;
                             seats_to_act: number[];
                             deadline: string | null;
                             server_time: string;

@@ -92,6 +92,11 @@ export function RoomPage() {
   )
   // Left a multi-player game that goes on without you.
   const leftTable = data.status === 'active' && myResult != null
+  // …with no chips left (a game played for chips), rather than by leaving.
+  const outOfChips =
+    leftTable &&
+    view?.seat != null &&
+    (view.view as { stacks?: number[] }).stacks?.[view.seat] === 0
   // Boards that seat every player show them already while the game is on.
   const showPlayers =
     data.status !== 'waiting' &&
@@ -117,14 +122,15 @@ export function RoomPage() {
     <Container className="space-y-6 py-8">
       <title>{tabTitle}</title>
       {/* One row on every width: the game's name stays whole and a long status (a name, another
-          language) truncates instead of wrapping, so the table below doesn't move. */}
+          language) truncates instead of wrapping, so the table below doesn't move. On a phone the
+          group badge goes under the mode and its group name truncates. */}
       <header className="flex items-center justify-between gap-3">
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gold/15">
             <GameIcon slug={data.game.slug} name={data.game.name} className="size-6 text-gold" />
           </span>
-          <div>
-            <h1 className="text-2xl font-bold">{data.game.name}</h1>
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold whitespace-nowrap">{data.game.name}</h1>
             <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
               {data.mode.name}
               <GroupBadge room={data} />
@@ -162,6 +168,7 @@ export function RoomPage() {
           room={data}
           result={(myResult ?? null) as ParticipantResult | null}
           leftTable={leftTable}
+          outOfChips={outOfChips}
         />
       ) : null}
 

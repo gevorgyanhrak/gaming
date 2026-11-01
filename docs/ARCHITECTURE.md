@@ -214,10 +214,14 @@ created for, so stale jobs do nothing).
 Tickets live in the game store per mode; every queue change happens under that mode's lock, so a
 ticket is matched exactly once (a human match and a bot acceptance can't both win). Rooms are
 formed from the mode's `min_players` oldest tickets; filling larger tables (poker) comes with that
-game. `app:matchmaking-sweep` runs every 5 seconds: drops tickets without a heartbeat for 45 s and
+game. The matchmaking sweep runs every 5 seconds inside the scheduler's process (also by hand as
+`app:matchmaking-sweep`; likewise the abandonment sweep): drops tickets without a heartbeat for 45 s and
 applies the bot fallback per game (`auto` / `offer` / `off`, game timeout or platform default). Bots are `bot_profiles` with
 per-game difficulty, act after a configurable human-like delay, and always carry a visible "Bot"
-badge.
+badge. Gameplay jobs (bot turns, turn timeouts, the next poker hand) run on the `game` queue with a
+Horizon supervisor of their own that checks for due jobs every 0.25 s, so a slow job elsewhere never
+holds up a table and a bot's delay isn't stretched by the worker's idle sleep. Those jobs retry for a
+few seconds when the room's lock is busy instead of giving up the turn.
 
 ## 9. Admin panel
 

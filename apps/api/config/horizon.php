@@ -197,10 +197,26 @@ return [
     */
 
     'defaults' => [
+        // Gameplay (bot moves, turn timeouts, the next poker hand) has workers of its own, so a slow job
+        // elsewhere never holds up a table, and they look for due jobs every quarter second (the worker
+        // default of 3 s added up to 3 s to every bot move).
+        'supervisor-game' => [
+            'connection' => 'redis',
+            'queue' => [env('GAME_QUEUE', 'game')],
+            'balance' => 'simple',
+            'minProcesses' => 1,
+            'maxProcesses' => 2,
+            'sleep' => 0.25,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 128,
+            'tries' => 1,
+            'timeout' => 60,
+            'nice' => 0,
+        ],
         'supervisor-1' => [
             'connection' => 'redis',
-            // "game" (bot turns, turn timeouts) first: it is the most time-sensitive.
-            'queue' => ['game', 'default', 'notifications'],
+            'queue' => ['default', 'notifications'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,
@@ -215,16 +231,22 @@ return [
 
     'environments' => [
         'production' => [
+            'supervisor-game' => [
+                'maxProcesses' => 4,
+            ],
             'supervisor-1' => [
-                'maxProcesses' => 10,
+                'maxProcesses' => 6,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],
         ],
 
         'local' => [
-            'supervisor-1' => [
+            'supervisor-game' => [
                 'maxProcesses' => 3,
+            ],
+            'supervisor-1' => [
+                'maxProcesses' => 2,
             ],
         ],
     ],

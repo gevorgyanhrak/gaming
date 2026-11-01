@@ -69,8 +69,13 @@ class RoomStakes
         }
 
         $lowest = $terms === null ? null : PlayGroup::query()->where('kind', $terms->group->kind)->where('is_enabled', true)->orderBy('position')->first();
-        if ($terms !== null && $lowest !== null && $lowest->id !== $terms->group->id && $balance >= $lowest->min_balance) {
-            throw ValidationException::withMessages(['group' => __('platform.play.group_balance', ['needed' => number_format($needed)])]);
+        if ($terms !== null && $lowest !== null && $lowest->id !== $terms->group->id) {
+            $lowestNeeds = $this->minimum($mode, new TableTerms($lowest, $lowest->min_bet));
+            if ($balance >= $lowestNeeds) {
+                throw ValidationException::withMessages(['group' => __('platform.play.group_balance', ['needed' => number_format($needed)])]);
+            }
+            // Not even the lowest group: say what it takes to play at all.
+            $needed = $lowestNeeds;
         }
 
         throw new InsufficientFishkas($balance, $needed);

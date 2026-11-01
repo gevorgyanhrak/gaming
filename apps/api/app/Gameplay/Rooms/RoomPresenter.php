@@ -27,6 +27,9 @@ class RoomPresenter
             'status' => $room->status->value,
             'version' => $state->version,
             'seat' => $seat,
+            // False once the viewer's own game is over while the table plays on (they left, or lost
+            // all their chips); their result is on the room.
+            'playing' => $viewer !== null && $viewer->is_active,
             'seats_to_act' => $state->seatsToAct,
             'deadline' => $state->deadline === null ? null : now()->setTimestamp($state->deadline)->toIso8601String(),
             'server_time' => now()->toIso8601String(),

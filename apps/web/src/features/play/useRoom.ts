@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { isApiError } from '@/shared/api/errors'
@@ -34,6 +35,15 @@ export function useRoom(id: string) {
     enabled: started,
     refetchInterval: !live && room.data?.status === 'active' ? 3000 : false,
   })
+
+  // A player's own game can end while the table plays on (they left, or lost all their chips): their
+  // result lives on the room.
+  const playing = state.data?.playing
+  const active = room.data?.status === 'active'
+  useEffect(() => {
+    if (active && playing === false)
+      void queryClient.invalidateQueries({ queryKey: roomKeys.room(id), exact: true })
+  }, [active, playing, id, queryClient])
 
   useUserChannel(user?.id, {
     'room.updated': (payload: RoomState) => {

@@ -11,6 +11,7 @@ use App\Gameplay\Random\SecureRandom;
 use App\Gameplay\Rooms\RoomStates;
 use App\Models\GameRoom;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -21,6 +22,11 @@ use Illuminate\Queue\InteractsWithQueue;
 class BotTurnJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable;
+
+    /** A room that stays busy past the lock wait is tried again a second later (other errors fail at once). */
+    public int $tries = 5;
+
+    public int $maxExceptions = 1;
 
     public function __construct(
         public readonly int $roomId,
@@ -56,6 +62,8 @@ class BotTurnJob implements ShouldQueue
             $actions->submit($room, $bot, $action, expectedVersion: $this->version);
         } catch (VersionConflict|RoomNotActive) {
             // The room moved on (timeout, resignation) while the bot was thinking.
+        } catch (LockTimeoutException) {
+            $this->release(1);
         }
     }
 }

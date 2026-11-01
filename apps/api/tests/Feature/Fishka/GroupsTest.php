@@ -146,3 +146,16 @@ it('filters the history to one game', function () {
     $this->actingAs($user)->getJson("/api/v1/me/wallet/transactions?room={$id}")
         ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.type', 'game_stake')->assertJsonPath('data.0.reference_id', $id);
 });
+
+it('tells a player below every group what the lowest group needs, whichever group they asked for', function () {
+    $poker = modeOf('poker');
+    $nardi = modeOf('nardi');
+
+    startBot(withBalance(99), $poker, ['group' => 'intermediate'])->assertUnprocessable()
+        ->assertJsonPath('code', 'insufficient_fishkas')->assertJsonPath('needed', 100)
+        ->assertJsonPath('message', 'You need 100 Fishkas to play this game.');
+    startBot(withBalance(300), $nardi, ['group' => 'master', 'bet' => 100_000])->assertUnprocessable()
+        ->assertJsonPath('code', 'insufficient_fishkas')->assertJsonPath('needed', 500);
+    startBot(withBalance(0), $nardi, ['group' => 'beginner'])->assertUnprocessable()
+        ->assertJsonPath('needed', 500)->assertJsonPath('message', 'You need 500 Fishkas to play this game.');
+});

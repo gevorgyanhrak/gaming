@@ -2,6 +2,53 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## TASK-040 · Poker bots, real balance in Poker, game groups — 2026-11-01 · READY_FOR_REVIEW
+
+Brief: `docs/product/briefs/TASK-040-groups-poker-bots.md`. ADR 0016. QA: `docs/qa/QA_REPORT_TASK040.md`.
+
+What was wrong:
+- "Bots don't play poker": they did; the page never heard. The WebSocket host was pinned to an old LAN
+  address and polling only ran when realtime wasn't configured at all (edd04cf).
+- Poker showed 1,000: the buy-in was capped at `starting_chips` (1,000).
+- No groups: one flat 500 entry fee for every game.
+
+Built (b90cd47, 7ce1f4a, d4ca892):
+- `play_groups` (10 rows, admin-editable, audited): poker Beginner…Master (min balance 100 → 500,000, min
+  bet = big blind 1 → 100); other games Beginner…Master (min balance 500 → 500,000, bets 500 → 500,000).
+- Entry by minimum balance (never charged); bet range validated on the server; the bet replaces the fee;
+  winners share the pot, a draw returns bets, bots' stakes come from the house; matchmaking per group at
+  the group's minimum bet. Poker brings the whole balance; bots get the people's average stack.
+- Header = wallet + chips at a table (`at_table`); no free bonus while chips are in play; game-over panel
+  shows the ledger net and flies chips in/out once per game; poker hand wins fly from your seat.
+
+QA fixes (this commit), from 54 pass / 6 fail, 8 bugs:
+1. Major · a busted player at a poker bot table got no result and stayed "in a game" →
+   `GameActionService::retireBusted`: a person with 0 chips gets a loss and is freed; only bots left →
+   the game ends. State payload `playing`; `useRoom` refetches the room when it turns false; panel says
+   "You're out of chips" at a table that plays on. Tests: PokerTableTest (both cases). Live: 4 busts on
+   6-seat tables ended at once; 390 px "You lost. −6,268 Fishkas".
+2. Medium · header flicker / wrong "−19,192" at buy-in and cash-out → `useWalletSync` refetches the summary
+   instead of patching `balance` alone. Test: Fishka.test ("without a false jump").
+3. Medium/Low · bots ~3 s per move, stalls → own Horizon supervisor for `game` (sleep 0.25 s instead of 3 s;
+   slow jobs elsewhere no longer block), game jobs retry on a lock timeout instead of losing the turn, the
+   5-second sweeps run in the scheduler's process (scheduler CPU 69 % → 1.4 %, MySQL 21 % → 7 % idle).
+   Live: median 3.07 s → 1.13–1.18 s (p90 1.3–1.5 s). Still seen locally: about 1 stall of ~20 s per 70
+   moves, during whole-stack slowdowns of the loaded Mac (load average 12–15, Docker under QEMU); every
+   container slowed at once and no code path was slow in the probes.
+4. Low · group badge overflow at 390 → header block shrinks, group name truncates, bet/blinds stay whole.
+   Live: badge right edge 264 of 390, no horizontal scroll.
+5. Low · "You ran out of time" after leaving the page → "You left the game." when the end reason is
+   `abandon` (en/ru/hy).
+6. Low · insufficient-Fishkas message: unformatted number, requested group's minimum → the lowest group's
+   minimum, formatted. Test: GroupsTest.
+7. Low · pot/bet labels without separators → poker strings use `{{x, number}}` (page language); stacks too.
+   Live: "Pot: 1,568 chips".
+8. Low · a 429 on `/me` showed the player as signed out → queries retry 429 with backoff (~45 s);
+   `account` limiter 30 → 60/min. Test: Fishka.test ("asks to slow down").
+
+Not changed (observations for the owner/PM): beginner blinds 1/1 (formula), wallet dates not localized,
+play-group audit rows store only new values.
+
 ## TASK-038 · QA fixes — 2026-10-31 · READY_FOR_REVIEW
 
 From `docs/qa/QA_REPORT_FISHKA.md` (44 checks, 39 pass, 10 bugs):

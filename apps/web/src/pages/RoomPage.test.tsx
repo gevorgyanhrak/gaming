@@ -188,6 +188,62 @@ describe('Room', () => {
     expect(body).toMatchObject({ game_mode_id: 1, type: 'bot', bot_difficulty: 'easy' })
   })
 
+  it('says the player left when their game ended for leaving the page', async () => {
+    serveRoom(
+      roomFixture({
+        status: 'finished',
+        end_reason: 'abandon',
+        participants: [
+          { ...roomFixture().participants[0]!, result: 'abandoned' },
+          { ...roomFixture().participants[1]!, result: 'win' },
+        ],
+      }),
+      roomStateFixture({ status: 'finished', seats_to_act: [], legal_actions: [] }),
+    )
+    renderRoute('/rooms/room-1')
+
+    expect(await screen.findByRole('heading', { name: 'You left the game.' })).toBeInTheDocument()
+  })
+
+  it('ends the game for a player who lost all their chips while the table plays on', async () => {
+    let roomCalls = 0
+    serveRoom()
+    server.use(
+      http.get('*/api/v1/rooms/room-1', () => {
+        roomCalls++
+        // The room shows the result once the player's game is over (the first read is from before).
+        const result = roomCalls === 1 ? null : ('loss' as const)
+        return HttpResponse.json({
+          data: roomFixture({
+            game: { ...roomFixture().game, slug: 'cardtable' },
+            participants: [
+              { ...roomFixture().participants[0]!, result },
+              roomFixture().participants[1]!,
+            ],
+          }),
+        })
+      }),
+      http.get('*/api/v1/rooms/room-1/state', () =>
+        HttpResponse.json({
+          data: roomStateFixture({
+            playing: false,
+            seats_to_act: [1],
+            legal_actions: [],
+            view: { stacks: [0, 2000] },
+          }),
+        }),
+      ),
+    )
+    renderRoute('/rooms/room-1')
+
+    expect(
+      await screen.findByRole('heading', {
+        name: "You're out of chips. The game goes on for the others.",
+      }),
+    ).toBeInTheDocument()
+    expect(roomCalls).toBe(2)
+  })
+
   it('offers only the lobby after a private game', async () => {
     serveRoom(
       roomFixture({

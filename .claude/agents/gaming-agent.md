@@ -72,6 +72,14 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
 - Play groups (ADR 0016): `play_groups` (kinds `chips`/`stake`) via `Gameplay/Rooms/PlayGroups` → `TableTerms`;
   rooms carry `play_group_id` + `stake`; `RoomStakes` = entry check (min balance, never charged), poker
   whole-balance buy-in, stake games' pot payout; matchmaking pools `mode:group`. Requests take `group` and `bet`.
+  A person whose `chipsOf()` reaches 0 is retired in `GameActionService::record` (`retireBusted`: their
+  result is a loss while the table plays on; only bots left → the game ends). The room state payload's
+  `playing` turns false then, and `useRoom` refetches the room to show the panel.
+- The header balance is `balance + at_table`; on `wallet.updated` the client refetches the summary (never
+  patches `balance` alone — buy-ins and cash-outs move Fishkas between the two).
+- Gameplay jobs run on the `game` queue under Horizon's `supervisor-game` (sleep 0.25 s); `BotTurnJob`,
+  `TurnTimeoutJob` and `ResumeRoundJob` release and retry on a room-lock timeout. The 5-second sweeps are
+  `Schedule::call`s in the scheduler's process (spawning artisan every 5 s was the slowest thing locally).
 - Optional engine contracts in `app/Gameplay/Contracts`: `HandlesTimeouts`, `DecidesTimeouts`,
   `HandlesDepartures`, `ValidatesActions`, `PausesBetweenRounds` (poker's pause after a hand:
   `GameScheduler` queues `ResumeRoundJob` → `GameActionService::resume` → a `resume` move with no

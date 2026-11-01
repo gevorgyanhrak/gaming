@@ -33,11 +33,13 @@ Steps (tick when done, with the commit):
 - [x] 5. Win/lose: header shows wallet + chips at a table (`at_table`, no free bonus while chips are in play);
       game-over panel shows the net from the ledger (`?room=` filter) and flies chips in/out of the header once
       per game (sessionStorage); poker hand wins fly from your seat, header refreshes per hand — 7ce1f4a.
-- [ ] 6. (QA agent running, 2026-11-01 → docs/qa/QA_REPORT_TASK040.md; group tiles layout fix d4ca892.)
-      Full Poker test pass (brief §5): balances 100 / 1,000 / 5,000 / 50,000 / 500,000; all actions;
-      folds; showdowns; reconnects; double-payout checks.
-- [ ] 7. (Backend done in step 4 for every game.) Verify Nardi, Checkers, Chess, Durak live per group; pot payouts.
-- [ ] 8. QA agent end to end, UI/UX review, PM validation; fix; final report to the owner.
+- [x] 6. Full Poker test pass (brief §5) by the QA agent: 54 pass / 6 fail, 8 bugs — `docs/qa/QA_REPORT_TASK040.md`.
+- [x] 7. Nardi, Checkers, Chess, Durak live per group: bet ranges, pot payouts (Durak split), draw refund,
+      matchmaking per group, Play again — all PASS in the same QA run.
+- [x] 8a. All 8 QA bugs fixed (see the report's "Fix status" and IMPLEMENTATION_REPORT): busted poker player
+      freed / bot-only table ends, header flicker, bot speed (own `game` supervisor, sweeps in-process),
+      badge at 390, "You left the game.", lowest-group message, number formatting, 429 ≠ signed out — COMMIT.
+- [ ] 8b. UI/UX review and PM validation of TASK-040; then the final report to the owner.
 
 Owner answers (2026-11-01) for step 7: the winner takes the pot (Durak: all but the loser split it; vs
 bots the house matches the bet; a draw returns stakes); the bet replaces the 500 entry fee; the table's

@@ -96,7 +96,7 @@ describe('PokerBoard', () => {
     expect(onAction).toHaveBeenLastCalledWith({ type: 'raise', amount: 35 })
 
     await userEvent.click(screen.getByRole('button', { name: 'All-in' }))
-    await userEvent.click(screen.getByRole('button', { name: 'All-in 1000' }))
+    await userEvent.click(screen.getByRole('button', { name: 'All-in 1,000' }))
     expect(onAction).toHaveBeenLastCalledWith({ type: 'raise', amount: 1000 })
   })
 

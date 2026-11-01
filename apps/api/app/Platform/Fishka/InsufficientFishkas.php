@@ -12,6 +12,6 @@ class InsufficientFishkas extends RuntimeException
 {
     public function __construct(public readonly int $balance, public readonly int $needed)
     {
-        parent::__construct(__('platform.fishka.insufficient', ['needed' => $needed]));
+        parent::__construct(__('platform.fishka.insufficient', ['needed' => number_format($needed)]));
     }
 }

@@ -17,9 +17,16 @@ export function createQueryClient(): QueryClient {
     defaultOptions: {
       queries: {
         staleTime: 30_000,
-        // Client errors (4xx) won't succeed on retry; network and server errors might.
+        // Client errors (4xx) won't succeed on retry; network and server errors might. Too many
+        // requests (429) will once the limit resets: keep trying for about half a minute, so a busy
+        // minute doesn't show a signed-in player as a guest.
         retry: (failureCount, error) =>
-          isApiError(error) && error.status >= 400 && error.status < 500 ? false : failureCount < 2,
+          isApiError(error) && error.status === 429
+            ? failureCount < 5
+            : isApiError(error) && error.status >= 400 && error.status < 500
+              ? false
+              : failureCount < 2,
+        retryDelay: (failureCount) => Math.min(1000 * 2 ** failureCount, 16_000),
       },
     },
   })

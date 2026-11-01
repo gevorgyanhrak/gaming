@@ -53,6 +53,41 @@ describe('Fishkas', () => {
     expect(screen.getByText('−500 Fishkas')).toBeInTheDocument()
   })
 
+  it('keeps a signed-in player signed in when the server asks to slow down', async () => {
+    serveGame()
+    let calls = 0
+    server.use(
+      http.get('*/api/v1/me', () =>
+        ++calls === 1
+          ? HttpResponse.json({ message: 'Too Many Attempts.' }, { status: 429 })
+          : HttpResponse.json({ data: userFixture({ id: 1 }) }),
+      ),
+    )
+    renderRoute('/games/tictactoe')
+
+    expect(
+      await screen.findByRole('link', { name: /^Your Fishkas: 5,000/ }, { timeout: 4000 }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /log in/i })).not.toBeInTheDocument()
+    expect(calls).toBe(2)
+  })
+
+  it('moves Fishkas between a table and the wallet without a false jump', async () => {
+    serveGame()
+    let wallet = walletFixture({ balance: 0, at_table: 5000 })
+    server.use(http.get('*/api/v1/me/wallet', () => HttpResponse.json({ data: wallet })))
+    renderRoute('/games/tictactoe')
+    await screen.findByRole('link', { name: /^Your Fishkas: 5,000/ })
+
+    // Cashing out: the chips leave the table as the wallet gets them.
+    wallet = walletFixture({ balance: 5040, at_table: 0 })
+    act(() => emit('user.1', 'wallet.updated', { balance: 5040, change: 5040 }))
+
+    expect(screen.queryByRole('link', { name: /^Your Fishkas: 10,040/ })).not.toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: /^Your Fishkas: 5,040/ })).toBeInTheDocument()
+    expect(screen.getByText('+40 Fishkas')).toBeInTheDocument()
+  })
+
   it('offers free Fishkas when a game can’t start, then lets you play', async () => {
     serveGame()
     let wallet = walletFixture({
