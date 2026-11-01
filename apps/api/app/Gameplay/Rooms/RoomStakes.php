@@ -4,6 +4,7 @@ namespace App\Gameplay\Rooms;
 
 use App\Enums\FishkaTransactionType as Type;
 use App\Enums\ParticipantResult;
+use App\Enums\RoomStatus;
 use App\Gameplay\Contracts\PlaysForChips;
 use App\Gameplay\GameRegistry;
 use App\Models\GameMode;
@@ -176,6 +177,27 @@ class RoomStakes
                 'idempotency_key' => "payout:{$participant->id}",
             ]);
         }
+    }
+
+    /**
+     * Fishkas the player has at tables right now (games played for chips: their current chips), so
+     * balances can be shown with them.
+     */
+    public function atTable(User $user): int
+    {
+        $total = 0;
+        $seats = GameParticipant::query()->where('user_id', $user->id)->where('is_active', true)->where('stake', '>', 0)
+            ->whereHas('room', fn ($q) => $q->where('status', RoomStatus::Active))
+            ->with('room.game', 'room.mode')->get();
+
+        foreach ($seats as $seat) {
+            $engine = $this->chips($seat->room->mode);
+            if ($engine !== null) {
+                $total += $engine->chipsOf(app(RoomStates::class)->current($seat->room)->state, $seat->seat);
+            }
+        }
+
+        return $total;
     }
 
     /**

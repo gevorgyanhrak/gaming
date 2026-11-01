@@ -15,6 +15,7 @@ import {
   type Room,
 } from '../api'
 import { endReasonLabel, outcomeLabel } from '../labels'
+import { GameResult } from '@/features/wallet/components/GameResult'
 import { MatchmakingStatus } from './MatchmakingStatus'
 
 /**
@@ -44,9 +45,13 @@ export function GameOverPanel({
   const level = room.participants.find((p) => p.is_bot)?.bot_difficulty as BotDifficulty | undefined
   const again = useMutation({
     mutationFn: async () => {
+      // Same table terms: group and bet (the server checks them again).
+      const terms = { group: room.group?.slug, ...(room.stake > 0 ? { bet: room.stake } : {}) }
       if (room.type === 'bot')
-        return { room: (await createBotRoom(room.mode.id, level ?? 'medium', room.seats)).id }
-      return startMatchmaking(room.mode.id)
+        return {
+          room: (await createBotRoom(room.mode.id, level ?? 'medium', room.seats, terms)).id,
+        }
+      return startMatchmaking(room.mode.id, room.group?.slug)
     },
     onSuccess: (next) => {
       if (next.room) void navigate(`/rooms/${next.room}`)
@@ -106,6 +111,7 @@ export function GameOverPanel({
         {title}
       </h2>
       {reason ? <p className="mt-1 text-sm text-muted">{t(reason)}</p> : null}
+      {result || leftTable ? <GameResult roomId={room.id} /> : null}
 
       {searching ? (
         <div className="mt-5 text-left">

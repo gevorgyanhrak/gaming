@@ -84,6 +84,7 @@ export function walletFixture(overrides: Partial<Wallet> = {}): Wallet {
     total_earned: 5000,
     total_spent: 0,
     entry_fee: 500,
+    at_table: 0,
     refill: { available: false, available_at: null, amount: 5000 },
     ...overrides,
   }

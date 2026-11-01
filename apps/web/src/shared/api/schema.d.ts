@@ -642,8 +642,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * The signed-in player's Fishkas: balance, totals, the entry fee, and whether the "out of
-         *          * Fishkas" bonus can be taken now
+         * The signed-in player's Fishkas: balance, totals, the entry fee, whether the "out of Fishkas"
+         *     bonus can be taken now, and the Fishkas at poker tables right now (`at_table`, not in the balance)
          */
         get: operations["v1.me.wallet.show"];
         put?: never;
@@ -661,7 +661,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** The Fishka ledger, newest first (paginated) */
+        /**
+         * The Fishka ledger, newest first (paginated). `?room=<id>` keeps one game's entries (its bet or
+         *     buy-in and what it paid back), e.g. to show a game's result
+         */
         get: operations["v1.me.wallet.transactions"];
         put?: never;
         post?: never;
@@ -2198,6 +2201,8 @@ export interface operations {
                             total_earned: number;
                             total_spent: number;
                             entry_fee: number;
+                            /** @description Fishkas at poker tables right now (not in the balance). */
+                            at_table: number;
                             refill: {
                                 available: boolean;
                                 available_at: string | null;
@@ -2212,7 +2217,9 @@ export interface operations {
     };
     "v1.me.wallet.transactions": {
         parameters: {
-            query?: never;
+            query?: {
+                room?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2256,6 +2263,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "v1.me.wallet.refill": {
@@ -2278,6 +2286,8 @@ export interface operations {
                             total_earned: number;
                             total_spent: number;
                             entry_fee: number;
+                            /** @description Fishkas at poker tables right now (not in the balance). */
+                            at_table: number;
                             refill: {
                                 available: boolean;
                                 available_at: string | null;

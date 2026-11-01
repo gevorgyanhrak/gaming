@@ -7,6 +7,7 @@ import { leaveRoom, type ParticipantResult } from '@/features/play/api'
 import { resultLabel } from '@/features/play/labels'
 import { GameIcon } from '@/features/catalog/components/GameArt'
 import { GameOverPanel } from '@/features/play/components/GameOverPanel'
+import { GroupBadge } from '@/features/play/components/GroupBadge'
 import { PlayerList } from '@/features/play/components/PlayerList'
 import { WaitingTable } from '@/features/play/components/WaitingTable'
 import { waitingCaption } from '@/features/play/turnCaption'
@@ -124,7 +125,10 @@ export function RoomPage() {
           </span>
           <div>
             <h1 className="text-2xl font-bold">{data.game.name}</h1>
-            <p className="text-sm text-muted">{data.mode.name}</p>
+            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
+              {data.mode.name}
+              <GroupBadge room={data} />
+            </p>
           </div>
         </div>
         {data.status === 'active' && view ? (

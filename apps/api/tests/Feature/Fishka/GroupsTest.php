@@ -124,3 +124,25 @@ it('returns the bets after a draw, once', function () {
     expect(app(FishkaWallets::class)->wallet($alice)->refresh()->balance)->toBe(5_000)
         ->and(app(FishkaWallets::class)->wallet($bob)->refresh()->balance)->toBe(5_000);
 });
+
+it('counts chips at a poker table in the wallet, and gives no free bonus while they are in play', function () {
+    $mode = modeOf('poker');
+    $user = withBalance(300);
+    $id = startBot($user, $mode)->assertCreated()->json('data.id');
+
+    $this->actingAs($user)->getJson('/api/v1/me/wallet')
+        ->assertOk()->assertJsonPath('data.balance', 0)->assertJsonPath('data.at_table', 300)->assertJsonPath('data.refill.available', false);
+    $this->postJson('/api/v1/me/wallet/refill')->assertUnprocessable()->assertJsonPath('code', 'fishka_bonus_unavailable');
+
+    $this->postJson("/api/v1/rooms/{$id}/leave")->assertOk();
+    $this->getJson('/api/v1/me/wallet')->assertJsonPath('data.at_table', 0);
+});
+
+it('filters the history to one game', function () {
+    $mode = modeOf('checkers');
+    $user = withBalance(5_000);
+    $id = startBot($user, $mode)->assertCreated()->json('data.id');
+
+    $this->actingAs($user)->getJson("/api/v1/me/wallet/transactions?room={$id}")
+        ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.type', 'game_stake')->assertJsonPath('data.0.reference_id', $id);
+});

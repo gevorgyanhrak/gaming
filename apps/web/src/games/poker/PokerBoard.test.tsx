@@ -1,8 +1,18 @@
-import { render, screen, within } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render as baseRender, screen, within } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { roomStateFixture } from '@/test/handlers'
 import PokerBoard from './PokerBoard'
+
+// The board refreshes the wallet after a hand, so it needs a query client.
+const render = (ui: ReactNode) =>
+  baseRender(ui, {
+    wrapper: ({ children }) => (
+      <QueryClientProvider client={new QueryClient()}>{children}</QueryClientProvider>
+    ),
+  })
 import { summarize } from './result'
 import i18n from '@/shared/i18n'
 

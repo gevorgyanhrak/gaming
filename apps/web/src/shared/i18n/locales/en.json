@@ -249,7 +249,21 @@
     "friendHint": "Open a private table and share the code.",
     "joinTitle": "Got an invite code?",
     "startBot": "Start game",
-    "createTable": "Create table"
+    "createTable": "Create table",
+    "group": "Group",
+    "groupFrom": "From {{amount}}",
+    "groupNeed": "Needs {{amount}}",
+    "groupMinBet": "Min bet {{amount}}",
+    "groupBets": "Bet {{min}}–{{max}}",
+    "yourBet": "Your bet",
+    "betMin": "Min",
+    "betMax": "Max",
+    "potHint": "The winner takes the pot: {{amount}} Fishkas.",
+    "matchBet": "Finding an opponent plays at this group’s minimum bet ({{amount}}).",
+    "pokerBuyIn": "You bring your whole balance to the table: {{amount}} Fishkas. Blinds {{small}}/{{big}}.",
+    "groupBadge": "{{group}} group",
+    "tableBet": "Bet {{amount}}",
+    "tableBlinds": "Blinds {{small}}/{{big}}"
   },
   "room": {
     "players": "Players",
@@ -567,11 +581,7 @@
     "history": "History",
     "historyEmpty": "No Fishka transactions yet.",
     "note": "Fishkas are free play money: they can’t be bought, sold or cashed out.",
-    "rules_one": "Each game costs {{fee}} Fishka when you take your seat. At Poker you bring your own Fishkas to the table instead (up to the table’s stack) and take your chips back when you leave.",
-    "rules_other": "Each game costs {{fee}} Fishkas when you take your seat. At Poker you bring your own Fishkas to the table instead (up to the table’s stack) and take your chips back when you leave.",
-    "entryFee_one": "Entry: {{amount}} Fishka",
-    "entryFee_other": "Entry: {{amount}} Fishkas",
-    "buyIn": "Buy-in: your own Fishkas",
+    "rules": "Every table belongs to a group: you need the group's minimum balance to sit down (it isn't taken). In most games you bet within the group's range and the winner takes the pot. At Poker you bring your whole balance to the table and take your chips back when you leave.",
     "type": {
       "registration_bonus": "Welcome bonus",
       "daily_login_bonus": "Daily bonus",
@@ -585,6 +595,21 @@
       "game_stake": "Game bet",
       "game_payout": "Game winnings"
     },
-    "ok": "OK"
+    "ok": "OK",
+    "balanceLabelTable": "Your Fishkas: {{amount}}, {{table}} of them at a table. Open your wallet",
+    "atTable": "{{amount}} at a table",
+    "resultWon": "+{{amount}} Fishkas",
+    "resultLost": "−{{amount}} Fishkas",
+    "resultEven": "Your Fishkas are back",
+    "resultTitleWon": "You won",
+    "resultTitleLost": "You lost"
+  },
+  "groups": {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "casual": "Casual",
+    "experienced": "Experienced",
+    "professional": "Professional",
+    "master": "Master"
   }
 }

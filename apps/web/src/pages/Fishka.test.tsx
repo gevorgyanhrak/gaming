@@ -45,7 +45,6 @@ describe('Fishkas', () => {
 
     const balance = await screen.findByRole('link', { name: /^Your Fishkas: 5,000/ })
     expect(balance).toHaveAttribute('href', '/wallet')
-    expect(await screen.findByText('Entry: 500 Fishkas')).toBeInTheDocument()
 
     wallet = walletFixture({ balance: 4500, total_spent: 500 })
     act(() => emit('user.1', 'wallet.updated', { balance: 4500, change: -500 }))

@@ -1,6 +1,9 @@
-import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCountdown } from '@/features/play/useCountdown'
+import { walletKey } from '@/features/wallet/api'
+import { flyFishkas } from '@/features/wallet/flyFishkas'
 import { useMediaQuery } from '@/shared/lib/useMediaQuery'
 import { useCardLabel } from '../cards/cards'
 import { CardBack, PlayingCard } from '../cards/PlayingCard'
@@ -85,6 +88,24 @@ export default function PokerBoard({
   const result =
     last && (view.street === 'over' || state.result) ? summarize(last, state.seat, name, t) : null
   const fresh = !!result && !!last && last.number > handOnLoad
+
+  // A hand that ends while you watch changes your chips at the table: refresh the header balance
+  // (it includes them). If you won, your winnings fly from your seat to it first. Once per hand.
+  const queryClient = useQueryClient()
+  const endedHand = fresh ? last.number : null
+  const iWon = fresh && result.mine
+  useEffect(() => {
+    if (endedHand === null) return
+    const refresh = () => void queryClient.invalidateQueries({ queryKey: walletKey })
+    if (iWon) {
+      const timer = window.setTimeout(
+        () => flyFishkas(document.querySelector('[data-poker-me]'), 'in', refresh),
+        1100,
+      )
+      return () => window.clearTimeout(timer)
+    }
+    refresh()
+  }, [endedHand, iWon, queryClient])
   const boardCards = result && last ? last.board : view.board
 
   const seats = view.stacks.length
@@ -177,6 +198,7 @@ export default function PokerBoard({
                 <li
                   key={seat}
                   aria-current={acting ? 'step' : undefined}
+                  data-poker-me={seat === me ? '' : undefined}
                   aria-label={`${name(seat)}, ${t('poker.chips', { count: stack })}${
                     seat !== me && bots[seat] ? `, ${t('room.bot')}` : ''
                   }`}

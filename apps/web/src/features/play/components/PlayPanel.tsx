@@ -26,9 +26,10 @@ import {
   startMatchmaking,
   type BotDifficulty,
 } from '../api'
-import { traitsOf } from '@/games/registry'
 import { FishkaIcon } from '@/features/wallet/components/FishkaIcon'
 import { useWallet } from '@/features/wallet/hooks'
+import { canEnter } from '../groups'
+import { GroupPicker } from './GroupPicker'
 import { MatchmakingStatus } from './MatchmakingStatus'
 
 /**
@@ -59,20 +60,44 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
   const tableSize =
     tableSizes.length > 1 ? (players ?? Math.min(4, mode?.max_players ?? 2)) : undefined
 
+  // The group (default: the lowest the balance can enter) and, for stake games, the bet in its range.
+  const groups = game.groups ?? []
+  const balance = wallet.data?.balance
+  const [groupSlug, setGroupSlug] = useState<string | null>(null)
+  const group =
+    groups.find((g) => g.slug === groupSlug) ??
+    groups.find((g) => canEnter(g, balance)) ??
+    groups[0]
+  const chips = group?.kind === 'chips'
+  const [betChoice, setBetChoice] = useState<number | null>(null)
+  const betMax = group
+    ? Math.max(group.min_bet, Math.min(group.max_bet ?? group.min_bet, balance ?? group.min_bet))
+    : 0
+  const bet =
+    group && !chips
+      ? Math.min(betMax, Math.max(group.min_bet, betChoice ?? group.min_bet))
+      : undefined
+  const terms = group ? { group: group.slug, ...(bet ? { bet } : {}) } : {}
+  const format = (n: number) => n.toLocaleString(i18n.language)
+  const chooseGroup = (slug: string) => {
+    setGroupSlug(slug)
+    setBetChoice(null)
+  }
+
   const toRoom = (room: { id: string }) => void navigate(`/rooms/${room.id}`)
   const search = useMutation({
-    mutationFn: (id: number) => startMatchmaking(id),
+    mutationFn: (id: number) => startMatchmaking(id, group?.slug),
     onSuccess: (result) => {
       if (result.room) void navigate(`/rooms/${result.room}`)
       else queryClient.setQueryData(matchmakingKey, result)
     },
   })
   const bot = useMutation({
-    mutationFn: (id: number) => createBotRoom(id, difficulty, tableSize),
+    mutationFn: (id: number) => createBotRoom(id, difficulty, tableSize, terms),
     onSuccess: toRoom,
   })
   const friend = useMutation({
-    mutationFn: (id: number) => createPrivateRoom(id, tableSize),
+    mutationFn: (id: number) => createPrivateRoom(id, tableSize, terms),
     onSuccess: toRoom,
   })
   const join = useMutation({ mutationFn: () => joinRoom(code.trim()), onSuccess: toRoom })
@@ -129,15 +154,70 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
           </div>
         ) : null}
 
-        <p className="flex items-center justify-center gap-2 text-sm font-semibold text-gold-light">
-          <FishkaIcon className="size-5" />
-          {traitsOf(game.slug).buyIn
-            ? t('fishka.buyIn')
-            : t('fishka.entryFee', {
-                count: wallet.data?.entry_fee ?? 500,
-                amount: (wallet.data?.entry_fee ?? 500).toLocaleString(i18n.language),
-              })}
-        </p>
+        {group ? (
+          <div className="club-panel space-y-4 rounded-3xl p-4 [animation-delay:150ms] motion-safe:animate-rise sm:p-5">
+            <GroupPicker
+              groups={groups}
+              value={group.slug}
+              balance={balance}
+              onChange={chooseGroup}
+            />
+            {chips ? (
+              <p className="flex items-start gap-2 text-sm text-gold-light">
+                <FishkaIcon className="size-5 shrink-0" />
+                {t('play.pokerBuyIn', {
+                  amount: format(balance ?? 0),
+                  small: format(Math.max(1, Math.floor(group.min_bet / 2))),
+                  big: format(group.min_bet),
+                })}
+              </p>
+            ) : bet !== undefined ? (
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <label htmlFor={`${id}-bet`} className="text-sm font-semibold">
+                    {t('play.yourBet')}
+                  </label>
+                  <span className="flex items-center gap-1.5 text-lg font-extrabold text-gold-light tabular-nums">
+                    <FishkaIcon className="size-5" />
+                    {format(bet)}
+                  </span>
+                  <span className="ml-auto flex gap-1">
+                    <Button
+                      variant="secondary"
+                      className="min-h-11 px-3"
+                      onClick={() => setBetChoice(group.min_bet)}
+                    >
+                      {t('play.betMin')}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      className="min-h-11 px-3"
+                      onClick={() => setBetChoice(betMax)}
+                    >
+                      {t('play.betMax')}
+                    </Button>
+                  </span>
+                </div>
+                {betMax > group.min_bet ? (
+                  <input
+                    id={`${id}-bet`}
+                    type="range"
+                    min={group.min_bet}
+                    max={betMax}
+                    step={Math.max(1, Math.round(group.min_bet / 10))}
+                    value={bet}
+                    onChange={(e) => setBetChoice(Number(e.target.value))}
+                    className="h-11 w-full accent-[var(--color-gold)]"
+                  />
+                ) : null}
+                <p className="text-xs text-muted">
+                  {t('play.potHint', { amount: format(bet * (tableSize ?? 2)) })}{' '}
+                  {t('play.matchBet', { amount: format(group.min_bet) })}
+                </p>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         {error ? (
           <Alert tone="danger">

@@ -45,8 +45,19 @@ export function translatedQuery(key: readonly unknown[]): boolean {
 type RoomResponse = { data: Room }
 const unwrap = <T>(r: { data: T }) => r.data
 
+/** A table's group and, for stake games, each player's bet (the server checks both). */
+export interface TableTerms {
+  group?: string
+  bet?: number
+}
+
 /** `players` (tables for more than two): everyone at the table, you included. */
-export const createBotRoom = (gameModeId: number, difficulty: BotDifficulty, players = 2) =>
+export const createBotRoom = (
+  gameModeId: number,
+  difficulty: BotDifficulty,
+  players = 2,
+  terms: TableTerms = {},
+) =>
   apiRequest<RoomResponse>('/api/v1/rooms', {
     method: 'POST',
     body: {
@@ -54,13 +65,19 @@ export const createBotRoom = (gameModeId: number, difficulty: BotDifficulty, pla
       type: 'bot',
       bot_difficulty: difficulty,
       ...(players > 2 ? { opponents: players - 1 } : {}),
+      ...terms,
     },
   }).then(unwrap)
 
-export const createPrivateRoom = (gameModeId: number, players?: number) =>
+export const createPrivateRoom = (gameModeId: number, players?: number, terms: TableTerms = {}) =>
   apiRequest<RoomResponse>('/api/v1/rooms', {
     method: 'POST',
-    body: { game_mode_id: gameModeId, type: 'private', ...(players ? { seats: players } : {}) },
+    body: {
+      game_mode_id: gameModeId,
+      type: 'private',
+      ...(players ? { seats: players } : {}),
+      ...terms,
+    },
   }).then(unwrap)
 
 export const joinRoom = (inviteCode: string) =>
@@ -92,10 +109,11 @@ export const leaveRoom = (id: string) =>
     method: 'POST',
   }).then(unwrap)
 
-export const startMatchmaking = (gameModeId: number) =>
+/** Matched tables play at the group's minimum bet. */
+export const startMatchmaking = (gameModeId: number, group?: string) =>
   apiRequest<{ data: Matchmaking }>('/api/v1/matchmaking', {
     method: 'POST',
-    body: { game_mode_id: gameModeId },
+    body: { game_mode_id: gameModeId, ...(group ? { group } : {}) },
   }).then(unwrap)
 
 export const fetchMatchmaking = (signal?: AbortSignal) =>

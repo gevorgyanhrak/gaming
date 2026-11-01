@@ -17,6 +17,12 @@ export const fetchWallet = (signal?: AbortSignal) =>
 export const fetchFishkaHistory = (page: number, signal?: AbortSignal) =>
   apiRequest<FishkaPage>(`/api/v1/me/wallet/transactions?page=${page}`, { signal })
 
+/** One game's ledger entries (its bet or buy-in and what it paid back). */
+export const fetchRoomFishkas = (roomId: string, signal?: AbortSignal) =>
+  apiRequest<FishkaPage>(`/api/v1/me/wallet/transactions?room=${encodeURIComponent(roomId)}`, {
+    signal,
+  }).then((page) => page.data)
+
 /** The "out of Fishkas" bonus; the server decides whether it's available. */
 export const refillFishkas = () =>
   apiRequest<ApiResponse<'v1.me.wallet.refill'>>('/api/v1/me/wallet/refill', {

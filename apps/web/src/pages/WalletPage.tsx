@@ -64,11 +64,7 @@ export function WalletPage() {
             tone={wallet.data.total_spent ? 'text-[#f87171]' : ''}
           />
           <p className="text-sm text-muted sm:col-span-3">
-            {t('fishka.rules', {
-              count: wallet.data.entry_fee,
-              fee: format(wallet.data.entry_fee),
-            })}{' '}
-            {t('fishka.note')}
+            {t('fishka.rules')} {t('fishka.note')}
           </p>
         </section>
       )}
