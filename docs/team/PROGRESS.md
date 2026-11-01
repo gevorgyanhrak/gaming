@@ -33,7 +33,8 @@ Steps (tick when done, with the commit):
 - [x] 5. Win/lose: header shows wallet + chips at a table (`at_table`, no free bonus while chips are in play);
       game-over panel shows the net from the ledger (`?room=` filter) and flies chips in/out of the header once
       per game (sessionStorage); poker hand wins fly from your seat, header refreshes per hand — 7ce1f4a.
-- [ ] 6. Full Poker test pass (brief §5): balances 100 / 1,000 / 5,000 / 50,000 / 500,000; all actions;
+- [ ] 6. (QA agent running, 2026-11-01 → docs/qa/QA_REPORT_TASK040.md; group tiles layout fix d4ca892.)
+      Full Poker test pass (brief §5): balances 100 / 1,000 / 5,000 / 50,000 / 500,000; all actions;
       folds; showdowns; reconnects; double-payout checks.
 - [ ] 7. (Backend done in step 4 for every game.) Verify Nardi, Checkers, Chess, Durak live per group; pot payouts.
 - [ ] 8. QA agent end to end, UI/UX review, PM validation; fix; final report to the owner.
