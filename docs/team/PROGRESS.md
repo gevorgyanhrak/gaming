@@ -11,10 +11,14 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 ## Now
 
 **TASK-040 · Poker bots, real balance in Poker, game groups** — brief:
-`docs/product/briefs/TASK-040-groups-poker-bots.md` (owner, 2026-10-31). Status: not started.
+`docs/product/briefs/TASK-040-groups-poker-bots.md` (owner, 2026-10-31). Status: in progress (started 2026-11-01).
 
 Steps (tick when done, with the commit):
-- [ ] 1. Investigate "bots don't act at Poker" live (bot jobs, pause between hands, queue worker) and fix.
+- [x] 1. "Bots don't act at Poker": bots did act; the page never heard about it. The WebSocket host was fixed
+      to the computer's old LAN address (192.168.11.50 → .56 overnight), and polling only kicked in when
+      realtime wasn't configured at all. Fixed: socket host defaults to the page's host; polling whenever the
+      socket isn't connected (room state 3 s, wallet 5 s); local Sanctum accepts any 192.168.* origin.
+      Verified live: a full hand with 3 bots, UI caption in sync at every version — 2837aa0.
 - [ ] 2. Poker uses the real balance: buy-in = whole balance (no 1,000 cap); table shows it; wallet synced.
 - [ ] 3. Central group configuration (5 Poker groups, 5 groups for other games; admin-editable).
 - [ ] 4. Poker groups: entry by minimum balance (not deducted), blinds/minimum bet per group, separate
@@ -26,9 +30,9 @@ Steps (tick when done, with the commit):
       owner), rooms and matchmaking per group, validation.
 - [ ] 8. QA agent end to end, UI/UX review, PM validation; fix; final report to the owner.
 
-Open questions for the owner (ask before step 7): what a non-poker game's bet does (winner takes the
-pot? vs bots the house matches?), whether the 500 entry fee stays alongside bets, how a table's bet is
-chosen within the group range.
+Owner answers (2026-11-01) for step 7: the winner takes the pot (Durak: all but the loser split it; vs
+bots the house matches the bet; a draw returns stakes); the bet replaces the 500 entry fee; the table's
+creator picks the bet within the group range, matchmaking plays at the group minimum.
 
 ## Next (after TASK-040)
 
@@ -43,8 +47,8 @@ chosen within the group range.
 
 - 2026-10-31 · Admin: edit a player's details (username, email, phone, language, display name, country,
   bio; re-verification on email/phone change; audited). Fishka design-review fixes (popup focus/inert,
-  cooldown state, contrast, 44 px pill). Lock timeout → 422.
-- 2026-10-31 · TASK-038 Fishka currency + QA fixes — commit 53018b3 (QA report `docs/qa/QA_REPORT_FISHKA.md`,
+  cooldown state, contrast, 44 px pill). Lock timeout → 422 — 7032ada.
+- 2026-10-31 · TASK-038 Fishka currency + QA fixes — 53018b3 (pushed with 7032ada) (QA report `docs/qa/QA_REPORT_FISHKA.md`,
   ADR 0015).
 - 2026-10-30 · Waiting table shows you at the bottom — e59414a.
 - 2026-10-30 · TASK-035 Durak redesign, TASK-036 Poker hand result, pause between hands — 79a053d, a3ea54b.

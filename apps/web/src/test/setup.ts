@@ -7,7 +7,13 @@ import { server } from './server'
 
 vi.mock('@/shared/realtime/echo', async () => {
   const { fakeEcho } = await import('./realtime')
-  return { getEcho: () => fakeEcho, disconnectEcho: () => undefined }
+  // The fake socket counts as connected: tests drive updates with emit() rather than polling.
+  return {
+    getEcho: () => fakeEcho,
+    disconnectEcho: () => undefined,
+    isRealtimeConnected: () => true,
+    onRealtimeStatus: () => () => undefined,
+  }
 })
 
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }))

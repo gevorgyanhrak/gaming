@@ -5,6 +5,21 @@ import { env } from '@/shared/config/env'
 
 let instance: Echo<'reverb'> | null = null
 
+// Whether the socket is connected right now, for code that falls back to polling when it isn't.
+let connected = false
+const listeners = new Set<() => void>()
+function setConnected(next: boolean) {
+  if (connected === next) return
+  connected = next
+  for (const listener of listeners) listener()
+}
+
+export const isRealtimeConnected = () => connected
+export function onRealtimeStatus(listener: () => void) {
+  listeners.add(listener)
+  return () => listeners.delete(listener)
+}
+
 /**
  * The shared WebSocket connection (Laravel Reverb), or null when it isn't configured.
  * Private channels are authorized through the API with the session cookie and CSRF token.
@@ -41,6 +56,11 @@ export function getEcho(): Echo<'reverb'> | null {
     }),
   })
 
+  instance.connector.pusher.connection.bind('state_change', ({ current }: { current: string }) =>
+    setConnected(current === 'connected'),
+  )
+  setConnected(instance.connector.pusher.connection.state === 'connected')
+
   return instance
 }
 
@@ -48,4 +68,5 @@ export function getEcho(): Echo<'reverb'> | null {
 export function disconnectEcho() {
   instance?.disconnect()
   instance = null
+  setConnected(false)
 }

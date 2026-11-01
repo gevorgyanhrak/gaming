@@ -9,6 +9,12 @@ Newest first. Format: date · decision · why · who.
 
 ## Decided
 
+- 2026-11-01 · Game groups (TASK-040): five Poker groups by minimum balance (100 / 1,000 / 10,000 /
+  50,000 / 500,000; minimum bet 1 / 5 / 10 / 20 / 100; the minimum balance is only an entry check) and
+  five groups for other games (500–500,000 bets). Non-poker bets: the winner takes the pot (Durak: all
+  but the loser split it; vs bots the house matches; a draw returns stakes); the bet replaces the 500
+  entry fee; the table creator picks the bet within the group range, matchmaking uses the group minimum.
+  Poker buys in with the whole balance (no 1,000 cap) · owner.
 - 2026-10-31 · TASK-038 (Fishkas, 53018b3) validated APPROVED with stated gaps (no parallel-request
   test, midnight rollover, multi-seat poker leave live, no independent QA re-run of the 5 fixed fails);
   closing them is TASK-039 (P1). Chip dumping through private Poker and the refill amount at 1–499 are

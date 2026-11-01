@@ -157,6 +157,8 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   with the app's `createQueryClient`.
 - `Button` accepts `ref` (React 19 prop). Refs passed into custom hooks must be named `…Ref` or the
   React Compiler lint rejects writes to them.
+- Realtime: `VITE_REVERB_HOST` empty = the page's host (LAN-safe). `useRealtimeConnected()` reports the real
+  socket state; rooms and the wallet poll whenever it's false. The test fake counts as connected.
 - Pages opened over plain HTTP on the LAN have no `crypto.randomUUID`: use `randomId()`
   (`shared/lib/uuid.ts`).
 - To look at a board without the Docker stack: a temporary (uncommitted) Vite page rendering the board

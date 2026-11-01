@@ -1,16 +1,22 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCurrentUser } from '@/features/auth/hooks'
+import { useRealtimeConnected } from '@/shared/realtime/useRealtimeConnected'
 import { useUserChannel } from '@/shared/realtime/useUserChannel'
 import { fetchWallet, walletHistoryKey, walletKey, type Wallet } from './api'
 
-/** The signed-in player's Fishkas (null while signed out). */
+/**
+ * The signed-in player's Fishkas (null while signed out). Kept current by `wallet.updated` events;
+ * polled while live updates aren't connected.
+ */
 export function useWallet() {
   const { data: user } = useCurrentUser()
+  const live = useRealtimeConnected()
   return useQuery({
     queryKey: walletKey,
     queryFn: ({ signal }) => fetchWallet(signal),
     enabled: !!user,
     refetchOnWindowFocus: true,
+    refetchInterval: live ? false : 5000,
   })
 }
 

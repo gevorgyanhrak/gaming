@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { isApiError } from '@/shared/api/errors'
-import { getEcho } from '@/shared/realtime/echo'
+import { useRealtimeConnected } from '@/shared/realtime/useRealtimeConnected'
 import { useUserChannel } from '@/shared/realtime/useUserChannel'
 import { fetchRoom, fetchRoomState, submitAction, type GameAction, type RoomState } from './api'
 
@@ -13,12 +13,13 @@ export const roomKeys = {
 /**
  * A room and the player's live view of it. Updates arrive on the player's channel; an update is
  * applied only if it is the next version, otherwise the state is refetched (no missed or
- * out-of-order updates). Without a WebSocket connection the state is polled instead.
+ * out-of-order updates). Whenever the WebSocket isn't connected (not configured, connecting, or
+ * unreachable) the state is polled instead, so the table never freezes.
  */
 export function useRoom(id: string) {
   const queryClient = useQueryClient()
   const { data: user } = useCurrentUser()
-  const live = getEcho() !== null
+  const live = useRealtimeConnected()
 
   const room = useQuery({
     queryKey: roomKeys.room(id),
