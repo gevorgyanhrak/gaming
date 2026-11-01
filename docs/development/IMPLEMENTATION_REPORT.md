@@ -46,6 +46,19 @@ QA fixes (this commit), from 54 pass / 6 fail, 8 bugs:
 8. Low · a 429 on `/me` showed the player as signed out → queries retry 429 with backoff (~45 s);
    `account` limiter 30 → 60/min. Test: Fishka.test ("asks to slow down").
 
+Design review fixes (`docs/design/REVIEW_TASK040.md`, NEEDS REVISION → all 6 fixed):
+1. Medium · turn status cut on phones → on phones the group badge has its own row under the header; the
+   status is `shrink-0 max-w-[55%]` and hidden for a player who is out. Live hy 390: "Ձեր քայլն է / Մնաց 23
+   վայրկյան" whole, badge with the full group name.
+2. Medium · header still dipped to 0 at a poker buy-in (the bet is charged a moment before the table starts)
+   → `RoomStakes::atTable` counts the buy-in at a waiting chip table. Test: GroupsTest ("hasn't started").
+   Deltas during play (+20 per won hand) stay: they are real changes of the chips at the table.
+3. Low · locked tiles 3.3:1 → only the dot and name dim; "Needs N" and bets stay `text-muted`.
+4. Low · hy badge "«…" → solved by the badge's own row on phones.
+5. Low · out-of-chips heading 3 lines → "You're out of chips." / "You left this table." with "The game goes
+   on for the others." below (en/ru/hy). Test: RoomPage.test.
+6. Low · hy "Professional" truncated → tile names wrap. Live: whole.
+
 Not changed (observations for the owner/PM): beginner blinds 1/1 (formula), wallet dates not localized,
 play-group audit rows store only new values.
 

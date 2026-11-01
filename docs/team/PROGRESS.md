@@ -39,7 +39,10 @@ Steps (tick when done, with the commit):
 - [x] 8a. All 8 QA bugs fixed (see the report's "Fix status" and IMPLEMENTATION_REPORT): busted poker player
       freed / bot-only table ends, header flicker, bot speed (own `game` supervisor, sweeps in-process),
       badge at 390, "You left the game.", lowest-group message, number formatting, 429 ≠ signed out — fd32039.
-- [ ] 8b. UI/UX review and PM validation of TASK-040; then the final report to the owner.
+- [x] 8b. PM validation: ACCEPT WITH FOLLOW-UPS (`docs/product/VALIDATION_TASK040.md`; TASK-041 staging bot
+      timing, TASK-042 audit old values, owner Q6 updated: pot chip-dumping at private tables, Q8 beginner
+      blinds). UI/UX review NEEDS REVISION (`docs/design/REVIEW_TASK040.md`) → all 6 fixed — COMMIT.
+- [ ] 8c. Final report to the owner.
 
 Owner answers (2026-11-01) for step 7: the winner takes the pot (Durak: all but the loser split it; vs
 bots the house matches the bet; a draw returns stakes); the bet replaces the 500 entry fee; the table's

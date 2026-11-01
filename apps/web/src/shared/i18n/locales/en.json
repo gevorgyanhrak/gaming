@@ -311,8 +311,9 @@
       "aborted": "Closed"
     },
     "clock": "Time left: {{time}}",
-    "leftTable": "You left this table. The game goes on for the others.",
-    "outOfChips": "You're out of chips. The game goes on for the others.",
+    "leftTable": "You left this table.",
+    "outOfChips": "You're out of chips.",
+    "playsOn": "The game goes on for the others.",
     "waitingTitle": "Waiting for players",
     "emptySeat": "Empty seat",
     "tab": {

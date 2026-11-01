@@ -117,6 +117,7 @@ export function GameOverPanel({
         {title}
       </h2>
       {reason ? <p className="mt-1 text-sm text-muted">{t(reason)}</p> : null}
+      {leftTable ? <p className="mt-1 text-sm text-muted">{t('room.playsOn')}</p> : null}
       {result || leftTable ? <GameResult roomId={room.id} /> : null}
 
       {searching ? (

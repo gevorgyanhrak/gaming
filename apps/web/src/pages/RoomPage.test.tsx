@@ -236,11 +236,10 @@ describe('Room', () => {
     )
     renderRoute('/rooms/room-1')
 
-    expect(
-      await screen.findByRole('heading', {
-        name: "You're out of chips. The game goes on for the others.",
-      }),
-    ).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: "You're out of chips." })).toBeInTheDocument()
+    expect(screen.getByText('The game goes on for the others.')).toBeInTheDocument()
+    // Out of the game: no "Waiting for…" turn status for them (there is a seat to act).
+    expect(screen.queryByText(/^Waiting for/)).not.toBeInTheDocument()
     expect(roomCalls).toBe(2)
   })
 

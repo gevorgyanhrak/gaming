@@ -185,20 +185,24 @@ class RoomStakes
     }
 
     /**
-     * Fishkas the player has at tables right now (games played for chips: their current chips), so
-     * balances can be shown with them.
+     * Fishkas the player has at tables right now (games played for chips: their current chips, or the
+     * buy-in at a table that hasn't started), so balances can be shown with them. Counting the waiting
+     * table matters: a bot table is charged a moment before it starts, and the wallet must not look
+     * empty in between.
      */
     public function atTable(User $user): int
     {
         $total = 0;
         $seats = GameParticipant::query()->where('user_id', $user->id)->where('is_active', true)->where('stake', '>', 0)
-            ->whereHas('room', fn ($q) => $q->where('status', RoomStatus::Active))
+            ->whereHas('room', fn ($q) => $q->whereIn('status', [RoomStatus::Waiting, RoomStatus::Active]))
             ->with('room.game', 'room.mode')->get();
 
         foreach ($seats as $seat) {
             $engine = $this->chips($seat->room->mode);
             if ($engine !== null) {
-                $total += $engine->chipsOf(app(RoomStates::class)->current($seat->room)->state, $seat->seat);
+                $total += $seat->room->status === RoomStatus::Waiting
+                    ? $seat->stake
+                    : $engine->chipsOf(app(RoomStates::class)->current($seat->room)->state, $seat->seat);
             }
         }
 

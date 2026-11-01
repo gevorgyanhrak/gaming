@@ -123,7 +123,7 @@ export function RoomPage() {
       <title>{tabTitle}</title>
       {/* One row on every width: the game's name stays whole and a long status (a name, another
           language) truncates instead of wrapping, so the table below doesn't move. On a phone the
-          group badge goes under the mode and its group name truncates. */}
+          group badge gets a row of its own below, so the status keeps its room. */}
       <header className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gold/15">
@@ -133,13 +133,15 @@ export function RoomPage() {
             <h1 className="text-2xl font-bold whitespace-nowrap">{data.game.name}</h1>
             <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
               {data.mode.name}
-              <GroupBadge room={data} />
+              <span className="hidden min-w-0 sm:inline-flex">
+                <GroupBadge room={data} />
+              </span>
             </p>
           </div>
         </div>
-        {data.status === 'active' && view ? (
+        {data.status === 'active' && view && !leftTable ? (
           <div
-            className={`min-w-0 rounded-2xl px-4 py-2 text-right ${myTurn ? 'bg-linear-to-b from-gold-light via-gold to-gold-dark text-black shadow-lg shadow-gold/20' : 'border border-border bg-surface'}`}
+            className={`max-w-[55%] shrink-0 rounded-2xl px-4 py-2 text-right ${myTurn ? 'bg-linear-to-b from-gold-light via-gold to-gold-dark text-black shadow-lg shadow-gold/20' : 'border border-border bg-surface'}`}
             role="status"
           >
             <p className="max-w-48 truncate font-semibold">
@@ -158,6 +160,11 @@ export function RoomPage() {
           </div>
         ) : null}
       </header>
+      {data.group ? (
+        <div className="-mt-4 sm:hidden">
+          <GroupBadge room={data} />
+        </div>
+      ) : null}
 
       {data.status === 'waiting' ? (
         <WaitingTable room={data} mySeat={tableSeat} onLeave={leave} />

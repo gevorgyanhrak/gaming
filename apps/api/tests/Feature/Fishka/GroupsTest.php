@@ -159,3 +159,14 @@ it('tells a player below every group what the lowest group needs, whichever grou
     startBot(withBalance(0), $nardi, ['group' => 'beginner'])->assertUnprocessable()
         ->assertJsonPath('needed', 500)->assertJsonPath('message', 'You need 500 Fishkas to play this game.');
 });
+
+it('counts a buy-in at a poker table that hasn’t started as at the table', function () {
+    $mode = modeOf('poker');
+    $user = withBalance(2_000);
+    $id = $this->actingAs($user)->postJson('/api/v1/rooms', ['game_mode_id' => $mode->id, 'type' => 'private', 'seats' => 3])->assertCreated()->json('data.id');
+
+    $this->getJson('/api/v1/me/wallet')->assertJsonPath('data.balance', 0)->assertJsonPath('data.at_table', 2_000);
+
+    $this->postJson("/api/v1/rooms/{$id}/leave")->assertOk();
+    $this->getJson('/api/v1/me/wallet')->assertJsonPath('data.balance', 2_000)->assertJsonPath('data.at_table', 0);
+});

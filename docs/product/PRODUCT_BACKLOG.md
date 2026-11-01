@@ -2,7 +2,9 @@
 
 The single task tracker (format and statuses: `docs/team/README.md`). Sources: `UI_UX_AUDIT.md`
 (UX-NNN), `PRODUCT_RESEARCH.md` (OPP-NNN), `TECHNICAL_DEBT.md` (TD-NNN).
-Last planning: 2026-10-31 (TASK-038 Fishkas validated APPROVED (53018b3); follow-up TASK-039 added).
+Last planning: 2026-11-01 (TASK-040 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK040.md`;
+TASK-039 (e), TASK-041, TASK-042 added; owner questions 6–8 updated).
+Before: 2026-10-31 (TASK-038 Fishkas validated APPROVED (53018b3); follow-up TASK-039 added).
 Before: 2026-10-30 (TASK-035, TASK-036, TASK-029 validated APPROVED (79a053d); TASK-037 added; owner
 feedback earlier the same day: BUG-001 fixed, TASK-035/036 added at the top of B3). Before: 2026-10-29 B1/B2 validated, TASK-030/031 approved, TASK-033…034 added.
 
@@ -13,7 +15,7 @@ feedback earlier the same day: BUG-001 fixed, TASK-035/036 added at the top of B
 | B1 | Honest and clear: fix what misleads or loses games — **done 2026-10-29** (all APPROVED) | TASK-001…005 | none (frontend) |
 | B2 | Keep playing: after-game flow, profiles, invites — **done 2026-10-29** (all APPROVED) | TASK-026, TASK-006, TASK-028, TASK-007, TASK-008, TASK-024 | none (frontend) |
 | B3 | Polish and consistency (in progress; TASK-039 Fishka follow-ups first; TASK-035, TASK-036, TASK-029 **done 2026-10-30**; owner go-ahead so far only for TASK-035/036) | order: TASK-039, TASK-033, ~~TASK-035~~, ~~TASK-036~~, TASK-037, TASK-032, TASK-015, TASK-027, ~~TASK-029~~, TASK-034, TASK-012, TASK-009, TASK-010, TASK-011, TASK-013, TASK-025 | none (frontend) |
-| B4 | New capabilities and backend fixes | TASK-014, TASK-016…023 (TASK-030, TASK-031 **done 2026-10-29**) | **owner** (go-ahead for backend work) |
+| B4 | New capabilities and backend fixes | TASK-014, TASK-016…023, TASK-041, TASK-042 (TASK-030, TASK-031 **done 2026-10-29**) | **owner** (go-ahead for backend work) |
 
 ## Fishkas (owner spec 2026-10-30)
 
@@ -43,6 +45,17 @@ Gaps, stated honestly (none blocks; follow-ups in TASK-039 and Decisions needed 
     full Poker game to a natural bust-out; matchmaking bot fallback with too few Fishkas untested.
   - Refill at 499: by the code +5,000 (→ 5,499), not "up to 5,000"; owner to confirm (Decisions 7).
   - hy dates/numbers on /wallet render in English (QA bug 10, unconfirmed headless ICU) → TASK-027.
+
+### TASK-040 · Poker bots, real balance in Poker, game groups   P0 · L · APPROVED
+Owner brief, verbatim: `docs/product/briefs/TASK-040-groups-poker-bots.md` (2026-10-31); owner decisions
+2026-11-01 (winner takes the pot, bet replaces the fee, creator picks the bet, matchmaking at the group
+minimum); ADR 0016. Code b90cd47, 7ce1f4a, d4ca892, edd04cf; QA fixes fd32039.
+Validation 2026-11-01: **APPROVED — ACCEPT WITH FOLLOW-UPS** (`docs/product/VALIDATION_TASK040.md`): no brief
+requirement unmet. Partly met: group visual identity (colour + name only), real network
+disconnect, independent QA re-run of the 6 failed rows, a Chess/Checkers win vs a bot and a Durak draw
+not seen live, final report to the owner. BUG-3 (one ~20 s bot stall per ~70 moves under host overload)
+is not blocking → TASK-041. Conditions: the UI/UX design review (PROGRESS 8b) is still pending; a
+required revision there reopens this task as NEEDS_REVISION. Fishka rule risk: owner question 6.
 
 ## Bugs
 
@@ -318,11 +331,35 @@ Scope (QA + developer; backend tests are fine, no rule or amount changes):
   (d) live: 4-seat Poker, leave mid-hand → own stack paid back, chips in the pot stay with the others,
       table total conserved; one full Poker game to a natural bust-out; matchmaking bot fallback with a
       balance below the fee.
+  (e) added 2026-11-01 from TASK-040 (VALIDATION_TASK040.md): independent QA re-run of the six rows that
+      failed before fd32039 (QA_REPORT_TASK040 1.10, 2.1, 2.6, 5.5, 7.4, 7.6), plus the cases never tested:
+      a Chess and a Checkers win against a bot (pot = bet × 2 from the house), a Durak draw (bets
+      returned), and a real phone on the LAN: socket host, polling fallback when the socket drops, and
+      reconnect mid-hand.
 Acceptance criteria:
-  1. QA_REPORT_FISHKA.md gets a re-test section: (a) all PASS with screenshot names.
+  1. QA_REPORT_FISHKA.md gets a re-test section: (a) all PASS with screenshot names; QA_REPORT_TASK040.md
+     gets one for (e), with ledger amounts per room.
   2. (b) and (c) are automated tests that pass in `make test-api`.
   3. (d) recorded with ledger before/after amounts; any failure becomes a BUG entry.
 Depends on: TASK-038   Approval: none (no Fishka amount or rule change)
+
+### TASK-041 · Bot speed on a production-like host              P2 · S · PLANNED · B4
+Problem: after fd32039 bots act in a median of ~1.15 s, but on the local Mac (load average 12–15, Docker
+under QEMU) about one bot action in 70 stalls for ~20 s. Unknown whether this happens on real hardware.
+Evidence: QA_REPORT_TASK040 BUG-3 and "Fix status"; VALIDATION_TASK040 §B.
+Scope: a bot-action latency log/metric (delay from state change to the bot's move, per game); measure
+500 consecutive bot moves on staging (or any host without emulation) at 2–6 seat tables.
+Acceptance criteria:
+  1. p95 ≤ 2 s and no bot action over 5 s in 500 bot moves; results recorded in IMPLEMENTATION_REPORT.
+  2. If missed, a P1 BUG entry with the slow job/lock found.
+Depends on: a staging host   Approval: owner (production-like infrastructure)
+
+### TASK-042 · Play-group audit keeps the old values            P3 · S · PLANNED · B4
+Problem: an admin edit of a play group writes an audit row with only the new values, so it can't show
+what changed (QA_REPORT_TASK040 observation O-3). Other admin changes record before/after.
+Acceptance criteria: editing a group records `before` and `after` for each changed field; the audit
+log detail shows both; feature test in PlayGroupAdminTest.   Depends on: —
+Approval: none (backend fix, audit only) → owner go-ahead for backend work as usual.
 
 ### TASK-032 · No end sound after you left a table              P3 · S · PLANNED · B3
 Problem: a player who left a Durak/Poker table that plays on hears the final "loss" much later. Spec
@@ -450,14 +487,24 @@ Validation 2026-10-29: **APPROVED** — `GameActionService::end` marks abandoned
    words գրոհող (attacker), պաշտպան (defender), վերցնում (taking), shortened to fit 62 px seats); try a
    Web Share invite on a phone; listen to the new Poker `handWin` sound.
 5. Content: the Poker game description is still English in hy — admin catalog text (Admin → Games),
-   needs an Armenian text from the owner or a translator.
-6. Fishkas move between players through Poker: with buy-in/cash-out, a player can lose chips on
-   purpose at a private table to a friend (chip dumping), so Fishkas — including the 5,000 "out of
-   Fishkas" bonus every 24 h — can effectively be sent between users, which the Fishka rule forbids.
-   Accept as part of poker, or restrict (e.g. private poker tables cash out only the buy-in, or a
-   daily cap on net poker winnings from private tables)? Needs the owner (Fishka rules).
-7. "Out of Fishkas" bonus at a balance of 1–499: it adds 5,000 (499 → 5,499). Confirm, or should it top
-   up to 5,000? Also: please paste the original Fishka spec into `docs/product/briefs/TASK-038.md`.
+   needs an Armenian text from the owner or a translator. Since Fishkas, the Poker description and rules
+   still say "play chips with no monetary value"; update them to describe Fishkas (same admin screen).
+6. Fishkas move between players through games: at a private Poker table a player can lose chips on
+   purpose to a friend (chip dumping), and since TASK-040 (winner takes the pot) a private stake game
+   moves up to 500,000 Fishkas per game when one friend resigns. With bonuses farmable on extra
+   accounts (5,000 welcome, 1,000 daily, 5,000 refill per 24 h), this works as the transfer the Fishka
+   rule forbids. Accept as part of play, or restrict? Options: private tables pay back only the bets,
+   with no pot; a daily cap on net winnings between the same two players; no pot when a game ends by
+   resignation within the first N moves. Needs the owner (Fishka rules). (Updated 2026-11-01.)
+7. "Out of Fishkas" bonus: (a) at a balance of 1–499 it adds 5,000 (499 → 5,499) — confirm, or top up to
+   5,000? (b) since TASK-040 the bet replaced the 500 fee, but the bonus threshold is still the admin
+   setting "Game entry fee" (`fishka.entry_fee`, `FishkaWallets::refillStatusOf`). So a player with 100–499
+   can play Beginner Poker and still gets the bonus. Should the threshold be "can't enter the lowest group
+   of any game" (100, from Poker)? Also: please paste the original Fishka spec into
+   `docs/product/briefs/TASK-038.md`.
+8. Beginner Poker blinds are 1/1 (small blind = max(1, ⌊1/2⌋)), so the small blind equals the big blind
+   (QA observation O-1). Keep, make Beginner 1/2 (big blind 2), or allow 0-size small blinds? A table/Fishka
+   rule → owner.
 (Decided 2026-10-29: autonomous mode for B1–B3; TD-001 deleted; sound on by default; TASK-030/031
 go-ahead; room API fields for Play again; `.text-gold-gradient`; public profile stats are public. See
 DECISIONS.md.)

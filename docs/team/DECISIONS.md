@@ -9,6 +9,11 @@ Newest first. Format: date · decision · why · who.
 
 ## Decided
 
+- 2026-11-01 · TASK-040 validated: ACCEPT WITH FOLLOW-UPS (`docs/product/VALIDATION_TASK040.md`). BUG-3's
+  remaining ~20 s bot stall (about 1 per 70 moves, local host overload under QEMU) does not block; it is
+  measured on a production-like host in TASK-041. Acceptance holds only if the pending UI/UX review
+  needs no revision. Stake-game pots widen the Fishka transfer risk → owner question 6 · PM. The UI/UX
+  review asked for revision (2 Medium, 4 Low); all six were fixed and checked live the same day · dev.
 - 2026-11-01 · Game groups (TASK-040): five Poker groups by minimum balance (100 / 1,000 / 10,000 /
   50,000 / 500,000; minimum bet 1 / 5 / 10 / 20 / 100; the minimum balance is only an entry check) and
   five groups for other games (500–500,000 bets). Non-poker bets: the winner takes the pot (Durak: all
