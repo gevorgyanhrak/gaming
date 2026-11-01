@@ -10,45 +10,12 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
-**TASK-040 · Poker bots, real balance in Poker, game groups** — brief:
-`docs/product/briefs/TASK-040-groups-poker-bots.md` (owner, 2026-10-31). Status: in progress (started 2026-11-01).
+Nothing in progress. TASK-040 is done and reported to the owner (2026-11-01). Waiting for the owner's
+answers to questions 6–8 in `docs/product/PRODUCT_BACKLOG.md` (Fishka transfers through pots / poker chip
+dumping, refill top-up, beginner blinds 1/1) and approval of TASK-041 (staging host for bot timing).
+Next without the owner: the first item of "Next".
 
-Steps (tick when done, with the commit):
-- [x] 1. "Bots don't act at Poker": bots did act; the page never heard about it. The WebSocket host was fixed
-      to the computer's old LAN address (192.168.11.50 → .56 overnight), and polling only kicked in when
-      realtime wasn't configured at all. Fixed: socket host defaults to the page's host; polling whenever the
-      socket isn't connected (room state 3 s, wallet 5 s); local Sanctum accepts any 192.168.* origin.
-      Verified live: a full hand with 3 bots, UI caption in sync at every version — edd04cf.
-- [x] 2. Poker uses the real balance: buy-in = whole balance (no 1,000 cap); bots get the people's average
-      stack — backend in b90cd47. (Table/header display: step 4b.)
-- [x] 3. Central group configuration: `play_groups` table (migration seeds 10 groups), `PlayGroups` service,
-      `TableTerms`, admin "Play groups" (edit limits/open, audited) — b90cd47.
-- [x] 4. Backend for groups (poker AND other games): entry by minimum balance (not charged), bet range
-      validation, poker blinds = group min bet, rooms carry group + stake, matchmaking queues per mode+group,
-      stake games: winners share the pot / draw returns bets (ledger `game_stake`, `game_payout`) —
-      b90cd47. Tests: tests/Feature/Fishka/GroupsTest.php, PlayGroupAdminTest.
-- [x] 4b. Frontend groups (7ce1f4a): group picker on every game page (all 5 with min balance / bets, locked ones
-      greyed with "need N"), bet slider for bot/private tables, matchmaking per group, group badge + stake on
-      the room page and waiting table, Play again keeps group + bet, poker shows whole-balance buy-in.
-- [x] 5. Win/lose: header shows wallet + chips at a table (`at_table`, no free bonus while chips are in play);
-      game-over panel shows the net from the ledger (`?room=` filter) and flies chips in/out of the header once
-      per game (sessionStorage); poker hand wins fly from your seat, header refreshes per hand — 7ce1f4a.
-- [x] 6. Full Poker test pass (brief §5) by the QA agent: 54 pass / 6 fail, 8 bugs — `docs/qa/QA_REPORT_TASK040.md`.
-- [x] 7. Nardi, Checkers, Chess, Durak live per group: bet ranges, pot payouts (Durak split), draw refund,
-      matchmaking per group, Play again — all PASS in the same QA run.
-- [x] 8a. All 8 QA bugs fixed (see the report's "Fix status" and IMPLEMENTATION_REPORT): busted poker player
-      freed / bot-only table ends, header flicker, bot speed (own `game` supervisor, sweeps in-process),
-      badge at 390, "You left the game.", lowest-group message, number formatting, 429 ≠ signed out — fd32039.
-- [x] 8b. PM validation: ACCEPT WITH FOLLOW-UPS (`docs/product/VALIDATION_TASK040.md`; TASK-041 staging bot
-      timing, TASK-042 audit old values, owner Q6 updated: pot chip-dumping at private tables, Q8 beginner
-      blinds). UI/UX review NEEDS REVISION (`docs/design/REVIEW_TASK040.md`) → all 6 fixed — 288639d.
-- [ ] 8c. Final report to the owner.
-
-Owner answers (2026-11-01) for step 7: the winner takes the pot (Durak: all but the loser split it; vs
-bots the house matches the bet; a draw returns stakes); the bet replaces the 500 entry fee; the table's
-creator picks the bet within the group range, matchmaking plays at the group minimum.
-
-## Next (after TASK-040)
+## Next
 
 - TASK-039 · Fishka follow-ups from PM: QA re-run of the 5 failed checks, frozen-clock midnight test,
   live multi-seat poker leave, matchmaking bot fallback without Fishkas.
@@ -59,6 +26,9 @@ creator picks the bet within the group range, matchmaking plays at the group min
 
 ## Done (recent)
 
+- 2026-11-01 · TASK-040 groups, poker real balance, bots — b90cd47, 7ce1f4a, d4ca892, edd04cf; QA fixes
+  fd32039; design fixes 288639d. QA `docs/qa/QA_REPORT_TASK040.md`, PM `docs/product/VALIDATION_TASK040.md`,
+  design `docs/design/REVIEW_TASK040.md`, report in IMPLEMENTATION_REPORT.
 - 2026-10-31 · Admin: edit a player's details (username, email, phone, language, display name, country,
   bio; re-verification on email/phone change; audited). Fishka design-review fixes (popup focus/inert,
   cooldown state, contrast, 44 px pill). Lock timeout → 422 — 7032ada.
