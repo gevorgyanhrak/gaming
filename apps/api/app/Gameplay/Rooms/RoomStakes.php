@@ -3,22 +3,33 @@
 namespace App\Gameplay\Rooms;
 
 use App\Enums\FishkaTransactionType as Type;
+use App\Enums\ParticipantResult;
 use App\Gameplay\Contracts\PlaysForChips;
 use App\Gameplay\GameRegistry;
 use App\Models\GameMode;
 use App\Models\GameParticipant;
 use App\Models\GameRoom;
+use App\Models\PlayGroup;
 use App\Models\User;
 use App\Platform\Fishka\FishkaWallets;
 use App\Platform\Fishka\InsufficientFishkas;
 use App\Platform\Settings\Settings;
+use Illuminate\Validation\ValidationException;
 
 /**
- * What a seat costs in Fishkas. Most games charge the entry fee once, when a person takes a seat.
- * Games played for chips (PlaysForChips: poker) take a buy-in instead and pay the chips back when
- * the player leaves or the game ends. A fee or buy-in is given back if the game never starts. Bots
- * pay nothing; their chips come from the house. Every charge is keyed to the seat, so a repeated
- * request can't charge or pay twice.
+ * What a seat costs in Fishkas, and what a game pays out. Tables belong to a play group: its minimum
+ * balance is only an entry check, never charged.
+ *
+ * - Stake games (most): each person stakes the table's bet when they take a seat; when the game ends the
+ *   winners share the pot (bet × seats; bots' bets come from the house and their shares go back to it),
+ *   a draw returns the stakes, a player who leaves loses theirs.
+ * - Games played for chips (PlaysForChips: poker): each person brings their whole balance to the table as
+ *   chips and takes their chips back when they leave or the game ends. Bots sit with stacks like the
+ *   people's, from the house.
+ * - Rooms from before groups existed pay the flat entry fee.
+ *
+ * A stake or buy-in is given back if the game never starts. Every charge and payout is keyed to the seat,
+ * so a repeated request can't charge or pay twice.
  */
 class RoomStakes
 {
@@ -28,28 +39,45 @@ class RoomStakes
         private readonly Settings $settings,
     ) {}
 
-    /** Fishkas a player needs to sit down: the entry fee, or 1 for a game played for chips. */
-    public function minimum(GameMode $mode): int
+    /**
+     * Fishkas a player needs to sit down: the group's minimum balance, and at least the table's bet
+     * (stake games) or 1 Fishka (poker). Without a group: the entry fee, or 1 for poker.
+     */
+    public function minimum(GameMode $mode, ?TableTerms $terms = null): int
     {
-        return $this->chips($mode) !== null ? 1 : (int) $this->settings->get('fishka.entry_fee');
+        $chips = $this->chips($mode) !== null;
+        if ($terms === null) {
+            return $chips ? 1 : (int) $this->settings->get('fishka.entry_fee');
+        }
+
+        return max($terms->group->min_balance, $chips ? 1 : $terms->stake);
     }
 
     /**
-     * @throws InsufficientFishkas
+     * Not enough for the lowest group: "out of Fishkas" (the client offers the bonus). Enough to play,
+     * but not in this group: a validation error naming what the group needs.
+     *
+     * @throws InsufficientFishkas|ValidationException
      */
-    public function ensureCanAfford(User $user, GameMode $mode): void
+    public function ensureCanAfford(User $user, GameMode $mode, ?TableTerms $terms = null): void
     {
-        $needed = $this->minimum($mode);
+        $needed = $this->minimum($mode, $terms);
         $balance = $this->wallets->wallet($user)->balance;
-
-        if ($needed > 0 && $balance < $needed) {
-            throw new InsufficientFishkas($balance, $needed);
+        if ($needed <= 0 || $balance >= $needed) {
+            return;
         }
+
+        $lowest = $terms === null ? null : PlayGroup::query()->where('kind', $terms->group->kind)->where('is_enabled', true)->orderBy('position')->first();
+        if ($terms !== null && $lowest !== null && $lowest->id !== $terms->group->id && $balance >= $lowest->min_balance) {
+            throw ValidationException::withMessages(['group' => __('platform.play.group_balance', ['needed' => number_format($needed)])]);
+        }
+
+        throw new InsufficientFishkas($balance, $needed);
     }
 
-    public function canAfford(User $user, GameMode $mode): bool
+    public function canAfford(User $user, GameMode $mode, ?TableTerms $terms = null): bool
     {
-        return $this->wallets->wallet($user)->balance >= $this->minimum($mode);
+        return $this->wallets->wallet($user)->balance >= $this->minimum($mode, $terms);
     }
 
     /**
@@ -59,21 +87,23 @@ class RoomStakes
      */
     public function take(GameRoom $room, GameParticipant $participant, User $user): void
     {
-        $engine = $this->chips($room->mode);
         $meta = [
             'reference_type' => 'game_room',
             'reference_id' => $room->public_id,
             'idempotency_key' => "stake:{$participant->id}",
         ];
+        $game = $room->game->name;
 
-        $entry = $engine !== null
-            ? $this->wallets->chargeUpTo($user, $engine->buyIn($room->options ?? []), 1, Type::PokerBet, [...$meta, 'description' => "{$room->game->name}: buy-in"])
-            : $this->wallets->charge($user, $this->minimum($room->mode), Type::GameEntryFee, [...$meta, 'description' => "{$room->game->name}: entry fee"]);
+        $entry = match (true) {
+            $this->chips($room->mode) !== null => $this->wallets->chargeUpTo($user, PHP_INT_MAX, 1, Type::PokerBet, [...$meta, 'description' => "{$game}: buy-in"]),
+            $room->stake > 0 => $this->wallets->charge($user, $room->stake, Type::GameStake, [...$meta, 'description' => "{$game}: bet"]),
+            default => $this->wallets->charge($user, $this->minimum($room->mode), Type::GameEntryFee, [...$meta, 'description' => "{$game}: entry fee"]),
+        };
 
         $participant->forceFill(['stake' => $entry === null ? 0 : -$entry->amount])->save();
     }
 
-    /** Give back the fee or buy-in of a seat in a game that never started. */
+    /** Give back the stake or buy-in of a seat in a game that never started. */
     public function refund(GameRoom $room, GameParticipant $participant): void
     {
         $user = $participant->user;
@@ -112,20 +142,45 @@ class RoomStakes
     }
 
     /**
-     * The game is over: everyone still seated cashes out.
+     * The game is over (call after the results are recorded): chip games cash everyone out; stake games
+     * share the pot between the winners, or give the stakes back after a draw.
      *
      * @param  array<string, mixed>  $state
      */
     public function settle(GameRoom $room, array $state): void
     {
-        foreach ($room->participants as $participant) {
-            $this->cashOut($room, $participant, $state);
+        if ($this->chips($room->mode) !== null) {
+            foreach ($room->participants as $participant) {
+                $this->cashOut($room, $participant, $state);
+            }
+
+            return;
+        }
+        if ($room->stake <= 0) {
+            return;
+        }
+
+        $seated = $room->participants()->with('user')->get();
+        $winners = $seated->filter(fn (GameParticipant $p) => $p->result === ParticipantResult::Win);
+        $draw = $winners->isEmpty() && $seated->contains(fn (GameParticipant $p) => $p->result === ParticipantResult::Draw);
+        $share = $winners->isEmpty() ? 0 : intdiv($room->stake * $room->seats, $winners->count());
+
+        foreach ($draw ? $seated->filter(fn (GameParticipant $p) => $p->result === ParticipantResult::Draw) : $winners as $participant) {
+            if ($participant->user === null) {
+                continue;
+            }
+            $this->wallets->credit($participant->user, $draw ? $participant->stake : $share, Type::GamePayout, [
+                'description' => $draw ? "{$room->game->name}: draw, bet returned" : "{$room->game->name}: winnings",
+                'reference_type' => 'game_room',
+                'reference_id' => $room->public_id,
+                'idempotency_key' => "payout:{$participant->id}",
+            ]);
         }
     }
 
     /**
-     * Starting chips per seat for a game played for chips: each person's buy-in; null (the table's
-     * normal stack) for bots. Null when the game doesn't play for chips.
+     * Starting chips per seat for a game played for chips: each person's buy-in; bots get the people's
+     * average (from the house), so a table is fair at any group. Null when the game doesn't play for chips.
      *
      * @return list<int|null>|null
      */
@@ -136,9 +191,11 @@ class RoomStakes
         }
 
         $bySeat = $room->participants->keyBy('seat');
+        $people = $room->participants->whereNotNull('user_id')->pluck('stake');
+        $bots = $people->isEmpty() ? null : max(1, (int) round($people->avg()));
 
         return array_map(
-            fn (int $seat) => ($p = $bySeat->get($seat)) !== null && $p->user_id !== null ? $p->stake : null,
+            fn (int $seat) => ($p = $bySeat->get($seat)) !== null && $p->user_id !== null ? $p->stake : $bots,
             range(0, $room->seats - 1),
         );
     }

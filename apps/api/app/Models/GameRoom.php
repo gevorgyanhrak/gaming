@@ -22,6 +22,9 @@ use Illuminate\Support\Str;
  * @property string|null $invite_code
  * @property int|null $created_by
  * @property int $seats
+ * @property int|null $play_group_id
+ * @property int $stake What each player bets at a stake game (0 for poker).
+ * @property-read PlayGroup|null $group
  * @property bool $has_bot
  * @property array<string, mixed>|null $options
  * @property array{remaining: list<int>, since: int}|null $clock
@@ -34,7 +37,7 @@ use Illuminate\Support\Str;
  * @property-read GameMode $mode
  * @property-read Collection<int, GameParticipant> $participants
  */
-#[Fillable(['game_id', 'game_mode_id', 'type', 'status', 'invite_code', 'created_by', 'seats', 'has_bot', 'options'])]
+#[Fillable(['game_id', 'game_mode_id', 'play_group_id', 'stake', 'type', 'status', 'invite_code', 'created_by', 'seats', 'has_bot', 'options'])]
 class GameRoom extends Model
 {
     protected static function booted(): void
@@ -55,6 +58,7 @@ class GameRoom extends Model
             'seats' => 'integer',
             'has_bot' => 'boolean',
             'options' => 'array',
+            'stake' => 'integer',
             'clock' => 'array',
             'state_version' => 'integer',
             'started_at' => 'datetime',
@@ -73,6 +77,14 @@ class GameRoom extends Model
     public function game(): BelongsTo
     {
         return $this->belongsTo(Game::class);
+    }
+
+    /**
+     * @return BelongsTo<PlayGroup, $this>
+     */
+    public function group(): BelongsTo
+    {
+        return $this->belongsTo(PlayGroup::class, 'play_group_id');
     }
 
     /**

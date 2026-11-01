@@ -9,11 +9,13 @@ use App\Gameplay\Actions\GameActionService;
 use App\Gameplay\Bots\BotSelector;
 use App\Gameplay\Engine\Action;
 use App\Gameplay\Lifecycle\RoomPresence;
+use App\Gameplay\Rooms\PlayGroups;
 use App\Gameplay\Rooms\PlayRules;
 use App\Gameplay\Rooms\RoomPresenter;
 use App\Gameplay\Rooms\RoomService;
 use App\Gameplay\Rooms\RoomStakes;
 use App\Gameplay\Rooms\RoomStates;
+use App\Gameplay\Rooms\TableTerms;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Rooms\CreateRoomRequest;
 use App\Http\Resources\RoomResource;
@@ -35,16 +37,17 @@ class RoomController extends Controller
     /**
      * Start a game against a bot, or open a private room to share by invite code.
      */
-    public function store(CreateRoomRequest $request, PlayRules $rules, RoomService $rooms, BotSelector $bots): JsonResponse
+    public function store(CreateRoomRequest $request, PlayRules $rules, RoomService $rooms, BotSelector $bots, PlayGroups $groups): JsonResponse
     {
         /** @var User $user */
         $user = $request->user();
         $mode = GameMode::query()->with('game')->findOrFail($request->integer('game_mode_id'));
         $type = $request->string('type')->toString();
+        $terms = $groups->terms($mode, $request->filled('group') ? $request->string('group')->toString() : null, $request->filled('bet') ? $request->integer('bet') : null, $type);
 
         // One start at a time per player: a double click can't open (and pay for) two games.
-        $room = $rules->exclusively($user, function () use ($rules, $rooms, $bots, $user, $mode, $type, $request) {
-            $rules->ensureCanStart($user, $mode, $type);
+        $room = $rules->exclusively($user, function () use ($rules, $rooms, $bots, $user, $mode, $type, $request, $terms) {
+            $rules->ensureCanStart($user, $mode, $type, $terms);
 
             if ($type === 'bot') {
                 $difficulty = BotDifficulty::from($request->string('bot_difficulty')->toString());
@@ -58,11 +61,11 @@ class RoomController extends Controller
                 }
                 $players = [$user, ...array_map(fn (BotProfile $bot) => ['bot' => $bot, 'difficulty' => $difficulty], $picked)];
 
-                $room = $rooms->createStarted($mode, RoomType::Bot, $players, $user);
+                $room = $rooms->createStarted($mode, RoomType::Bot, $players, $user, $terms);
             } else {
                 $seats = $request->integer('seats', $mode->max_players);
                 $this->ensurePlayers($mode, $seats, 'seats');
-                $room = $rooms->createWaiting($mode, $user, $this->inviteCode(), $seats);
+                $room = $rooms->createWaiting($mode, $user, $this->inviteCode(), $seats, $terms);
             }
 
             return $room;
@@ -91,7 +94,7 @@ class RoomController extends Controller
 
         $room = $rules->exclusively($user, function () use ($rules, $rooms, $room, $user) {
             if ($room->participantFor($user) === null) {
-                $rules->ensureCanStart($user, $room->mode, 'private');
+                $rules->ensureCanStart($user, $room->mode, 'private', TableTerms::of($room));
             }
 
             try {
@@ -183,7 +186,7 @@ class RoomController extends Controller
 
     private function loaded(GameRoom $room): GameRoom
     {
-        return $room->load(['game', 'mode', 'participants.user.profile', 'participants.bot']);
+        return $room->load(['game', 'mode', 'group', 'participants.user.profile', 'participants.bot']);
     }
 
     private function inviteCode(): string

@@ -2,6 +2,7 @@
 
 use App\Enums\BotDifficulty;
 use App\Enums\FishkaTransactionType as Type;
+use App\Enums\ParticipantResult;
 use App\Enums\RoomStatus;
 use App\Gameplay\Bots\BotTurnJob;
 use App\Gameplay\Lifecycle\ResumeRoundJob;
@@ -74,19 +75,26 @@ it('plays a full game against a bot through the API', function (string $slug) {
         ->and($room->end_reason)->toBe('completed')
         ->and(UserGameStat::query()->where('user_id', $player->id)->sole()->played)->toBe(1);
 
-    // Fishkas: the entry fee once; poker instead takes a buy-in and pays the final chips back.
+    // Fishkas. Poker: the whole balance as a buy-in, the final chips paid back. Other games: the
+    // Beginner bet (500) staked once; the winners share the pot (bet × seats), a draw returns the bet.
     $live = app(RoomStates::class)->current($room->load(['game', 'participants']))->state;
-    $seat = $room->participants->firstWhere('user_id', $player->id)->seat;
+    $me = $room->participants->firstWhere('user_id', $player->id);
     $ledger = FishkaTransaction::query()->where('user_id', $player->id)->orderBy('id')->get();
     $balance = FishkaWallet::query()->findOrFail($player->id)->balance;
     if ($slug === 'poker') {
         // Nothing to pay back (no ledger entry) when the player lost every chip.
-        $cashOut = $live['stacks'][$seat] > 0 ? [Type::PokerWinning] : [];
+        $cashOut = $live['stacks'][$me->seat] > 0 ? [Type::PokerWinning] : [];
         expect($ledger->pluck('type')->all())->toBe([Type::RegistrationBonus, Type::PokerBet, ...$cashOut])
-            ->and($balance)->toBe(5000 - 1000 + $live['stacks'][$seat]);
+            ->and($balance)->toBe($live['stacks'][$me->seat]);
     } else {
-        expect($ledger->pluck('type')->all())->toBe([Type::RegistrationBonus, Type::GameEntryFee])
-            ->and($balance)->toBe(4500);
+        $winners = $room->participants->where('result', ParticipantResult::Win)->count();
+        $payout = match ($me->result) {
+            ParticipantResult::Win => intdiv(500 * $room->seats, $winners),
+            ParticipantResult::Draw => 500,
+            default => 0,
+        };
+        expect($ledger->pluck('type')->all())->toBe([Type::RegistrationBonus, Type::GameStake, ...($payout > 0 ? [Type::GamePayout] : [])])
+            ->and($balance)->toBe(4500 + $payout);
     }
 
     // The move log replays to the same final position.

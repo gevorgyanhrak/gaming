@@ -33,7 +33,8 @@ function pokerTable(): array
 {
     $mode = pokerMode();
     [$alice, $bob, $carol] = User::factory()->count(3)->create();
-    $room = test()->actingAs($alice)->postJson('/api/v1/rooms', ['game_mode_id' => $mode->id, 'type' => 'private', 'seats' => 3])->assertCreated()->json('data');
+    // Intermediate group: blinds 2/5 (each player brings their whole 5,000 Fishkas).
+    $room = test()->actingAs($alice)->postJson('/api/v1/rooms', ['game_mode_id' => $mode->id, 'type' => 'private', 'seats' => 3, 'group' => 'intermediate'])->assertCreated()->json('data');
     foreach ([$bob, $carol] as $user) {
         test()->actingAs($user)->postJson('/api/v1/rooms/join', ['invite_code' => $room['invite_code']])->assertOk();
     }
@@ -158,8 +159,9 @@ it('accepts a raise of any size within the range and rejects others', function (
         'client_action_id' => (string) Str::uuid(), 'expected_version' => $version, 'action' => $action,
     ]);
 
-    $post(['type' => 'raise', 'amount' => 15], $state->version)->assertUnprocessable();
-    $post(['type' => 'raise', 'min' => 20, 'max' => 1000], $state->version)->assertUnprocessable();
+    // The minimum raise is to 10 (big blind 5 + a raise of at least the big blind).
+    $post(['type' => 'raise', 'amount' => 9], $state->version)->assertUnprocessable();
+    $post(['type' => 'raise', 'min' => 10, 'max' => 5000], $state->version)->assertUnprocessable();
     $post(['type' => 'raise', 'amount' => 37], $state->version)->assertOk();
 
     expect(app(RoomStates::class)->current($room->refresh())->state['current_bet'])->toBe(37);

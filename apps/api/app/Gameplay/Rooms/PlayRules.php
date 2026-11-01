@@ -29,7 +29,7 @@ class PlayRules
      *
      * @throws ValidationException|InsufficientFishkas
      */
-    public function ensureCanStart(User $user, GameMode $mode, string $kind): void
+    public function ensureCanStart(User $user, GameMode $mode, string $kind, ?TableTerms $terms = null): void
     {
         $game = $mode->game;
         $playable = $game->is_enabled && $game->is_visible && $mode->is_enabled && $this->registry->has($game->slug);
@@ -49,7 +49,7 @@ class PlayRules
             throw ValidationException::withMessages(['game_mode_id' => __('platform.play.too_many_games')]);
         }
 
-        $this->stakes->ensureCanAfford($user, $mode);
+        $this->stakes->ensureCanAfford($user, $mode, $terms);
     }
 
     /**

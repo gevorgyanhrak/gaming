@@ -37,11 +37,12 @@ export function gameFixture(overrides: Partial<GameDetail> = {}): GameDetail {
     is_playable: false,
     rules: 'First paragraph.\n\nSecond paragraph.',
     modes: [],
+    groups: [],
     ...overrides,
   }
 }
 
-export function summaryOf({ rules, modes, ...summary }: GameDetail): GameSummary {
+export function summaryOf({ rules, modes, groups, ...summary }: GameDetail): GameSummary {
   return summary
 }
 
@@ -110,6 +111,8 @@ export function roomFixture(overrides: Partial<Room> = {}): Room {
     mode: { id: 1, slug: 'classic', name: 'Classic' },
     type: 'bot',
     status: 'active',
+    group: null,
+    stake: 0,
     invite_code: null,
     seats: 2,
     participants: [

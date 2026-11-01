@@ -18,16 +18,22 @@ Steps (tick when done, with the commit):
       to the computer's old LAN address (192.168.11.50 → .56 overnight), and polling only kicked in when
       realtime wasn't configured at all. Fixed: socket host defaults to the page's host; polling whenever the
       socket isn't connected (room state 3 s, wallet 5 s); local Sanctum accepts any 192.168.* origin.
-      Verified live: a full hand with 3 bots, UI caption in sync at every version — 2837aa0.
-- [ ] 2. Poker uses the real balance: buy-in = whole balance (no 1,000 cap); table shows it; wallet synced.
-- [ ] 3. Central group configuration (5 Poker groups, 5 groups for other games; admin-editable).
-- [ ] 4. Poker groups: entry by minimum balance (not deducted), blinds/minimum bet per group, separate
-      tables and matchmaking per group, locked groups shown, backend validation.
+      Verified live: a full hand with 3 bots, UI caption in sync at every version — edd04cf.
+- [x] 2. Poker uses the real balance: buy-in = whole balance (no 1,000 cap); bots get the people's average
+      stack — backend in COMMIT_GROUPS. (Table/header display: step 4b.)
+- [x] 3. Central group configuration: `play_groups` table (migration seeds 10 groups), `PlayGroups` service,
+      `TableTerms`, admin "Play groups" (edit limits/open, audited) — COMMIT_GROUPS.
+- [x] 4. Backend for groups (poker AND other games): entry by minimum balance (not charged), bet range
+      validation, poker blinds = group min bet, rooms carry group + stake, matchmaking queues per mode+group,
+      stake games: winners share the pot / draw returns bets (ledger `game_stake`, `game_payout`) —
+      COMMIT_GROUPS. Tests: tests/Feature/Fishka/GroupsTest.php, PlayGroupAdminTest.
+- [ ] 4b. Frontend groups: group picker on every game page (all 5 with min balance / bets, locked ones
+      greyed with "need N"), bet slider for bot/private tables, matchmaking per group, group badge + stake on
+      the room page and waiting table, Play again keeps group + bet, poker shows whole-balance buy-in.
 - [ ] 5. Win/lose animation: chips fly to the header balance on cash-out; exactly once per transaction.
 - [ ] 6. Full Poker test pass (brief §5): balances 100 / 1,000 / 5,000 / 50,000 / 500,000; all actions;
       folds; showdowns; reconnects; double-payout checks.
-- [ ] 7. Groups for Nardi, Checkers, Chess, Durak: stakes within the group range (decide pot rules with the
-      owner), rooms and matchmaking per group, validation.
+- [ ] 7. (Backend done in step 4 for every game.) Verify Nardi, Checkers, Chess, Durak live per group; pot payouts.
 - [ ] 8. QA agent end to end, UI/UX review, PM validation; fix; final report to the owner.
 
 Owner answers (2026-11-01) for step 7: the winner takes the pot (Durak: all but the loser split it; vs

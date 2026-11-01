@@ -23,11 +23,19 @@ class MatchmakingController extends Controller
 {
     public function store(Request $request, Matchmaker $matchmaker): JsonResponse
     {
-        $request->validate(['game_mode_id' => ['required', 'integer', Rule::exists('game_modes', 'id')]]);
+        $request->validate([
+            'game_mode_id' => ['required', 'integer', Rule::exists('game_modes', 'id')],
+            // The play group to be matched in (default: the lowest). Matched tables play at its minimum bet.
+            'group' => ['nullable', 'string', 'max:32'],
+        ]);
         /** @var User $user */
         $user = $request->user();
 
-        $result = $matchmaker->join($user, GameMode::query()->with('game')->findOrFail($request->integer('game_mode_id')));
+        $result = $matchmaker->join(
+            $user,
+            GameMode::query()->with('game')->findOrFail($request->integer('game_mode_id')),
+            $request->filled('group') ? $request->string('group')->toString() : null,
+        );
 
         return $this->respond($matchmaker, $result instanceof GameRoom ? null : $result, $result instanceof GameRoom ? $result->public_id : null, 201);
     }
@@ -79,7 +87,7 @@ class MatchmakingController extends Controller
             /** @var array<string, mixed>|null */
             'ticket' => $ticket === null ? null : new TicketResource($ticket),
             /** Players in the same queue, the searching player included (null when not searching). */
-            'waiting' => $ticket === null ? null : $matchmaker->waiting($ticket->modeId),
+            'waiting' => $ticket === null ? null : $matchmaker->waiting($ticket),
             /** @var string|null */
             'room' => $room,
         ]], $status);

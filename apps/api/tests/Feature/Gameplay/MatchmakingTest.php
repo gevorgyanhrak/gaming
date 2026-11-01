@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\BotDifficulty;
+use App\Enums\FishkaTransactionType;
 use App\Enums\RoomStatus;
 use App\Enums\RoomType;
 use App\Gameplay\Matchmaking\Matchmaker;
@@ -10,9 +11,9 @@ use App\Models\Game;
 use App\Models\GameMode;
 use App\Models\GameRoom;
 use App\Models\User;
+use App\Platform\Fishka\FishkaWallets;
 use Database\Seeders\GameModeSeeder;
 use Database\Seeders\GameSeeder;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 
@@ -236,15 +237,18 @@ it('falls back to a table of bots for bigger tables', function () {
     expect(GameRoom::query()->where('public_id', $room)->sole()->participants()->count())->toBe(Matchmaker::BOT_TABLE_SIZE);
 });
 
-it('finds the player’s ticket when the store returns the queue id as a string, as Redis does', function () {
+it('finds the player’s ticket in their group’s queue, and only matches within a group', function () {
     $mode = ticTacToe();
-    $alice = User::factory()->create();
-    $this->actingAs($alice)->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id]);
-    Cache::store(config('gameplay.state_store'))->forever("mm:user:{$alice->id}", (string) $mode->id);
+    [$alice, $bob] = User::factory()->count(2)->create();
+    app(FishkaWallets::class)->credit($bob, 50_000, FishkaTransactionType::AdminCredit);
 
-    $this->getJson('/api/v1/matchmaking')->assertJsonPath('data.ticket.status', 'queued');
+    $this->actingAs($alice)->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id])->assertCreated();
+    // Bob waits in a higher group: no match with Alice.
+    $this->actingAs($bob)->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id, 'group' => 'casual'])
+        ->assertCreated()->assertJsonPath('data.room', null)->assertJsonPath('data.waiting', 1);
+
+    $this->actingAs($alice)->getJson('/api/v1/matchmaking')->assertJsonPath('data.ticket.status', 'queued')->assertJsonPath('data.waiting', 1);
     $this->postJson('/api/v1/matchmaking/heartbeat')->assertJsonPath('data.ticket.status', 'queued');
     $this->deleteJson('/api/v1/matchmaking')->assertNoContent();
-
-    expect(app(Matchmaker::class)->waiting($mode->id))->toBe(0);
+    $this->getJson('/api/v1/matchmaking')->assertJsonPath('data.ticket', null);
 });

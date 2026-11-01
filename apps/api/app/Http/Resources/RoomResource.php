@@ -30,6 +30,10 @@ class RoomResource extends JsonResource
             /** @var string|null */
             'invite_code' => $isParticipant && $this->status === RoomStatus::Waiting ? $this->invite_code : null,
             'seats' => $this->seats,
+            /** The play group the table belongs to (null for tables from before groups). */
+            'group' => $this->group === null ? null : new PlayGroupResource($this->group),
+            /** What each player bets (stake games; 0 for poker). */
+            'stake' => $this->stake,
             'participants' => $this->participants->map(fn (GameParticipant $p) => [
                 'seat' => $p->seat,
                 'is_bot' => $p->isBot(),

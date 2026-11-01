@@ -69,6 +69,9 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   cash-out in `GameActionService` (depart/end/finish). `PlayRules::ensureCanStart` checks affordability.
   Daily bonus on login and `GET /me`. Admin changes via `FishkaWallets::adjust` (Filament ViewUser
   "Fishkas" actions + `FishkaTransactionsRelationManager`). Tests: `tests/Feature/Fishka`.
+- Play groups (ADR 0016): `play_groups` (kinds `chips`/`stake`) via `Gameplay/Rooms/PlayGroups` → `TableTerms`;
+  rooms carry `play_group_id` + `stake`; `RoomStakes` = entry check (min balance, never charged), poker
+  whole-balance buy-in, stake games' pot payout; matchmaking pools `mode:group`. Requests take `group` and `bet`.
 - Optional engine contracts in `app/Gameplay/Contracts`: `HandlesTimeouts`, `DecidesTimeouts`,
   `HandlesDepartures`, `ValidatesActions`, `PausesBetweenRounds` (poker's pause after a hand:
   `GameScheduler` queues `ResumeRoundJob` → `GameActionService::resume` → a `resume` move with no

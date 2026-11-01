@@ -733,12 +733,15 @@ export interface components {
             /** @description Tables for more than two (poker): bots to play against, or seats in a private room. */
             opponents?: number | null;
             seats?: number | null;
+            /** @description The play group (default: the lowest) and, for stake games, the bet within its range. */
+            group?: string | null;
+            bet?: number | null;
         };
         /** FishkaTransactionResource */
         FishkaTransactionResource: {
             id: number;
             /** @enum {string} */
-            type: "registration_bonus" | "daily_login_bonus" | "game_entry_fee" | "game_entry_refund" | "poker_bet" | "poker_winning" | "admin_credit" | "admin_debit" | "insufficient_balance_bonus";
+            type: "registration_bonus" | "daily_login_bonus" | "game_entry_fee" | "game_entry_refund" | "game_stake" | "game_payout" | "poker_bet" | "poker_winning" | "admin_credit" | "admin_debit" | "insufficient_balance_bonus";
             amount: number;
             balance_after: number;
             description: string | null;
@@ -762,6 +765,8 @@ export interface components {
             /** @description Paragraphs separated by blank lines. */
             rules: string;
             modes?: components["schemas"]["GameModeResource"][];
+            /** @description The play groups (levels) of this game, lowest first. */
+            groups: components["schemas"]["PlayGroupResource"][];
         };
         /** GameModeResource */
         GameModeResource: {
@@ -798,16 +803,26 @@ export interface components {
             best_streak: number;
             last_played_at: string | null;
         };
-        /** InsufficientFishkas */
-        InsufficientFishkas: {
-            balance: number;
-            needed: number;
-        };
         /** LoginRequest */
         LoginRequest: {
             login: string;
             password: string;
             remember?: boolean;
+        };
+        /** PlayGroupResource */
+        PlayGroupResource: {
+            slug: string;
+            /**
+             * @description "chips": poker (the minimum bet is the big blind; players bring their Fishkas as chips);
+             *     "stake": each player bets within min_bet–max_bet.
+             * @enum {string}
+             */
+            kind: "chips" | "stake";
+            position: number;
+            /** @description Needed to enter; never charged. */
+            min_balance: number;
+            min_bet: number;
+            max_bet: number | null;
         };
         /** PublicUserResource */
         PublicUserResource: {
@@ -858,6 +873,9 @@ export interface components {
             status: "waiting" | "active" | "finished" | "aborted";
             invite_code: string | null;
             seats: number;
+            group: components["schemas"]["PlayGroupResource"] | null;
+            /** @description What each player bets (stake games; 0 for poker). */
+            stake: number;
             participants: {
                 seat: number;
                 is_bot: boolean;
@@ -1445,6 +1463,8 @@ export interface operations {
             content: {
                 "application/json": {
                     game_mode_id: number;
+                    /** @description The play group to be matched in (default: the lowest). Matched tables play at its minimum bet. */
+                    group?: string | null;
                 };
             };
         };
@@ -1795,14 +1815,6 @@ export interface operations {
             };
         };
         responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never> | components["schemas"]["InsufficientFishkas"];
-                };
-            };
             /** @description `RoomResource` */
             201: {
                 headers: {
@@ -1841,7 +1853,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["RoomResource"];
-                    } | (Record<string, never> | components["schemas"]["InsufficientFishkas"]);
+                    };
                 };
             };
             401: components["responses"]["AuthenticationException"];

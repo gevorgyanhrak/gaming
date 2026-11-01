@@ -39,14 +39,14 @@ class RoomService
      *
      * @param  list<User|array{bot: BotProfile, difficulty: BotDifficulty}>  $players  In seat order.
      */
-    public function createStarted(GameMode $mode, RoomType $type, array $players, ?User $creator = null): GameRoom
+    public function createStarted(GameMode $mode, RoomType $type, array $players, ?User $creator = null, ?TableTerms $terms = null): GameRoom
     {
         if (count($players) < $mode->min_players || count($players) > $mode->max_players) {
             throw new InvalidArgumentException('Wrong number of players for this mode.');
         }
 
-        $room = DB::transaction(function () use ($mode, $type, $players, $creator) {
-            $room = $this->createRoom($mode, $type, count($players), $creator);
+        $room = DB::transaction(function () use ($mode, $type, $players, $creator, $terms) {
+            $room = $this->createRoom($mode, $type, count($players), $creator, terms: $terms);
 
             foreach ($players as $seat => $player) {
                 $this->seat($room, $seat, $player);
@@ -61,10 +61,10 @@ class RoomService
     /**
      * Create a room that waits for more players (private rooms); the creator takes seat 0.
      */
-    public function createWaiting(GameMode $mode, User $creator, string $inviteCode, ?int $seats = null): GameRoom
+    public function createWaiting(GameMode $mode, User $creator, string $inviteCode, ?int $seats = null, ?TableTerms $terms = null): GameRoom
     {
-        return DB::transaction(function () use ($mode, $creator, $inviteCode, $seats) {
-            $room = $this->createRoom($mode, RoomType::Private, $seats ?? $mode->max_players, $creator, $inviteCode);
+        return DB::transaction(function () use ($mode, $creator, $inviteCode, $seats, $terms) {
+            $room = $this->createRoom($mode, RoomType::Private, $seats ?? $mode->max_players, $creator, $inviteCode, $terms);
             $this->seat($room, 0, $creator);
 
             return $room;
@@ -137,17 +137,23 @@ class RoomService
         return $room;
     }
 
-    private function createRoom(GameMode $mode, RoomType $type, int $seats, ?User $creator, ?string $inviteCode = null): GameRoom
+    /**
+     * A new room on the given terms: its play group, each player's bet (stake games) and the group's
+     * table options (poker blinds) on top of the mode's.
+     */
+    private function createRoom(GameMode $mode, RoomType $type, int $seats, ?User $creator, ?string $inviteCode = null, ?TableTerms $terms = null): GameRoom
     {
         return GameRoom::query()->create([
             'game_id' => $mode->game_id,
             'game_mode_id' => $mode->id,
+            'play_group_id' => $terms?->group->id,
+            'stake' => $terms->stake ?? 0,
             'type' => $type,
             'status' => RoomStatus::Waiting,
             'invite_code' => $inviteCode,
             'created_by' => $creator?->id,
             'seats' => $seats,
-            'options' => $mode->config ?? [],
+            'options' => [...($mode->config ?? []), ...($terms === null ? [] : app(PlayGroups::class)->options($terms->group))],
         ]);
     }
 

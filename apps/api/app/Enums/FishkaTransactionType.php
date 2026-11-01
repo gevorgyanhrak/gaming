@@ -10,8 +10,12 @@ enum FishkaTransactionType: string
     case RegistrationBonus = 'registration_bonus';
     case DailyLoginBonus = 'daily_login_bonus';
     case GameEntryFee = 'game_entry_fee';
-    /** A fee or buy-in given back because the game never started (a waiting room was left or closed). */
+    /** A fee, stake or buy-in given back because the game never started (a waiting room was left or closed). */
     case GameEntryRefund = 'game_entry_refund';
+    /** The bet each player stakes at a table of a stake game. */
+    case GameStake = 'game_stake';
+    /** A share of a stake game's pot (or the stake back after a draw). */
+    case GamePayout = 'game_payout';
     /** Fishkas brought to a poker table (the buy-in). */
     case PokerBet = 'poker_bet';
     /** Fishkas taken away from a poker table: what was left of the buy-in plus winnings. */

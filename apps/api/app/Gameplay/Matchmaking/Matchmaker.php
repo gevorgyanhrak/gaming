@@ -4,14 +4,18 @@ namespace App\Gameplay\Matchmaking;
 
 use App\Enums\BotDifficulty;
 use App\Enums\BotFallbackMode;
+use App\Enums\PlayGroupKind;
 use App\Enums\RoomType;
 use App\Gameplay\Bots\BotSelector;
+use App\Gameplay\Rooms\PlayGroups;
 use App\Gameplay\Rooms\PlayRules;
 use App\Gameplay\Rooms\RoomService;
 use App\Gameplay\Rooms\RoomStakes;
+use App\Gameplay\Rooms\TableTerms;
 use App\Models\BotProfile;
 use App\Models\GameMode;
 use App\Models\GameRoom;
+use App\Models\PlayGroup;
 use App\Models\User;
 use App\Platform\Fishka\InsufficientFishkas;
 use App\Platform\Settings\Settings;
@@ -49,32 +53,57 @@ class Matchmaker
         private readonly BotSelector $bots,
         private readonly Settings $settings,
         private readonly RoomStakes $stakes,
+        private readonly PlayGroups $groups,
     ) {}
+
+    /** The queue key of a mode and play group. */
+    public static function pool(int $modeId, ?int $groupId): string
+    {
+        return "{$modeId}:".($groupId ?? '');
+    }
+
+    /**
+     * The mode and terms of a queue: matched tables play at the group's minimum bet.
+     *
+     * @return array{0: GameMode, 1: TableTerms|null}|null
+     */
+    private function poolTerms(string $pool): ?array
+    {
+        [$modeId, $groupId] = array_pad(explode(':', $pool, 2), 2, '');
+        $mode = GameMode::query()->with('game')->find((int) $modeId);
+        if ($mode === null) {
+            return null;
+        }
+        $group = $groupId === '' ? null : PlayGroup::query()->find((int) $groupId);
+
+        return [$mode, $group === null ? null : new TableTerms($group, $group->kind === PlayGroupKind::Chips ? 0 : $group->min_bet)];
+    }
 
     /**
      * Queue the player (leaving any other queue) and match immediately if possible.
      *
      * @return Ticket|GameRoom The ticket while waiting, or the room if matched right away.
      */
-    public function join(User $user, GameMode $mode): Ticket|GameRoom
+    public function join(User $user, GameMode $mode, ?string $group = null): Ticket|GameRoom
     {
-        return $this->rules->exclusively($user, fn () => $this->queueUp($user, $mode));
+        return $this->rules->exclusively($user, fn () => $this->queueUp($user, $mode, $group));
     }
 
-    private function queueUp(User $user, GameMode $mode): Ticket|GameRoom
+    private function queueUp(User $user, GameMode $mode, ?string $group): Ticket|GameRoom
     {
-        $this->rules->ensureCanStart($user, $mode, 'matchmaking');
+        $terms = $this->groups->terms($mode, $group, null, 'matchmaking');
+        $this->rules->ensureCanStart($user, $mode, 'matchmaking', $terms);
         $this->leave($user);
 
         $now = now()->getTimestamp();
-        $ticket = new Ticket($user->id, $mode->id, $now, $this->botAt($mode, $now), false, $now);
+        $ticket = new Ticket($user->id, $mode->id, $now, $this->botAt($mode, $now), false, $now, $terms->group->id);
 
-        $room = $this->withQueue($mode->id, function (array $queue) use ($ticket, $mode) {
+        $room = $this->withQueue($ticket->pool(), function (array $queue) use ($ticket, $mode, $terms) {
             $queue[$ticket->userId] = $ticket;
 
-            return $this->match($mode, $queue);
+            return $this->match($mode, $queue, $terms);
         });
-        $this->store()->forever($this->userKey($user->id), $mode->id);
+        $this->store()->forever($this->userKey($user->id), $ticket->pool());
         $this->store()->forget($this->matchedKey($user->id));
 
         return $room instanceof GameRoom && $room->participantFor($user) !== null ? $room : $ticket;
@@ -82,10 +111,10 @@ class Matchmaker
 
     public function leave(User $user): void
     {
-        $modeId = $this->modeOf($user->id);
+        $pool = $this->poolOf($user->id);
 
-        if ($modeId !== null) {
-            $this->withQueue($modeId, function (array $queue) use ($user) {
+        if ($pool !== null) {
+            $this->withQueue($pool, function (array $queue) use ($user) {
                 unset($queue[$user->id]);
 
                 return [$queue, null];
@@ -97,15 +126,15 @@ class Matchmaker
 
     public function ticket(User $user): ?Ticket
     {
-        $modeId = $this->modeOf($user->id);
+        $pool = $this->poolOf($user->id);
 
-        return $modeId !== null ? ($this->queue($modeId)[$user->id] ?? null) : null;
+        return $pool !== null ? ($this->queue($pool)[$user->id] ?? null) : null;
     }
 
-    /** How many players wait in the mode's queue. */
-    public function waiting(int $modeId): int
+    /** How many players wait in the ticket's queue (same mode and group). */
+    public function waiting(Ticket $ticket): int
     {
-        return count($this->queue($modeId));
+        return count($this->queue($ticket->pool()));
     }
 
     /** The room a recent match placed the player in (for clients that missed the event). */
@@ -118,13 +147,13 @@ class Matchmaker
 
     public function heartbeat(User $user): ?Ticket
     {
-        $modeId = $this->modeOf($user->id);
+        $pool = $this->poolOf($user->id);
 
-        if ($modeId === null) {
+        if ($pool === null) {
             return null;
         }
 
-        $this->withQueue($modeId, function (array $queue) use ($user) {
+        $this->withQueue($pool, function (array $queue) use ($user) {
             if (isset($queue[$user->id])) {
                 $queue[$user->id] = $queue[$user->id]->with(heartbeatAt: now()->getTimestamp());
             }
@@ -145,14 +174,14 @@ class Matchmaker
 
     private function startBotGame(User $user, BotDifficulty $difficulty): ?GameRoom
     {
-        $modeId = $this->modeOf($user->id);
-        $mode = $modeId !== null ? GameMode::query()->with('game')->find($modeId) : null;
+        $pool = $this->poolOf($user->id);
+        [$mode, $terms] = ($pool === null ? null : $this->poolTerms($pool)) ?? [null, null];
 
         if ($mode === null) {
             return null;
         }
 
-        $room = $this->withQueue($mode->id, function (array $queue) use ($user, $mode, $difficulty) {
+        $room = $this->withQueue($pool, function (array $queue) use ($user, $mode, $difficulty, $terms) {
             $ticket = $queue[$user->id] ?? null;
 
             if ($ticket === null || ! $ticket->botOffered) {
@@ -161,7 +190,7 @@ class Matchmaker
 
             unset($queue[$user->id]);
 
-            return [$queue, $this->botRoom($mode, $user, $difficulty)];
+            return [$queue, $this->botRoom($mode, $user, $difficulty, $terms)];
         });
 
         if ($room !== null) {
@@ -177,14 +206,15 @@ class Matchmaker
      */
     public function sweep(): void
     {
-        foreach ($this->store()->get('mm:modes', []) as $modeId) {
-            $mode = GameMode::query()->with('game')->find($modeId);
+        foreach ($this->store()->get('mm:modes', []) as $pool) {
+            $pool = str_contains((string) $pool, ':') ? (string) $pool : self::pool((int) $pool, null);
+            [$mode, $terms] = $this->poolTerms($pool) ?? [null, null];
 
             if ($mode === null) {
                 continue;
             }
 
-            $this->withQueue($mode->id, function (array $queue) use ($mode) {
+            $this->withQueue($pool, function (array $queue) use ($mode, $terms) {
                 $now = now()->getTimestamp();
 
                 foreach ($queue as $userId => $ticket) {
@@ -194,7 +224,7 @@ class Matchmaker
                     }
                 }
 
-                [$queue] = $this->match($mode, $queue);
+                [$queue] = $this->match($mode, $queue, $terms);
 
                 foreach ($queue as $userId => $ticket) {
                     if ($ticket->botAt === null || $ticket->botAt > $now || $ticket->botOffered) {
@@ -204,7 +234,7 @@ class Matchmaker
                     if ($mode->game->bot_fallback_mode === BotFallbackMode::Auto) {
                         $user = User::query()->find($userId);
                         try {
-                            $room = $user === null ? null : $this->botRoom($mode, $user, BotDifficulty::Medium);
+                            $room = $user === null ? null : $this->botRoom($mode, $user, BotDifficulty::Medium, $terms);
                         } catch (InsufficientFishkas) {
                             $room = null;
                         }
@@ -230,7 +260,7 @@ class Matchmaker
      * @param  array<int, Ticket>  $queue
      * @return array{0: array<int, Ticket>, 1: GameRoom|null} Remaining queue and the last room formed.
      */
-    private function match(GameMode $mode, array $queue): array
+    private function match(GameMode $mode, array $queue, ?TableTerms $terms = null): array
     {
         $room = null;
         uasort($queue, fn (Ticket $a, Ticket $b) => $a->joinedAt <=> $b->joinedAt);
@@ -251,7 +281,7 @@ class Matchmaker
             $tickets = array_slice($queue, 0, $size, true);
             // Someone whose Fishkas ran out while waiting (another game, an admin change) leaves the queue.
             $players = User::query()->whereIn('id', array_keys($tickets))->get()
-                ->filter(fn (User $u) => $this->stakes->canAfford($u, $mode))
+                ->filter(fn (User $u) => $this->stakes->canAfford($u, $mode, $terms))
                 ->sortBy(fn (User $u) => $tickets[$u->id]->joinedAt)->values()->all();
 
             foreach (array_keys($tickets) as $userId) {
@@ -264,7 +294,7 @@ class Matchmaker
             }
 
             try {
-                $room = $this->rooms->createStarted($mode, RoomType::Matchmaking, $players);
+                $room = $this->rooms->createStarted($mode, RoomType::Matchmaking, $players, terms: $terms);
             } catch (InsufficientFishkas) {
                 continue;   // A balance changed in the meantime; nobody was charged.
             }
@@ -284,7 +314,7 @@ class Matchmaker
         return (int) ($mode->config['table_wait_seconds'] ?? self::TABLE_WAIT_SECONDS);
     }
 
-    private function botRoom(GameMode $mode, User $user, BotDifficulty $difficulty): ?GameRoom
+    private function botRoom(GameMode $mode, User $user, BotDifficulty $difficulty, ?TableTerms $terms = null): ?GameRoom
     {
         $seats = $mode->max_players > 2 ? max($mode->min_players, min(self::BOT_TABLE_SIZE, $mode->max_players)) : $mode->min_players;
 
@@ -298,7 +328,7 @@ class Matchmaker
             $bots = $this->bots->pickMany($mode->game, $difficulty = $available[0], $seats - 1);
         }
 
-        return $this->rooms->createStarted($mode, RoomType::Bot, [$user, ...array_map(fn (BotProfile $bot) => ['bot' => $bot, 'difficulty' => $difficulty], $bots)], $user);
+        return $this->rooms->createStarted($mode, RoomType::Bot, [$user, ...array_map(fn (BotProfile $bot) => ['bot' => $bot, 'difficulty' => $difficulty], $bots)], $user, $terms);
     }
 
     private function botAt(GameMode $mode, int $now): ?int
@@ -340,18 +370,18 @@ class Matchmaker
      * @param  Closure(array<int, Ticket>): array{0: array<int, Ticket>, 1: T}  $change
      * @return T
      */
-    private function withQueue(int $modeId, Closure $change): mixed
+    private function withQueue(string $pool, Closure $change): mixed
     {
         $store = $this->store()->getStore();
         if (! $store instanceof LockProvider) {
             throw new LogicException('The game state store must support locks (use Redis).');
         }
 
-        return $store->lock("mm-lock:{$modeId}", 10)->block(5, function () use ($modeId, $change) {
-            [$queue, $result] = $change($this->queue($modeId));
+        return $store->lock("mm-lock:{$pool}", 10)->block(5, function () use ($pool, $change) {
+            [$queue, $result] = $change($this->queue($pool));
 
-            $this->store()->forever("mm:queue:{$modeId}", array_map(fn (Ticket $t) => $t->toArray(), $queue));
-            $this->trackMode($modeId, $queue !== []);
+            $this->store()->forever("mm:queue:{$pool}", array_map(fn (Ticket $t) => $t->toArray(), $queue));
+            $this->trackMode($pool, $queue !== []);
 
             return $result;
         });
@@ -360,33 +390,34 @@ class Matchmaker
     /**
      * @return array<int, Ticket>
      */
-    private function queue(int $modeId): array
+    private function queue(string $pool): array
     {
-        return array_map(fn (array $t) => Ticket::fromArray($t), $this->store()->get("mm:queue:{$modeId}", []));
+        return array_map(fn (array $t) => Ticket::fromArray($t), $this->store()->get("mm:queue:{$pool}", []));
     }
 
-    /** Keeps the list of modes with waiting players (what sweep() visits), under its own lock. */
-    private function trackMode(int $modeId, bool $hasTickets): void
+    /** Keeps the list of queues with waiting players (what sweep() visits), under its own lock. */
+    private function trackMode(string $pool, bool $hasTickets): void
     {
         /** @var LockProvider $store */
         $store = $this->store()->getStore();
 
-        $store->lock('mm-lock:modes', 5)->block(5, function () use ($modeId, $hasTickets) {
-            $modes = $this->store()->get('mm:modes', []);
-            $modes = $hasTickets ? array_values(array_unique([...$modes, $modeId])) : array_values(array_diff($modes, [$modeId]));
-            $this->store()->forever('mm:modes', $modes);
+        $store->lock('mm-lock:modes', 5)->block(5, function () use ($pool, $hasTickets) {
+            $pools = array_map('strval', $this->store()->get('mm:modes', []));
+            $pools = $hasTickets ? array_values(array_unique([...$pools, $pool])) : array_values(array_diff($pools, [$pool]));
+            $this->store()->forever('mm:modes', $pools);
         });
     }
 
-    /**
-     * The mode whose queue the player is in. Redis stores plain numbers unserialized, so the id comes
-     * back as a string there (and as an int from other stores).
-     */
-    private function modeOf(int $userId): ?int
+    /** The queue the player is in ("mode:group"; a bare mode id from before groups). */
+    private function poolOf(int $userId): ?string
     {
-        $modeId = $this->store()->get($this->userKey($userId));
+        $pool = $this->store()->get($this->userKey($userId));
 
-        return is_numeric($modeId) ? (int) $modeId : null;
+        return match (true) {
+            is_string($pool) && str_contains($pool, ':') => $pool,
+            is_numeric($pool) => self::pool((int) $pool, null),
+            default => null,
+        };
     }
 
     private function userKey(int $userId): string

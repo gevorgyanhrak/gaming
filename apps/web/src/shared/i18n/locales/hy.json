@@ -581,7 +581,9 @@
       "poker_winning": "Ֆիշկաներ սեղանից",
       "admin_credit": "Ավելացրել է աջակցությունը",
       "admin_debit": "Հանել է աջակցությունը",
-      "insufficient_balance_bonus": "Անվճար բոնուս"
+      "insufficient_balance_bonus": "Անվճար բոնուս",
+      "game_stake": "Խաղադրույք",
+      "game_payout": "Խաղի շահում"
     },
     "ok": "Լավ"
   }

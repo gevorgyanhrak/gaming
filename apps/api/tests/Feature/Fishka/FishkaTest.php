@@ -113,14 +113,14 @@ it('counts days in the platform time zone', function () {
     expect(balanceOf($user))->toBe(6000);
 });
 
-it('charges the entry fee once per game, and refuses a player who cannot pay', function () {
+it('stakes the Beginner bet once per game, and refuses a player who cannot pay', function () {
     $mode = fishkaMode('checkers');
     $rich = playerWith(500);
     $poor = playerWith(499);
 
     $room = botGame($rich, $mode)->assertCreated()->json('data.id');
     expect(balanceOf($rich))->toBe(0)
-        ->and(FishkaTransaction::query()->where('user_id', $rich->id)->where('type', Type::GameEntryFee)->sole())
+        ->and(FishkaTransaction::query()->where('user_id', $rich->id)->where('type', Type::GameStake)->sole())
         ->amount->toBe(-500)
         ->reference_id->toBe($room);
 
@@ -151,8 +151,8 @@ it('gives the fee back when a waiting room is left or closed', function () {
     $room = $this->actingAs($host)->postJson('/api/v1/rooms', ['game_mode_id' => $mode->id, 'type' => 'private', 'seats' => 3])->assertCreated()->json('data');
     $this->actingAs($guest)->postJson('/api/v1/rooms/join', ['invite_code' => $room['invite_code']])->assertOk();
 
-    // Poker takes a buy-in: the whole balance up to the table's stack.
-    expect(balanceOf($host))->toBe(0)->and(balanceOf($guest))->toBe(1000);
+    // Poker takes a buy-in: the whole balance.
+    expect(balanceOf($host))->toBe(0)->and(balanceOf($guest))->toBe(0);
 
     $this->actingAs($guest)->postJson("/api/v1/rooms/{$room['id']}/leave")->assertOk();
     $this->actingAs($host)->postJson("/api/v1/rooms/{$room['id']}/leave")->assertOk();
@@ -179,17 +179,19 @@ it('gives the out-of-Fishkas bonus only when needed, and not twice within the co
     expect($user->fishkaTransactions()->where('type', Type::InsufficientBalanceBonus)->count())->toBe(2);
 });
 
-it('seats a poker player with as little as 1 Fishka, without the entry fee', function () {
+it('seats a poker player with the Beginner minimum of 100 Fishkas, refusing 99', function () {
     $mode = fishkaMode('poker');
-    $user = playerWith(1);
+    botGame(playerWith(99), $mode)->assertUnprocessable()->assertJsonPath('code', 'insufficient_fishkas')->assertJsonPath('needed', 100);
+    $user = playerWith(100);
 
     $id = botGame($user, $mode)->assertCreated()->json('data.id');
     $room = GameRoom::query()->where('public_id', $id)->sole();
     $me = $room->participants()->whereNotNull('user_id')->sole();
 
-    expect($me->stake)->toBe(1)
-        ->and($room->options['stacks'][$me->seat])->toBe(1)
-        ->and(FishkaTransaction::query()->where('user_id', $user->id)->where('type', Type::PokerBet)->sole()->amount)->toBe(-1)
+    expect($me->stake)->toBe(100)
+        ->and($room->options['stacks'][$me->seat])->toBe(100)
+        ->and($room->options['big_blind'])->toBe(1)
+        ->and(FishkaTransaction::query()->where('user_id', $user->id)->where('type', Type::PokerBet)->sole()->amount)->toBe(-100)
         ->and(FishkaTransaction::query()->where('user_id', $user->id)->where('type', Type::GameEntryFee)->exists())->toBeFalse();
 });
 
@@ -228,14 +230,16 @@ it('gives the pot to the other player when someone resigns a heads-up poker hand
         ->and(balanceOf($alice) + balanceOf($bob))->toBe(10000);
 });
 
-it('never lets a buy-in exceed the balance or the table stack', function () {
+it('brings the whole balance to the poker table, bots matching it', function () {
     $mode = fishkaMode('poker');
     $user = playerWith(3500);
 
     $id = botGame($user, $mode)->assertCreated()->json('data.id');
-    $me = GameRoom::query()->where('public_id', $id)->sole()->participants()->whereNotNull('user_id')->sole();
+    $room = GameRoom::query()->where('public_id', $id)->sole();
+    $me = $room->participants()->whereNotNull('user_id')->sole();
 
-    expect($me->stake)->toBe(1000)->and(balanceOf($user))->toBe(2500);
+    expect($me->stake)->toBe(3500)->and(balanceOf($user))->toBe(0)
+        ->and($room->options['stacks'])->toBe([3500, 3500]);
 });
 
 it('lets administrators add, deduct and set Fishkas with a reason, audited', function () {
@@ -287,7 +291,7 @@ it('lists the ledger newest first with the wallet totals', function () {
         ->assertJsonPath('data.refill.available', false);
     $this->actingAs($user)->getJson('/api/v1/me/wallet/transactions')
         ->assertOk()
-        ->assertJsonPath('data.0.type', 'game_entry_fee')
+        ->assertJsonPath('data.0.type', 'game_stake')
         ->assertJsonPath('data.0.amount', -500)
         ->assertJsonPath('data.0.balance_after', 4500)
         ->assertJsonPath('data.1.type', 'registration_bonus');

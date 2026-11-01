@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Gameplay\Rooms\PlayGroups;
 use App\Models\Game;
 use Illuminate\Http\Request;
 
@@ -20,6 +21,8 @@ class GameDetailResource extends GameResource
             // Paragraphs separated by blank lines.
             'rules' => $this->rules,
             'modes' => GameModeResource::collection($this->whenLoaded('modes')),
+            /** The play groups (levels) of this game, lowest first. */
+            'groups' => PlayGroupResource::collection(app(PlayGroups::class)->forGame($this->resource)),
         ];
     }
 }
