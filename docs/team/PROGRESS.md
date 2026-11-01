@@ -41,7 +41,7 @@ Steps (tick when done, with the commit):
       badge at 390, "You left the game.", lowest-group message, number formatting, 429 ≠ signed out — fd32039.
 - [x] 8b. PM validation: ACCEPT WITH FOLLOW-UPS (`docs/product/VALIDATION_TASK040.md`; TASK-041 staging bot
       timing, TASK-042 audit old values, owner Q6 updated: pot chip-dumping at private tables, Q8 beginner
-      blinds). UI/UX review NEEDS REVISION (`docs/design/REVIEW_TASK040.md`) → all 6 fixed — COMMIT.
+      blinds). UI/UX review NEEDS REVISION (`docs/design/REVIEW_TASK040.md`) → all 6 fixed — 288639d.
 - [ ] 8c. Final report to the owner.
 
 Owner answers (2026-11-01) for step 7: the winner takes the pot (Durak: all but the loser split it; vs
