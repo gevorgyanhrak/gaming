@@ -27,12 +27,12 @@ Steps (tick when done, with the commit):
       validation, poker blinds = group min bet, rooms carry group + stake, matchmaking queues per mode+group,
       stake games: winners share the pot / draw returns bets (ledger `game_stake`, `game_payout`) —
       b90cd47. Tests: tests/Feature/Fishka/GroupsTest.php, PlayGroupAdminTest.
-- [x] 4b. Frontend groups (COMMIT_4B): group picker on every game page (all 5 with min balance / bets, locked ones
+- [x] 4b. Frontend groups (7ce1f4a): group picker on every game page (all 5 with min balance / bets, locked ones
       greyed with "need N"), bet slider for bot/private tables, matchmaking per group, group badge + stake on
       the room page and waiting table, Play again keeps group + bet, poker shows whole-balance buy-in.
 - [x] 5. Win/lose: header shows wallet + chips at a table (`at_table`, no free bonus while chips are in play);
       game-over panel shows the net from the ledger (`?room=` filter) and flies chips in/out of the header once
-      per game (sessionStorage); poker hand wins fly from your seat, header refreshes per hand — COMMIT_4B.
+      per game (sessionStorage); poker hand wins fly from your seat, header refreshes per hand — 7ce1f4a.
 - [ ] 6. Full Poker test pass (brief §5): balances 100 / 1,000 / 5,000 / 50,000 / 500,000; all actions;
       folds; showdowns; reconnects; double-payout checks.
 - [ ] 7. (Backend done in step 4 for every game.) Verify Nardi, Checkers, Chess, Durak live per group; pot payouts.
