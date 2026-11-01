@@ -38,7 +38,7 @@ Steps (tick when done, with the commit):
       matchmaking per group, Play again — all PASS in the same QA run.
 - [x] 8a. All 8 QA bugs fixed (see the report's "Fix status" and IMPLEMENTATION_REPORT): busted poker player
       freed / bot-only table ends, header flicker, bot speed (own `game` supervisor, sweeps in-process),
-      badge at 390, "You left the game.", lowest-group message, number formatting, 429 ≠ signed out — COMMIT.
+      badge at 390, "You left the game.", lowest-group message, number formatting, 429 ≠ signed out — fd32039.
 - [ ] 8b. UI/UX review and PM validation of TASK-040; then the final report to the owner.
 
 Owner answers (2026-11-01) for step 7: the winner takes the pot (Durak: all but the loser split it; vs
