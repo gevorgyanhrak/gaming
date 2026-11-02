@@ -121,8 +121,10 @@ export default function PokerBoard({
   const betBeside = (seat: number) => {
     const angle = Math.PI / 2 + ((seat - me) * 2 * Math.PI) / seats
     const [x, y] = [Math.cos(angle), Math.sin(angle)]
-    // Seats across the top, and seats level with the board (4 seats): under the nameplate.
-    if (y < -0.7 || Math.abs(y) < 0.3) return 'top-full mt-1 left-1/2 -translate-x-1/2'
+    // Seats across the top: under the nameplate. Seats level with the board (4 seats) are at the
+    // screen's edge: under the nameplate, lined up towards the middle so the bet stays on screen.
+    if (y < -0.7) return 'top-full mt-1 left-1/2 -translate-x-1/2'
+    if (Math.abs(y) < 0.3) return `top-full mt-1 ${x < 0 ? 'left-0' : 'right-0'}`
     if (y > 0.7) return 'bottom-full mb-1 left-1/2 -translate-x-1/2'
     return `${x < 0 ? 'left-full ml-1' : 'right-full mr-1'} top-1/2 -translate-y-1/2`
   }
@@ -210,9 +212,12 @@ export default function PokerBoard({
                     style={spot(seat, 50)}
                   >
                     {bet > 0 && narrow ? (
+                      // On a phone the chip says "bet": only the amount is written (long words
+                      // in ru/hy ran off the screen); screen readers still hear "Bet N".
                       <span className={`${betChip} absolute z-20 ${betBeside(seat)}`}>
                         <ChipStack amount={bet} />
-                        {t('poker.bet', { amount: bet })}
+                        <span aria-hidden="true">{bet.toLocaleString(i18n.language)}</span>
+                        <span className="sr-only">{t('poker.bet', { amount: bet })}</span>
                       </span>
                     ) : null}
                     <div className="relative isolate">

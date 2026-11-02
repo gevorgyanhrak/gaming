@@ -53,14 +53,15 @@ export function GroupPicker({
                   className={`size-3 shrink-0 rounded-full shadow-[inset_0_-2px_0_rgb(0_0_0/0.25)] ${open ? '' : 'opacity-50'}`}
                   style={{ background: color }}
                 />
-                {/* A locked group dims its name only: what it needs stays readable (contrast). Long
-                    names (hy "Professional") wrap rather than truncate. */}
+                {/* A locked group dims its name only: what it needs stays readable (contrast). The
+                    name has the row to itself (the lock is on the "Needs" line), so long names
+                    (hy "Professional") fit whole; a still longer one wraps. */}
                 <span className={`min-w-0 leading-tight break-words ${open ? '' : 'text-muted'}`}>
                   {t(`groups.${group.slug}` as 'groups.beginner')}
                 </span>
-                {open ? null : <LockIcon className="ml-auto size-4 shrink-0 text-muted" />}
               </span>
-              <span className="text-xs text-muted">
+              <span className="flex items-center gap-1 text-xs text-muted">
+                {open ? null : <LockIcon className="size-3.5 shrink-0" />}
                 {open
                   ? t('play.groupFrom', { amount: format(group.min_balance) })
                   : t('play.groupNeed', { amount: format(group.min_balance) })}

@@ -67,6 +67,8 @@ class AppServiceProvider extends ServiceProvider
         // Board games are bursty (Nardi doubles are four quick steps plus state refreshes).
         RateLimiter::for('game', fn (Request $request) => Limit::perMinute(240)->by($byUserOrIp($request)));
         RateLimiter::for('game-actions', fn (Request $request) => Limit::perMinute(120)->by($byUserOrIp($request)));
+        // The game page reports presence every 5 s (12 a minute); room by room, so a few open tabs fit.
+        RateLimiter::for('presence', fn (Request $request) => Limit::perMinute(60)->by($byUserOrIp($request)));
         RateLimiter::for('uploads', fn (Request $request) => Limit::perMinute(10)->by($byUserOrIp($request)));
     }
 }

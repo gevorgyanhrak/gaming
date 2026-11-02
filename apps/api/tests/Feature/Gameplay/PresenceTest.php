@@ -13,6 +13,7 @@ use App\Platform\Settings\Settings;
 use Database\Seeders\GameModeSeeder;
 use Database\Seeders\GameSeeder;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\RateLimiter;
 
 beforeEach(function () {
     Queue::fake();
@@ -97,4 +98,15 @@ it('accepts presence reports only from the room’s players', function () {
 
 it('tells the SPA how long a player may be away', function () {
     $this->getJson('/api/v1/config')->assertJsonPath('data.play.abandon_after_seconds', 15);
+});
+
+it('takes presence reports even when the player has used up the game limit', function () {
+    [$room, $alice] = presenceRoom();
+    $key = md5('game'.$alice->id);
+    foreach (range(1, 240) as $hit) {
+        RateLimiter::hit($key);
+    }
+
+    $this->actingAs($alice)->getJson("/api/v1/rooms/{$room->public_id}/state")->assertTooManyRequests();
+    $this->postJson("/api/v1/rooms/{$room->public_id}/presence")->assertNoContent();
 });

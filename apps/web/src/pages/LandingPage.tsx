@@ -35,15 +35,17 @@ export function LandingPage() {
               {t('landing.subtitle')}
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
+              {/* Nothing while the account is unknown (loading or retried): a player must not be
+                  invited to sign up. */}
               {user ? (
                 <ButtonLink to="/dashboard" variant="gold" className="px-7 py-3 text-base">
                   {t('landing.playNow')}
                 </ButtonLink>
-              ) : (
+              ) : user === null ? (
                 <ButtonLink to="/register" variant="gold" className="px-7 py-3 text-base">
                   {t('landing.join')}
                 </ButtonLink>
-              )}
+              ) : null}
               <ButtonLink to="/games" variant="secondary" className="px-7 py-3 text-base">
                 {t('landing.cta')}
               </ButtonLink>

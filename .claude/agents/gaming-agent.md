@@ -75,6 +75,9 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   A person whose `chipsOf()` reaches 0 is retired in `GameActionService::record` (`retireBusted`: their
   result is a loss while the table plays on; only bots left → the game ends). The room state payload's
   `playing` turns false then, and `useRoom` refetches the room to show the panel.
+- `useCurrentUser().data` is `undefined` while unknown (loading, or a 429 being retried) and `null` for a
+  guest: only `null` may show "Log in"/"Join". Presence has its own `presence` limiter (a missed report
+  loses the game).
 - The header balance is `balance + at_table` (`at_table` includes a buy-in at a chip table that hasn't started); on `wallet.updated` the client refetches the summary (never
   patches `balance` alone — buy-ins and cash-outs move Fishkas between the two).
 - Gameplay jobs run on the `game` queue under Horizon's `supervisor-game` (sleep 0.25 s); `BotTurnJob`,

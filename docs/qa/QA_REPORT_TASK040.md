@@ -301,3 +301,140 @@ failed, 215.6 s.**
 - The browser is signed in as player2@example.test on the lobby.
 - Test accounts remain in the dev DB with their final balances: q40b100 99, q40b1k 148, q40b5k 12,001,
   q40b50k 45,706, q40b500k 0, q40mm1 43,620, q40mm2 18,000, player1 5,178, player2 1,567.
+
+## Re-run 2026-11-01
+
+- **Build:** `main` at deb7618 (QA fixes fd32039, design fixes 288639d). `make restart` was run first.
+- **Time:** about 21:40–23:35 local (17:40–19:35 UTC).
+- **Evidence:** screenshots and logs are in
+  `/private/tmp/claude-501/-Users-hrak/ba69acac-3462-45f1-8ac0-4a7dd90690c5/scratchpad/qa2/`. Re-run file
+  names start with `rr`.
+- **Method:** as in the first run. A Node API client drove the moves. Headless Chrome on CDP :9333 used a
+  50 ms header sampler and a chip-flight counter, injected before page scripts.
+- **Wins against bots:** the AI-assisted runs used the game's own Medium or Hard bot code to pick my moves
+  (`qa2/ai.mjs`, which runs `ChessBot`/`CheckersBot` in the api container).
+
+**Environment warning.** The Mac was under heavy load: load average 12–19 during testing, with one peak of
+32. Docker runs under QEMU at ~180 % CPU, and other Chrome and Playwright processes were running.
+
+Early in the run the Mac went into idle sleep three times, for about 15 minutes each: 21:57–22:07,
+22:08–22:25 and 22:44–23:00 (`pmset -g log`: "Entering Sleep state … Maintenance Sleep"). During those
+windows every container and my drivers froze. When the Mac woke, all the queued TurnTimeoutJobs ran at
+once. Two heads-up attempts and one Checkers game were spoiled this way and were repeated.
+
+From 23:00 I ran `caffeinate -dims` and there were no more sleeps. None of the sleep effects are app bugs.
+
+### Fix verification
+
+| Bug | Steps | Expected | Actual | Result | Evidence |
+|---|---|---|---|---|---|
+| BUG-1 (bot table) | player2 (60,000), UI: 5 seats, Intermediate, Easy, Start game; API all-in until bust | Result at once, room ends, a new game can start | Busted on hand 1. The API state turned `playing:false` and the panel appeared **254 ms** later: "You lost. −60,000 Fishkas", Play again. The room is `finished/completed` (bots win/loss) and there are no active rooms | PASS | qa2/rr1-result.png, qa2/rr1.log |
+| BUG-1 (6 seats, 390 px) | player2 (119,980), Professional, 5 Easy bots | same | Busted on hand 1; panel shown at once ("−119,980 Fishkas"); room finished. Then: start at 0 → 422 `insufficient_fishkas` (not "finish your game"); bonus → +5,000; **new poker game → 201** | PASS | qa2/rr5-result.png, qa2/rr5.log |
+| BUG-1 (private, 3 people) | Beginner table: player2 4,999 (browser, 390 px), q40mm1 30,000, q40mm2 30,000. player2 shoves; the others call | Busted person sees "You're out of chips."; the others play on | player2 tripled on hand 1 (14,997), then busted on hand 2. Panel: "You're out of chips. / The game goes on for the others. / −4,999 Fishkas / Back to lobby". The "Waiting for…" status is hidden. The room stayed `active` and the others kept playing | PASS | qa2/rr6-outofchips-390.png, qa2/rr6.log |
+| BUG-2 (header) | 50 ms sampler through a buy-in, a hand won, a bust, a game won and Play again | No dip to 0, no false double or −N | **Buy-in:** 60,000 / 119,980 stayed steady (no dip). **Hand won:** 60,000 → 60,020 "+20". **Bust:** 60,000 → 0 "−60,000", once. **Heads-up game won:** 60,000 → 120,000 "+60,000", once. **Play again:** stayed at 120,000; leaving that table then gave 119,980 "−20" (the posted blind, correct). No false values seen | PASS | qa2/rr1.log, qa2/rr4-1.log, qa2/rr5.log |
+| BUG-3 (bot speed) | `ptime.mjs`, 6 seats, Experienced, 120 s; load average 12.7 → 14.9 | 0.7–1.8 s | Client-side, n = 51: min 0.56 s, **median 1.15 s, p90 1.26 s**, max 21.3 s. The move log for the same room shows **every bot move 1–2 s apart** (n = 66, 1 s resolution, max 2 s). The 21 s outlier was my own GET /state stalling, not a bot; the bots' moves v57–v61 were 1 s apart in the log. Pauses between hands were 4.6–5.7 s | PASS (with that caveat) | qa2/rr-ptime.log |
+| BUG-4 (badge, 390) | Poker Professional and Checkers Experienced rooms, en/ru/hy | No overflow | The badge is on its own row: en "Experienced group · Bet 10,000" right edge 246; ru 277; hy "«Փորձառու» խումբ · Խաղադրույք 10,000" 315; poker hy "«Պրոֆեսիոնալ» խումբ · Բլայնդեր 10/20" whole. scrollWidth 390 everywhere | PASS | qa2/rr-d-checkers-*.png, qa2/rr-d-poker-*.png |
+| BUG-5 | player2 starts Nardi Casual 2,000 vs bot (390 px); the tab goes to about:blank for 30 s; reopen the room | "You left the game." | Abandoned 21 s after the start. Panel: "You left the game. A player left the game. −2,000 Fishkas" | PASS | qa2/rr-b5-left.png |
+| BUG-6 | q40b100 (99) asks for Intermediate or Master poker, and Casual Nardi. Then the lowest poker group was raised to 1,500 for one request and put back to 100 | Lowest group's minimum, formatted | "You need 100 Fishkas…" and "You need 500 Fishkas…"; with 1,500: "You need **1,500** Fishkas to play this game." (the lowest group, formatted). Group value restored (DB checked) | PASS | |
+| BUG-7 | Read poker labels | Thousands separators | en "won 44,991 chips", "+44,991", "+120,007"; ru stacks "57 980"; hy "Բանկ՝ 50 ժետոն" | PASS | qa2/rr6-outofchips-390.png, qa2/rr-d-poker-ru.png |
+| BUG-8 | 70 raw GET /me as player2 (58×200, then 429 from the 59th), then open /games/poker | Not shown as signed out | **The header no longer shows Login/Register**: a skeleton while the request is retried, and "player2" once the limit resets (about 60 s). **But** the game page body showed the guest card "Play · **Log in to play**" during the retry window. See R-1 | PARTIAL | qa2/rr-b8-during.png, qa2/rr-b8-after.png |
+
+### Design-review fixes (390 px, en/ru/hy)
+
+| Check | Actual | Result | Evidence |
+|---|---|---|---|
+| Turn status never cut | Poker: en "Your turn / 26 seconds left" (241–373), ru "Ваш ход / Осталось 24 секунды", hy "Ձեր քայլն է / Մնաց 23 վայրկյան". Checkers: the same. No element overflows | PASS | qa2/rr-d-*.png |
+| Badge on its own row on phones | Yes, below the title row (top 168), with the full group name | PASS | qa2/rr5-table.png, qa2/rr-d-poker-hy.png |
+| Locked tiles readable | "Needs 100,000" / "Нужно 100 000" / "Անհրաժեշտ է 100,000": color rgb(194,171,146) at opacity 1 on the dark tile; the lock icon is still shown | PASS | qa2/rr-d-tiles-*.png |
+| hy "Professional" tile name whole | Not truncated, but it wraps mid-word as "Պրոֆեսիոնա / լ" (one letter on the second line). See R-3 | PASS (minor) | qa2/rr-d-tiles-hy.png |
+| Out-of-chips heading short | "You're out of chips." with "The game goes on for the others." below | PASS | qa2/rr6-outofchips-390.png |
+
+### Not tested last time
+
+| Scenario | Steps | Actual | Result | Evidence |
+|---|---|---|---|---|
+| Checkers WIN vs Easy | q40mm1, Casual 3,000, my moves by `CheckersBot` Medium | Won in 25 moves: `game_payout +6,000`, `game_stake −3,000` (= bet × 2). Again with player2, Experienced 10,000: won, `game_payout +20,000` | PASS | qa2/rr-checkers.log, qa2/rr-checkers2.log |
+| Chess WIN vs Easy | q40b50k, Blitz, Casual 2,000, my moves by `ChessBot` Hard | Won in 5 moves: `game_payout +4,000` (= bet × 2). An earlier try was swept as abandoned because my synchronous helper blocked the presence timer (harness, fixed) | PASS | qa2/rr-chess.log |
+| Durak draw | 12 two-person private Durak games (q40mm1 vs q40mm2, Beginner 500), both sides playing low cards to try for a simultaneous empty hand | No draw in 12 games: 11 ended win/loss; game 7 was abandoned because of my harness's request rate (see R-4). A draw was **not reached**; its payout path stays covered by the Chess draw (first run, 4.9) | NOT REACHED | qa2/durakdraw.log |
+| "You left the game." after closing the tab | See BUG-5 | Swept about 21 s after the tab closed; panel and ledger correct | PASS | qa2/rr-b5-left.png |
+| Leave a multi-seat poker table mid-hand | Same 3-person table, after player2's bust: q40mm2 left on the flop with 1 committed; the leave was sent twice in parallel | Leaves 200 and 409. q40mm2 got **one** `poker_winning +54,994` (the stack; the 1 in the pot stayed). q40mm1 won the pot (payouts [2,0,0]) and the game ended. Chips conserved: 64,999 in, 64,999 out | PASS | qa2/rr6.log |
+
+### Regression smoke
+
+| Check | Actual | Result | Evidence |
+|---|---|---|---|
+| Register | UI /register: e-mail, username q40reg2317, password; the code came from Mailpit; Verify → /dashboard, header 5,000, `registration_bonus +5,000` | PASS | qa2/rr-reg-form.png, qa2/rr-reg-verified.png |
+| Log in and daily bonus | `daily_bonus_on` set to yesterday in the DB; log out; UI /login → /dashboard, header 6,000, `daily_login_bonus +1,000` | PASS | qa2/rr-login-daily.png |
+| 0-Fishka popup and 5,000 bonus | q40b500k (0) on /games/nardi at 390, Start game → "Your Fishkas Have Run Out! … Get 5,000 Free Fishkas". Click → "+5,000 Fishkas! Your balance is now 5,000"; header "5,000 +5,000"; ledger `insufficient_balance_bonus +5,000`. The API path also worked after the bust (refill 201) | PASS | qa2/rr-zero-popup.png, qa2/rr-zero-bonus.png |
+| Every game above Beginner | Poker Intermediate and Professional (above); Checkers Casual and Experienced (won); Chess Casual (won); Nardi Casual (BUG-5) and Experienced 10,000 vs bot (stake charged; swept by my harness, R-4); Durak Casual 4,000 with 2 bots: won with another winner, `game_payout +6,000` (= 4,000 × 3 / 2) | PASS | qa2/rr-durak.log, qa2/rr-nardi.log |
+
+### New and remaining findings
+
+**R-1 — Low — the game page shows "Log in to play" to a signed-in user while `/me` is being retried
+(BUG-8 remainder)**
+- **Steps:** use up the `account` limit for one user (more than 60 calls to `/me` within a minute), then
+  open /games/poker as that user.
+- **Expected:** a loading state.
+- **Actual:** for about 60 s the play card shows "Log in to play", which links to /login. The header shows
+  a skeleton, and the page recovers by itself.
+- **Evidence:** qa2/rr-b8-during.png.
+- **Suspected:** `apps/web/src/features/play/components/PlayPanel.tsx:107` (`if (!user)` treats "still
+  loading or retrying" as signed out; use the query status).
+
+**R-2 — Low — side-seat bet labels at a 4-seat poker table are clipped at 390 px in ru and hy**
+- **Steps:** open a poker bot table with 3 bots at 390×844 and switch to hy (or ru).
+- **Expected:** "Bet N" stays on screen.
+- **Actual:**
+  - hy: the right-hand seat's label shows only "Խաղադրույք" and the amount is off-screen. The left label
+    "Խաղադրույք 10" starts at x = 0 and overlaps the "Hand 1 · blinds 10/20" caption.
+  - ru: "Ставка 10" / "Ставка 20" touch both screen edges, with the chip icon cut.
+  - en fits ("Bet 10", "Bet 20").
+- **Evidence:** qa2/rr-d-poker-hy.png, qa2/rr-d-poker-ru.png, qa2/rr-d-poker-en.png.
+- **Suspected:** `apps/web/src/games/poker/PokerBoard.tsx` (bet chip position `spot(seat, …)` for side
+  seats has no clamp to the board width; a long hy word "Խաղադրույք"). This may predate TASK-040 — the bet
+  label strings changed in fd32039.
+
+**R-3 — Low (cosmetic) — the hy "Professional" tile name breaks mid-word**
+- **Actual:** the name shows as "Պրոֆեսիոնա / լ", with one letter on the second line.
+- **Evidence:** qa2/rr-d-tiles-hy.png.
+- **Suspected:** `apps/web/src/features/play/components/GroupPicker.tsx` (`break-words` on a single long
+  word; consider moving the lock icon to the "Needs" line or using `hyphens-auto`).
+
+**R-4 — Observation — the presence timeout is shorter than the 429 backoff**
+- Two of my API-driven games (Nardi Experienced, one Durak) were swept as abandoned. My drivers poll every
+  200–350 ms, which reaches the `game` limiter (240/min); their presence calls then waited for the 429 retry
+  and missed the 15 s window. This is a harness artifact and the normal page is far below the limit.
+- Still worth knowing: since fd32039 the SPA retries 429 with about 45 s of backoff, while
+  `matchmaking.abandon_after_seconds` is 15. Any 429 on `/presence` would cost a player the game.
+- Consider exempting `/rooms/{id}/presence` from the backoff or the limiter.
+
+### Re-run summary
+
+- **Fixes:** 7 of 8 bugs fixed and verified live. BUG-8 is partly fixed (R-1).
+- **Design review:** all 5 checks pass; the hy mid-word break is R-3.
+- **Previously untested cases:** Checkers and Chess wins against Easy pay bet × 2; "You left the game."
+  works; a mid-hand leave pays out once. The Durak draw was not reached in 12 games.
+- **Regression smoke:** registration, login with the daily bonus, the 0-Fishka popup and the 5,000 bonus,
+  and every game above Beginner all pass.
+- **New findings:** R-1, R-2 and R-3 (Low), plus observation R-4.
+
+### Re-run cleanup
+
+- There are no waiting or active rooms (DB checked).
+- Play groups are at the seed values (all 10 rows checked; the beginner poker min balance was set back to
+  100).
+- The browser is signed in as player2@example.test, in English, on the lobby.
+- `caffeinate` was stopped at the end.
+- Balances set for the re-run with `adjust(…, 'set', …, 'QA re-run')`: player2, q40b5k, q40b50k, q40mm1,
+  q40mm2, q40b1k and player1. Final balances: player2 60,000, player1 30,000, q40b100 99, q40b1k 19,890,
+  q40b5k 20,000, q40b50k 60,000, q40b500k 5,000, q40mm1 7,005, q40mm2 57,994.
+- New account: q40reg2317 (6,000).
+
+### Re-run fix status (developer, 2026-11-02)
+
+| Finding | Status | Fix | Verified |
+|---|---|---|---|
+| R-1 | Fixed | `PlayPanel` shows a placeholder while the account is unknown (loading or a retried 429), "Log in to play" only for a real guest (`null`); the landing page's Join button likewise | Play.test ("never asks a signed-in player to log in…", fails without the fix); Fishka.test now runs with the app's real retry policy |
+| R-2 | Fixed | Phone bet chips show the amount only (screen readers hear "Bet N"); side seats' chips line up towards the middle | Live hy 390, 4 seats: side bet "20" fully on screen |
+| R-3 | Fixed | The lock moved to the "Needs N" line; the name has its row to itself | Live hy 390 (balance 20,000): locked "Պրոֆեսիոնալ" whole on one line |
+| R-4 | Fixed | `/rooms/{id}/presence` has its own limit (`presence`, 60/min) instead of the shared `game` limit | PresenceTest ("takes presence reports even when the player has used up the game limit") |

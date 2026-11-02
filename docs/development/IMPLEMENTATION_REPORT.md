@@ -59,6 +59,15 @@ Design review fixes (`docs/design/REVIEW_TASK040.md`, NEEDS REVISION → all 6 f
    on for the others." below (en/ru/hy). Test: RoomPage.test.
 6. Low · hy "Professional" truncated → tile names wrap. Live: whole.
 
+QA re-run (2026-11-02): 7 of 8 bugs confirmed fixed live, BUG-8 partly; new R-1…R-4, all fixed:
+- R-1 · "Log in to play" shown to a signed-in player during a 429 → `PlayPanel` and the landing page wait
+  while the account is unknown; only a real guest (`null`) is asked to log in. Tests can now opt into the
+  app's real retry policy (`renderRoute(path, { retries: true })`).
+- R-2 · poker side-seat bets clipped at 390 (ru/hy) → phone chips show only the amount (sr-only "Bet N"),
+  side seats' chips align towards the middle.
+- R-3 · hy "Professional" broke mid-word → the lock icon moved to the "Needs" line.
+- R-4 · a 429 on presence could lose the game → presence has its own `presence` limiter (60/min).
+
 Not changed (observations for the owner/PM): beginner blinds 1/1 (formula), wallet dates not localized,
 play-group audit rows store only new values.
 

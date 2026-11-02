@@ -18,6 +18,7 @@ import {
   TicketIcon,
 } from '@/shared/ui/icons'
 import { Segmented } from '@/shared/ui/Segmented'
+import { Skeleton } from '@/shared/ui/Skeleton'
 import {
   createBotRoom,
   createPrivateRoom,
@@ -103,6 +104,17 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
   const join = useMutation({ mutationFn: () => joinRoom(code.trim()), onSuccess: toRoom })
 
   if (!game.is_playable || modes.length === 0) return null
+
+  // Not known yet (loading, or the server asked us to slow down and the request is being retried):
+  // don't tell a signed-in player to log in.
+  if (user === undefined) {
+    return (
+      <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:items-start">
+        {hero}
+        <Skeleton className="h-40 w-full rounded-2xl" />
+      </div>
+    )
+  }
 
   if (!user) {
     return (

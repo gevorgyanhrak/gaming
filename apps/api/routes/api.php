@@ -110,7 +110,10 @@ Route::prefix('v1')->name('v1.')->group(function () {
                     Route::get('{room}', [RoomController::class, 'show'])->name('show');
                     Route::get('{room}/state', [RoomController::class, 'state'])->name('state');
                     Route::post('{room}/actions', [ActionController::class, 'store'])->middleware('throttle:game-actions')->name('actions.store');
-                    Route::post('{room}/presence', [RoomController::class, 'presence'])->name('presence');
+                    // A limit of its own: a player who stops reporting loses the game, so polling the
+                    // state (the "game" limit) must never use up their presence reports.
+                    Route::post('{room}/presence', [RoomController::class, 'presence'])
+                        ->withoutMiddleware('throttle:game')->middleware('throttle:presence')->name('presence');
                     Route::post('{room}/leave', [RoomController::class, 'leave'])->name('leave');
                 });
             });

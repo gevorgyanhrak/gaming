@@ -28,7 +28,8 @@ Next without the owner: the first item of "Next".
 
 - 2026-11-01 · TASK-040 groups, poker real balance, bots — b90cd47, 7ce1f4a, d4ca892, edd04cf; QA fixes
   fd32039; design fixes 288639d. QA `docs/qa/QA_REPORT_TASK040.md`, PM `docs/product/VALIDATION_TASK040.md`,
-  design `docs/design/REVIEW_TASK040.md`, report in IMPLEMENTATION_REPORT.
+  design `docs/design/REVIEW_TASK040.md`, report in IMPLEMENTATION_REPORT. QA re-run 2026-11-02: fixes confirmed;
+  R-1…R-4 fixed — COMMIT.
 - 2026-10-31 · Admin: edit a player's details (username, email, phone, language, display name, country,
   bio; re-verification on email/phone change; audited). Fishka design-review fixes (popup focus/inert,
   cooldown state, contrast, 44 px pill). Lock timeout → 422 — 7032ada.

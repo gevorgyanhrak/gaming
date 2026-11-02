@@ -1,6 +1,6 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { http, HttpResponse } from 'msw'
+import { delay, http, HttpResponse } from 'msw'
 import { describe, expect, it, vi } from 'vitest'
 import {
   gameFixture,
@@ -45,6 +45,27 @@ describe('Playing a game', () => {
       '/login?next=%2Fgames%2Ftictactoe',
     )
   })
+
+  it('never asks a signed-in player to log in while the server asks to slow down', async () => {
+    serveGame()
+    let calls = 0
+    server.use(
+      http.get('*/api/v1/me', async () => {
+        if (++calls > 1) return HttpResponse.json({ data: userFixture() })
+        await delay(1500)
+        return HttpResponse.json({ message: 'Too Many Attempts.' }, { status: 429 })
+      }),
+    )
+    renderRoute('/games/tictactoe', { retries: true })
+
+    // Until the request (and its retry) succeeds the player is unknown, not a guest.
+    await screen.findByRole('heading', { name: 'Tic-tac-toe' })
+    expect(screen.queryByRole('link', { name: 'Log in to play' })).not.toBeInTheDocument()
+    expect(
+      await screen.findByRole('button', { name: 'Start game' }, { timeout: 6000 }),
+    ).toBeInTheDocument()
+    expect(calls).toBe(2)
+  }, 10_000)
 
   it('starts a bot game at the chosen level', async () => {
     serveGame()

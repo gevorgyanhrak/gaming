@@ -63,7 +63,7 @@ describe('Fishkas', () => {
           : HttpResponse.json({ data: userFixture({ id: 1 }) }),
       ),
     )
-    renderRoute('/games/tictactoe')
+    renderRoute('/games/tictactoe', { retries: true })
 
     expect(
       await screen.findByRole('link', { name: /^Your Fishkas: 5,000/ }, { timeout: 4000 }),
