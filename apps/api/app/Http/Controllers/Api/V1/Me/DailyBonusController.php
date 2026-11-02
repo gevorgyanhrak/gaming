@@ -42,6 +42,10 @@ class DailyBonusController extends Controller
         /** @var User $user */
         $user = $request->user();
         $entry = $wallets->claimDaily($user);
+        // Only a bonus this request added counts (a repeat may find today's existing ledger entry).
+        if ($entry !== null && ! $entry->wasRecentlyCreated) {
+            $entry = null;
+        }
         $status = $wallets->dailyStatus($user);
         $data = [
             /** @var int */

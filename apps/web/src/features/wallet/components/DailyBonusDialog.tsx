@@ -220,17 +220,17 @@ function DayTile({
         <span aria-label={t('daily.collected')} className="text-lg leading-none font-black">
           ✓
         </span>
+      ) : double ? (
+        // The double day: "×2" where the others show a chip.
+        <span className="flex h-5 items-center rounded-full bg-[#e0483e] px-1.5 text-xs font-black text-white sm:h-6 sm:text-sm">
+          ×2
+        </span>
       ) : (
         <FishkaIcon className="size-5 sm:size-6" />
       )}
       <span className="max-w-full truncate text-[0.65rem] font-bold tabular-nums sm:text-xs">
         {amount}
       </span>
-      {double ? (
-        <span className="absolute top-0.5 right-4 rounded-full bg-[#e0483e] px-1 text-[0.6rem] font-black text-white">
-          ×2
-        </span>
-      ) : null}
     </li>
   )
 }
@@ -240,7 +240,7 @@ function Chest({ open }: { open: boolean }) {
   return (
     <svg viewBox="0 0 120 100" className="h-24 w-28 sm:h-28 sm:w-32" aria-hidden="true">
       <defs>
-        <radialGradient id="chest-glow" cx="50%" cy="60%" r="60%">
+        <radialGradient id="chest-glow" cx="50%" cy="50%" r="60%">
           <stop offset="0" stopColor="#ffe9a8" stopOpacity="0.95" />
           <stop offset="1" stopColor="#ffe9a8" stopOpacity="0" />
         </radialGradient>
@@ -257,30 +257,17 @@ function Chest({ open }: { open: boolean }) {
         <>
           <ellipse
             cx="60"
-            cy="48"
-            rx="56"
-            ry="40"
+            cy="44"
+            rx="58"
+            ry="42"
             fill="url(#chest-glow)"
             className="motion-safe:animate-pulse"
           />
-          {/* Lid, tipped back. */}
-          <path
-            d="M18 40 L28 8 H92 L102 40 Z"
-            fill="url(#chest-wood)"
-            stroke="#4a160d"
-            strokeWidth="2"
-          />
-          <path d="M28 8 H92" stroke="url(#chest-brass)" strokeWidth="4" />
-          {/* Chips inside. */}
-          <g stroke="#2b1408" strokeWidth="1.5">
-            <ellipse cx="44" cy="46" rx="11" ry="5" fill="#e6e1d3" />
-            <ellipse cx="60" cy="44" rx="11" ry="5" fill="#c73a2c" />
-            <ellipse cx="76" cy="46" rx="11" ry="5" fill="#2f6fb3" />
-          </g>
+          {/* Lid, tipped back behind the box. */}
+          <path d="M20 42 L30 6 H90 L100 42 Z" fill="#5a1a10" stroke="#3a0f08" strokeWidth="2" />
+          <path d="M30 6 H90" stroke="url(#chest-brass)" strokeWidth="4" />
         </>
-      ) : (
-        <path d="M18 42 Q60 20 102 42 Z" fill="url(#chest-wood)" stroke="#4a160d" strokeWidth="2" />
-      )}
+      ) : null}
       {/* Body. */}
       <rect
         x="16"
@@ -292,11 +279,10 @@ function Chest({ open }: { open: boolean }) {
         stroke="#4a160d"
         strokeWidth="2"
       />
-      <rect x="16" y="42" width="88" height="7" fill="url(#chest-brass)" />
       <rect x="16" y="84" width="88" height="6" fill="url(#chest-brass)" />
       <rect
         x="52"
-        y="54"
+        y="56"
         width="16"
         height="18"
         rx="3"
@@ -304,7 +290,27 @@ function Chest({ open }: { open: boolean }) {
         stroke="#6b4a12"
         strokeWidth="1.5"
       />
-      <circle cx="60" cy="62" r="2.5" fill="#4a3410" />
+      <circle cx="60" cy="64" r="2.5" fill="#4a3410" />
+      {open ? (
+        // Chips heaped over the rim.
+        <g stroke="#2b1408" strokeWidth="1.5">
+          <ellipse cx="38" cy="44" rx="12" ry="5" fill="#e6e1d3" />
+          <ellipse cx="60" cy="41" rx="12" ry="5" fill="#c73a2c" />
+          <ellipse cx="82" cy="44" rx="12" ry="5" fill="#2f6fb3" />
+          <ellipse cx="49" cy="36" rx="11" ry="4.5" fill="#d9b44a" />
+          <ellipse cx="71" cy="36" rx="11" ry="4.5" fill="#e6e1d3" />
+        </g>
+      ) : (
+        <>
+          <path
+            d="M16 42 Q60 22 104 42 Z"
+            fill="url(#chest-wood)"
+            stroke="#4a160d"
+            strokeWidth="2"
+          />
+          <rect x="16" y="42" width="88" height="7" fill="url(#chest-brass)" />
+        </>
+      )}
     </svg>
   )
 }
