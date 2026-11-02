@@ -80,7 +80,7 @@ export default function CheckersBoard({ state, onAction, pending, players }: Boa
       style={boardStyle}
     >
       {state.seats_to_act.length > 0 ? (
-        <p className="text-center text-xl font-semibold sm:text-3xl">
+        <p className="hidden text-center text-xl font-semibold sm:block sm:text-3xl">
           {view.turn === 0 ? t('checkers.moveWhite') : t('checkers.moveBlack')}
         </p>
       ) : null}

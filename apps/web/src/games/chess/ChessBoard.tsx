@@ -104,7 +104,7 @@ export default function ChessBoard({ state, onAction, pending, players }: BoardP
         style={boardStyle}
       >
         {state.seats_to_act.length > 0 ? (
-          <p className="text-center text-xl font-semibold sm:text-3xl">
+          <p className="hidden text-center text-xl font-semibold sm:block sm:text-3xl">
             {view.turn === 0 ? t('chess.moveWhite') : t('chess.moveBlack')}
           </p>
         ) : null}

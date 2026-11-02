@@ -238,3 +238,72 @@ under the bar, `pointer-events` on it only), so the table doesn't move.
 | 2 | Medium: Durak bubbles over the trump, my role and status | Fixed | Durak marks the deck, discard, my role, my status and my hand `data-reaction-avoid`; bubbles avoid those and other bubbles' landing spots; when nothing is clear (a crowded phone) one bubble at a time on the spot covering least | Durak 1440: two bubbles left of my seat, all clear; Durak 390: one bubble above my seat, trump and count visible, role/status/hand clear; Chess and Poker: two bubbles, no overlap |
 | 3 | Low: opening the chat pushes the table down | Fixed | The opened chat lies over the table (the bar keeps its place); Escape closes it | Board moves ≤ 2 px on open, in Chess and Checkers at 1440 and 390 |
 
+
+---
+
+## Re-review 2 — 2026-11-02 (main at `a21a698`)
+
+UI/UX agent. Measured live with two real players in isolated sessions (`qa2/rv43b.mjs`, run one at a
+time with `cleanup.mjs` between runs). Screenshots: `scratchpad/review/t43rr-*`, the latest of each
+name.
+
+### Final verdict: **APPROVED**, with one follow-up
+
+All three re-review findings are fixed, and the smoke test in all five games passed. The follow-up
+(phone board size) is a layout trade-off of the fix, not a TASK-043 defect. It goes to the backlog.
+
+### Re-review findings, verified
+
+**1 · Board fit — fixed.** "Bottom" is the board frame's bottom; the visible bottom is the tab bar
+at 390 and the viewport at 1440.
+
+| Game | Size | Lang | Chat closed: frame / squares bottom | Chat open | Visible bottom |
+|---|---|---|---|---|---|
+| Chess | 1440×900 | en | 888 / 876 | 888 / 876 | 900 ✓ |
+| Chess | 1440×900 | hy | 888 / 876 | 888 / 876 | 900 ✓ |
+| Chess | 390×844 | en | 774 / 766 | 774 / 766 | 786 ✓ |
+| Chess | 390×844 | hy | **792** / 784 | 790 / 782 | 786 (frame 6 px under, squares clear) |
+| Checkers | 1440×900 | en / hy | 888 / 876 | 888 / 876 | 900 ✓ |
+| Checkers | 390×844 | en / hy | 774 / 766 | 774 / 766 | 786 ✓ |
+
+**2 · Durak bubbles — fixed.**
+- 1440: two bubbles to the left of my avatar; none touches the deck, trump, my role, the status hint
+  or the hand (`t43rr-durak-1440-en-A-bubbles.png`).
+- 390: a single bubble on the least-covering spot. It touches only the bottom corner of the deck
+  group's box; the trump, role, status and hand are clear (`t43rr-durak-390-en-A-bubbles.png`).
+- Chess, Checkers, Nardi and Poker (390 and 1440, en and hy) show two bubbles beside my seat with
+  0 hits on clocks, the board, bets, other seats, the header or the turn badge.
+
+**3 · Opened chat — fixed.** The opened log lies over the area under the bar. The board moves at most
+2 px in every game. Durak and Poker still fit at 390 when the chat is open (stage bottom 774 / 750,
+under 786). Escape closes it (`aria-expanded` back to false).
+
+### Smoke test, all five games at 390 (and Chess, Checkers, Durak at 1440)
+
+- **Flights:** ❤️ A→B and 😂 B→A through the UI went the right way on both screens every time.
+  Examples: Nardi 390, from (73,319) to (212,302); Poker 390, from the sender's seat (325,432) to mine
+  (195,709); Durak 1440, from (624,372) to (219,675).
+- **Chat lines:** the one-tap message appeared on both screens; both logs held the same entries.
+- **No regressions:** Nardi still fits (squares 429–729 at 390), Durak's own fitting holds (stage
+  300–774), Poker fits (352–752). No horizontal scroll anywhere.
+
+### Follow-up (not blocking) — Medium: phone boards shrank below 44 px squares
+
+| | |
+|---|---|
+| Seen | To fit under the chat bar, the Chess and Checkers boards at 390 dropped from about 44 px squares (before TASK-043) to **33–36 px**: Chess en 278 px of squares, hy 264 px; Checkers hy 288 px. In hy the frame's bottom edge sits 6 px under the tab bar (`t43rr-chess-390-hy-A-top.png`). These are below our 44 px phone target (WCAG 2.5.8's 24 px is still met) |
+| Fix (new backlog item) | Win the height back above the board on phones instead of shrinking it. Put the player chips and the closed chat bar in one row, or move the bar's 😊/💬 into the room header row and show the latest line only when opened. Drop the "Move: White" heading on phones (the header badge says whose turn it is). **Check:** at 390 in en and hy, Chess and Checkers squares ≥ 44 px and the frame's bottom ≤ the tab bar top |
+
+### Clean-up
+
+0 open rooms (checked in the database). The main browser tab is on `/dashboard` as player2, in
+English. No code was changed.
+
+## Re-review 2 follow-up (developer, 2026-11-02)
+
+Phone squares had shrunk to 33–36 px under the chat bar. Height won back above the board on phones
+instead: the "Move: White/Black" heading is hidden below `sm` (the room header already says whose turn it
+is), both player chips fit one row (no "(you)", names capped on phones), and the room page uses
+`space-y-4 py-5` below `sm`. Measured at 390×844: Chess board 396–752 px, Checkers 354–710 px (tab bar at
+786), both 356 px wide (the full content width) → squares ≈ 42.5 px, as before the chat bar.
+

@@ -10,52 +10,20 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
-**TASK-043 · Emoji & Quick Messages** — brief: `docs/product/briefs/TASK-043-emoji-quick-messages.md`
-(owner, 2026-11-02, verbatim). Status: in progress (started 2026-11-02). Design: ADR 0017.
-
-Decisions taken autonomously (brief allows; no free text = no moderation needed):
-- Only catalog emojis and predefined messages (keys; each viewer reads them in their own language).
-- Ephemeral: not stored in the DB; the room keeps its last 50 reactions for 3 hours in the state store
-  (the table chat's history; catch-up for polling and reconnecting pages); ids are ULIDs, deduped by id.
-- Delivered like room updates: `room.reaction` on each person's private channel `user.{id}`.
-- Allowed for the room's people while it waits, plays, and up to 10 minutes after it ends; a reaction is
-  to one seat or to everyone; bots never send. Rate limit `reactions` (3/s, 40/min). Admin switch
-  `reactions.enabled`. Viewers can mute reactions (local).
-
-Steps (tick when done, with the commit):
-- [x] 1. Backend: `Gameplay/Reactions` (ReactionCatalog, RoomReactions), event `RoomReactionSent`,
-      `GET /reactions`, `POST/GET /rooms/{room}/reactions`, limiter, setting + admin toggle, tests, types.
-- Owner, 2026-11-02 (screenshot of a poker table with a chat box): a **table chat panel** under the board
-  (log: time · name · message/emoji; the emoji button and quick messages live in it). Still no free typing
-  (would need moderation: filter, reports, mute → owner question). So the room keeps its last 50 reactions
-  for 3 hours (chat history after a reload); only fresh ones (≤ 8 s) animate.
-- [x] 2. Frontend: table chat panel (log + emoji/quick-message buttons); `features/reactions` (catalog query, useRoomReactions: socket + poll + dedupe),
-      ReactionPicker (emoji tabs, search, recents, messages, recipient), ReactionLayer (flight
-      animations), seat anchors (`data-seat-anchor`) in PlayerList, WaitingTable, Poker, Durak; RoomPage
-      button; en/ru/hy; tests.
-- [x] 3. Live check with two real browsers (isolated contexts, real sessions): A→B and B→A in Chess, 3-seat
-      Poker and Durak, flights in the right direction, chat on both sides; 6 simultaneous sends from two
-      players all delivered once; leaving and coming back shows missed ones without replay; Reverb stopped →
-      polling delivered in < 1 s; 1440 and 390 without horizontal scroll. Fixes: picker category row
-      collapsed (shrink-0); a send is retried once with the same client id (a 502 under local php-fpm
-      overload, 5 workers) — 1d9dcef.
-- [x] 4a. QA (44/46, 2 Low → fixed 2967f6d); UI/UX review (NEEDS REVISION, 7 items → fixed 54a3b6b);
-      PM validation ACCEPT WITH FOLLOW-UPS (docs/product/VALIDATION_TASK043.md; owner Q9–Q11; TASK-050
-      mute one player = owner's call, not started).
-- [ ] 4b. Independent re-check of the 7 design fixes (UI/UX re-review + smoke in all 5 games at 390/1440;
-      PM's TASK-049); fix; push; report to the owner. Then TASK-043 is done.
-
-## Next
-
-**Owner rule (2026-11-02): strict sequential order.** Finish one task completely (implemented, tested,
-verified, pushed) before starting the next; never two at once; nothing partial. Order = the order the
-owner gave them: TASK-043 (Now) → 044 → 045 → 046 → 047 → 048. Older items below those come after.
+**TASK-044** — not started yet; first step: the plan (brief, decisions, steps) written here.
 
 - **TASK-044 · Daily bonus popup with a login streak** (owner, 2026-11-02, after TASK-043; reference
   screenshot: a "Daily bonus" dialog with a row of days 1…5, the current day highlighted, growing rewards
   for consecutive days, "one day to go until your double bonus", an open chest with the amount). Build our
   own art in the card-club look (no copied assets); backend owns the streak and amounts (settings), today's
   daily +1,000 becomes day-based; popup once a day after login; en/ru/hy. Plan it like TASK-043.
+
+## Next
+
+**Owner rule (2026-11-02): strict sequential order.** Finish one task completely (implemented, tested,
+verified, pushed) before starting the next; never two at once; nothing partial. Order = the order the
+owner gave them: TASK-043 (done) → 044 (Now) → 045 → 046 → 047 → 048. Older items below those come after.
+
 - **TASK-045 · Poker table redesign like the owner's screenshot** (2026-11-02): wide oval felt with a
   thick rail on a dark patterned background, seats with avatar frames around the rail (empty seats as
   "+"), dealer at the top, table info (name, blinds) at the bottom left, chat panel below (done in
@@ -89,6 +57,10 @@ Later (older backlog):
 
 ## Done (recent)
 
+- 2026-11-02 · TASK-043 Emoji & Quick Messages + table chat (ADR 0017) — 491b624, 1d9dcef, 2967f6d, 54a3b6b,
+  a21a698, COMMIT. QA `docs/qa/QA_REPORT_TASK043.md` (44/46 → fixed), design review APPROVED after two
+  revisions (`docs/design/REVIEW_TASK043.md`), PM ACCEPT WITH FOLLOW-UPS (`docs/product/VALIDATION_TASK043.md`:
+  owner questions 9–11, TASK-050 mute one player = owner's call).
 - 2026-11-01 · TASK-040 groups, poker real balance, bots — b90cd47, 7ce1f4a, d4ca892, edd04cf; QA fixes
   fd32039; design fixes 288639d. QA `docs/qa/QA_REPORT_TASK040.md`, PM `docs/product/VALIDATION_TASK040.md`,
   design `docs/design/REVIEW_TASK040.md`, report in IMPLEMENTATION_REPORT. QA re-run 2026-11-02: fixes confirmed;

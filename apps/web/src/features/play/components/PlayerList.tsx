@@ -37,14 +37,15 @@ export function PlayerList({
             aria-current={toAct ? 'step' : undefined}
           >
             <Avatar url={player.avatar_url} name={player.name ?? '?'} size="sm" />
+            {/* Narrow names and no "(you)" on phones: both players fit in one row above the board. */}
             <span
-              className="min-w-0 truncate text-sm font-medium"
+              className="max-w-[6.5rem] min-w-0 truncate text-sm font-medium sm:max-w-none"
               title={player.username ? `@${player.username}` : undefined}
             >
               {player.name}
             </span>
             {player.seat === mySeat ? (
-              <span className="text-xs text-muted">({t('room.you')})</span>
+              <span className="hidden text-xs text-muted sm:inline">({t('room.you')})</span>
             ) : null}
             {player.is_bot ? <Badge>{t('room.bot')}</Badge> : null}
             {clocks && clocks[player.seat] != null ? (

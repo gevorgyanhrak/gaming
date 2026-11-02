@@ -120,7 +120,7 @@ export function RoomPage() {
     0
 
   return (
-    <Container className="space-y-6 py-8">
+    <Container className="space-y-4 py-5 sm:space-y-6 sm:py-8">
       <title>{tabTitle}</title>
       {/* One row on every width: the game's name stays whole and a long status (a name, another
           language) truncates instead of wrapping, so the table below doesn't move. On a phone the
