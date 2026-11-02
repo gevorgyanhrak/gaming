@@ -82,20 +82,21 @@ it('gives 5,000 Fishkas once when an account is created, and no daily bonus that
         ->and($user->fishkaTransactions()->pluck('type')->all())->toBe([Type::RegistrationBonus]);
 });
 
-it('gives the daily bonus on the first sign-in of each day only', function () {
+it('gives the daily bonus when it is collected, once a day, not on sign-in', function () {
     $this->travelTo(now()->setTimezone('Asia/Yerevan')->setTime(10, 0));
     $user = User::factory()->create(['email' => 'daily@example.com']);
     app(FishkaWallets::class)->open($user);
-    $login = fn () => $this->postJson('/api/v1/auth/login', ['login' => 'daily@example.com', 'password' => 'password1'])->assertOk();
+    $this->postJson('/api/v1/auth/login', ['login' => 'daily@example.com', 'password' => 'password1'])->assertOk();
 
-    $login();
-    $login();
-    expect(balanceOf($user))->toBe(5000);
+    // The day the account opens has the welcome bonus instead.
+    $this->getJson('/api/v1/me/daily-bonus')->assertOk()->assertJsonPath('data.claimed', true);
 
     $this->travel(1)->days();
-    $login();
-    $login();
     $this->getJson('/api/v1/me')->assertOk();
+    expect(balanceOf($user))->toBe(5000);
+
+    $this->postJson('/api/v1/me/daily-bonus')->assertCreated()->assertJsonPath('data.collected', 1000)->assertJsonPath('data.day', 1);
+    $this->postJson('/api/v1/me/daily-bonus')->assertOk()->assertJsonPath('data.collected', 0);
 
     expect(balanceOf($user))->toBe(6000)
         ->and($user->fishkaTransactions()->where('type', Type::DailyLoginBonus)->count())->toBe(1);
@@ -108,7 +109,7 @@ it('counts days in the platform time zone', function () {
     app(FishkaWallets::class)->open($user);
 
     $this->travelTo(now()->utc()->setTime(21, 0));
-    $this->actingAs($user)->getJson('/api/v1/me')->assertOk();
+    $this->actingAs($user)->postJson('/api/v1/me/daily-bonus')->assertCreated();
 
     expect(balanceOf($user))->toBe(6000);
 });

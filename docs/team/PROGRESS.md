@@ -10,7 +10,23 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
-**TASK-044** — not started yet; first step: the plan (brief, decisions, steps) written here.
+**TASK-044 · Daily bonus popup with a login streak** — started 2026-11-02 (owner's request and reference
+below). Decisions (autonomous, owner rule: Fishkas are free):
+- 5 days; amounts are settings: `fishka.daily_bonus` (day 1, 1,000) and `fishka.daily_bonus_day_2…5`
+  (1,500 / 2,000 / 2,500 / 5,000; day 5 = "double"). Consecutive days advance (Asia/Yerevan dates); day 5
+  repeats while the streak holds; a missed day starts again at day 1.
+- Claimed in the popup ("Collect"), no longer credited silently on login/GET /me; once per day (row lock +
+  idempotency key `daily:{uid}:{date}` as before); `fishka_wallets.daily_streak` (additive migration).
+- API: `GET /me/daily-bonus` (today's day, amounts, claimed?), `POST /me/daily-bonus` (claim; idempotent).
+- Popup once per visit while unclaimed (our own chest art, gold/green club look), chips fly to the
+  header balance; a "Daily bonus" entry in the wallet page; en/ru/hy.
+
+Steps:
+- [x] 1. Backend: migration, settings + admin fields, FishkaWallets::dailyStatus/claimDaily(streak),
+      endpoints, no auto-claim, tests (DailyBonusTest), types — COMMIT.
+- [ ] 2. Frontend: DailyBonusDialog, wallet entry, flight, strings, tests.
+- [ ] 3. Live check (claim, streak days 1→5 via dates, reset, double claim, 390/1440, ru/hy).
+- [ ] 4. QA, UI/UX review, PM validation; fix; push; report.
 
 - **TASK-044 · Daily bonus popup with a login streak** (owner, 2026-11-02, after TASK-043; reference
   screenshot: a "Daily bonus" dialog with a row of days 1…5, the current day highlighted, growing rewards

@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\GameController;
 use App\Http\Controllers\Api\V1\MatchmakingController;
 use App\Http\Controllers\Api\V1\Me\AvatarController;
 use App\Http\Controllers\Api\V1\Me\ContactController;
+use App\Http\Controllers\Api\V1\Me\DailyBonusController;
 use App\Http\Controllers\Api\V1\Me\HistoryController;
 use App\Http\Controllers\Api\V1\Me\MeController;
 use App\Http\Controllers\Api\V1\Me\PasswordController;
@@ -84,6 +85,8 @@ Route::prefix('v1')->name('v1.')->group(function () {
                 Route::get('wallet', [WalletController::class, 'show'])->name('wallet.show');
                 Route::get('wallet/transactions', [WalletController::class, 'transactions'])->name('wallet.transactions');
                 Route::post('wallet/refill', [WalletController::class, 'refill'])->middleware('throttle:verification')->name('wallet.refill');
+                Route::get('daily-bonus', [DailyBonusController::class, 'show'])->name('daily-bonus.show');
+                Route::post('daily-bonus', [DailyBonusController::class, 'store'])->name('daily-bonus.store');
             });
 
         Route::get('stats/online', OnlineController::class)->middleware('throttle:lookups')->name('stats.online');

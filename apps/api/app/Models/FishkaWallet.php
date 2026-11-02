@@ -15,11 +15,12 @@ use Illuminate\Support\Carbon;
  * @property int $total_earned
  * @property int $total_spent
  * @property Carbon|null $daily_bonus_on
+ * @property int $daily_streak Day (1–5) of the last daily bonus taken; 0 before the first.
  * @property Carbon|null $refilled_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
-#[Fillable(['user_id', 'balance', 'total_earned', 'total_spent', 'daily_bonus_on', 'refilled_at'])]
+#[Fillable(['user_id', 'balance', 'total_earned', 'total_spent', 'daily_bonus_on', 'daily_streak', 'refilled_at'])]
 class FishkaWallet extends Model
 {
     protected $primaryKey = 'user_id';
@@ -36,6 +37,7 @@ class FishkaWallet extends Model
             'total_earned' => 'integer',
             'total_spent' => 'integer',
             'daily_bonus_on' => 'date',
+            'daily_streak' => 'integer',
             'refilled_at' => 'datetime',
         ];
     }

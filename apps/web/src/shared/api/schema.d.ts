@@ -116,6 +116,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me/daily-bonus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Today's daily bonus: the streak's day (1–5), what each day gives, and whether today's was taken */
+        get: operations["v1.me.daily-bonus.show"];
+        put?: never;
+        /**
+         * Collect today's daily bonus: 201 with `collected` (the Fishkas added) and the new status; a
+         *     repeat the same day collects nothing (200, `collected` 0)
+         */
+        post: operations["v1.me.daily-bonus.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/games": {
         parameters: {
             query?: never;
@@ -266,10 +287,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * The authenticated user's account. The first visit of the day (a session that is still signed in
-         *     counts as signing in) brings the daily Fishka bonus
-         */
+        /** The authenticated user's account. (The daily Fishka bonus is collected with POST /me/daily-bonus.) */
         get: operations["v1.me.show"];
         put?: never;
         post?: never;
@@ -399,8 +417,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * The room's recent emojis and messages after sequence number `after` (for pages without a live
-         *     connection, and to catch up after a reconnect). Kept for two minutes
+         * The room's emojis and messages after sequence number `after`, oldest first: the table chat's
+         *     history (the last 50, for up to 3 hours), and catch-up for pages without a live connection
          */
         get: operations["v1.rooms.reactions.index"];
         put?: never;
@@ -1355,6 +1373,91 @@ export interface operations {
                     };
                 };
             };
+        };
+    };
+    "v1.me.daily-bonus.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            /** @description Today's day of the streak, 1–5. */
+                            day: number;
+                            /** @description Whether today's bonus was already collected. */
+                            claimed: boolean;
+                            /** @description What today's bonus gives. */
+                            amount: number;
+                            days: {
+                                day: number;
+                                amount: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.me.daily-bonus.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            day: number;
+                            claimed: boolean;
+                            amount: number;
+                            days: {
+                                day: number;
+                                amount: number;
+                            }[];
+                            /** @description The Fishkas this request added (0 for a repeat). */
+                            collected: number;
+                        };
+                    };
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            day: number;
+                            claimed: boolean;
+                            amount: number;
+                            days: {
+                                day: number;
+                                amount: number;
+                            }[];
+                            /** @description The Fishkas this request added (0 for a repeat). */
+                            collected: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
         };
     };
     "v1.games.index": {

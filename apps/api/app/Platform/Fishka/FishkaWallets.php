@@ -69,9 +69,29 @@ class FishkaWallets
         });
     }
 
+    /** Days in the daily bonus's streak; the last one repeats while the streak holds. */
+    public const DAILY_DAYS = 5;
+
     /**
-     * The daily bonus, on the first sign-in or visit of each calendar day (in the platform's Fishka
-     * time zone). Null when today's bonus was already given.
+     * Today's daily bonus (calendar days in the platform's Fishka time zone): which day of the streak it
+     * is (days in a row raise it; a missed day starts again at day 1; the last day repeats), what each
+     * day gives, and whether today's was already taken.
+     *
+     * @return array{day: int, claimed: bool, amount: int, days: list<array{day: int, amount: int}>}
+     */
+    public function dailyStatus(User $user): array
+    {
+        $wallet = $this->wallet($user);
+        $claimed = $wallet->daily_bonus_on?->toDateString() === $this->today();
+        $day = $claimed ? max(1, $wallet->daily_streak) : $this->nextDailyDay($wallet);
+        $days = array_map(fn (int $d) => ['day' => $d, 'amount' => $this->dailyAmount($d)], range(1, self::DAILY_DAYS));
+
+        return ['day' => $day, 'claimed' => $claimed, 'amount' => $this->dailyAmount($day), 'days' => $days];
+    }
+
+    /**
+     * Take today's daily bonus: once a day, for the streak's day. Null when today's was already taken
+     * (a repeat, or two at once: the wallet row is locked and the ledger key is per day).
      */
     public function claimDaily(User $user): ?FishkaTransaction
     {
@@ -85,12 +105,29 @@ class FishkaWallets
             if ($wallet->daily_bonus_on?->toDateString() === $today) {
                 return null;
             }
-            $wallet->forceFill(['daily_bonus_on' => $today])->save();
+            $day = $this->nextDailyDay($wallet);
+            $wallet->forceFill(['daily_bonus_on' => $today, 'daily_streak' => $day])->save();
 
-            return $this->apply($user->id, (int) $this->settings->get('fishka.daily_bonus'), Type::DailyLoginBonus, [
+            return $this->apply($user->id, $this->dailyAmount($day), Type::DailyLoginBonus, [
+                'description' => "Daily bonus, day {$day}",
                 'idempotency_key' => "daily:{$user->id}:{$today}",
             ]);
         });
+    }
+
+    /** The streak's day for a bonus taken today: one more after yesterday's, else day 1. */
+    private function nextDailyDay(FishkaWallet $wallet): int
+    {
+        $yesterday = Carbon::parse($this->today())->subDay()->toDateString();
+
+        return $wallet->daily_bonus_on?->toDateString() === $yesterday
+            ? min(self::DAILY_DAYS, $wallet->daily_streak + 1)
+            : 1;
+    }
+
+    private function dailyAmount(int $day): int
+    {
+        return (int) $this->settings->get($day === 1 ? 'fishka.daily_bonus' : "fishka.daily_bonus_day_{$day}");
     }
 
     /**

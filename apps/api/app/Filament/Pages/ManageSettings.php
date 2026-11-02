@@ -119,9 +119,17 @@ class ManageSettings extends Page
                         TextInput::make('fishka.registration_bonus')->label('Welcome bonus')
                             ->numeric()->integer()->required()->minValue(0)->maxValue(1000000)
                             ->helperText('Given once, when the account is created.'),
-                        TextInput::make('fishka.daily_bonus')->label('Daily bonus')
+                        TextInput::make('fishka.daily_bonus')->label('Daily bonus, day 1')
                             ->numeric()->integer()->required()->minValue(0)->maxValue(1000000)
-                            ->helperText('Given on the first sign-in or visit of each day.'),
+                            ->helperText('Collected once a day. Days in a row raise it (days 2–5 below); a missed day starts again at day 1; day 5 repeats.'),
+                        TextInput::make('fishka.daily_bonus_day_2')->label('Daily bonus, day 2')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(1000000),
+                        TextInput::make('fishka.daily_bonus_day_3')->label('Daily bonus, day 3')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(1000000),
+                        TextInput::make('fishka.daily_bonus_day_4')->label('Daily bonus, day 4')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(1000000),
+                        TextInput::make('fishka.daily_bonus_day_5')->label('Daily bonus, day 5 and on')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(1000000),
                         TextInput::make('fishka.entry_fee')->label('Game entry fee')
                             ->numeric()->integer()->required()->minValue(0)->maxValue(1000000)
                             ->helperText('Charged once per game, when the seat is taken. Poker uses a buy-in instead.'),
