@@ -1,3 +1,4 @@
+import { isApiError } from '@/shared/api/errors'
 import { apiRequest } from '@/shared/api/http'
 import type { ApiResponse } from '@/shared/api/types'
 import { randomId } from '@/shared/lib/uuid'
@@ -20,13 +21,26 @@ export const fetchRoomReactions = (room: string, after: number | null, signal?: 
     { signal },
   ).then((r) => r.data)
 
-export const sendReaction = (
+/**
+ * Sends once per call: a failed attempt (network, server busy) is retried once with the same client id,
+ * which the server delivers only once.
+ */
+export async function sendReaction(
   room: string,
   kind: ReactionKind,
   value: string,
   toSeat: number | null,
-) =>
-  apiRequest<ApiResponse<'v1.rooms.reactions.store'>>(
-    `/api/v1/rooms/${encodeURIComponent(room)}/reactions`,
-    { method: 'POST', body: { client_id: randomId(), kind, value, to_seat: toSeat } },
-  ).then((r) => r.data)
+) {
+  const body = { client_id: randomId(), kind, value, to_seat: toSeat }
+  const post = () =>
+    apiRequest<ApiResponse<'v1.rooms.reactions.store'>>(
+      `/api/v1/rooms/${encodeURIComponent(room)}/reactions`,
+      { method: 'POST', body },
+    ).then((r) => r.data)
+  try {
+    return await post()
+  } catch (error) {
+    if (isApiError(error) && error.status < 500) throw error
+    return post()
+  }
+}

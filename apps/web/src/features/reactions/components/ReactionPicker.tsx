@@ -166,7 +166,7 @@ export function ReactionPicker({
 
         {tab === 'emoji' ? (
           <div role="tabpanel" className="flex min-h-0 flex-1 flex-col">
-            <div className="px-4 pt-3">
+            <div className="shrink-0 px-4 pt-3">
               <input
                 type="search"
                 value={query}
@@ -179,7 +179,7 @@ export function ReactionPicker({
             {found ? null : (
               <nav
                 aria-label={t('reactions.categories')}
-                className="flex gap-0.5 overflow-x-auto px-3 pt-2"
+                className="flex shrink-0 gap-0.5 overflow-x-auto px-3 pt-2"
               >
                 {catalog.emoji.map((category) => (
                   <button

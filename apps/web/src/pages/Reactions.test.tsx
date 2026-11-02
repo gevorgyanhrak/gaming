@@ -183,6 +183,40 @@ describe('Emojis and quick messages', () => {
     expect(within(picker).queryByRole('button', { name: '😂' })).not.toBeInTheDocument()
   })
 
+  it('retries a send the server could not take, without sending it twice', async () => {
+    const ids: unknown[] = []
+    serve()
+    server.use(
+      http.post('*/api/v1/rooms/room-1/reactions', async ({ request }) => {
+        const body = (await request.json()) as Record<string, unknown>
+        ids.push(body.client_id)
+        return ids.length === 1
+          ? new HttpResponse(null, { status: 502 })
+          : HttpResponse.json(
+              {
+                data: reaction({
+                  id: 'mine',
+                  seq: 9,
+                  from_seat: 0,
+                  to_seat: 1,
+                  kind: 'message',
+                  value: 'gg',
+                }),
+              },
+              { status: 201 },
+            )
+      }),
+    )
+    renderRoute('/rooms/room-1')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'GG!' }))
+
+    expect(await within(screen.getByRole('log')).findByText('GG!')).toBeInTheDocument()
+    expect(ids).toHaveLength(2)
+    expect(ids[1]).toBe(ids[0])
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
   it('shows the table’s earlier messages without replaying them', async () => {
     serve()
     server.use(

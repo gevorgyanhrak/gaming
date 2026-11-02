@@ -33,31 +33,45 @@ Steps (tick when done, with the commit):
       ReactionPicker (emoji tabs, search, recents, messages, recipient), ReactionLayer (flight
       animations), seat anchors (`data-seat-anchor`) in PlayerList, WaitingTable, Poker, Durak; RoomPage
       button; en/ru/hy; tests.
-- [ ] 3. Live check with two real browsers (A→B, B→A, bursts, 3+ players, reconnect, 390/1440).
+- [x] 3. Live check with two real browsers (isolated contexts, real sessions): A→B and B→A in Chess, 3-seat
+      Poker and Durak, flights in the right direction, chat on both sides; 6 simultaneous sends from two
+      players all delivered once; leaving and coming back shows missed ones without replay; Reverb stopped →
+      polling delivered in < 1 s; 1440 and 390 without horizontal scroll. Fixes: picker category row
+      collapsed (shrink-0); a send is retried once with the same client id (a 502 under local php-fpm
+      overload, 5 workers) — COMMIT.
 - [ ] 4. QA agent, UI/UX review, PM validation; fix; push; report to the owner.
 
 ## Next
 
-- **TASK-047 · Level & XP progression** — brief `docs/product/briefs/TASK-047-levels-xp.md` (owner,
-  2026-11-02, "implement level logic", verbatim). NEXT right after TASK-043 (before 044: the daily bonus
-  can reuse its reward popup and Fishka rewards). Levels in the DB, backend-only XP, configurable curve
-  (1–30 easy, harder after), per-level rewards granted once with history, pending level-ups shown on
-  return, bots with fixed high levels (no XP, no rewards), level badge everywhere, progress bar, popup.
+**Owner rule (2026-11-02): strict sequential order.** Finish one task completely (implemented, tested,
+verified, pushed) before starting the next; never two at once; nothing partial. Order = the order the
+owner gave them: TASK-043 (Now) → 044 → 045 → 046 → 047 → 048. Older items below those come after.
+
+- **TASK-044 · Daily bonus popup with a login streak** (owner, 2026-11-02, after TASK-043; reference
+  screenshot: a "Daily bonus" dialog with a row of days 1…5, the current day highlighted, growing rewards
+  for consecutive days, "one day to go until your double bonus", an open chest with the amount). Build our
+  own art in the card-club look (no copied assets); backend owns the streak and amounts (settings), today's
+  daily +1,000 becomes day-based; popup once a day after login; en/ru/hy. Plan it like TASK-043.
+- **TASK-045 · Poker table redesign like the owner's screenshot** (2026-11-02): wide oval felt with a
+  thick rail on a dark patterned background, seats with avatar frames around the rail (empty seats as
+  "+"), dealer at the top, table info (name, blinds) at the bottom left, chat panel below (done in
+  TASK-043). Our own art; keep the phone layout. After TASK-044.
 - **TASK-046 · Nardi in two variants: Long and Short** (owner, 2026-11-02, screenshot of a "what shall we
   play?" picker with two board thumbnails "Длинные" / "Короткие"). Long nardi = today's engine. Short
   nardi (backgammon rules: opposite directions, hitting blots to the bar, entering from the bar, bearing
   off; standard 2-5-3-5 setup) = a new engine variant + a second Nardi game mode; a picker with two board
   previews on the Nardi page; bots, groups, matchmaking per variant; en/ru/hy. After TASK-045 unless the
   owner reorders.
-- **TASK-045 · Poker table redesign like the owner's screenshot** (2026-11-02): wide oval felt with a
-  thick rail on a dark patterned background, seats with avatar frames around the rail (empty seats as
-  "+"), dealer at the top, table info (name, blinds) at the bottom left, chat panel below (done in
-  TASK-043). Our own art; keep the phone layout. After TASK-044.
-- **TASK-044 · Daily bonus popup with a login streak** (owner, 2026-11-02, after TASK-043; reference
-  screenshot: a "Daily bonus" dialog with a row of days 1…5, the current day highlighted, growing rewards
-  for consecutive days, "one day to go until your double bonus", an open chest with the amount). Build our
-  own art in the card-club look (no copied assets); backend owns the streak and amounts (settings), today's
-  daily +1,000 becomes day-based; popup once a day after login; en/ru/hy. Plan it like TASK-043.
+- **TASK-047 · Level & XP progression** — brief `docs/product/briefs/TASK-047-levels-xp.md` (owner,
+  2026-11-02, "implement level logic", verbatim). Levels in the DB, backend-only XP, configurable curve
+  (1–30 easy, harder after), per-level rewards granted once with history, pending level-ups shown on
+  return, bots with fixed high levels (no XP, no rewards), level badge everywhere, progress bar, popup.
+- **TASK-048 · Complete platform redesign** — brief `docs/product/briefs/TASK-048-platform-redesign.md`
+  (owner, 2026-11-02, verbatim). Phase 1 (PM market research → `docs/product/research/TASK-048-market-research.md`)
+  not started (a parallel start was stopped on the owner's sequencing rule; nothing was written). Then UI/UX agent: design system and
+  redesign of every page and game; QA. Owner rule applies: no paid VIP, no value prizes (flagged as question).
+
+Later (older backlog):
 - TASK-039 · Fishka follow-ups from PM: QA re-run of the 5 failed checks, frozen-clock midnight test,
   live multi-seat poker leave, matchmaking bot fallback without Fishkas.
 - TASK-037 · Durak bout space at 1280×720, phone role bubbles 0.65rem.
