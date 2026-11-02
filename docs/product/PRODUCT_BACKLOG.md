@@ -2,7 +2,9 @@
 
 The single task tracker (format and statuses: `docs/team/README.md`). Sources: `UI_UX_AUDIT.md`
 (UX-NNN), `PRODUCT_RESEARCH.md` (OPP-NNN), `TECHNICAL_DEBT.md` (TD-NNN).
-Last planning: 2026-11-01 (TASK-040 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK040.md`;
+Last planning: 2026-11-02 (TASK-043 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK043.md`;
+TASK-049, TASK-050 and owner questions 9–11 added).
+Before: 2026-11-01 (TASK-040 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK040.md`;
 TASK-039 (e), TASK-041, TASK-042 added; owner questions 6–8 updated).
 Before: 2026-10-31 (TASK-038 Fishkas validated APPROVED (53018b3); follow-up TASK-039 added).
 Before: 2026-10-30 (TASK-035, TASK-036, TASK-029 validated APPROVED (79a053d); TASK-037 added; owner
@@ -56,6 +58,45 @@ disconnect, independent QA re-run of the 6 failed rows, a Chess/Checkers win vs 
 not seen live, final report to the owner. BUG-3 (one ~20 s bot stall per ~70 moves under host overload)
 is not blocking → TASK-041. Conditions: the UI/UX design review (PROGRESS 8b) is still pending; a
 required revision there reopens this task as NEEDS_REVISION. Fishka rule risk: owner question 6.
+
+## Owner requests 2026-11-02 (strict order: one task at a time)
+
+Order set by the owner: TASK-043 → 044 → 045 → 046 → 047 → 048. Details and status in
+`docs/team/PROGRESS.md`; briefs in `docs/product/briefs/`.
+
+### TASK-043 · Emojis, quick messages and the table chat         P1 · M · APPROVED
+Owner brief, verbatim: `docs/product/briefs/TASK-043-emoji-quick-messages.md`; ADR 0017. Code 491b624,
+1d9dcef, QA fixes 2967f6d, design fixes 54a3b6b. QA `docs/qa/QA_REPORT_TASK043.md` (44/46; 2 Low, fixed);
+design `docs/design/REVIEW_TASK043.md` (7 items fixed).
+Validation 2026-11-02: **APPROVED — ACCEPT WITH FOLLOW-UPS** (`docs/product/VALIDATION_TASK043.md`). Every
+brief requirement is met, except "relevant social areas" (partly met: tables only, since there are no
+other social areas yet). Real-time delivery is proven end to end with real sessions. Follow-up: TASK-049
+should close it before TASK-044 starts (owner's "nothing partial" rule). Owner questions 9–11.
+
+### TASK-049 · TASK-043 re-review and smoke test of the fixes    P2 · S · PLANNED
+Problem: the 7 design-review fixes and the new chat bar above the board (54a3b6b) were verified only by
+the developer (the 44 px targets only by reading the classes). Evidence: VALIDATION_TASK043 §A/§C.
+Scope: the UI/UX agent re-reviews REVIEW_TASK043 items 1–7; QA runs a two-player smoke test in all five
+games at 390 and 1440: A→B, B→A, 3 quick messages to one seat, chat bar open/closed, Mute.
+Acceptance criteria:
+  1. Every button in the picker and the chat bar measures ≥ 44 px at 390.
+  2. No bubble rect intersects a clock, the deck/trump, a bet chip, the board or the action buttons, in any
+     game at 390 and 1440.
+  3. The 😊 button is visible without scrolling at 1440×900, 1280×720 and 390×844 in all five games.
+  4. REVIEW_TASK043 gets a re-review section with the verdict; QA_REPORT_TASK043 a smoke-test section.
+Depends on: TASK-043   Approval: none
+
+### TASK-050 · Mute one player at the table                      P2 · S · PLANNED
+Problem: Mute hides every player's animations; there is no way to silence one opponent who keeps sending
+taunts (🤡, 😈, "Haha!", "Better luck next time!"), and no per-player control at all.
+Evidence: VALIDATION_TASK043 §B.
+Scope: frontend only. Tapping a seat or a chat name offers "Mute this player" for this room: their flights
+and bubbles stop and their chat lines collapse into "N hidden". Stored locally per room. No server
+change; the other players are not told.
+Acceptance criteria: a muted player's reactions don't animate and are collapsed in the log; others still
+work; unmute restores; works at 390/1440; en/ru/hy; Reactions.test case.
+Depends on: TASK-043   Approval: none (after the owner's queue unless the owner moves it up; see
+question 10)
 
 ## Bugs
 
@@ -505,6 +546,18 @@ Validation 2026-10-29: **APPROVED** — `GameActionService::end` marks abandoned
 8. Beginner Poker blinds are 1/1 (small blind = max(1, ⌊1/2⌋)), so the small blind equals the big blind
    (QA observation O-1). Keep, make Beginner 1/2 (big blind 2), or allow 0-size small blinds? A table/Fishka
    rule → owner.
+9. Free-text table chat (TASK-043 shipped emojis and predefined messages only, ADR 0017). Typing would
+   need moderation first: word filters in en/ru/hy, reports, per-player mute and block, admin review and
+   a retention rule (today nothing is stored beyond 50 lines for 3 hours). Do you want free text? If yes,
+   it is a new backend domain (approval list) and should be planned as its own task.
+10. Taunting content: the catalog includes 🤡, 😈 and messages like "Haha!" and "Better luck next time!".
+    Keep them? Also, should staff get a per-player "no reactions" switch (today only the global
+    `reactions.enabled` or a ban)? PM recommends keeping the content and adding TASK-050 (players mute one
+    player locally); staff tools only if abuse shows up.
+11. Table chat placement: your 2026-11-02 screenshot showed the chat under the table. We put a compact chat
+    bar between the room header and the board, because under the board it was never visible while
+    playing (design review issue 2). Keep this, or move it under the table in TASK-045 (poker) and the
+    other game redesigns?
 (Decided 2026-10-29: autonomous mode for B1–B3; TD-001 deleted; sound on by default; TASK-030/031
 go-ahead; room API fields for Play again; `.text-gold-gradient`; public profile stats are public. See
 DECISIONS.md.)

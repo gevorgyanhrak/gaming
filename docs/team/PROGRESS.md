@@ -15,8 +15,8 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 Decisions taken autonomously (brief allows; no free text = no moderation needed):
 - Only catalog emojis and predefined messages (keys; each viewer reads them in their own language).
-- Ephemeral: not stored in the DB; a 2-minute buffer per room in the state store lets pages without a
-  socket (polling) and reconnecting pages catch up; ids are ULIDs, the client dedupes by id.
+- Ephemeral: not stored in the DB; the room keeps its last 50 reactions for 3 hours in the state store
+  (the table chat's history; catch-up for polling and reconnecting pages); ids are ULIDs, deduped by id.
 - Delivered like room updates: `room.reaction` on each person's private channel `user.{id}`.
 - Allowed for the room's people while it waits, plays, and up to 10 minutes after it ends; a reaction is
   to one seat or to everyone; bots never send. Rate limit `reactions` (3/s, 40/min). Admin switch
@@ -39,7 +39,11 @@ Steps (tick when done, with the commit):
       polling delivered in < 1 s; 1440 and 390 without horizontal scroll. Fixes: picker category row
       collapsed (shrink-0); a send is retried once with the same client id (a 502 under local php-fpm
       overload, 5 workers) — 1d9dcef.
-- [ ] 4. QA agent, UI/UX review, PM validation; fix; push; report to the owner.
+- [x] 4a. QA (44/46, 2 Low → fixed 2967f6d); UI/UX review (NEEDS REVISION, 7 items → fixed 54a3b6b);
+      PM validation ACCEPT WITH FOLLOW-UPS (docs/product/VALIDATION_TASK043.md; owner Q9–Q11; TASK-050
+      mute one player = owner's call, not started).
+- [ ] 4b. Independent re-check of the 7 design fixes (UI/UX re-review + smoke in all 5 games at 390/1440;
+      PM's TASK-049); fix; push; report to the owner. Then TASK-043 is done.
 
 ## Next
 
