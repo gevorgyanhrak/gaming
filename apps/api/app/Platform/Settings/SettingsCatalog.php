@@ -48,6 +48,7 @@ final class SettingsCatalog
             new SettingDefinition('matchmaking.default_bot_timeout_seconds', SettingType::Integer, 30, rules: ['required', 'integer', 'min:5', 'max:600']),
             new SettingDefinition('matchmaking.abandon_after_seconds', SettingType::Integer, 15, public: true, rules: ['required', 'integer', 'min:0', 'max:600']),
             new SettingDefinition('matchmaking.max_concurrent_games', SettingType::Integer, 1, rules: ['required', 'integer', 'min:1', 'max:10']),
+            new SettingDefinition('reactions.enabled', SettingType::Boolean, true, public: true, rules: ['boolean']),
 
             // Fishkas (free play currency; never bought or cashed out)
             new SettingDefinition('fishka.registration_bonus', SettingType::Integer, 5000, rules: ['required', 'integer', 'min:0', 'max:1000000']),

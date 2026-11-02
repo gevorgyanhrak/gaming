@@ -30,6 +30,7 @@ export function PlayerList({
         return (
           <li
             key={player.seat}
+            data-seat-anchor={player.seat}
             className={`flex min-w-0 items-center gap-2 rounded-full border bg-surface/80 py-1 pr-1.5 pl-1 transition-colors ${
               toAct ? 'border-gold shadow-[0_0_0_3px_rgb(214_171_78/0.2)]' : 'border-border'
             }`}

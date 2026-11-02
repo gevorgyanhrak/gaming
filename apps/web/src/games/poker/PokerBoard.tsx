@@ -220,7 +220,7 @@ export default function PokerBoard({
                         <span className="sr-only">{t('poker.bet', { amount: bet })}</span>
                       </span>
                     ) : null}
-                    <div className="relative isolate">
+                    <div className="relative isolate" data-seat-anchor={seat}>
                       <Avatar
                         name={name(seat)}
                         acting={acting}

@@ -614,5 +614,70 @@
     "experienced": "Experienced",
     "professional": "Professional",
     "master": "Master"
+  },
+  "reactions": {
+    "title": "Emojis and messages",
+    "close": "Close",
+    "sendTo": "Send to",
+    "everyone": "Everyone",
+    "you": "You",
+    "emojiTab": "Emojis",
+    "messagesTab": "Quick messages",
+    "search": "Search emojis",
+    "noResults": "No emojis found.",
+    "recent": "Recently used",
+    "categories": "Emoji categories",
+    "emojiButton": "Send an emoji",
+    "messagesButton": "Messages",
+    "sendFailed": "Couldn't send. Try again in a moment.",
+    "emojiCategories": {
+      "smileys": "Smileys & emotions",
+      "reactions": "Reactions",
+      "funny": "Funny",
+      "love": "Love",
+      "celebration": "Celebrations",
+      "gaming": "Gaming",
+      "poker": "Poker",
+      "victory": "Victory & defeat",
+      "animals": "Animals",
+      "food": "Food & drinks",
+      "sports": "Sports",
+      "popular": "Popular"
+    },
+    "messageCategories": {
+      "greetings": "Greetings",
+      "praise": "Praise",
+      "fun": "Fun",
+      "after": "After the game"
+    },
+    "messages": {
+      "hello": "Hi!",
+      "good_luck": "Good luck!",
+      "have_fun": "Have fun!",
+      "ready": "I'm ready!",
+      "wait": "Wait a moment!",
+      "nice_move": "Nice move!",
+      "well_played": "Well played!",
+      "youre_strong": "You're strong!",
+      "good_game": "Good game!",
+      "gg": "GG!",
+      "lucky": "Lucky!",
+      "haha": "Haha!",
+      "oops": "Oops!",
+      "wow": "Wow!",
+      "almost_got_you": "Almost got you!",
+      "think": "Let me think…",
+      "thank_you": "Thank you!",
+      "play_again": "Let's play again!",
+      "rematch": "Rematch?",
+      "better_luck": "Better luck next time!",
+      "bye": "Bye!"
+    },
+    "chat": {
+      "title": "Table chat",
+      "empty": "Say hello with an emoji or a quick message.",
+      "mute": "Mute",
+      "unmute": "Unmute"
+    }
   }
 }

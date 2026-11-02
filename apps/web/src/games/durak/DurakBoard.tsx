@@ -387,12 +387,14 @@ export default function DurakBoard({
         <div style={{ gridArea: 'me' }} data-seat={me} className="flex min-w-0 flex-col gap-2">
           {finished ? null : (
             <div className="flex items-center gap-2">
-              <Avatar
-                name={nameOf(me)}
-                acting={myTurn}
-                share={myTurn ? turnShare : null}
-                size="sm"
-              />
+              <span data-seat-anchor={me}>
+                <Avatar
+                  name={nameOf(me)}
+                  acting={myTurn}
+                  share={myTurn ? turnShare : null}
+                  size="sm"
+                />
+              </span>
               {myRole ? <Bubble role={myRole} /> : null}
               <p
                 className="line-clamp-3 min-w-0 flex-1 rounded-lg bg-[#fdebc8] px-3 py-1.5 text-sm text-black shadow"

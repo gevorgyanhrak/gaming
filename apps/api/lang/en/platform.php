@@ -58,6 +58,12 @@ return [
         'keep_own_super_admin' => 'You cannot remove your own super admin role.',
         'use_unban' => 'This account is banned. Unban it instead.',
     ],
+    'reactions' => [
+        'disabled' => 'Emojis and quick messages are switched off.',
+        'closed' => 'This table no longer takes reactions.',
+        'unknown' => 'This reaction is not available.',
+        'no_such_player' => 'Choose another player at this table.',
+    ],
     'play' => [
         'group_unavailable' => 'This group is not available for this game.',
         'bet_range' => 'Choose a bet from :min to :max Fishkas.',

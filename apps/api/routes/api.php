@@ -21,7 +21,9 @@ use App\Http\Controllers\Api\V1\Me\SettingsController;
 use App\Http\Controllers\Api\V1\Me\WalletController;
 use App\Http\Controllers\Api\V1\OnlineController;
 use App\Http\Controllers\Api\V1\PublicProfileController;
+use App\Http\Controllers\Api\V1\ReactionCatalogController;
 use App\Http\Controllers\Api\V1\Rooms\ActionController;
+use App\Http\Controllers\Api\V1\Rooms\ReactionController;
 use App\Http\Controllers\Api\V1\Rooms\RoomController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,6 +34,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
     // Always available, even in maintenance mode: what the SPA needs to explain the situation
     // and to let staff sign in.
     Route::get('config', ConfigController::class)->name('config');
+    Route::get('reactions', ReactionCatalogController::class)->name('reactions');
     Route::get('pages/{slug}', [ContentPageController::class, 'show'])->name('pages.show');
     Route::post('auth/login', [SessionController::class, 'store'])->middleware('throttle:auth')->name('auth.login');
     Route::post('auth/logout', [SessionController::class, 'destroy'])->middleware('auth:sanctum')->name('auth.logout');
@@ -115,6 +118,9 @@ Route::prefix('v1')->name('v1.')->group(function () {
                     Route::post('{room}/presence', [RoomController::class, 'presence'])
                         ->withoutMiddleware('throttle:game')->middleware('throttle:presence')->name('presence');
                     Route::post('{room}/leave', [RoomController::class, 'leave'])->name('leave');
+                    Route::get('{room}/reactions', [ReactionController::class, 'index'])->name('reactions.index');
+                    Route::post('{room}/reactions', [ReactionController::class, 'store'])
+                        ->middleware('throttle:reactions')->name('reactions.store');
                 });
             });
     });

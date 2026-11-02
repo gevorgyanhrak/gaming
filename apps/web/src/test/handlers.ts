@@ -21,7 +21,7 @@ export const configFixture: PublicConfig = {
     require_phone_verification: true,
     requires_terms: false,
   },
-  play: { abandon_after_seconds: 15 },
+  play: { abandon_after_seconds: 15, reactions: true },
   pages: [],
 }
 
@@ -90,6 +90,24 @@ export function walletFixture(overrides: Partial<Wallet> = {}): Wallet {
   }
 }
 
+/** A small reaction catalog (GET /reactions). */
+export const reactionCatalogFixture = {
+  emoji: [
+    {
+      slug: 'smileys',
+      emojis: [
+        { emoji: '😀', keywords: 'grin smile улыбка ժպիտ' },
+        { emoji: '😂', keywords: 'laugh смех ծիծաղ' },
+      ],
+    },
+    { slug: 'love', emojis: [{ emoji: '❤️', keywords: 'heart love сердце սիրտ' }] },
+  ],
+  messages: [
+    { slug: 'greetings', keys: ['hello', 'good_luck'] },
+    { slug: 'praise', keys: ['nice_move', 'good_game', 'gg'] },
+  ],
+}
+
 export const handlers = [
   http.get('*/api/v1/me/wallet', () => HttpResponse.json({ data: walletFixture() })),
   // Visitors are guests unless a test uses signedInAs().
@@ -102,6 +120,8 @@ export const handlers = [
     HttpResponse.json({ data: { ticket: null, room: null, waiting: null } }),
   ),
   http.get('*/api/v1/config', () => HttpResponse.json({ data: configFixture })),
+  http.get('*/api/v1/reactions', () => HttpResponse.json({ data: reactionCatalogFixture })),
+  http.get('*/api/v1/rooms/:id/reactions', () => HttpResponse.json({ data: [] })),
   http.get('*/api/v1/games', () => HttpResponse.json({ data: [summaryOf(gameFixture())] })),
 ]
 

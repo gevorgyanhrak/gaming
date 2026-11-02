@@ -69,6 +69,11 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('game-actions', fn (Request $request) => Limit::perMinute(120)->by($byUserOrIp($request)));
         // The game page reports presence every 5 s (12 a minute); room by room, so a few open tabs fit.
         RateLimiter::for('presence', fn (Request $request) => Limit::perMinute(60)->by($byUserOrIp($request)));
+        // Emojis and quick messages: a quick burst is fine, a flood is not.
+        RateLimiter::for('reactions', fn (Request $request) => [
+            Limit::perSecond(3)->by('s:'.$byUserOrIp($request)),
+            Limit::perMinute(40)->by('m:'.$byUserOrIp($request)),
+        ]);
         RateLimiter::for('uploads', fn (Request $request) => Limit::perMinute(10)->by($byUserOrIp($request)));
     }
 }

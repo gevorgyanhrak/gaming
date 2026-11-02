@@ -110,6 +110,8 @@ class ManageSettings extends Page
                         ->helperText('Away from the game page this long ends the game for them. 0 turns it off.'),
                     TextInput::make('matchmaking.max_concurrent_games')->label('Games a player can play at once')
                         ->numeric()->integer()->required()->minValue(1)->maxValue(10),
+                    Toggle::make('reactions.enabled')->label('Emojis and quick messages at tables')
+                        ->helperText('Players send emojis and predefined messages to each other while they play.'),
                 ]),
                 Section::make('Fishkas')->columns(2)
                     ->description('Free play currency. Fishkas are never sold, cashed out or sent between players.')

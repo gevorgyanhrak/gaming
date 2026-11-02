@@ -57,7 +57,7 @@ export function CompactSeat({ seat, name, count, role, acting, share, bot, label
       <span className="flex min-h-5 w-full items-end justify-center">
         {role ? <Bubble role={role} small /> : null}
       </span>
-      <span className="relative mt-1">
+      <span className="relative mt-1" data-seat-anchor={seat}>
         <Avatar name={name} acting={acting} share={share} size="sm" />
         {bot ? (
           <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 rounded-full bg-black/75 px-1 text-[0.55rem] leading-tight font-semibold tracking-wide text-white/85 uppercase">
@@ -97,7 +97,7 @@ export function PanelSeat({ seat, name, count, role, acting, share, bot, label }
           : 'border-gold/20 bg-black/35'
       }`}
     >
-      <span className="absolute -top-6 -left-3">
+      <span className="absolute -top-6 -left-3" data-seat-anchor={seat}>
         <Avatar name={name} acting={acting} share={share} size="md" />
       </span>
       {role ? (

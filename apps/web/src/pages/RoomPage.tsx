@@ -7,6 +7,7 @@ import { leaveRoom, type ParticipantResult } from '@/features/play/api'
 import { resultLabel } from '@/features/play/labels'
 import { GameIcon } from '@/features/catalog/components/GameArt'
 import { GameOverPanel } from '@/features/play/components/GameOverPanel'
+import { RoomReactions } from '@/features/reactions/components/RoomReactions'
 import { GroupBadge } from '@/features/play/components/GroupBadge'
 import { PlayerList } from '@/features/play/components/PlayerList'
 import { WaitingTable } from '@/features/play/components/WaitingTable'
@@ -205,6 +206,15 @@ export function RoomPage() {
           <EmptyState title={t('room.boardUnavailable')} />
         )
       ) : null}
+
+      <RoomReactions
+        room={data}
+        mySeat={
+          view?.seat ??
+          data.participants.find((p) => !p.is_bot && user && p.username === user.username)?.seat ??
+          null
+        }
+      />
 
       <footer className="flex flex-wrap gap-3">
         {data.status === 'active' && !leftTable ? (

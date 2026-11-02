@@ -84,6 +84,7 @@ export function WaitingTable({
                 }}
               >
                 <span
+                  data-seat-anchor={player ? seat : undefined}
                   className={`flex size-16 items-center justify-center overflow-hidden rounded-full border-2 sm:size-24 ${
                     player
                       ? 'border-gold bg-surface-raised shadow-lg shadow-black/50'
