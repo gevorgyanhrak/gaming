@@ -60,8 +60,12 @@ owner gave them: TASK-043 (Now) → 044 → 045 → 046 → 047 → 048. Older i
   play?" picker with two board thumbnails "Длинные" / "Короткие"). Long nardi = today's engine. Short
   nardi (backgammon rules: opposite directions, hitting blots to the bar, entering from the bar, bearing
   off; standard 2-5-3-5 setup) = a new engine variant + a second Nardi game mode; a picker with two board
-  previews on the Nardi page; bots, groups, matchmaking per variant; en/ru/hy. After TASK-045 unless the
-  owner reorders.
+  previews on the Nardi page; bots, groups, matchmaking per variant; en/ru/hy. After TASK-045.
+  Owner reference (2026-11-02, second screenshot, a short-nardi game board): carved wooden board, points
+  numbered 1–24 on both edges, pip count per player beside the board ("167"), round turn timer, red dice,
+  bear-off trays at the side, a doubling cube ("64"), right panel with both players' avatars, clocks
+  ("1:00") and the stake ("50"). Our own art. Owner question before building: the doubling cube (it
+  doubles the stake mid-game → Fishka pot rules).
 - **TASK-047 · Level & XP progression** — brief `docs/product/briefs/TASK-047-levels-xp.md` (owner,
   2026-11-02, "implement level logic", verbatim). Levels in the DB, backend-only XP, configurable curve
   (1–30 easy, harder after), per-level rewards granted once with history, pending level-ups shown on
