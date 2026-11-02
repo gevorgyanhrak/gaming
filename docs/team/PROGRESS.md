@@ -38,7 +38,7 @@ Steps (tick when done, with the commit):
       players all delivered once; leaving and coming back shows missed ones without replay; Reverb stopped →
       polling delivered in < 1 s; 1440 and 390 without horizontal scroll. Fixes: picker category row
       collapsed (shrink-0); a send is retried once with the same client id (a 502 under local php-fpm
-      overload, 5 workers) — COMMIT.
+      overload, 5 workers) — 1d9dcef.
 - [ ] 4. QA agent, UI/UX review, PM validation; fix; push; report to the owner.
 
 ## Next
