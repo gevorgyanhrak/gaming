@@ -678,5 +678,21 @@
       "empty": "Say hello with an emoji or a quick message.",
       "mute": "Mute animations"
     }
+  },
+  "daily": {
+    "title": "Daily bonus",
+    "days": "Days in a row",
+    "day": "Day {{day}}",
+    "collect": "Collect",
+    "collecting": "Collecting…",
+    "collected": "Collected",
+    "later": "Later",
+    "close": "Close",
+    "open": "Open",
+    "toDouble_one": "Play every day and grab more Fishkas! One day to go until your double bonus!",
+    "toDouble_other": "Play every day and grab more Fishkas! {{count}} days to go until your double bonus!",
+    "doubleToday": "Double bonus today! Come back tomorrow to keep it.",
+    "comeBack": "Today’s bonus is collected. Come back tomorrow for {{amount}}.",
+    "failed": "Couldn’t collect the bonus. Try again in a moment."
   }
 }

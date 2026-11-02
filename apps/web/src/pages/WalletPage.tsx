@@ -9,6 +9,7 @@ import { Button } from '@/shared/ui/Button'
 import { Container } from '@/shared/ui/Container'
 import { Skeleton } from '@/shared/ui/Skeleton'
 import { EmptyState, QueryErrorState } from '@/shared/ui/States'
+import { openDailyBonus, useDailyBonus } from '@/features/wallet/dailyBonus'
 
 /** The player's Fishkas: balance, totals, how fees work, and every change (newest first). */
 export function WalletPage() {
@@ -68,6 +69,8 @@ export function WalletPage() {
           </p>
         </section>
       )}
+
+      <DailyBonusCard />
 
       <section aria-labelledby="fishka-history" className="space-y-3">
         <h2 id="fishka-history" className="text-xl font-bold">
@@ -145,5 +148,33 @@ function Entry({ entry }: { entry: FishkaTransaction }) {
         <p className="text-xs text-muted">{entry.balance_after.toLocaleString(i18n.language)}</p>
       </div>
     </li>
+  )
+}
+
+/** Today's daily bonus, and the way back to the popup after it was closed. */
+function DailyBonusCard() {
+  const { t, i18n } = useTranslation()
+  const bonus = useDailyBonus()
+  if (!bonus.data) return null
+  const { day, claimed, amount } = bonus.data
+
+  return (
+    <section className="club-panel flex flex-wrap items-center gap-3 rounded-3xl p-5 sm:p-6">
+      <FishkaIcon className="size-10" />
+      <div className="min-w-0 flex-1">
+        <h2 className="font-bold">{t('daily.title')}</h2>
+        <p className="text-sm text-muted">
+          {t('daily.day', { day })} ·{' '}
+          {claimed ? t('daily.collected') : amount.toLocaleString(i18n.language)}
+        </p>
+      </div>
+      <Button
+        variant={claimed ? 'secondary' : 'gold'}
+        className="min-h-11"
+        onClick={openDailyBonus}
+      >
+        {claimed ? t('daily.open') : t('daily.collect')}
+      </Button>
+    </section>
   )
 }

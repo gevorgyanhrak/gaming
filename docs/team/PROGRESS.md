@@ -24,7 +24,8 @@ below). Decisions (autonomous, owner rule: Fishkas are free):
 Steps:
 - [x] 1. Backend: migration, settings + admin fields, FishkaWallets::dailyStatus/claimDaily(streak),
       endpoints, no auto-claim, tests (DailyBonusTest), types — 8c7a0d6.
-- [ ] 2. Frontend: DailyBonusDialog, wallet entry, flight, strings, tests.
+- [x] 2. Frontend: DailyBonusDialog (own chest art, 5 day tiles, Collect → chips fly to the header),
+      offered once per visit, never on a room page; wallet card; en/ru/hy; DailyBonus.test — COMMIT.
 - [ ] 3. Live check (claim, streak days 1→5 via dates, reset, double claim, 390/1440, ru/hy).
 - [ ] 4. QA, UI/UX review, PM validation; fix; push; report.
 

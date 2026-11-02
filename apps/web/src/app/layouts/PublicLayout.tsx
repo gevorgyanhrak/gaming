@@ -9,6 +9,7 @@ import { GameIcon } from '@/features/catalog/components/GameArt'
 import { useGames } from '@/features/catalog/queries'
 import { ActiveGamesBar } from '@/features/play/components/ActiveGamesBar'
 import { FishkaBalance } from '@/features/wallet/components/FishkaBalance'
+import { DailyBonusDialog } from '@/features/wallet/components/DailyBonusDialog'
 import { OutOfFishkasDialog } from '@/features/wallet/components/OutOfFishkasDialog'
 import { useWalletSync } from '@/features/wallet/hooks'
 import { MaintenanceScreen } from '@/features/platform/MaintenanceScreen'
@@ -331,8 +332,13 @@ function SideNav({ home, signedIn }: { home: string; signedIn: boolean }) {
   )
 }
 
-/** Balance updates from the server, and the "out of Fishkas" popup, while signed in. */
+/** Balance updates from the server, the daily bonus and the "out of Fishkas" popup, while signed in. */
 function WalletSync() {
   useWalletSync()
-  return <OutOfFishkasDialog />
+  return (
+    <>
+      <DailyBonusDialog />
+      <OutOfFishkasDialog />
+    </>
+  )
 }

@@ -4,6 +4,7 @@ import type { CurrentUser } from '@/features/auth/api'
 import type { Room, RoomState } from '@/features/play/api'
 import type { GameDetail, GameSummary } from '@/features/catalog/queries'
 import type { PublicConfig } from '@/features/platform/usePublicConfig'
+import type { DailyBonus } from '@/features/wallet/dailyBonus'
 
 // Test fixtures for MSW only; never imported by application code.
 
@@ -90,6 +91,17 @@ export function walletFixture(overrides: Partial<Wallet> = {}): Wallet {
   }
 }
 
+/** Today's daily bonus (GET /me/daily-bonus); collected unless a test says otherwise. */
+export function dailyBonusFixture(overrides: Partial<DailyBonus> = {}): DailyBonus {
+  return {
+    day: 1,
+    claimed: true,
+    amount: 1000,
+    days: [1000, 1500, 2000, 2500, 5000].map((amount, i) => ({ day: i + 1, amount })),
+    ...overrides,
+  }
+}
+
 /** A small reaction catalog (GET /reactions). */
 export const reactionCatalogFixture = {
   emoji: [
@@ -121,6 +133,7 @@ export const handlers = [
   ),
   http.get('*/api/v1/config', () => HttpResponse.json({ data: configFixture })),
   http.get('*/api/v1/reactions', () => HttpResponse.json({ data: reactionCatalogFixture })),
+  http.get('*/api/v1/me/daily-bonus', () => HttpResponse.json({ data: dailyBonusFixture() })),
   http.get('*/api/v1/rooms/:id/reactions', () => HttpResponse.json({ data: [] })),
   http.get('*/api/v1/games', () => HttpResponse.json({ data: [summaryOf(gameFixture())] })),
 ]
