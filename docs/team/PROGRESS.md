@@ -29,7 +29,7 @@ Steps:
 - [x] 3. Live check (fresh account q44daily, dates moved in the dev DB): day 3 at 390 en (+2,000, header
       5,000 → 7,000, chips fly, "Come back tomorrow for 2,500"), day 5 at 1440 hy (double message, +5,000),
       missed day → day 1 at 390 ru (+1,000, "4 дня"); no horizontal scroll. Fixes: the chest shows its
-      chips; "×2" in place of the coin on day 5; `collected` counts only an entry this request created — COMMIT.
+      chips; "×2" in place of the coin on day 5; `collected` counts only an entry this request created — b599e4e.
 - [ ] 4. QA, UI/UX review, PM validation; fix; push; report.
 
 - **TASK-044 · Daily bonus popup with a login streak** (owner, 2026-11-02, after TASK-043; reference
