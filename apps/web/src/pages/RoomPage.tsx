@@ -167,6 +167,16 @@ export function RoomPage() {
         </div>
       ) : null}
 
+      {/* The table chat: between the header and the table, in view while playing. */}
+      <RoomReactions
+        room={data}
+        mySeat={
+          view?.seat ??
+          data.participants.find((p) => !p.is_bot && user && p.username === user.username)?.seat ??
+          null
+        }
+      />
+
       {data.status === 'waiting' ? (
         <WaitingTable room={data} mySeat={tableSeat} onLeave={leave} />
       ) : null}
@@ -206,15 +216,6 @@ export function RoomPage() {
           <EmptyState title={t('room.boardUnavailable')} />
         )
       ) : null}
-
-      <RoomReactions
-        room={data}
-        mySeat={
-          view?.seat ??
-          data.participants.find((p) => !p.is_bot && user && p.username === user.username)?.seat ??
-          null
-        }
-      />
 
       <footer className="flex flex-wrap gap-3">
         {data.status === 'active' && !leftTable ? (

@@ -45,8 +45,21 @@ function reaction(overrides: Partial<Reaction> = {}): Reaction {
 /** Every flight started: its text and its first and last keyframes. */
 let flights: { text: string; frames: Keyframe[] }[] = []
 
+/** Where the seats are: jsdom lays nothing out. Your seat (0) is low on the screen, the opponent's high. */
+let seatTop: Record<string, number> = {}
+
+function rect(top: number): DOMRect {
+  const r = { top, bottom: top + 40, left: 480, right: 520, width: 40, height: 40, x: 480, y: top }
+  return { ...r, toJSON: () => r }
+}
+
 beforeEach(() => {
   flights = []
+  seatTop = { '0': 600, '1': 100 }
+  vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
+    const seat = this instanceof HTMLElement ? this.dataset.seatAnchor : undefined
+    return seat === undefined ? rect(0) : rect(seatTop[seat] ?? 0)
+  })
   Element.prototype.animate = vi.fn(function (this: Element, frames: Keyframe[]) {
     flights.push({ text: this.textContent ?? '', frames })
     return {
@@ -57,6 +70,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  vi.restoreAllMocks()
   // @ts-expect-error jsdom has no Web Animations; the stub is per test.
   delete Element.prototype.animate
 })
@@ -105,7 +119,7 @@ describe('Emojis and quick messages', () => {
       'aria-pressed',
       'true',
     )
-    await userEvent.click(within(picker).getByRole('button', { name: '❤️' }))
+    await userEvent.click(within(picker).getByRole('button', { name: '❤️ heart' }))
 
     await waitFor(() => expect(sent).toHaveLength(1))
     expect(sent[0]).toMatchObject({ kind: 'emoji', value: '❤️', to_seat: 1 })
@@ -141,6 +155,18 @@ describe('Emojis and quick messages', () => {
     expect(within(log).getAllByText('😂')).toHaveLength(1)
   })
 
+  it('draws nothing for a seat scrolled out of view, but the chat lists it', async () => {
+    serve()
+    seatTop['0'] = 2000 // your seat is scrolled out of view
+    renderRoute('/rooms/room-1')
+    const log = await screen.findByRole('log', { name: 'Table chat' })
+
+    act(() => emit('user.1', 'room.reaction', reaction({ value: '🔥' })))
+
+    expect(await within(log).findByText('🔥')).toBeInTheDocument()
+    expect(flights).toHaveLength(0)
+  })
+
   it('shows several reactions arriving at once', async () => {
     serve()
     renderRoute('/rooms/room-1')
@@ -166,7 +192,8 @@ describe('Emojis and quick messages', () => {
     const sent = serve()
     renderRoute('/rooms/room-1')
 
-    await userEvent.click(await screen.findByRole('button', { name: 'GG!' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Table chat' }))
+    await userEvent.click(screen.getByRole('button', { name: 'GG!' }))
     await waitFor(() => expect(sent).toHaveLength(1))
     expect(sent[0]).toMatchObject({ kind: 'message', value: 'gg', to_seat: 1 })
     expect(await within(screen.getByRole('log')).findByText('GG!')).toBeInTheDocument()
@@ -179,15 +206,16 @@ describe('Emojis and quick messages', () => {
     )
     await userEvent.click(within(picker).getByRole('tab', { name: 'Emojis' }))
     await userEvent.type(within(picker).getByRole('searchbox', { name: 'Search emojis' }), 'сердце')
-    expect(within(picker).getByRole('button', { name: '❤️' })).toBeInTheDocument()
-    expect(within(picker).queryByRole('button', { name: '😂' })).not.toBeInTheDocument()
+    expect(within(picker).getByRole('button', { name: '❤️ heart' })).toBeInTheDocument()
+    expect(within(picker).queryByRole('button', { name: /😂/ })).not.toBeInTheDocument()
   })
 
   it('sends a double-clicked quick message once', async () => {
     const sent = serve()
     renderRoute('/rooms/room-1')
 
-    await userEvent.dblClick(await screen.findByRole('button', { name: 'GG!' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Table chat' }))
+    await userEvent.dblClick(screen.getByRole('button', { name: 'GG!' }))
 
     expect(await within(screen.getByRole('log')).findByText('GG!')).toBeInTheDocument()
     expect(sent).toHaveLength(1)
@@ -201,7 +229,7 @@ describe('Emojis and quick messages', () => {
     await userEvent.type(await screen.findByRole('searchbox', { name: 'Search emojis' }), 'hearts')
 
     expect(
-      within(screen.getByRole('dialog')).getByRole('button', { name: '❤️' }),
+      within(screen.getByRole('dialog')).getByRole('button', { name: '❤️ heart' }),
     ).toBeInTheDocument()
   })
 
@@ -231,7 +259,8 @@ describe('Emojis and quick messages', () => {
     )
     renderRoute('/rooms/room-1')
 
-    await userEvent.click(await screen.findByRole('button', { name: 'GG!' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Table chat' }))
+    await userEvent.click(screen.getByRole('button', { name: 'GG!' }))
 
     expect(await within(screen.getByRole('log')).findByText('GG!')).toBeInTheDocument()
     expect(ids).toHaveLength(2)

@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ChevronIcon } from '@/shared/ui/icons'
 import type { Reaction, ReactionKind } from '../api'
 import { messageText } from '../labels'
 import { setMuted, useReactionsMuted } from '../prefs'
@@ -8,9 +9,9 @@ import { setMuted, useReactionsMuted } from '../prefs'
 const QUICK = ['good_luck', 'nice_move', 'gg'] as const
 
 /**
- * The table chat under the board: who sent what to whom (emojis and predefined messages, oldest at the
- * top), the buttons that open the picker, a few one-tap messages, and muting the others' animations.
- * There is no typing: only what the catalog offers can be sent.
+ * The table chat, a bar between the room's header and the board so it is in view while playing: the
+ * picker buttons and the latest line; opened, the whole log (oldest at the top), a few one-tap
+ * messages and muting the others' animations. There is no typing: only what the catalog offers.
  */
 export function TableChat({
   log,
@@ -32,76 +33,24 @@ export function TableChat({
 }) {
   const { t, i18n } = useTranslation()
   const muted = useReactionsMuted()
+  const [open, setOpen] = useState(false)
   const list = useRef<HTMLOListElement>(null)
   const time = new Intl.DateTimeFormat(i18n.language, { hour: '2-digit', minute: '2-digit' })
   const who = (seat: number) => (seat === mySeat ? t('reactions.you') : (names[seat] ?? '?'))
 
-  // Newest at the bottom, in view.
+  // Newest at the bottom, in view (closed, the log shows just that line).
   useEffect(() => {
     const el = list.current
     if (el) el.scrollTop = el.scrollHeight
-  }, [log.length])
+  }, [log.length, open])
 
   return (
     <section
-      aria-labelledby="table-chat-title"
-      className="club-frame rounded-2xl p-3 sm:p-4"
+      aria-label={t('reactions.chat.title')}
+      className="club-frame rounded-2xl p-2"
       data-table-chat=""
     >
-      <div className="flex items-center justify-between gap-2">
-        <h2
-          id="table-chat-title"
-          className="text-sm font-bold tracking-wide text-gold-light uppercase"
-        >
-          {t('reactions.chat.title')}
-        </h2>
-        <button
-          type="button"
-          aria-pressed={muted}
-          onClick={() => setMuted(!muted)}
-          className="rounded-full border border-border px-2.5 py-1 text-xs font-semibold text-muted hover:border-gold/50 hover:text-white"
-        >
-          {muted ? t('reactions.chat.unmute') : t('reactions.chat.mute')}
-        </button>
-      </div>
-
-      <ol
-        ref={list}
-        role="log"
-        aria-live="polite"
-        aria-label={t('reactions.chat.title')}
-        className="mt-2 max-h-36 min-h-14 space-y-1 overflow-y-auto overscroll-contain rounded-xl bg-black/30 px-3 py-2 text-sm"
-      >
-        {log.length === 0 ? (
-          <li className="py-2 text-center text-muted">{t('reactions.chat.empty')}</li>
-        ) : (
-          log.map((r) => (
-            <li key={r.id} className="flex min-w-0 items-baseline gap-2">
-              <time dateTime={r.sent_at} className="shrink-0 text-xs text-muted tabular-nums">
-                {time.format(new Date(r.sent_at))}
-              </time>
-              <span className="min-w-0">
-                <span
-                  className={`font-bold ${r.from_seat === mySeat ? 'text-accent-text' : 'text-gold-light'}`}
-                >
-                  {who(r.from_seat)}
-                </span>
-                {r.to_seat !== null ? (
-                  <span className="text-muted"> → {who(r.to_seat)}</span>
-                ) : null}
-                <span className="text-muted">: </span>
-                {r.kind === 'emoji' ? (
-                  <span className="text-lg leading-none">{r.value}</span>
-                ) : (
-                  <span>{messageText(t, r.value)}</span>
-                )}
-              </span>
-            </li>
-          ))
-        )}
-      </ol>
-
-      <div className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-0.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         <button
           type="button"
           onClick={() => onOpen('emoji')}
@@ -114,27 +63,117 @@ export function TableChat({
         <button
           type="button"
           onClick={() => onOpen('message')}
-          className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-gold/40 bg-black/30 px-3.5 text-sm font-semibold hover:border-gold"
+          aria-label={t('reactions.messagesButton')}
+          className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-full border border-gold/40 bg-black/30 px-3 text-sm font-semibold hover:border-gold"
         >
-          <span aria-hidden="true">💬</span>
-          {t('reactions.messagesButton')}
+          <span aria-hidden="true" className="text-lg">
+            💬
+          </span>
+          <span className="hidden sm:inline">{t('reactions.messagesButton')}</span>
         </button>
-        {QUICK.map((key) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => onQuick(key, quickTo)}
-            className="min-h-11 shrink-0 rounded-full border border-border bg-black/20 px-3 text-sm font-semibold text-muted hover:border-gold/50 hover:text-white"
-          >
-            {messageText(t, key)}
-          </button>
-        ))}
+
+        <ol
+          ref={list}
+          role="log"
+          aria-live="polite"
+          aria-label={t('reactions.chat.title')}
+          className={`min-w-0 overflow-y-auto overscroll-contain rounded-xl bg-black/30 px-3 text-sm ${
+            open
+              ? 'order-last max-h-44 min-h-14 basis-full space-y-1 py-2'
+              : 'h-11 flex-1 overflow-hidden leading-[2.75rem]'
+          }`}
+        >
+          {log.length === 0 ? (
+            <li className={open ? 'py-2 text-center text-muted' : 'truncate text-muted'}>
+              {t('reactions.chat.empty')}
+            </li>
+          ) : (
+            log.map((r) => (
+              <Line key={r.id} reaction={r} who={who} time={time} mine={r.from_seat === mySeat} />
+            ))
+          )}
+        </ol>
+        {open ? <span className="flex-1" /> : null}
+
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls="table-chat-more"
+          aria-label={t('reactions.chat.title')}
+          onClick={() => setOpen(!open)}
+          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-border text-muted hover:border-gold/50 hover:text-white"
+        >
+          <ChevronIcon
+            className={`size-5 transition-transform ${open ? '-rotate-90' : 'rotate-90'}`}
+          />
+        </button>
       </div>
+
+      {open ? (
+        <div id="table-chat-more" className="mt-2 flex flex-wrap items-center gap-1.5">
+          {QUICK.map((key) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => onQuick(key, quickTo)}
+              className="min-h-11 rounded-full border border-border bg-black/20 px-3.5 text-sm font-semibold text-muted hover:border-gold/50 hover:text-white"
+            >
+              {messageText(t, key)}
+            </button>
+          ))}
+          <button
+            type="button"
+            aria-pressed={muted}
+            onClick={() => setMuted(!muted)}
+            className={`ml-auto min-h-11 rounded-full border px-3.5 text-sm font-semibold ${
+              muted
+                ? 'border-gold bg-gold/15 text-gold-light'
+                : 'border-border text-muted hover:border-gold/50 hover:text-white'
+            }`}
+          >
+            {t('reactions.chat.mute')}
+          </button>
+        </div>
+      ) : null}
+
       {error ? (
-        <p role="alert" className="mt-1.5 text-xs text-take">
+        <p role="alert" className="mt-1.5 px-1 text-xs text-[#f87171]">
           {error}
         </p>
       ) : null}
     </section>
+  )
+}
+
+function Line({
+  reaction: r,
+  who,
+  time,
+  mine,
+}: {
+  reaction: Reaction
+  who: (seat: number) => string
+  time: Intl.DateTimeFormat
+  mine: boolean
+}) {
+  const { t } = useTranslation()
+  return (
+    <li className="flex min-w-0 items-baseline gap-2">
+      <time dateTime={r.sent_at} className="shrink-0 text-xs text-muted tabular-nums">
+        {time.format(new Date(r.sent_at))}
+      </time>
+      <span className="min-w-0 truncate">
+        <span className={`font-bold ${mine ? 'text-accent-text' : 'text-gold-light'}`}>
+          {who(r.from_seat)}
+        </span>
+        {r.to_seat !== null ? <span className="text-muted"> → {who(r.to_seat)}</span> : null}
+        <span className="text-muted">: </span>
+        {r.kind === 'emoji' ? (
+          <span className="text-lg leading-none">{r.value}</span>
+        ) : (
+          <span>{messageText(t, r.value)}</span>
+        )}
+      </span>
+    </li>
   )
 }

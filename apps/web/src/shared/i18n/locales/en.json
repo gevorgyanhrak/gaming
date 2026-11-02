@@ -676,8 +676,7 @@
     "chat": {
       "title": "Table chat",
       "empty": "Say hello with an emoji or a quick message.",
-      "mute": "Mute",
-      "unmute": "Unmute"
+      "mute": "Mute animations"
     }
   }
 }

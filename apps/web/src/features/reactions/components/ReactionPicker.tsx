@@ -84,13 +84,23 @@ export function ReactionPicker({
     catalog.emoji.some((category) => category.emojis.some((e) => e.emoji === emoji)),
   )
 
+  // A word for screen readers: the first (English) search word of the emoji.
+  const words = useMemo(
+    () =>
+      new Map(
+        catalog.emoji.flatMap((c) =>
+          c.emojis.map((e) => [e.emoji, e.keywords.split(' ')[0] ?? '']),
+        ),
+      ),
+    [catalog],
+  )
   const emojiButton = (emoji: string, key: string) => (
     <button
       key={key}
       type="button"
       onClick={() => send('emoji', emoji)}
       className="flex size-11 items-center justify-center rounded-xl text-[1.7rem] leading-none transition hover:scale-110 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-accent-text active:scale-95"
-      aria-label={emoji}
+      aria-label={`${emoji} ${words.get(emoji) ?? ''}`.trim()}
     >
       {emoji}
     </button>
@@ -116,7 +126,7 @@ export function ReactionPicker({
           <button
             type="button"
             onClick={onClose}
-            className="flex size-9 items-center justify-center rounded-full text-muted hover:bg-white/10 hover:text-white"
+            className="flex size-11 items-center justify-center rounded-full text-muted hover:bg-white/10 hover:text-white"
             aria-label={t('reactions.close')}
           >
             <CloseIcon className="size-5" />
@@ -136,7 +146,7 @@ export function ReactionPicker({
                     type="button"
                     aria-pressed={to === r.seat}
                     onClick={() => setTo(r.seat)}
-                    className={`shrink-0 rounded-full border px-3 py-1.5 text-sm font-semibold transition ${
+                    className={`min-h-11 shrink-0 rounded-full border px-3.5 text-sm font-semibold transition ${
                       to === r.seat
                         ? 'border-gold bg-gold/15 text-gold-light'
                         : 'border-border text-muted hover:border-gold/50 hover:text-white'
@@ -153,15 +163,27 @@ export function ReactionPicker({
           </fieldset>
         ) : null}
 
-        <div role="tablist" className="mx-4 mt-3 grid grid-cols-2 rounded-xl bg-black/30 p-1">
+        <div
+          role="tablist"
+          className="mx-4 mt-3 grid grid-cols-2 rounded-xl bg-black/30 p-1"
+          onKeyDown={(event) => {
+            if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
+            const next = tab === 'emoji' ? 'message' : 'emoji'
+            setTab(next)
+            document.getElementById(`reaction-tab-${next}`)?.focus()
+          }}
+        >
           {(['emoji', 'message'] as const).map((kind) => (
             <button
               key={kind}
+              id={`reaction-tab-${kind}`}
               type="button"
               role="tab"
               aria-selected={tab === kind}
+              aria-controls={`reaction-panel-${kind}`}
+              tabIndex={tab === kind ? 0 : -1}
               onClick={() => setTab(kind)}
-              className={`rounded-lg py-2 text-sm font-bold transition ${
+              className={`min-h-11 rounded-lg text-sm font-bold transition ${
                 tab === kind ? 'bg-gold text-black shadow' : 'text-muted hover:text-white'
               }`}
             >
@@ -171,7 +193,12 @@ export function ReactionPicker({
         </div>
 
         {tab === 'emoji' ? (
-          <div role="tabpanel" className="flex min-h-0 flex-1 flex-col">
+          <div
+            id="reaction-panel-emoji"
+            role="tabpanel"
+            aria-labelledby="reaction-tab-emoji"
+            className="flex min-h-0 flex-1 flex-col"
+          >
             <div className="shrink-0 px-4 pt-3">
               <input
                 type="search"
@@ -198,7 +225,7 @@ export function ReactionPicker({
                         ?.querySelector(`[data-category="${category.slug}"]`)
                         ?.scrollIntoView({ block: 'start', behavior: 'smooth' })
                     }
-                    className="flex size-9 shrink-0 items-center justify-center rounded-lg text-xl hover:bg-white/10"
+                    className="flex size-11 shrink-0 items-center justify-center rounded-lg text-xl hover:bg-white/10"
                   >
                     {category.emojis[0]?.emoji}
                   </button>
@@ -243,7 +270,9 @@ export function ReactionPicker({
           </div>
         ) : (
           <div
+            id="reaction-panel-message"
             role="tabpanel"
+            aria-labelledby="reaction-tab-message"
             className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-3 pb-4"
           >
             {catalog.messages.map((category) => (
@@ -257,7 +286,7 @@ export function ReactionPicker({
                       key={key}
                       type="button"
                       onClick={() => send('message', key)}
-                      className="min-h-10 rounded-full border border-gold/30 bg-black/30 px-3.5 py-2 text-sm font-semibold transition hover:border-gold hover:bg-gold/15 active:scale-95"
+                      className="min-h-11 rounded-full border border-gold/30 bg-black/30 px-3.5 py-2 text-sm font-semibold transition hover:border-gold hover:bg-gold/15 active:scale-95"
                     >
                       {messageText(t, key)}
                     </button>

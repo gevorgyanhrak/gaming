@@ -4,33 +4,67 @@ import { useTranslation } from 'react-i18next'
 import type { Reaction } from '../api'
 import { messageText } from '../labels'
 
-type Point = { x: number; y: number; top: number }
+type Point = { x: number; y: number; top: number; left: number; right: number; bottom: number }
 
-/** Bubbles currently shown per destination seat, so a second one stacks above the first. */
-const stacked = new Map<string, number>()
+/** Message bubbles showing per destination seat: at most two (a third replaces the oldest). */
+const shown = new Map<string, { id: string; index: number; retire: () => void }[]>()
 
 /**
  * Where a seat is on screen: the first visible element marked `data-seat-anchor` for it (the player
- * list, the waiting table, poker and durak seats). Off-screen seats are pulled to the screen's edge;
- * a seat that isn't drawn at all falls back to the bottom (you) or the top (the others).
+ * list, the waiting table, poker and durak seats). Null when it isn't drawn or is scrolled out of view:
+ * then nothing is drawn for it (the table chat still lists the reaction).
  */
-function seatPoint(seat: number | null, mine: boolean): Point {
-  const margin = 28
-  if (seat !== null) {
-    for (const el of document.querySelectorAll<HTMLElement>(`[data-seat-anchor="${seat}"]`)) {
-      const r = el.getBoundingClientRect()
-      if (r.width > 0 && r.height > 0) {
-        const clamp = (v: number, max: number) => Math.min(Math.max(v, margin), max - margin)
-        return {
-          x: clamp(r.left + r.width / 2, innerWidth),
-          y: clamp(r.top + r.height / 2, innerHeight),
-          top: clamp(r.top, innerHeight),
-        }
-      }
+function seatPoint(seat: number | null): Point | null {
+  if (seat === null) return null
+  for (const el of document.querySelectorAll<HTMLElement>(`[data-seat-anchor="${seat}"]`)) {
+    const r = el.getBoundingClientRect()
+    if (r.width === 0 || r.height === 0) continue
+    if (r.bottom < 0 || r.top > innerHeight || r.right < 0 || r.left > innerWidth) return null
+    return {
+      x: r.left + r.width / 2,
+      y: r.top + r.height / 2,
+      top: r.top,
+      left: r.left,
+      right: r.right,
+      bottom: r.bottom,
     }
   }
-  const y = mine ? innerHeight * 0.78 : innerHeight * 0.22
-  return { x: innerWidth / 2, y, top: y - 20 }
+  return null
+}
+
+/**
+ * Where a message bubble goes for a seat (its top-left corner): beside the seat on the side away from
+ * the middle of the screen, else the other side, below, or above — the first place that is on screen
+ * and touches no other player's seat (their name, clock, cards). The second bubble at a seat sits
+ * next to the first.
+ */
+function bubbleSpot(dest: Point, seat: number, node: HTMLElement, index: number) {
+  const w = node.offsetWidth
+  const h = node.offsetHeight
+  const step = index * (h + 6)
+  const centred = Math.min(Math.max(dest.x - w / 2, 8), innerWidth - w - 8)
+  const sides =
+    dest.x <= innerWidth / 2 + 40 ? (['right', 'left'] as const) : (['left', 'right'] as const)
+  const spots = {
+    right: { left: dest.right + 8, top: dest.y - h / 2 - step },
+    left: { left: dest.left - 8 - w, top: dest.y - h / 2 - step },
+    below: { left: centred, top: dest.bottom + 8 + step },
+    above: { left: centred, top: dest.top - 8 - h - step },
+  }
+  const others = [...document.querySelectorAll<HTMLElement>('[data-seat-anchor]')]
+    .filter((el) => el.dataset.seatAnchor !== String(seat))
+    .map((el) => el.getBoundingClientRect())
+    .filter((r) => r.width > 0)
+  const fits = ({ left, top }: { left: number; top: number }) =>
+    left >= 8 &&
+    top >= 8 &&
+    left + w <= innerWidth - 8 &&
+    top + h <= innerHeight - 8 &&
+    !others.some((r) => left < r.right && left + w > r.left && top < r.bottom && top + h > r.top)
+  for (const place of [...sides, 'below', 'above'] as const) {
+    if (fits(spots[place])) return spots[place]
+  }
+  return { left: centred, top: Math.max(8, spots.above.top) }
 }
 
 /**
@@ -62,7 +96,6 @@ export function ReactionLayer({
           <Flight
             key={reaction.id}
             reaction={reaction}
-            mySeat={mySeat}
             sender={names[reaction.from_seat] ?? ''}
             onLanded={onLanded}
           />
@@ -80,12 +113,10 @@ function Skip({ id, onLanded }: { id: string; onLanded: (id: string) => void }) 
 
 function Flight({
   reaction,
-  mySeat,
   sender,
   onLanded,
 }: {
   reaction: Reaction
-  mySeat: number | null
   sender: string
   onLanded: (id: string) => void
 }) {
@@ -101,57 +132,74 @@ function Flight({
       onLanded(reaction.id)
       return
     }
-    const from = seatPoint(reaction.from_seat, reaction.from_seat === mySeat)
+    const from = seatPoint(reaction.from_seat)
     const target = reaction.to_seat
-    const to = target === null ? null : seatPoint(target, target === mySeat)
+    const to = target === null ? null : seatPoint(target)
+    const dest = target === null ? from : to
+    // Where it should end isn't on screen: the chat has it.
+    if (!dest) {
+      onLanded(reaction.id)
+      return
+    }
     const still =
       typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
 
     let animation: Animation
+    let release = () => undefined as unknown
     if (message) {
-      // Above the receiver's seat (or the sender's, for everyone), stacked if several are up there.
-      const dest = to ?? from
+      // Beside the seat, on the side away from the middle of the table (off the board, the clocks and
+      // the cards); above it when neither side has room. Two at most per seat.
       const slot = `${reaction.room}:${target ?? `from-${reaction.from_seat}`}`
-      const index = stacked.get(slot) ?? 0
-      stacked.set(slot, index + 1)
-      const half = node.offsetWidth / 2
-      const step = node.offsetHeight + 6
-      const x = Math.min(Math.max(dest.x, half + 8), innerWidth - half - 8)
-      // Stacked upwards above the seat while there is room; the rest go below it, never overlapping.
-      const above = Math.max(0, Math.floor((dest.top - 16) / step))
-      const y =
-        index < above
-          ? dest.top - 8 - index * step
-          : dest.y + (dest.y - dest.top) + 8 + node.offsetHeight + (index - above) * step
-      const at = (px: number, py: number, s = 1) =>
-        `translate(${px}px, ${py}px) translate(-50%, -100%) scale(${s})`
-      const fromX = Math.min(Math.max(from.x, half + 8), innerWidth - half - 8)
+      // Keyed by id: an effect that runs twice (React's strict mode) doesn't count itself twice.
+      const list = (shown.get(slot) ?? []).filter((b) => b.id !== reaction.id)
+      if (list.length >= 2) list.shift()?.retire()
+      const used = new Set(list.map((b) => b.index))
+      const index = used.has(0) ? 1 : 0
+
+      const { left, top } = bubbleSpot(dest, target ?? reaction.from_seat, node, index)
+      const at = (px: number, py: number, s = 1) => `translate(${px}px, ${py}px) scale(${s})`
+      const start = from ?? dest
+      const w = node.offsetWidth
+      const h = node.offsetHeight
+
       animation = node.animate(
-        still || !to
+        still || !to || !from
           ? [
-              { transform: at(x, y, 0.85), opacity: 0 },
-              { transform: at(x, y), opacity: 1, offset: 0.08 },
-              { transform: at(x, y), opacity: 1, offset: 0.9 },
-              { transform: at(x, y - 10), opacity: 0 },
+              { transform: at(left, top, 0.85), opacity: 0 },
+              { transform: at(left, top), opacity: 1, offset: 0.08 },
+              { transform: at(left, top), opacity: 1, offset: 0.9 },
+              { transform: at(left, top - 10), opacity: 0 },
             ]
           : [
-              { transform: at(fromX, from.top - 8, 0.6), opacity: 0 },
-              { transform: at(fromX, from.top - 8, 1), opacity: 1, offset: 0.06 },
-              { transform: at(x, y, 1.04), opacity: 1, offset: 0.2, easing: 'ease-out' },
-              { transform: at(x, y), opacity: 1, offset: 0.26 },
-              { transform: at(x, y), opacity: 1, offset: 0.9 },
-              { transform: at(x, y - 10), opacity: 0 },
+              { transform: at(start.x - w / 2, start.y - h / 2, 0.6), opacity: 0 },
+              { transform: at(start.x - w / 2, start.y - h / 2, 1), opacity: 1, offset: 0.06 },
+              { transform: at(left, top, 1.04), opacity: 1, offset: 0.2, easing: 'ease-out' },
+              { transform: at(left, top), opacity: 1, offset: 0.26 },
+              { transform: at(left, top), opacity: 1, offset: 0.9 },
+              { transform: at(left, top - 10), opacity: 0 },
             ],
         { duration: 3400, easing: 'ease-in-out', fill: 'forwards' },
       )
-      animation.finished
-        .catch(() => undefined)
-        .finally(() => stacked.set(slot, Math.max(0, (stacked.get(slot) ?? 1) - 1)))
+      const bubble = animation
+      const entry = {
+        id: reaction.id,
+        index,
+        // Replaced by a newer one: fade out from now.
+        retire: () => {
+          bubble.currentTime = Math.max(Number(bubble.currentTime ?? 0), 3400 * 0.9)
+        },
+      }
+      shown.set(slot, [...list, entry])
+      release = () =>
+        shown.set(
+          slot,
+          (shown.get(slot) ?? []).filter((b) => b.id !== reaction.id),
+        )
     } else {
       const at = (px: number, py: number, s: number) =>
         `translate(${px}px, ${py}px) translate(-50%, -50%) scale(${s})`
-      if (still) {
-        const dest = to ?? from
+      if (still || !from) {
+        // Reduced motion, or the sender is out of view: it just appears beside the receiver.
         animation = node.animate(
           [
             { transform: at(dest.x, dest.top, 1), opacity: 0 },
@@ -197,8 +245,11 @@ function Flight({
       }
     }
     animation.finished.then(() => onLanded(reaction.id)).catch(() => undefined)
-    return () => animation.cancel()
-  }, [reaction, mySeat, message, onLanded])
+    return () => {
+      animation.cancel()
+      release()
+    }
+  }, [reaction, message, onLanded])
 
   return (
     <div
