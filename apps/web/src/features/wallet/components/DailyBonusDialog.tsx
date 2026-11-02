@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router'
+import { useCurrentUser } from '@/features/auth/hooks'
 import { Button } from '@/shared/ui/Button'
 import { walletKey } from '../api'
 import {
@@ -25,13 +26,14 @@ import { FishkaIcon } from './FishkaIcon'
  */
 export function DailyBonusDialog() {
   const bonus = useDailyBonus()
+  const { data: user } = useCurrentUser()
   const open = useDailyBonusOpen()
   const { pathname } = useLocation()
   const waiting = bonus.data && !bonus.data.claimed
 
   useEffect(() => {
-    if (waiting && !pathname.startsWith('/rooms/')) offerDailyBonus()
-  }, [waiting, pathname])
+    if (waiting && user && !pathname.startsWith('/rooms/')) offerDailyBonus(user.id)
+  }, [waiting, user, pathname])
 
   return open && bonus.data ? createPortal(<Dialog bonus={bonus.data} />, document.body) : null
 }
@@ -86,7 +88,6 @@ function Dialog({ bonus }: { bonus: DailyBonus }) {
   const done = bonus.claimed
   const last = bonus.days.length
   const toDouble = last - bonus.day
-  const tomorrow = bonus.days[Math.min(bonus.day, last - 1)]?.amount ?? bonus.amount
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center p-3 sm:items-center sm:p-4">
@@ -133,7 +134,7 @@ function Dialog({ bonus }: { bonus: DailyBonus }) {
             className="mt-4 text-sm font-semibold text-white/90 sm:text-base"
           >
             {done
-              ? t('daily.comeBack', { amount: format(tomorrow) })
+              ? t('daily.comeBack', { amount: format(bonus.tomorrow) })
               : toDouble > 0
                 ? t('daily.toDouble', { count: toDouble })
                 : t('daily.doubleToday')}

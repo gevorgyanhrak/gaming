@@ -124,7 +124,8 @@ export function PublicLayout() {
                 <Skeleton className="size-9 rounded-full" />
               ) : user.data ? (
                 <>
-                  <FishkaBalance />
+                  {/* Keyed by account: another one signing in starts fresh (no "+N" for the switch). */}
+                  <FishkaBalance key={user.data.id} />
                   <UserMenu user={user.data} />
                 </>
               ) : (
@@ -142,7 +143,7 @@ export function PublicLayout() {
         </header>
 
         {user.data ? <VerificationBanner user={user.data} /> : null}
-        {user.data ? <WalletSync /> : null}
+        {user.data ? <WalletSync key={user.data.id} /> : null}
         {user.data && !inMaintenance ? <ActiveGamesBar /> : null}
 
         <main className="flex-1">

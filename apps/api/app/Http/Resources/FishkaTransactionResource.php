@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\FishkaTransactionType;
 use App\Models\FishkaTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -25,6 +26,8 @@ class FishkaTransactionResource extends JsonResource
             'description' => $this->description,
             /** @var string|null */
             'reference_id' => $this->reference_id,
+            /** @var int|null The streak's day, for a daily bonus ("Daily bonus, day N"). */
+            'day' => $this->type === FishkaTransactionType::DailyLoginBonus && preg_match('/day (\d+)$/', (string) $this->description, $m) === 1 ? (int) $m[1] : null,
             'created_at' => $this->created_at->toIso8601String(),
         ];
     }

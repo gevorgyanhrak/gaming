@@ -132,7 +132,10 @@ function Entry({ entry }: { entry: FishkaTransaction }) {
   return (
     <li className="flex items-center gap-3 px-4 py-3">
       <div className="min-w-0 flex-1">
-        <p className="font-semibold">{t(`fishka.type.${entry.type}`)}</p>
+        <p className="font-semibold">
+          {t(`fishka.type.${entry.type}`)}
+          {entry.day ? ` · ${t('daily.day', { day: entry.day })}` : null}
+        </p>
         <p className="text-xs text-muted">
           {new Intl.DateTimeFormat(i18n.language, {
             dateStyle: 'medium',

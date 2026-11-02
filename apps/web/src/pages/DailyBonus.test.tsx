@@ -84,6 +84,17 @@ describe('Daily bonus', () => {
     ).toBeInTheDocument()
   })
 
+  it('says what tomorrow brings once today’s is collected', async () => {
+    serve(dailyBonusFixture({ claimed: true, day: 1, amount: 1000, tomorrow: 1000 }))
+    const { router } = renderRoute('/games/chess')
+    await router.navigate('/wallet')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Open' }))
+    expect(
+      await screen.findByText('Today’s bonus is collected. Come back tomorrow for 1,000.'),
+    ).toBeInTheDocument()
+  })
+
   it('never opens over a game in progress', async () => {
     serve()
     server.use(

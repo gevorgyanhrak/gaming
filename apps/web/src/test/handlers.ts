@@ -97,6 +97,7 @@ export function dailyBonusFixture(overrides: Partial<DailyBonus> = {}): DailyBon
     day: 1,
     claimed: true,
     amount: 1000,
+    tomorrow: 1500,
     days: [1000, 1500, 2000, 2500, 5000].map((amount, i) => ({ day: i + 1, amount })),
     ...overrides,
   }

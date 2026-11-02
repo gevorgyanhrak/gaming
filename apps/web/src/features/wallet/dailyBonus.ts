@@ -32,16 +32,15 @@ export function useDailyBonus() {
   })
 }
 
-// Whether the popup is open: it opens by itself once per visit while today's bonus is waiting, and
-// from the wallet page.
+// Whether the popup is open: it opens by itself once per visit and player while today's bonus is
+// waiting (another account signing in on the same page is offered theirs), and from the wallet page.
 let open = false
-let shownThisVisit = false
+const shownTo = new Set<number>()
 const listeners = new Set<() => void>()
 const notify = () => listeners.forEach((listener) => listener())
 
 export function openDailyBonus() {
   open = true
-  shownThisVisit = true
   notify()
 }
 
@@ -50,9 +49,11 @@ export function closeDailyBonus() {
   notify()
 }
 
-/** Opens it by itself, once per visit (a closed popup stays closed until the next visit). */
-export function offerDailyBonus() {
-  if (!shownThisVisit) openDailyBonus()
+/** Opens it by itself, once per visit for each player (closed, it stays closed until the next visit). */
+export function offerDailyBonus(userId: number) {
+  if (shownTo.has(userId)) return
+  shownTo.add(userId)
+  openDailyBonus()
 }
 
 export function useDailyBonusOpen(): boolean {
@@ -68,5 +69,5 @@ export function useDailyBonusOpen(): boolean {
 /** For tests: a fresh visit. */
 export function resetDailyBonus() {
   open = false
-  shownThisVisit = false
+  shownTo.clear()
 }

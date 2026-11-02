@@ -77,16 +77,20 @@ class FishkaWallets
      * is (days in a row raise it; a missed day starts again at day 1; the last day repeats), what each
      * day gives, and whether today's was already taken.
      *
-     * @return array{day: int, claimed: bool, amount: int, days: list<array{day: int, amount: int}>}
+     * `tomorrow` is what tomorrow's bonus gives if the streak goes on (today's collected or not): on the
+     * day the account opened (the welcome bonus, streak 0) that is day 1.
+     *
+     * @return array{day: int, claimed: bool, amount: int, tomorrow: int, days: list<array{day: int, amount: int}>}
      */
     public function dailyStatus(User $user): array
     {
         $wallet = $this->wallet($user);
         $claimed = $wallet->daily_bonus_on?->toDateString() === $this->today();
         $day = $claimed ? max(1, $wallet->daily_streak) : $this->nextDailyDay($wallet);
+        $tomorrow = min(self::DAILY_DAYS, ($claimed ? $wallet->daily_streak : $day) + 1);
         $days = array_map(fn (int $d) => ['day' => $d, 'amount' => $this->dailyAmount($d)], range(1, self::DAILY_DAYS));
 
-        return ['day' => $day, 'claimed' => $claimed, 'amount' => $this->dailyAmount($day), 'days' => $days];
+        return ['day' => $day, 'claimed' => $claimed, 'amount' => $this->dailyAmount($day), 'tomorrow' => $this->dailyAmount($tomorrow), 'days' => $days];
     }
 
     /**

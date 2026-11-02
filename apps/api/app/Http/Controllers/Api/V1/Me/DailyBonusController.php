@@ -27,6 +27,8 @@ class DailyBonusController extends Controller
                 'claimed' => $status['claimed'],
                 /** @var int What today's bonus gives. */
                 'amount' => $status['amount'],
+                /** @var int What tomorrow's gives if the streak goes on. */
+                'tomorrow' => $status['tomorrow'],
                 /** @var list<array{day: int, amount: int}> */
                 'days' => $status['days'],
             ],
@@ -54,6 +56,8 @@ class DailyBonusController extends Controller
             'claimed' => $status['claimed'],
             /** @var int */
             'amount' => $status['amount'],
+            /** @var int */
+            'tomorrow' => $status['tomorrow'],
             /** @var list<array{day: int, amount: int}> */
             'days' => $status['days'],
             /** @var int The Fishkas this request added (0 for a repeat). */

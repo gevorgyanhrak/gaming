@@ -813,6 +813,8 @@ export interface components {
             balance_after: number;
             description: string | null;
             reference_id: string | null;
+            /** @description The streak's day, for a daily bonus ("Daily bonus, day N"). */
+            day: number | null;
             created_at: string;
         };
         /** ForgotPasswordRequest */
@@ -1397,6 +1399,8 @@ export interface operations {
                             claimed: boolean;
                             /** @description What today's bonus gives. */
                             amount: number;
+                            /** @description What tomorrow's gives if the streak goes on. */
+                            tomorrow: number;
                             days: {
                                 day: number;
                                 amount: number;
@@ -1427,6 +1431,7 @@ export interface operations {
                             day: number;
                             claimed: boolean;
                             amount: number;
+                            tomorrow: number;
                             days: {
                                 day: number;
                                 amount: number;
@@ -1447,6 +1452,7 @@ export interface operations {
                             day: number;
                             claimed: boolean;
                             amount: number;
+                            tomorrow: number;
                             days: {
                                 day: number;
                                 amount: number;

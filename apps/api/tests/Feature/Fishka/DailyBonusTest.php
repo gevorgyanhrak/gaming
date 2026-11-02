@@ -46,7 +46,7 @@ it('shows today’s day, every day’s amount and whether it was collected', fun
     $this->travel(1)->days();
 
     $this->actingAs($this->user)->getJson('/api/v1/me/daily-bonus')->assertOk()->assertExactJson(['data' => [
-        'day' => 1, 'claimed' => false, 'amount' => 1000,
+        'day' => 1, 'claimed' => false, 'amount' => 1000, 'tomorrow' => 1500,
         'days' => [['day' => 1, 'amount' => 1000], ['day' => 2, 'amount' => 1500], ['day' => 3, 'amount' => 2000], ['day' => 4, 'amount' => 2500], ['day' => 5, 'amount' => 5000]],
     ]]);
     collectDaily();
@@ -76,4 +76,22 @@ it('is only for the signed-in player', function () {
     auth()->logout();
     $this->postJson('/api/v1/me/daily-bonus')->assertUnauthorized();
     $this->getJson('/api/v1/me/daily-bonus')->assertUnauthorized();
+});
+
+it('says what tomorrow gives: day 1 after the day the account opened', function () {
+    $this->actingAs($this->user)->getJson('/api/v1/me/daily-bonus')->assertJsonPath('data.claimed', true)->assertJsonPath('data.tomorrow', 1000);
+    $this->travel(1)->days();
+    collectDaily();
+    $this->getJson('/api/v1/me/daily-bonus')->assertJsonPath('data.tomorrow', 1500);
+});
+
+it('shows the streak day on the bonus in the wallet history', function () {
+    $this->travel(1)->days();
+    collectDaily();
+    $this->travel(1)->days();
+    collectDaily();
+
+    $this->getJson('/api/v1/me/wallet/transactions')->assertOk()
+        ->assertJsonPath('data.0.type', 'daily_login_bonus')->assertJsonPath('data.0.day', 2)
+        ->assertJsonPath('data.1.day', 1);
 });
