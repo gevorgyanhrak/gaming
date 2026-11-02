@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Room } from '@/features/play/api'
 import { usePublicConfig } from '@/features/platform/usePublicConfig'
@@ -10,6 +10,9 @@ import { useReactionCatalog, useRoomReactions } from '../useRoomReactions'
 import { ReactionLayer } from './ReactionLayer'
 import { ReactionPicker } from './ReactionPicker'
 import { TableChat } from './TableChat'
+
+/** The same reaction to the same player again within this is a double click, not a second send. */
+const REPEAT_MS = 1000
 
 /**
  * Emojis and quick messages for one room (TASK-043): the table chat, the picker and the flights over
@@ -25,6 +28,7 @@ export function RoomReactions({ room, mySeat }: { room: Room; mySeat: number | n
   const [picker, setPicker] = useState<ReactionKind | null>(null)
   const [error, setError] = useState<string | null>(null)
   const closePicker = useCallback(() => setPicker(null), [])
+  const lastSent = useRef(new Map<string, number>())
 
   if (!enabled) return null
 
@@ -37,12 +41,18 @@ export function RoomReactions({ room, mySeat }: { room: Room; mySeat: number | n
   const quickTo = recipients.length === 1 ? (recipients[0]?.seat ?? null) : null
 
   const deliver = (kind: ReactionKind, value: string, toSeat: number | null) => {
+    // A double click sends once: the same reaction to the same player within a second is one send.
+    const key = `${kind}:${value}:${toSeat ?? 'all'}`
+    const now = Date.now()
+    if (now - (lastSent.current.get(key) ?? 0) < REPEAT_MS) return
+    lastSent.current.set(key, now)
     setError(null)
-    send(kind, value, toSeat).catch((e: unknown) =>
+    send(kind, value, toSeat).catch((e: unknown) => {
+      lastSent.current.delete(key)
       setError(
         isApiError(e) && e.status !== 429 && e.status < 500 ? e.message : t('reactions.sendFailed'),
-      ),
-    )
+      )
+    })
   }
 
   return (

@@ -183,6 +183,28 @@ describe('Emojis and quick messages', () => {
     expect(within(picker).queryByRole('button', { name: '😂' })).not.toBeInTheDocument()
   })
 
+  it('sends a double-clicked quick message once', async () => {
+    const sent = serve()
+    renderRoute('/rooms/room-1')
+
+    await userEvent.dblClick(await screen.findByRole('button', { name: 'GG!' }))
+
+    expect(await within(screen.getByRole('log')).findByText('GG!')).toBeInTheDocument()
+    expect(sent).toHaveLength(1)
+  })
+
+  it('finds emojis by a plural word too', async () => {
+    serve()
+    renderRoute('/rooms/room-1')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Send an emoji' }))
+    await userEvent.type(await screen.findByRole('searchbox', { name: 'Search emojis' }), 'hearts')
+
+    expect(
+      within(screen.getByRole('dialog')).getByRole('button', { name: '❤️' }),
+    ).toBeInTheDocument()
+  })
+
   it('retries a send the server could not take, without sending it twice', async () => {
     const ids: unknown[] = []
     serve()

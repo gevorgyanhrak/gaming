@@ -115,8 +115,14 @@ function Flight({
       const index = stacked.get(slot) ?? 0
       stacked.set(slot, index + 1)
       const half = node.offsetWidth / 2
+      const step = node.offsetHeight + 6
       const x = Math.min(Math.max(dest.x, half + 8), innerWidth - half - 8)
-      const y = Math.max(dest.top - 8 - index * (node.offsetHeight + 6), node.offsetHeight + 8)
+      // Stacked upwards above the seat while there is room; the rest go below it, never overlapping.
+      const above = Math.max(0, Math.floor((dest.top - 16) / step))
+      const y =
+        index < above
+          ? dest.top - 8 - index * step
+          : dest.y + (dest.y - dest.top) + 8 + node.offsetHeight + (index - above) * step
       const at = (px: number, py: number, s = 1) =>
         `translate(${px}px, ${py}px) translate(-50%, -100%) scale(${s})`
       const fromX = Math.min(Math.max(from.x, half + 8), innerWidth - half - 8)

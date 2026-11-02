@@ -64,11 +64,17 @@ export function ReactionPicker({
   const found = useMemo(() => {
     const words = query.trim().toLocaleLowerCase()
     if (!words) return null
+    // "cards" finds "card": an English plural also matches its singular.
+    const terms = words.length > 3 && words.endsWith('s') ? [words, words.slice(0, -1)] : [words]
     const all = catalog.emoji.flatMap((category) => category.emojis)
     return [
       ...new Set(
         all
-          .filter((e) => e.keywords.toLocaleLowerCase().includes(words) || e.emoji === words)
+          .filter(
+            (e) =>
+              terms.some((term) => e.keywords.toLocaleLowerCase().includes(term)) ||
+              e.emoji === words,
+          )
           .map((e) => e.emoji),
       ),
     ]
