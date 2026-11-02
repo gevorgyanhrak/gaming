@@ -335,6 +335,7 @@ export default function DurakBoard({
 
         <div style={{ gridArea: 'table' }} className="[container-type:size] relative min-h-0">
           <div
+            data-reaction-avoid=""
             className={
               wide ? 'absolute top-1/2 left-2 z-10 -translate-y-1/2' : 'absolute top-1 left-1 z-10'
             }
@@ -347,6 +348,7 @@ export default function DurakBoard({
             />
           </div>
           <div
+            data-reaction-avoid=""
             data-discard=""
             className={
               wide
@@ -395,8 +397,13 @@ export default function DurakBoard({
                   size="sm"
                 />
               </span>
-              {myRole ? <Bubble role={myRole} /> : null}
+              {myRole ? (
+                <span data-reaction-avoid="">
+                  <Bubble role={myRole} />
+                </span>
+              ) : null}
               <p
+                data-reaction-avoid=""
                 className="line-clamp-3 min-w-0 flex-1 rounded-lg bg-[#fdebc8] px-3 py-1.5 text-sm text-black shadow"
                 aria-live="polite"
               >
@@ -404,7 +411,10 @@ export default function DurakBoard({
               </p>
             </div>
           )}
-          <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:gap-6">
+          <div
+            data-reaction-avoid=""
+            className="flex flex-col gap-2 lg:flex-row lg:items-end lg:gap-6"
+          >
             <DurakHand
               cards={sortHand(view.hand, view.trump)}
               playable={(card) => !!actionFor(card)}

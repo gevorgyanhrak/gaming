@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/shared/ui/Button'
 import { waitingCaption } from '@/features/play/turnCaption'
+import { useBoardFit } from '@/features/play/useBoardFit'
 import type { BoardProps } from '../registry'
 
 type Piece = 'K' | 'Q' | 'R' | 'B' | 'N' | 'P' | 'k' | 'q' | 'r' | 'b' | 'n' | 'p'
@@ -93,11 +94,17 @@ export default function ChessBoard({ state, onAction, pending, players }: BoardP
     setSelected(sources.has(square) && selected !== square ? square : null)
   }
 
+  // The board's bottom edge (your home rank) stays on screen whatever sits above it.
+  const [boardRef, boardStyle] = useBoardFit()
+
   return (
     <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center">
-      <div className="w-full max-w-[max(20rem,min(38rem,calc(100dvh-24rem)))] space-y-3">
+      <div
+        className="w-full max-w-[max(17.5rem,min(38rem,calc(100dvh-30rem)))] space-y-3"
+        style={boardStyle}
+      >
         {state.seats_to_act.length > 0 ? (
-          <p className="text-center text-2xl font-semibold sm:text-3xl">
+          <p className="text-center text-xl font-semibold sm:text-3xl">
             {view.turn === 0 ? t('chess.moveWhite') : t('chess.moveBlack')}
           </p>
         ) : null}
@@ -113,7 +120,7 @@ export default function ChessBoard({ state, onAction, pending, players }: BoardP
           </p>
         </div>
 
-        <div className="table-rim rounded-xl p-2 sm:p-3">
+        <div ref={boardRef} className="table-rim rounded-xl p-2 sm:p-3">
           <div className="grid aspect-square w-full grid-cols-8 grid-rows-8 overflow-hidden rounded-sm text-[clamp(0.55rem,1.6vw,0.75rem)] shadow-[inset_0_0_0_1px_rgb(0_0_0/0.35)]">
             {order.map((square, index) => {
               const dark = (Math.floor(square / 8) + (square % 8)) % 2 === 1
@@ -241,7 +248,8 @@ export default function ChessBoard({ state, onAction, pending, players }: BoardP
       </div>
 
       <section
-        className="club-panel w-full max-w-[max(20rem,min(38rem,calc(100dvh-24rem)))] rounded-2xl p-4 lg:mt-20 lg:w-60"
+        className="club-panel w-full max-w-[max(17.5rem,min(38rem,calc(100dvh-30rem)))] rounded-2xl p-4 lg:mt-20 lg:w-60"
+        style={boardStyle}
         aria-label={t('chess.moves')}
       >
         <h2 className="mb-2 text-xs font-semibold tracking-wider text-muted uppercase">

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { waitingCaption } from '@/features/play/turnCaption'
+import { useBoardFit } from '@/features/play/useBoardFit'
 import type { BoardProps } from '../registry'
 
 type Piece = 'w' | 'W' | 'b' | 'B'
@@ -70,10 +71,16 @@ export default function CheckersBoard({ state, onAction, pending, players }: Boa
     rank: index % 8 === 0 ? 8 - Math.floor(square / 8) : null,
   })
 
+  // The board's bottom edge (your home row) stays on screen whatever sits above it.
+  const [boardRef, boardStyle] = useBoardFit()
+
   return (
-    <div className="mx-auto max-w-[max(20rem,min(38rem,calc(100dvh-24rem)))] space-y-3">
+    <div
+      className="mx-auto max-w-[max(17.5rem,min(38rem,calc(100dvh-30rem)))] space-y-3"
+      style={boardStyle}
+    >
       {state.seats_to_act.length > 0 ? (
-        <p className="text-center text-2xl font-semibold sm:text-3xl">
+        <p className="text-center text-xl font-semibold sm:text-3xl">
           {view.turn === 0 ? t('checkers.moveWhite') : t('checkers.moveBlack')}
         </p>
       ) : null}
@@ -84,7 +91,7 @@ export default function CheckersBoard({ state, onAction, pending, players }: Boa
         </p>
       </div>
 
-      <div className="table-rim rounded-xl p-2 sm:p-3">
+      <div ref={boardRef} className="table-rim rounded-xl p-2 sm:p-3">
         <div className="grid aspect-square w-full grid-cols-8 grid-rows-8 overflow-hidden rounded-sm text-[clamp(0.55rem,1.6vw,0.75rem)] shadow-[inset_0_0_0_1px_rgb(0_0_0/0.35)]">
           {order.map((square, index) => {
             const dark = (Math.floor(square / 8) + (square % 8)) % 2 === 1

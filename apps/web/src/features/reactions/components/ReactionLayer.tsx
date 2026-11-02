@@ -7,7 +7,8 @@ import { messageText } from '../labels'
 type Point = { x: number; y: number; top: number; left: number; right: number; bottom: number }
 
 /** Message bubbles showing per destination seat: at most two (a third replaces the oldest). */
-const shown = new Map<string, { id: string; index: number; retire: () => void }[]>()
+type Box = { left: number; top: number; right: number; bottom: number }
+const shown = new Map<string, { id: string; index: number; box: Box; retire: () => void }[]>()
 
 /**
  * Where a seat is on screen: the first visible element marked `data-seat-anchor` for it (the player
@@ -35,8 +36,9 @@ function seatPoint(seat: number | null): Point | null {
 /**
  * Where a message bubble goes for a seat (its top-left corner): beside the seat on the side away from
  * the middle of the screen, else the other side, below, or above — the first place that is on screen
- * and touches no other player's seat (their name, clock, cards). The second bubble at a seat sits
- * next to the first.
+ * and touches no other player's seat (their name, clock, cards) nor what the board marks
+ * `data-reaction-avoid`, nor another bubble; when none is clear, the one covering least (and `clear` is
+ * false). The second bubble at a seat sits next to the first.
  */
 function bubbleSpot(dest: Point, seat: number, node: HTMLElement, index: number) {
   const w = node.offsetWidth
@@ -51,20 +53,36 @@ function bubbleSpot(dest: Point, seat: number, node: HTMLElement, index: number)
     below: { left: centred, top: dest.bottom + 8 + step },
     above: { left: centred, top: dest.top - 8 - h - step },
   }
-  const others = [...document.querySelectorAll<HTMLElement>('[data-seat-anchor]')]
+  // Other players' seats and what a board marks as not to be covered (deck, trump, hand, own status).
+  const avoid = [
+    ...document.querySelectorAll<HTMLElement>('[data-seat-anchor], [data-reaction-avoid]'),
+  ]
     .filter((el) => el.dataset.seatAnchor !== String(seat))
-    .map((el) => el.getBoundingClientRect())
-    .filter((r) => r.width > 0)
-  const fits = ({ left, top }: { left: number; top: number }) =>
-    left >= 8 &&
-    top >= 8 &&
-    left + w <= innerWidth - 8 &&
-    top + h <= innerHeight - 8 &&
-    !others.some((r) => left < r.right && left + w > r.left && top < r.bottom && top + h > r.top)
-  for (const place of [...sides, 'below', 'above'] as const) {
-    if (fits(spots[place])) return spots[place]
+    .map((el): Box => el.getBoundingClientRect())
+    .filter((r) => r.right > r.left)
+    // Where the other bubbles land (not where they are mid-flight).
+    .concat([...shown.values()].flat().map((b) => b.box))
+  const overlap = ({ left, top }: { left: number; top: number }) =>
+    avoid.reduce(
+      (sum, r) =>
+        sum +
+        Math.max(0, Math.min(left + w, r.right) - Math.max(left, r.left)) *
+          Math.max(0, Math.min(top + h, r.bottom) - Math.max(top, r.top)),
+      0,
+    )
+  const onScreen = ({ left, top }: { left: number; top: number }) =>
+    left >= 8 && top >= 8 && left + w <= innerWidth - 8 && top + h <= innerHeight - 8
+  const order = [...sides, 'below', 'above'] as const
+  const free = order.find((place) => onScreen(spots[place]) && overlap(spots[place]) === 0)
+  if (free) return { ...spots[free], clear: true }
+  // Nowhere is fully clear (a phone's crowded table): the on-screen spot that covers the least.
+  const best = order
+    .filter((place) => onScreen(spots[place]))
+    .sort((a, b) => overlap(spots[a]) - overlap(spots[b]))[0]
+  return {
+    ...(best ? spots[best] : { left: centred, top: Math.max(8, spots.above.top) }),
+    clear: false,
   }
-  return { left: centred, top: Math.max(8, spots.above.top) }
 }
 
 /**
@@ -153,10 +171,19 @@ function Flight({
       // Keyed by id: an effect that runs twice (React's strict mode) doesn't count itself twice.
       const list = (shown.get(slot) ?? []).filter((b) => b.id !== reaction.id)
       if (list.length >= 2) list.shift()?.retire()
+      shown.set(slot, list)
       const used = new Set(list.map((b) => b.index))
-      const index = used.has(0) ? 1 : 0
+      let index = used.has(0) ? 1 : 0
 
-      const { left, top } = bubbleSpot(dest, target ?? reaction.from_seat, node, index)
+      let spot = bubbleSpot(dest, target ?? reaction.from_seat, node, index)
+      // A crowded screen with no clear spot shows one bubble at a time: the new one replaces the rest.
+      if (!spot.clear && list.length > 0) {
+        for (const old of list.splice(0)) old.retire()
+        shown.set(slot, list)
+        index = 0
+        spot = bubbleSpot(dest, target ?? reaction.from_seat, node, index)
+      }
+      const { left, top } = spot
       const at = (px: number, py: number, s = 1) => `translate(${px}px, ${py}px) scale(${s})`
       const start = from ?? dest
       const w = node.offsetWidth
@@ -184,6 +211,7 @@ function Flight({
       const entry = {
         id: reaction.id,
         index,
+        box: { left, top, right: left + node.offsetWidth, bottom: top + node.offsetHeight },
         // Replaced by a newer one: fade out from now.
         retire: () => {
           bubble.currentTime = Math.max(Number(bubble.currentTime ?? 0), 3400 * 0.9)
