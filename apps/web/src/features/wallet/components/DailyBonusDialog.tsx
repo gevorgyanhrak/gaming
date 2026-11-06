@@ -52,7 +52,10 @@ function Dialog({ bonus }: { bonus: DailyBonus }) {
     onSuccess: (next) => {
       queryClient.setQueryData(dailyBonusKey, next)
       void queryClient.invalidateQueries({ queryKey: walletKey })
-      flyFishkas(chest.current, 'in', () => window.setTimeout(closeDailyBonus, 700))
+      // The chips take off from the chest and the popup steps aside at once, so the header balance
+      // is in plain view (not under the backdrop) when they land and it counts up.
+      flyFishkas(chest.current, 'in')
+      window.setTimeout(closeDailyBonus, 250)
     },
     onError: () => {
       sent.current = false
@@ -151,7 +154,11 @@ function Dialog({ bonus }: { bonus: DailyBonus }) {
               aria-live="polite"
             >
               <FishkaIcon className="size-10 sm:size-12" />
-              {collected > 0 ? `+${format(collected)}` : format(bonus.amount)}
+              {collected > 0
+                ? `+${format(collected)}`
+                : done
+                  ? t('daily.collectedAmount', { amount: format(bonus.amount) })
+                  : format(bonus.amount)}
             </p>
           </div>
 
@@ -161,20 +168,28 @@ function Dialog({ bonus }: { bonus: DailyBonus }) {
             </p>
           ) : null}
 
-          <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-center">
-            <Button variant="secondary" className="min-h-12 sm:min-w-32" onClick={closeDailyBonus}>
+          {/* Collect first in the tab order everywhere; on wide screens Later sits to its left. The
+              Collect slot stays (disabled, "Collected") so the sheet doesn't jump. */}
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <Button
+              variant="gold"
+              className="min-h-12 text-lg sm:min-w-48"
+              onClick={take}
+              disabled={done || collect.isPending}
+            >
+              {done
+                ? `✓ ${t('daily.collected')}`
+                : collect.isPending
+                  ? t('daily.collecting')
+                  : t('daily.collect')}
+            </Button>
+            <Button
+              variant="secondary"
+              className="min-h-12 sm:order-first sm:min-w-32"
+              onClick={closeDailyBonus}
+            >
               {done ? t('daily.close') : t('daily.later')}
             </Button>
-            {done ? null : (
-              <Button
-                variant="gold"
-                className="min-h-12 text-lg sm:min-w-48"
-                onClick={take}
-                disabled={collect.isPending}
-              >
-                {collect.isPending ? t('daily.collecting') : t('daily.collect')}
-              </Button>
-            )}
           </div>
         </div>
       </div>
@@ -214,22 +229,27 @@ function DayTile({
           : 'polygon(0 0, 86% 0, 100% 50%, 86% 100%, 0 100%, 14% 50%)',
       }}
     >
-      <span className="text-[0.65rem] font-extrabold tracking-wide uppercase sm:text-xs">
+      <span className="text-[0.7rem] font-extrabold tracking-wide uppercase sm:text-xs">
         {t('daily.day', { day })}
       </span>
       {state === 'past' || state === 'done' ? (
-        <span aria-label={t('daily.collected')} className="text-lg leading-none font-black">
-          ✓
+        <span className="text-lg leading-none font-black">
+          <span aria-hidden="true">✓</span>
+          <span className="sr-only">{t('daily.collected')}</span>
         </span>
       ) : double ? (
         // The double day: "×2" where the others show a chip.
-        <span className="flex h-5 items-center rounded-full bg-[#e0483e] px-1.5 text-xs font-black text-white sm:h-6 sm:text-sm">
-          ×2
+        <span className="flex h-5 items-center rounded-full bg-[#b3261e] px-1.5 text-xs font-black text-white sm:h-6 sm:text-sm">
+          <span aria-hidden="true">×2</span>
+          <span className="sr-only">{t('daily.doubleDay')}</span>
         </span>
       ) : (
-        <FishkaIcon className="size-5 sm:size-6" />
+        <>
+          <FishkaIcon className="size-5 sm:size-6" />
+          <span className="sr-only">{t(lit ? 'daily.today' : 'daily.upcoming')}</span>
+        </>
       )}
-      <span className="max-w-full truncate text-[0.65rem] font-bold tabular-nums sm:text-xs">
+      <span className="max-w-full truncate text-[0.7rem] font-bold tabular-nums sm:text-xs">
         {amount}
       </span>
     </li>

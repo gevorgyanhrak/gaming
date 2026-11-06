@@ -47,7 +47,7 @@ describe('Daily bonus', () => {
     const days = within(dialog).getAllByRole('listitem')
     expect(days).toHaveLength(5)
     expect(days[2]).toHaveAttribute('aria-current', 'date')
-    expect(within(days[0]!).getByLabelText('Collected')).toBeInTheDocument()
+    expect(within(days[0]!).getByText('Collected')).toBeInTheDocument()
     expect(
       within(dialog).getByText(
         'Play every day and grab more Fishkas! 2 days to go until your double bonus!',

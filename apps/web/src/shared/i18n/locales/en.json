@@ -693,6 +693,10 @@
     "toDouble_other": "Play every day and grab more Fishkas! {{count}} days to go until your double bonus!",
     "doubleToday": "Double bonus today! Come back tomorrow to keep it.",
     "comeBack": "Today’s bonus is collected. Come back tomorrow for {{amount}}.",
-    "failed": "Couldn’t collect the bonus. Try again in a moment."
+    "failed": "Couldn’t collect the bonus. Try again in a moment.",
+    "collectedAmount": "Collected: {{amount}}",
+    "doubleDay": "Double bonus",
+    "today": "Today",
+    "upcoming": "Upcoming"
   }
 }
