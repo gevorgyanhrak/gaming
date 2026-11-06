@@ -2,7 +2,9 @@
 
 The single task tracker (format and statuses: `docs/team/README.md`). Sources: `UI_UX_AUDIT.md`
 (UX-NNN), `PRODUCT_RESEARCH.md` (OPP-NNN), `TECHNICAL_DEBT.md` (TD-NNN).
-Last planning: 2026-11-02 (TASK-043 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK043.md`;
+Last planning: 2026-11-06 (TASK-044 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK044.md`;
+TASK-051 and owner questions 12–13 added).
+Before: 2026-11-02 (TASK-043 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK043.md`;
 TASK-049, TASK-050 and owner questions 9–11 added).
 Before: 2026-11-01 (TASK-040 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK040.md`;
 TASK-039 (e), TASK-041, TASK-042 added; owner questions 6–8 updated).
@@ -73,7 +75,8 @@ brief requirement is met, except "relevant social areas" (partly met: tables onl
 other social areas yet). Real-time delivery is proven end to end with real sessions. Follow-up: TASK-049
 should close it before TASK-044 starts (owner's "nothing partial" rule). Owner questions 9–11.
 
-### TASK-049 · TASK-043 re-review and smoke test of the fixes    P2 · S · PLANNED
+### TASK-049 · TASK-043 re-review and smoke test of the fixes    P2 · S · DONE
+Done 2026-11-02: the UI/UX re-review and the five-game smoke ran (REVIEW_TASK043.md "Re-review" and "Re-review 2": APPROVED); the regression it found was fixed in a21a698 and the phone follow-up in the TASK-043 closing commit.
 Problem: the 7 design-review fixes and the new chat bar above the board (54a3b6b) were verified only by
 the developer (the 44 px targets only by reading the classes). Evidence: VALIDATION_TASK043 §A/§C.
 Scope: the UI/UX agent re-reviews REVIEW_TASK043 items 1–7; QA runs a two-player smoke test in all five
@@ -97,6 +100,24 @@ Acceptance criteria: a muted player's reactions don't animate and are collapsed 
 work; unmute restores; works at 390/1440; en/ru/hy; Reactions.test case.
 Depends on: TASK-043   Approval: none (after the owner's queue unless the owner moves it up; see
 question 10)
+
+### TASK-044 · Daily bonus popup with a login streak             P1 · M · APPROVED
+Owner request 2026-11-02: "daily bonus will be like it", with a reference screenshot (days 1–5, today lit,
+growing rewards, "One day to go until your double bonus!", an open chest with the amount). Code 8c7a0d6
+(API), 89ecad5 (popup), b599e4e, QA fixes 6c816e4, design fixes d93d67f. QA `docs/qa/QA_REPORT_TASK044.md`
+(38/41; 3 Low, fixed); design `docs/design/REVIEW_TASK044.md` (1 Medium and 5 Low, fixed).
+Validation 2026-11-06: **APPROVED — ACCEPT WITH FOLLOW-UPS** (`docs/product/VALIDATION_TASK044.md`). Every
+element of the reference and every rule is met: free Fishkas, the server decides, once a day in Yerevan
+days, en/ru/hy. The mid-flight screenshot confirms the chips land in a visible header. Follow-ups: owner
+questions 12–13 (amounts and their economy effect; collect instead of a silent credit) and TASK-051.
+
+### TASK-051 · Stabilise the flaky route-guard test              P3 · S · PLANNED
+Problem: `apps/web/src/features/auth/guards.test.tsx` › "sends guests to the login page and remembers where
+they were going" failed in 1 of 3 full `vitest run`s on 2026-11-06 (load average ~40). It passes alone and
+in the re-runs. A flaky test hides real failures and blocks pushes at random.
+Acceptance criteria: the cause is found (timing/`findBy` timeout, shared state between files) and fixed;
+10 consecutive full runs pass under load; no test is skipped or given a longer global timeout to hide it.
+Depends on: —   Approval: none (test-only; after the owner's queue unless it blocks a push)
 
 ## Bugs
 
@@ -558,6 +579,15 @@ Validation 2026-10-29: **APPROVED** — `GameActionService::end` marks abandoned
     bar between the room header and the board, because under the board it was never visible while
     playing (design review issue 2). Keep this, or move it under the table in TASK-045 (poker) and the
     other game redesigns?
+12. Daily bonus amounts (TASK-044): 1,000 / 1,500 / 2,000 / 2,500 / 5,000; day 5 repeats while the streak
+    holds; a missed day resets to day 1. All are admin settings. Effect: a 30-day perfect streak gives
+    137,000 free Fishkas (was 30,000 at a flat 1,000), about 4.6×. Bonuses alone take a player into the
+    Professional groups (50,000 poker / 100,000 other games) within a month. Keep this? Alternatives: cycle
+    back to day 1 after day 5 (about 75,000 in 30 days), or a lower day-5 amount. Should a single missed day
+    be forgiven (one grace day)?
+13. Collecting the daily bonus (TASK-044): it is now collected with "Collect" in the popup or the wallet
+    card. Before, it was added silently at sign-in. Players who never open either no longer get it.
+    Confirm this change. It matches your reference and makes the reward visible.
 (Decided 2026-10-29: autonomous mode for B1–B3; TD-001 deleted; sound on by default; TASK-030/031
 go-ahead; room API fields for Play again; `.text-gold-gradient`; public profile stats are public. See
 DECISIONS.md.)

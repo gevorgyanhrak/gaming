@@ -10,39 +10,13 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
-**TASK-044 · Daily bonus popup with a login streak** — started 2026-11-02 (owner's request and reference
-below). Decisions (autonomous, owner rule: Fishkas are free):
-- 5 days; amounts are settings: `fishka.daily_bonus` (day 1, 1,000) and `fishka.daily_bonus_day_2…5`
-  (1,500 / 2,000 / 2,500 / 5,000; day 5 = "double"). Consecutive days advance (Asia/Yerevan dates); day 5
-  repeats while the streak holds; a missed day starts again at day 1.
-- Claimed in the popup ("Collect"), no longer credited silently on login/GET /me; once per day (row lock +
-  idempotency key `daily:{uid}:{date}` as before); `fishka_wallets.daily_streak` (additive migration).
-- API: `GET /me/daily-bonus` (today's day, amounts, claimed?), `POST /me/daily-bonus` (claim; idempotent).
-- Popup once per visit while unclaimed (our own chest art, gold/green club look), chips fly to the
-  header balance; a "Daily bonus" entry in the wallet page; en/ru/hy.
-
-Steps:
-- [x] 1. Backend: migration, settings + admin fields, FishkaWallets::dailyStatus/claimDaily(streak),
-      endpoints, no auto-claim, tests (DailyBonusTest), types — 8c7a0d6.
-- [x] 2. Frontend: DailyBonusDialog (own chest art, 5 day tiles, Collect → chips fly to the header),
-      offered once per visit, never on a room page; wallet card; en/ru/hy; DailyBonus.test — 89ecad5.
-- [x] 3. Live check (fresh account q44daily, dates moved in the dev DB): day 3 at 390 en (+2,000, header
-      5,000 → 7,000, chips fly, "Come back tomorrow for 2,500"), day 5 at 1440 hy (double message, +5,000),
-      missed day → day 1 at 390 ru (+1,000, "4 дня"); no horizontal scroll. Fixes: the chest shows its
-      chips; "×2" in place of the coin on day 5; `collected` counts only an entry this request created — b599e4e.
-- [ ] 4. QA, UI/UX review, PM validation; fix; push; report.
-
-- **TASK-044 · Daily bonus popup with a login streak** (owner, 2026-11-02, after TASK-043; reference
-  screenshot: a "Daily bonus" dialog with a row of days 1…5, the current day highlighted, growing rewards
-  for consecutive days, "one day to go until your double bonus", an open chest with the amount). Build our
-  own art in the card-club look (no copied assets); backend owns the streak and amounts (settings), today's
-  daily +1,000 becomes day-based; popup once a day after login; en/ru/hy. Plan it like TASK-043.
+**TASK-045 · Poker table redesign** — next in the owner's order (request below in "Next"); first step: the plan.
 
 ## Next
 
 **Owner rule (2026-11-02): strict sequential order.** Finish one task completely (implemented, tested,
 verified, pushed) before starting the next; never two at once; nothing partial. Order = the order the
-owner gave them: TASK-043 (done) → 044 (Now) → 045 → 046 → 047 → 048. Older items below those come after.
+owner gave them: TASK-043 (done) → 044 (done) → 045 (Now) → 046 → 047 → 048. Older items below those come after.
 
 - **TASK-045 · Poker table redesign like the owner's screenshot** (2026-11-02): wide oval felt with a
   thick rail on a dark patterned background, seats with avatar frames around the rail (empty seats as
@@ -77,6 +51,11 @@ Later (older backlog):
 
 ## Done (recent)
 
+- 2026-11-06 · TASK-044 Daily bonus popup with a login streak — 8c7a0d6, 89ecad5, b599e4e, 6c816e4, d93d67f.
+  QA `docs/qa/QA_REPORT_TASK044.md` (38/41 → fixed), design `docs/design/REVIEW_TASK044.md` (NEEDS REVISION →
+  fixed, mid-flight screenshot), PM ACCEPT WITH FOLLOW-UPS (`docs/product/VALIDATION_TASK044.md`; owner Q12:
+  confirm amounts/repeat/reset — a 30-day streak is 137,000 vs 30,000 before; Q13: collect-in-popup instead of a
+  silent credit; TASK-051 flaky guards test).
 - 2026-11-02 · TASK-043 Emoji & Quick Messages + table chat (ADR 0017) — 491b624, 1d9dcef, 2967f6d, 54a3b6b,
   a21a698, c0c0bc4. QA `docs/qa/QA_REPORT_TASK043.md` (44/46 → fixed), design review APPROVED after two
   revisions (`docs/design/REVIEW_TASK043.md`), PM ACCEPT WITH FOLLOW-UPS (`docs/product/VALIDATION_TASK043.md`:
