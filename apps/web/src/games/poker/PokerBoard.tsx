@@ -170,9 +170,6 @@ export default function PokerBoard({
                 {t('poker.potAmount', { count: view.pot })}
               </p>
             )}
-            <p className="rounded-full bg-black/55 px-2.5 py-0.5 text-xs text-white/90 sm:hidden">
-              {t('poker.handInfo', { hand: view.hand, small: view.blinds[0], big: view.blinds[1] })}
-            </p>
           </section>
           <p className="sr-only" role="status">
             {fresh ? result.announcement : ''}
@@ -331,8 +328,9 @@ export default function PokerBoard({
           </ul>
         </div>
 
-        {/* The table's info, like a card on the table's edge (wide screens; phones show it on the felt). */}
-        <dl className="absolute bottom-3 left-4 hidden rounded-xl border border-gold/25 bg-black/55 px-3 py-2 text-xs sm:block">
+        {/* The table's info, like a card on the table's edge, in the stage's corner: off the felt, where
+            the players' bets go. */}
+        <dl className="absolute bottom-2 left-2 rounded-lg border border-gold/25 bg-black/60 px-2 py-1 text-[0.7rem] sm:bottom-3 sm:left-4 sm:rounded-xl sm:px-3 sm:py-2 sm:text-xs">
           <div className="flex gap-1.5">
             <dt className="text-white/60">{t('poker.infoBlinds')}</dt>
             <dd className="font-bold text-gold-light tabular-nums">

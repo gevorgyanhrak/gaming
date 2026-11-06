@@ -187,6 +187,6 @@ Evidence: `qa2/t43-t45emo-{1440,390}-*-{player1,player2,q40mm2}.png`.
 | Bug | Status | Fix |
 |---|---|---|
 | 1 hy bet chips reach the board cards at 1440 | Fixed | Wide-screen bet chips show the amount only (screen readers hear "Bet N"), like phones |
-| 2 ru/hy 5-seat phone: bets cover the felt caption | Open | To re-check after fix 3 (the caption now sits on its own dark pill); next session |
+| 2 ru/hy 5-seat phone: bets cover the felt caption | Fixed | The caption left the felt: the table-info panel (blinds, hand) now shows on phones too, in the stage's bottom-left corner, where no bet or seat goes (measured: no overlap at 2, 5 and 6 seats, 390 ru/hy, and 6 seats at 1440 hy) |
 | 3 phone felt caption 3.4:1 | Fixed | Caption on a dark pill, white/90 |
 

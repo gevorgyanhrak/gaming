@@ -482,7 +482,6 @@
     "board": "Սեղան",
     "potAmount_one": "Բանկ՝ {{count, number}} ժետոն",
     "potAmount_other": "Բանկ՝ {{count, number}} ժետոն",
-    "handInfo": "Բաժանում {{hand}} · բլայնդներ {{small, number}}/{{big, number}}",
     "yourCards": "Ձեր քարտերը",
     "fold": "Պաս",
     "check": "Չեք",

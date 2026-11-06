@@ -482,7 +482,6 @@
     "board": "Board",
     "potAmount_one": "Pot: {{count, number}} chip",
     "potAmount_other": "Pot: {{count, number}} chips",
-    "handInfo": "Hand {{hand}} · blinds {{small, number}}/{{big, number}}",
     "yourCards": "Your cards",
     "fold": "Fold",
     "check": "Check",

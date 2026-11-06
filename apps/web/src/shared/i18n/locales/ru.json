@@ -504,7 +504,6 @@
     "potAmount_few": "Банк: {{count, number}} фишки",
     "potAmount_many": "Банк: {{count, number}} фишек",
     "potAmount_other": "Банк: {{count, number}} фишки",
-    "handInfo": "Раздача {{hand}} · блайнды {{small, number}}/{{big, number}}",
     "yourCards": "Ваши карты",
     "fold": "Пас",
     "check": "Чек",
