@@ -210,10 +210,10 @@
     background-color: #120c0a;
     background-image:
       radial-gradient(circle at 50% 50%, rgb(214 171 78 / 0.1) 0 9%, transparent 10%),
-      radial-gradient(ellipse 22% 14% at 50% 0%, rgb(214 171 78 / 0.085) 60%, transparent 62%),
-      radial-gradient(ellipse 22% 14% at 50% 100%, rgb(214 171 78 / 0.085) 60%, transparent 62%),
-      radial-gradient(ellipse 14% 22% at 0% 50%, rgb(214 171 78 / 0.085) 60%, transparent 62%),
-      radial-gradient(ellipse 14% 22% at 100% 50%, rgb(214 171 78 / 0.085) 60%, transparent 62%),
+      radial-gradient(ellipse 22% 14% at 50% 0%, rgb(214 171 78 / 0.12) 60%, transparent 62%),
+      radial-gradient(ellipse 22% 14% at 50% 100%, rgb(214 171 78 / 0.12) 60%, transparent 62%),
+      radial-gradient(ellipse 14% 22% at 0% 50%, rgb(214 171 78 / 0.12) 60%, transparent 62%),
+      radial-gradient(ellipse 14% 22% at 100% 50%, rgb(214 171 78 / 0.12) 60%, transparent 62%),
       radial-gradient(ellipse at 50% 40%, #2a1a14 0%, #120c0a 70%);
     background-size:
       56px 56px,

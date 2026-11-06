@@ -137,7 +137,7 @@ export default function PokerBoard({
   return (
     <div className="space-y-5 text-white">
       {/* The room: a dark patterned stage, the table on it, the table's info in the corner. */}
-      <div className="poker-stage relative rounded-3xl px-7 pt-10 pb-12 sm:px-14 sm:pt-12 sm:pb-16">
+      <div className="poker-stage relative rounded-3xl px-7 pt-14 pb-12 sm:px-14 sm:pt-20 sm:pb-16">
         <div className="relative mx-auto aspect-[3/4] w-full max-w-5xl sm:aspect-[2.1/1]">
           <div aria-hidden="true" className="poker-rail absolute inset-0 rounded-[50%]">
             <div className="poker-felt relative h-full w-full overflow-hidden rounded-[50%]">
@@ -230,7 +230,13 @@ export default function PokerBoard({
                       {/* The chair's back behind the player. */}
                       <span
                         aria-hidden="true"
-                        className="poker-chair absolute -inset-x-2.5 -top-2.5 -bottom-1 -z-20 rounded-[1.2rem] sm:-inset-x-3.5 sm:-top-3.5 sm:rounded-[1.4rem]"
+                        className={`poker-chair absolute -inset-x-2.5 -top-2.5 -bottom-1 -z-20 rounded-[1.2rem] transition-shadow sm:-inset-x-3.5 sm:-top-3.5 sm:rounded-[1.4rem] ${
+                          // The player to act: their chair lights up in the turn colour (the ring
+                          // round the frame is the timer; a hand winner glows gold instead).
+                          acting
+                            ? 'shadow-[0_0_0_2px_var(--color-turn),0_0_26px_rgb(242_193_78/0.65)]'
+                            : ''
+                        }`}
                       />
                       <Avatar
                         name={name(seat)}
@@ -240,7 +246,7 @@ export default function PokerBoard({
                       />
                       {won && gain != null ? (
                         <span
-                          className={`absolute bottom-full left-1/2 z-30 mb-1 -translate-x-1/2 rounded-full bg-black/75 px-2 text-sm font-extrabold whitespace-nowrap text-gold-light tabular-nums ${
+                          className={`absolute bottom-full left-1/2 z-30 -translate-x-1/2 rounded-full ${shown ? 'mb-9 sm:mb-12' : 'mb-1'} bg-black/75 px-2 text-sm font-extrabold whitespace-nowrap text-gold-light tabular-nums ${
                             fresh
                               ? 'motion-safe:animate-rise motion-safe:[animation-delay:850ms]'
                               : ''
@@ -251,7 +257,7 @@ export default function PokerBoard({
                       ) : null}
                       {shown ? (
                         // Cards shown at the showdown, in front of the avatar while the result is up.
-                        <span className="absolute top-1/2 left-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2">
+                        <span className="absolute -top-8 left-1/2 z-20 flex -translate-x-1/2 sm:-top-11">
                           {shown.map((card, i) => (
                             <span
                               key={card}
@@ -289,7 +295,9 @@ export default function PokerBoard({
                       className={`relative -mt-2 min-w-20 rounded-lg border bg-[#1c120d]/90 px-2.5 py-1 text-center shadow-lg backdrop-blur sm:min-w-24 ${
                         won
                           ? 'border-gold shadow-[0_0_0_2px_var(--color-gold),0_0_24px_rgb(214_171_78/0.55)]'
-                          : 'border-gold/35'
+                          : acting
+                            ? 'border-[var(--color-turn)] shadow-[0_0_0_1px_var(--color-turn)]'
+                            : 'border-gold/35'
                       }`}
                     >
                       <span className="block max-w-28 truncate text-xs font-semibold sm:text-sm">

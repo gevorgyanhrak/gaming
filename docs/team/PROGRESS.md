@@ -32,7 +32,8 @@ Steps:
       (seat at the top → no tray), 3 and 6 seats at 390; no horizontal scroll; seat anchors intact.
 - [x] 3a. QA (docs/qa/QA_REPORT_TASK045.md: 35/38, 3 Low → all fixed: be23f04, 5c3639b; the table info
       moved off the felt into the stage's corner on phones too).
-- [ ] 3b. UI/UX review, PM validation; fix; push; report.
+- [x] 3b. UI/UX review NEEDS REVISION (acting seat; Lows) → fixed, COMMIT.
+- [ ] 3c. Reviewer's check of the fixes, PM validation; push; report.
 
 ## Next
 
