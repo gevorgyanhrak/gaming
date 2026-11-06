@@ -525,7 +525,9 @@
     },
     "nextHand": "Հաջորդ բաժանումը",
     "nextHandIn_one": "Հաջորդ բաժանումը {{count}} վայրկյանից",
-    "nextHandIn_other": "Հաջորդ բաժանումը {{count}} վայրկյանից"
+    "nextHandIn_other": "Հաջորդ բաժանումը {{count}} վայրկյանից",
+    "infoBlinds": "Բլայնդներ",
+    "infoHand": "Բաժանում"
   },
   "activeGame": {
     "playing": "Դուք խաղի մեջ եք՝ {{game}}։",

@@ -525,7 +525,9 @@
     },
     "nextHand": "Next hand",
     "nextHandIn_one": "Next hand in {{count}} second",
-    "nextHandIn_other": "Next hand in {{count}} seconds"
+    "nextHandIn_other": "Next hand in {{count}} seconds",
+    "infoBlinds": "Blinds",
+    "infoHand": "Hand"
   },
   "activeGame": {
     "playing": "You are in a game of {{game}}.",

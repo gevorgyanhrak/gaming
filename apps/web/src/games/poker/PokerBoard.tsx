@@ -118,6 +118,11 @@ export default function PokerBoard({
   // room for that next to the board, so there a bet sits at its own seat, on the side facing the
   // middle: under the top seat and seats level with the board, above yours, beside the others.
   const narrow = useMediaQuery('(max-width: 639px)')
+  // The dealer's tray sits at the top of the felt, unless a player's seat is there.
+  const dealerFree = view.stacks.every((_, seat) => {
+    const angle = (Math.PI / 2 + ((seat - me) * 2 * Math.PI) / seats) % (2 * Math.PI)
+    return Math.abs(angle - (3 * Math.PI) / 2) > Math.PI / 7
+  })
   const betBeside = (seat: number) => {
     const angle = Math.PI / 2 + ((seat - me) * 2 * Math.PI) / seats
     const [x, y] = [Math.cos(angle), Math.sin(angle)]
@@ -131,10 +136,14 @@ export default function PokerBoard({
 
   return (
     <div className="space-y-5 text-white">
-      <div className="px-7 pt-10 pb-12 sm:px-14 sm:pt-12 sm:pb-14">
+      {/* The room: a dark patterned stage, the table on it, the table's info in the corner. */}
+      <div className="poker-stage relative rounded-3xl px-7 pt-10 pb-12 sm:px-14 sm:pt-12 sm:pb-16">
         <div className="relative mx-auto aspect-[3/4] w-full max-w-5xl sm:aspect-[2.1/1]">
-          <div aria-hidden="true" className="table-rim absolute inset-0 rounded-[50%]">
-            <div className="table-felt h-full w-full rounded-[50%]" />
+          <div aria-hidden="true" className="poker-rail absolute inset-0 rounded-[50%]">
+            <div className="poker-felt relative h-full w-full overflow-hidden rounded-[50%]">
+              <SpadeMark />
+              {dealerFree ? <DealerTray label={t('poker.dealer')} /> : null}
+            </div>
           </div>
 
           <section
@@ -161,7 +170,7 @@ export default function PokerBoard({
                 {t('poker.potAmount', { count: view.pot })}
               </p>
             )}
-            <p className="text-xs text-white/65">
+            <p className="text-xs text-white/65 sm:hidden">
               {t('poker.handInfo', { hand: view.hand, small: view.blinds[0], big: view.blinds[1] })}
             </p>
           </section>
@@ -221,6 +230,11 @@ export default function PokerBoard({
                       </span>
                     ) : null}
                     <div className="relative isolate" data-seat-anchor={seat}>
+                      {/* The chair's back behind the player. */}
+                      <span
+                        aria-hidden="true"
+                        className="poker-chair absolute -inset-x-2.5 -top-2.5 -bottom-1 -z-20 rounded-[1.2rem] sm:-inset-x-3.5 sm:-top-3.5 sm:rounded-[1.4rem]"
+                      />
                       <Avatar
                         name={name(seat)}
                         acting={acting}
@@ -314,6 +328,21 @@ export default function PokerBoard({
             })}
           </ul>
         </div>
+
+        {/* The table's info, like a card on the table's edge (wide screens; phones show it on the felt). */}
+        <dl className="absolute bottom-3 left-4 hidden rounded-xl border border-gold/25 bg-black/55 px-3 py-2 text-xs sm:block">
+          <div className="flex gap-1.5">
+            <dt className="text-white/60">{t('poker.infoBlinds')}</dt>
+            <dd className="font-bold text-gold-light tabular-nums">
+              {view.blinds[0].toLocaleString(i18n.language)} /{' '}
+              {view.blinds[1].toLocaleString(i18n.language)}
+            </dd>
+          </div>
+          <div className="flex gap-1.5">
+            <dt className="text-white/60">{t('poker.infoHand')}</dt>
+            <dd className="font-bold tabular-nums">{view.hand}</dd>
+          </div>
+        </dl>
       </div>
 
       <div className="club-panel mx-auto flex max-w-4xl flex-col items-center gap-4 rounded-3xl p-4 sm:flex-row sm:p-5">
@@ -478,8 +507,8 @@ function ChipStack({ amount }: { amount: number }) {
 }
 
 /**
- * A round avatar with the player's initial; the acting player's ring shows the time left, a hand
- * winner's ring is gold.
+ * A framed square avatar with the player's initial; the acting player's frame shows the time left, a
+ * hand winner's frame is gold.
  */
 function Avatar({
   name,
@@ -502,11 +531,11 @@ function Avatar({
           : 'rgb(214 171 78 / 0.45)'
   return (
     <span
-      className="block rounded-full p-[3px] shadow-lg shadow-black/50"
+      className="block rounded-[0.9rem] p-[3px] shadow-lg shadow-black/60 sm:rounded-2xl"
       style={{ background: ring }}
       aria-hidden="true"
     >
-      <span className="flex size-12 items-center justify-center rounded-full bg-linear-to-b from-[#4a342b] to-[#24170f] text-xl font-bold uppercase sm:size-16 sm:text-2xl">
+      <span className="flex size-12 items-center justify-center rounded-[0.7rem] bg-linear-to-b from-[#4a342b] to-[#1c120c] text-xl font-bold uppercase shadow-[inset_0_0_0_1px_rgb(214_171_78/0.35)] sm:size-16 sm:rounded-xl sm:text-2xl">
         {name.slice(0, 1)}
       </span>
     </span>
@@ -519,3 +548,45 @@ const betChip =
 
 const actionButton =
   'rounded-xl border px-3 py-3 text-sm font-bold shadow-lg shadow-black/40 transition hover:brightness-110 active:translate-y-px disabled:opacity-60 sm:text-base'
+
+/** The house mark in the middle of the felt. */
+function SpadeMark() {
+  return (
+    <svg
+      viewBox="0 0 100 100"
+      aria-hidden="true"
+      className="absolute top-1/2 left-1/2 size-[38%] max-h-[60%] -translate-x-1/2 -translate-y-1/2 opacity-[0.07] sm:size-[22%]"
+    >
+      <circle cx="50" cy="50" r="46" fill="none" stroke="#fff" strokeWidth="3" />
+      <path
+        d="M50 18 C 38 34, 22 42, 22 57 C 22 68, 32 74, 41 70 C 39 76, 36 80, 32 83 H 68 C 64 80, 61 76, 59 70 C 68 74, 78 68, 78 57 C 78 42, 62 34, 50 18 Z"
+        fill="#fff"
+      />
+    </svg>
+  )
+}
+
+/** The dealer's place at the top of the table: a tray of chips. */
+function DealerTray({ label }: { label: string }) {
+  const colours = ['#c62f3a', '#e6e1d3', '#2f6fd6', '#d6ab4e', '#1f8a4c']
+  return (
+    <div className="absolute top-[7%] left-1/2 flex -translate-x-1/2 flex-col items-center gap-1">
+      <span className="text-[0.65rem] font-extrabold tracking-[0.2em] text-gold-light/80 uppercase sm:text-xs">
+        {label}
+      </span>
+      <span className="flex gap-1 rounded-md border border-black/40 bg-black/35 px-1.5 py-1 shadow-inner">
+        {colours.map((colour) => (
+          <span key={colour} className="flex flex-col-reverse">
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                className="-mt-1 block h-1.5 w-3 rounded-full border border-black/40 sm:h-2 sm:w-4"
+                style={{ background: colour }}
+              />
+            ))}
+          </span>
+        ))}
+      </span>
+    </div>
+  )
+}

@@ -557,7 +557,9 @@
     "nextHandIn_one": "Следующая раздача через {{count}} секунду",
     "nextHandIn_few": "Следующая раздача через {{count}} секунды",
     "nextHandIn_many": "Следующая раздача через {{count}} секунд",
-    "nextHandIn_other": "Следующая раздача через {{count}} секунды"
+    "nextHandIn_other": "Следующая раздача через {{count}} секунды",
+    "infoBlinds": "Блайнды",
+    "infoHand": "Раздача"
   },
   "activeGame": {
     "playing": "У вас идёт партия: {{game}}.",

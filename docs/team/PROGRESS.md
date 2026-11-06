@@ -10,7 +10,27 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
-**TASK-045 · Poker table redesign** — next in the owner's order (request below in "Next"); first step: the plan.
+**TASK-045 · Poker table redesign like the owner's screenshot** — started 2026-11-06. Reference: a wide
+oval green felt with a thick rail on a dark patterned background, framed square avatars on chairs around
+the rail, empty seats as "+", the dealer at the top, table info (name, blinds) at the bottom left, a chat
+box below. Our own art (no copied assets); gameplay, rules and the phone layout stay.
+
+Decisions (autonomous):
+- Poker gets its own classes (`poker-stage`, `poker-rail`, `poker-felt`, `poker-chair`): `.table-rim`
+  is shared with chess/checkers and stays as it is.
+- No "+" empty seats: a running table has no free seats and nobody can sit down mid-game (it would
+  promise something that doesn't exist). Players who left keep their dimmed seat.
+- The dealer: a dealer tray with chip racks at the top of the felt when no seat sits at the top; the "D"
+  button still marks the button seat.
+- Table info panel at the bottom left on wide screens (hand number, blinds); on phones it stays on the felt.
+- The table chat stays above the board (owner question 11 is open).
+
+Steps:
+- [x] 1. Stage (dark patterned backdrop), rail and felt with a watermark, framed square avatars with
+      chairs, dealer tray, info panel; phone keeps its layout with the new skin — COMMIT.
+- [x] 2. Tests (PokerBoard 9/9, all 145 web), live screenshots: 3 seats 1440 (dealer tray), 4 seats 1440
+      (seat at the top → no tray), 3 and 6 seats at 390; no horizontal scroll; seat anchors intact.
+- [ ] 3. QA, UI/UX review, PM validation; fix; push; report.
 
 ## Next
 
