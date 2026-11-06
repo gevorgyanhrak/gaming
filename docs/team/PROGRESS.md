@@ -27,7 +27,7 @@ Decisions (autonomous):
 
 Steps:
 - [x] 1. Stage (dark patterned backdrop), rail and felt with a watermark, framed square avatars with
-      chairs, dealer tray, info panel; phone keeps its layout with the new skin — COMMIT.
+      chairs, dealer tray, info panel; phone keeps its layout with the new skin — fb3506a.
 - [x] 2. Tests (PokerBoard 9/9, all 145 web), live screenshots: 3 seats 1440 (dealer tray), 4 seats 1440
       (seat at the top → no tray), 3 and 6 seats at 390; no horizontal scroll; seat anchors intact.
 - [ ] 3. QA, UI/UX review, PM validation; fix; push; report.
