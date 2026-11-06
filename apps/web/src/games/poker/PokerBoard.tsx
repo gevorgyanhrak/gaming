@@ -170,7 +170,7 @@ export default function PokerBoard({
                 {t('poker.potAmount', { count: view.pot })}
               </p>
             )}
-            <p className="text-xs text-white/65 sm:hidden">
+            <p className="rounded-full bg-black/55 px-2.5 py-0.5 text-xs text-white/90 sm:hidden">
               {t('poker.handInfo', { hand: view.hand, small: view.blinds[0], big: view.blinds[1] })}
             </p>
           </section>
@@ -320,7 +320,9 @@ export default function PokerBoard({
                       style={spot(seat, 28)}
                     >
                       <ChipStack amount={bet} />
-                      {t('poker.bet', { amount: bet })}
+                      {/* The chip says "bet": only the amount is written (long labels reached the cards). */}
+                      <span aria-hidden="true">{bet.toLocaleString(i18n.language)}</span>
+                      <span className="sr-only">{t('poker.bet', { amount: bet })}</span>
                     </span>
                   ) : null}
                 </li>
