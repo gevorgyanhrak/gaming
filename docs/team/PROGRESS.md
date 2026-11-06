@@ -30,7 +30,7 @@ Steps:
       chairs, dealer tray, info panel; phone keeps its layout with the new skin — fb3506a.
 - [x] 2. Tests (PokerBoard 9/9, all 145 web), live screenshots: 3 seats 1440 (dealer tray), 4 seats 1440
       (seat at the top → no tray), 3 and 6 seats at 390; no horizontal scroll; seat anchors intact.
-- [x] 3a. QA (docs/qa/QA_REPORT_TASK045.md: 35/38, 3 Low → all fixed: be23f04, COMMIT; the table info
+- [x] 3a. QA (docs/qa/QA_REPORT_TASK045.md: 35/38, 3 Low → all fixed: be23f04, 5c3639b; the table info
       moved off the felt into the stage's corner on phones too).
 - [ ] 3b. UI/UX review, PM validation; fix; push; report.
 
