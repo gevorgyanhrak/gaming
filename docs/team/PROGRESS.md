@@ -10,54 +10,31 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
-**TASK-046 · Nardi in two variants: Long and Short** — started 2026-11-07 (request and references below in
-"Next"). Correction: today's engine is SHORT nardi (backgammon: bar, hitting); the new variant is LONG nardi.
-
-Long nardi rules (as commonly played in Armenia/Russia): 15 checkers each start on one point (the "head":
-seat 0 on point 24, seat 1 on point 12); both move the same way round the board (seat 0 24→1, seat 1 12→1
-then 24→13); no hitting — a point with any opponent checker is closed; only one checker may leave the head
-per turn, except on a player's first turn with 6-6, 4-4 or 3-3 (two); no block of 6 points in a row unless
-an opponent checker is already ahead of it; doubles play four times; as many dice as possible, the higher if
-only one; bear off from home (the last quarter) once all 15 are there; mars (opponent bore off none) = 2.
-
-Decisions: the doubling cube is NOT built (it doubles the stake mid-game → Fishka pot rules; owner question);
-one game `nardi` with two modes (`classic` = Short, renamed for clarity; new `long`); the engine reads
-`variant` from the mode (states without it stay Short); the view adds pip counts for both players.
+**TASK-047 · Level & XP progression** — started 2026-11-07. Brief (verbatim):
+`docs/product/briefs/TASK-047-levels-xp.md`. Levels and XP live in the DB and are computed only on the backend; a
+configurable curve (1–30 easy, harder after); a reward per level (Fishkas via `FishkaWallets`, plus cosmetic
+items) granted exactly once with history; pending level-ups shown on return; bots with fixed, distinct high
+levels (no XP, no rewards); a level badge next to every avatar; a progress bar; a level-up popup.
 
 Steps:
-- [x] 1. Engine: LongNardiRules (path model, closed points, head rule + first-turn doubles, 6-block rule,
-      bear-off, mars), NardiEngine variant switch, pips in the view, bot evaluation for Long; unit tests
-      per rule + whole bot games (tests/Unit/Games/LongNardiTest.php) — 61a2181. (Replay test: step 2.)
-- [x] 2. Mode `long` (GameModeSeeder, listed first; deploy runs db:seed) and migration renaming the seeded
-      "Classic" to "Short nardi" (only if unchanged); groups/matchmaking are per mode already; a Long game vs
-      a bot through the real pipeline replays from the move log (tests/Feature/Games/LongNardiRoomTest.php) — e0aaa53.
-- [x] 3. Frontend: NardiBoard for Long (seat 1's view turned by half a board, no bar), pip counts for both
-      variants; the Nardi page's "What shall we play?" picker with two board previews (registry
-      `modePreviews`); en/ru/hy; NardiBoard test — c7fc6b0. Live: 1440 en, 390 hy.
-- [x] 4a. QA (docs/qa/QA_REPORT_TASK046.md: 38/40, 1 Medium + 1 Low → fixed — 4876787).
-- [x] 4b-1. UI/UX review (docs/design/REVIEW_TASK046.md: NEEDS REVISION, 2 Medium + 3 Low) → all fixed (see its Fix status).
-- [ ] 4b-2. PM validation; fix; push; report.
+- [ ] 1. Analyse the existing architecture (users, wallets/ledger, game finish pipeline, bots, settings,
+      avatars, admin) and write ADR 0018 (XP sources, curve formula, reward config, tables, events, concurrency).
+- [ ] 2. Backend: migrations (user level/xp, level rewards config, level-up/reward history), `Levels` service
+      (curve from admin settings, atomic award with row lock, multi-level-ups, rewards once), XP on game finish
+      (not for bots), bot levels; API (me/level, pending level-ups + collect; level in user/participant
+      resources); admin config; tests (all 13 brief checks that are backend).
+- [ ] 3. Frontend: LevelBadge everywhere (profile, rooms, poker seats, player lists, leaderboards, chat),
+      progress bar (profile + header/menu), level-up popup with confetti and collect, milestone celebrations;
+      en/ru/hy; tests; live check.
+- [ ] 4. QA agent → fix; UI/UX review → fix; PM validation → fix; push; report (XP formula, rules, rewards,
+      DB changes, files).
 
 ## Next
 
 **Owner rule (2026-11-02): strict sequential order.** Finish one task completely (implemented, tested,
 verified, pushed) before starting the next; never two at once; nothing partial. Order = the order the
-owner gave them: TASK-043 (done) → 044 (done) → 045 (done) → 046 (Now) → 046 → 047 → 048. Older items below those come after.
+owner gave them: TASK-043 (done) → 044 (done) → 045 (done) → 046 (done) → 047 (Now) → 048. Older items below those come after.
 
-- **TASK-046 · Nardi in two variants: Long and Short** (owner, 2026-11-02, screenshot of a "what shall we
-  play?" picker with two board thumbnails "Длинные" / "Короткие"). Long nardi = today's engine. Short
-  nardi (backgammon rules: opposite directions, hitting blots to the bar, entering from the bar, bearing
-  off; standard 2-5-3-5 setup) = a new engine variant + a second Nardi game mode; a picker with two board
-  previews on the Nardi page; bots, groups, matchmaking per variant; en/ru/hy. After TASK-045.
-  Owner reference (2026-11-02, second screenshot, a short-nardi game board): carved wooden board, points
-  numbered 1–24 on both edges, pip count per player beside the board ("167"), round turn timer, red dice,
-  bear-off trays at the side, a doubling cube ("64"), right panel with both players' avatars, clocks
-  ("1:00") and the stake ("50"). Our own art. Owner question before building: the doubling cube (it
-  doubles the stake mid-game → Fishka pot rules).
-- **TASK-047 · Level & XP progression** — brief `docs/product/briefs/TASK-047-levels-xp.md` (owner,
-  2026-11-02, "implement level logic", verbatim). Levels in the DB, backend-only XP, configurable curve
-  (1–30 easy, harder after), per-level rewards granted once with history, pending level-ups shown on
-  return, bots with fixed high levels (no XP, no rewards), level badge everywhere, progress bar, popup.
 - **TASK-048 · Complete platform redesign** — brief `docs/product/briefs/TASK-048-platform-redesign.md`
   (owner, 2026-11-02, verbatim). Phase 1 (PM market research → `docs/product/research/TASK-048-market-research.md`)
   not started (a parallel start was stopped on the owner's sequencing rule; nothing was written). Then UI/UX agent: design system and
@@ -73,6 +50,12 @@ Later (older backlog):
 
 ## Done (recent)
 
+- 2026-11-07 · TASK-046 Nardi in two variants, Long (new engine variant: heads, closed points, head rule,
+  no 6-wall, mars) and Short (the old backgammon engine), with a picture picker — 61a2181, e0aaa53, c7fc6b0,
+  4876787, 6ea1ba0 + this close-out. QA `docs/qa/QA_REPORT_TASK046.md` (38/40 → fixed), design
+  `docs/design/REVIEW_TASK046.md` (NEEDS REVISION → all 5 fixed), PM ACCEPT WITH FOLLOW-UPS
+  (`docs/product/VALIDATION_TASK046.md`; TASK-055 mars wording — done here; TASK-054 reference-board extras;
+  owner Q15 doubling cube, Q16 mars payout, Q17 first-turn head exception).
 - 2026-11-07 · TASK-045 Poker table redesign (own art: stage, rail, felt, framed seats on chairs, dealer tray,
   corner table info) — fb3506a, be23f04, 5c3639b, 219b76d, b5d1031. QA `docs/qa/QA_REPORT_TASK045.md` (35/38 →
   fixed), design `docs/design/REVIEW_TASK045.md` (revision → Re-review APPROVED), PM ACCEPT WITH FOLLOW-UPS

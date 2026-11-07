@@ -118,6 +118,13 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   Boards also receive `players` (names by seat). `ActiveGamesBar` (in PublicLayout) lists the games
   you're in with a return link and a close (leave) button; `usePresence` on RoomPage reports presence. Range actions (poker raise {min,max}) are sent as
   {type, amount}.
+- Nardi variants (TASK-046): one game `nardi`, two modes — `long` (Long nardi, listed first) and `classic`
+  (Short nardi = backgammon: bar, hitting). The mode's `options.variant` goes into the state; states without
+  it are Short. `NardiEngine::rules($state)` picks `NardiRules` (Short, uses `static::`) or `LongNardiRules`
+  (extends it: path model, closed points, one-off-the-head with first-turn 6-6/4-4/3-3, no 6-wall, mars = 2;
+  the Fishka pot is not doubled — owner Q16). The view adds `pips`. NardiBoard turns seat 1's Long view by
+  half a board (no bar column). A game with several modes can show a picture picker: `modePreviews[slug]` in
+  `games/registry.ts` (lazy preview component, `mode` prop); others keep the Segmented switch.
 - Club look (modelled on bazarblot.am): the app is a brass-edged window (`.club-frame`) over a lamp-lit
   wood room (`.club-room`); panels are `.club-panel`, icon medallions `.club-medal`. Warm tokens in
   `index.css`: accent is the green "play" colour, accent-text/gold is brass. Navigation is a ☰ drawer

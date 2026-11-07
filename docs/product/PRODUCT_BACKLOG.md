@@ -2,7 +2,9 @@
 
 The single task tracker (format and statuses: `docs/team/README.md`). Sources: `UI_UX_AUDIT.md`
 (UX-NNN), `PRODUCT_RESEARCH.md` (OPP-NNN), `TECHNICAL_DEBT.md` (TD-NNN).
-Last planning: 2026-11-07 (TASK-045 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK045.md`;
+Last planning: 2026-11-07 (TASK-046 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK046.md`;
+TASK-054, TASK-055 and owner questions 15–17 added).
+Before: 2026-11-07 (TASK-045 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK045.md`;
 TASK-052, TASK-053 and owner question 14 added; question 11 refined).
 Before: 2026-11-06 (TASK-044 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK044.md`;
 TASK-051 and owner questions 12–13 added).
@@ -153,6 +155,38 @@ once, by the room's net (e.g. a win `52,000 → 104,000 [+52,000]`), checked wit
 1440; wallet history unchanged. Backend if needed: report `at_table` until the cash-out entry exists, or
 release and credit in one transaction before broadcasting.
 Depends on: —   Approval: none (no Fishka rule change)
+
+### TASK-046 · Nardi in two variants: Long and Short             P1 · L · APPROVED
+Owner request 2026-11-02: a "what shall we play?" picker with two board thumbnails (Long / Short), plus a
+reference short-nardi board. Today's engine was Short (backgammon rules); Long nardi is the new variant.
+Code 61a2181 (engine), e0aaa53 (mode `long`, "Classic" renamed "Short nardi"), c7fc6b0 (board, picker),
+4876787 (QA fixes), 6ea1ba0 (design fixes). QA `docs/qa/QA_REPORT_TASK046.md` (38/40; 1 Medium + 1 Low,
+fixed); design `docs/design/REVIEW_TASK046.md` (2 Medium + 3 Low, addressed; no UI/UX re-review, and the PM
+checked the post-fix screenshots).
+Validation 2026-11-07: **APPROVED — ACCEPT WITH FOLLOW-UPS** (`docs/product/VALIDATION_TASK046.md`). Both
+variants are real and rule-checked (0 violations in 391 states); bots, groups, bets and matchmaking work per
+variant; en/ru/hy; no UI-only claims; Fishka rules unchanged. Not built by decision: the doubling cube and a
+double payout for a mars (owner questions 15–16). Follow-ups: TASK-054, TASK-055, question 17.
+
+### TASK-054 · Nardi board extras from the owner's reference      P2 · M · PLANNED
+Problem: the owner's second reference board has elements this task didn't promise: points numbered 1–24
+along both edges (in your own numbering), a round turn timer on the board, wooden bear-off trays at the
+side showing stacked checkers, and a side panel with both players' avatars, clocks and the stake.
+Evidence: REVIEW_TASK046 follow-ups 1–4; VALIDATION_TASK046 §A.
+Acceptance criteria: each element present for Long and Short, both seats, at 1440 and 390 (the side panel
+may fold under the board on phones); point numbers follow the viewer's numbering; the timer matches the
+server deadline; no horizontal scroll; en/ru/hy; no rule change.
+Depends on: TASK-046   Approval: none (frontend). Can fold into TASK-048 (redesign) if the owner prefers.
+
+### TASK-055 · Mars wording matches the Fishka payout             P2 · S · DONE
+Problem: the game-over panel says "Mars! A double win." when a mars scores 2, but the Fishka payout is the
+normal pot (bet × 2), so players may expect double Fishkas. Evidence: QA_REPORT_TASK046 O-1, VALIDATION_TASK046 §B.
+Acceptance criteria: if the owner keeps payouts unchanged (question 16), the line reads "Mars! Your opponent
+bore off none." (en/ru/hy) and no text implies double Fishkas. If the owner chooses a double payout, this task
+is replaced by the backend payout change (a stake rule → owner approval) and the line stays.
+Depends on: owner question 16   Approval: none for the wording
+Done 2026-11-07 (with TASK-046): the line now reads "Mars! The opponent bore off no checkers." (en/ru/hy), which is
+true whatever question 16 decides; if the owner picks a double payout, the line can say so once the backend pays it.
 
 ## Bugs
 
@@ -583,7 +617,7 @@ Validation 2026-10-29: **APPROVED** — `GameActionService::end` marks abandoned
    `poker.result.*` / `poker.nextHand*` / `room.nextRound` strings, especially the shortened Durak role
    words գրոհող (attacker), պաշտպան (defender), վերցնում (taking), shortened to fit 62 px seats); try a
    Web Share invite on a phone; listen to the new Poker `handWin` sound.
-5. Content: the Poker game description is still English in hy — admin catalog text (Admin → Games),
+5. Content (2026-11-07: the Nardi description above the new picker is English in ru/hy too): the Poker game description is still English in hy — admin catalog text (Admin → Games),
    needs an Armenian text from the owner or a translator. Since Fishkas, the Poker description and rules
    still say "play chips with no monetary value"; update them to describe Fishkas (same admin screen).
 6. Fishkas move between players through games: at a private Poker table a player can lose chips on
@@ -629,6 +663,16 @@ Validation 2026-10-29: **APPROVED** — `GameActionService::end` marks abandoned
     tables that people can join and leave mid-game, ring-game style? That is backend work: seating during a
     game, buy-in and cash-out at any time, and how it fits the Fishka and stake rules. It would be its own
     task, needing your approval.
+15. Doubling cube in nardi (your TASK-046 reference showed one). It raises the stake during a game, so
+    Fishkas could move beyond the agreed bet. Build it? If yes: is it in both variants or Short only; is it
+    capped at the group's maximum bet and the players' balances; and is it used in matchmaking or only at
+    private tables? Not built until you decide.
+16. Mars in nardi (the loser bore off no checkers) scores 2 in the game today, but the Fishka payout is the
+    normal pot (the winner takes bet × 2). Should a mars pay double (the loser loses a second bet)? That
+    changes the stake rules and needs a balance check. Until you decide, the PM recommends the wording in
+    TASK-055.
+17. Long nardi rule check (TASK-046): on a player's first turn, 6-6, 4-4 and 3-3 let two checkers leave the
+    head (otherwise one per turn). Some players allow only 6-6 and 4-4. Is 6-6/4-4/3-3 the rule you play?
 (Decided 2026-10-29: autonomous mode for B1–B3; TD-001 deleted; sound on by default; TASK-030/031
 go-ahead; room API fields for Play again; `.text-gold-gradient`; public profile stats are public. See
 DECISIONS.md.)

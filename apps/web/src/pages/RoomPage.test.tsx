@@ -243,7 +243,7 @@ describe('Room', () => {
     expect(roomCalls).toBe(2)
   })
 
-  it('calls a double win (Nardi’s mars) by its name', async () => {
+  it('calls Nardi’s mars by its name, without promising double Fishkas', async () => {
     serveRoom(
       roomFixture({
         status: 'finished',
@@ -257,7 +257,7 @@ describe('Room', () => {
     )
     renderRoute('/rooms/room-1')
 
-    expect(await screen.findByText('Mars! A double win.')).toBeInTheDocument()
+    expect(await screen.findByText('Mars! The opponent bore off no checkers.')).toBeInTheDocument()
   })
 
   it('offers only the lobby after a private game', async () => {
