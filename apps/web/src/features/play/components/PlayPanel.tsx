@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useId, useState, type ReactNode } from 'react'
+import { Suspense, useId, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
 import { useCurrentUser } from '@/features/auth/hooks'
@@ -32,6 +32,7 @@ import { useWallet } from '@/features/wallet/hooks'
 import { canEnter } from '../groups'
 import { GroupPicker } from './GroupPicker'
 import { MatchmakingStatus } from './MatchmakingStatus'
+import { modePreviews } from '@/games/registry'
 
 /**
  * The game's lobby: the hero (art and stats) with the big "play" button that finds an opponent,
@@ -45,6 +46,7 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
   const queryClient = useQueryClient()
   const { data: user } = useCurrentUser()
   const modes = game.modes ?? []
+  const Preview = modePreviews[game.slug]
   const [modeSlug, setModeSlug] = useState(modes[0]?.slug ?? '')
   const [difficulty, setDifficulty] = useState<BotDifficulty>('medium')
   const [code, setCode] = useState('')
@@ -145,7 +147,35 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
 
         {modes.length > 1 || tableSize !== undefined ? (
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-4 [animation-delay:120ms] motion-safe:animate-rise">
-            {modes.length > 1 ? (
+            {modes.length > 1 && Preview ? (
+              // Modes that look different (Nardi: Long and Short) are chosen by their picture.
+              <fieldset className="w-full">
+                <legend className="mb-2 text-center text-sm font-semibold text-gold-light">
+                  {t('play.whatToPlay')}
+                </legend>
+                <div className="grid grid-cols-2 gap-3">
+                  {modes.map((m) => (
+                    <label
+                      key={m.slug}
+                      className="club-panel flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-transparent p-2.5 transition has-checked:border-gold has-checked:shadow-[0_0_0_3px_rgb(214_171_78/0.25)] has-focus-visible:outline-2 has-focus-visible:outline-accent-text sm:p-3"
+                    >
+                      <input
+                        type="radio"
+                        name="mode"
+                        value={m.slug}
+                        checked={modeSlug === m.slug}
+                        onChange={() => setModeSlug(m.slug)}
+                        className="sr-only"
+                      />
+                      <Suspense fallback={<span className="block aspect-[196/120] w-full" />}>
+                        <Preview mode={m.slug} />
+                      </Suspense>
+                      <span className="text-sm font-bold sm:text-base">{m.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            ) : modes.length > 1 ? (
               <Segmented
                 label={t('play.mode')}
                 value={modeSlug}

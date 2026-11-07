@@ -7,6 +7,10 @@ interface NardiView {
   points: number[]
   bar: [number, number]
   off: [number, number]
+  /** "long" for Long nardi; absent for Short. */
+  variant?: 'long'
+  /** Pips each player still has to travel (from the server). */
+  pips?: [number, number]
   turn: number
   dice: number[]
   rolled: [number, number]
@@ -33,8 +37,11 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
 
   const sources = new Set(steps.map((s) => s.from))
   const targets = steps.filter((s) => s.from === selected)
-  // Seat 1 sees the board turned around, so both players move towards the bottom right.
-  const display = (p: number) => (me === 0 ? p : 25 - p)
+  // Every player sees their own way ending bottom right. Short: seat 1 sees the board turned round.
+  // Long: seat 1's way runs 12 → 1, 24 → 13, so their view is turned by half a board.
+  const long = view.variant === 'long'
+  const way = (p: number) => (p <= 12 ? 13 - p : 37 - p) // seat 1's Long way; its own inverse
+  const display = (p: number) => (me === 0 ? p : long ? 25 - way(p) : 25 - p)
   const owner = (p: number) => {
     const n = view.points[p - 1] ?? 0
     return n === 0 ? null : n > 0 ? 0 : 1
@@ -57,7 +64,8 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
   // Display order: top row 13..24 left to right, bottom row 12..1 left to right.
   const top = Array.from({ length: 12 }, (_, i) => 13 + i)
   const bottom = Array.from({ length: 12 }, (_, i) => 12 - i)
-  const absolute = (displayed: number) => (me === 0 ? displayed : 25 - displayed)
+  const absolute = (displayed: number) =>
+    me === 0 ? displayed : long ? way(25 - displayed) : 25 - displayed
 
   const renderPoint = (displayed: number, row: 'top' | 'bottom') => {
     const p = absolute(displayed)
@@ -131,6 +139,17 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
             {t('nardi.diceLeft', { count: view.dice.length, used: usedDice })}
           </span>
         </div>
+        {view.pips ? (
+          <p
+            className="text-sm tabular-nums"
+            aria-label={t('nardi.pipsLabel', { mine: view.pips[me], theirs: view.pips[1 - me] })}
+          >
+            <span className="text-muted">{t('nardi.pips')}</span>{' '}
+            <span className="font-bold text-gold-light">{view.pips[me]}</span>
+            <span className="text-muted"> · </span>
+            <span className="font-bold">{view.pips[1 - me]}</span>
+          </p>
+        ) : null}
         <p className="text-sm text-muted">
           {myTurn
             ? selected === null
@@ -147,17 +166,22 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
             <div className="flex">{bottom.slice(0, 6).map((d) => renderPoint(d, 'bottom'))}</div>
           </div>
 
+          {/* The bar: Short nardi's hit checkers; Long nardi hits nothing, so it is just the board's middle. */}
           <div className="flex w-14 flex-col items-center justify-between rounded-xl bg-bg py-2 text-center text-xs">
-            <BarStack label={t('nardi.barTheirs')} count={view.bar[1 - me] ?? 0} mine={false} />
-            <button
-              type="button"
-              disabled={pending || !sources.has('bar')}
-              aria-pressed={selected === 'bar'}
-              onClick={() => setSelected(selected === 'bar' ? null : 'bar')}
-              className={`rounded-lg p-1 ${selected === 'bar' ? 'ring-2 ring-accent-text' : ''}`}
-            >
-              <BarStack label={t('nardi.barMine')} count={view.bar[me] ?? 0} mine />
-            </button>
+            {long ? null : (
+              <>
+                <BarStack label={t('nardi.barTheirs')} count={view.bar[1 - me] ?? 0} mine={false} />
+                <button
+                  type="button"
+                  disabled={pending || !sources.has('bar')}
+                  aria-pressed={selected === 'bar'}
+                  onClick={() => setSelected(selected === 'bar' ? null : 'bar')}
+                  className={`rounded-lg p-1 ${selected === 'bar' ? 'ring-2 ring-accent-text' : ''}`}
+                >
+                  <BarStack label={t('nardi.barMine')} count={view.bar[me] ?? 0} mine />
+                </button>
+              </>
+            )}
           </div>
 
           <div className="flex flex-1 flex-col gap-3">

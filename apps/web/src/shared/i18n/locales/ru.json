@@ -271,7 +271,8 @@
     "pokerBuyIn": "Вы приносите за стол весь баланс: {{amount}} фишек. Блайнды {{small}}/{{big}}.",
     "groupBadge": "Группа «{{group}}»",
     "tableBet": "Ставка {{amount}}",
-    "tableBlinds": "Блайнды {{small}}/{{big}}"
+    "tableBlinds": "Блайнды {{small}}/{{big}}",
+    "whatToPlay": "Во что будем играть?"
   },
   "room": {
     "players": "Игроки",
@@ -372,7 +373,9 @@
     "barMine": "Ваш бар",
     "barTheirs": "Бар соперника",
     "offMine": "Выброшено",
-    "offTheirs": "У соперника"
+    "offTheirs": "У соперника",
+    "pips": "Пипсы",
+    "pipsLabel": "Пипсы: у вас {{mine}}, у соперника {{theirs}}"
   },
   "checkers": {
     "moveWhite": "Ход белых",

@@ -263,7 +263,8 @@
     "pokerBuyIn": "You bring your whole balance to the table: {{amount}} Fishkas. Blinds {{small}}/{{big}}.",
     "groupBadge": "{{group}} group",
     "tableBet": "Bet {{amount}}",
-    "tableBlinds": "Blinds {{small}}/{{big}}"
+    "tableBlinds": "Blinds {{small}}/{{big}}",
+    "whatToPlay": "What shall we play?"
   },
   "room": {
     "players": "Players",
@@ -360,7 +361,9 @@
     "barMine": "Your bar",
     "barTheirs": "Their bar",
     "offMine": "Off",
-    "offTheirs": "Their off"
+    "offTheirs": "Their off",
+    "pips": "Pips",
+    "pipsLabel": "Pips: you {{mine}}, opponent {{theirs}}"
   },
   "checkers": {
     "moveWhite": "Move: White",

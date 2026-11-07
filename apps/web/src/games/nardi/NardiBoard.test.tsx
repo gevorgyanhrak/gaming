@@ -81,4 +81,46 @@ describe('NardiBoard', () => {
     await userEvent.click(screen.getByRole('button', { name: /Off/ }))
     expect(onAction).toHaveBeenCalledWith({ type: 'move', from: 1, to: 'off', die: 2 })
   })
+
+  it('shows Long nardi from each player’s side, with pip counts and no bar', () => {
+    const points = Array(24).fill(0)
+    points[23] = 15 // seat 0's head, point 24
+    points[11] = -15 // seat 1's head, point 12
+    const view = {
+      variant: 'long',
+      points,
+      bar: [0, 0],
+      off: [0, 0],
+      turn: 0,
+      dice: [5, 2],
+      rolled: [5, 2],
+      winner: null,
+      pips: [360, 360],
+    }
+
+    const { unmount } = render(
+      <NardiBoard
+        state={roomStateFixture({ seat: 0, seats_to_act: [0], view, legal_actions: [] })}
+        onAction={vi.fn()}
+        pending={false}
+      />,
+    )
+    expect(screen.getByRole('button', { name: 'Point 24: 15 checkers, yours' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Pips: you 360, opponent 360')).toBeInTheDocument()
+    expect(screen.queryByText('Their bar')).not.toBeInTheDocument()
+    unmount()
+
+    // Seat 1's head (point 12) is the start of their way: they see it as their point 24.
+    render(
+      <NardiBoard
+        state={roomStateFixture({ seat: 1, seats_to_act: [0], view, legal_actions: [] })}
+        onAction={vi.fn()}
+        pending={false}
+      />,
+    )
+    expect(screen.getByRole('button', { name: 'Point 24: 15 checkers, yours' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: "Point 12: 15 checkers, opponent's" }),
+    ).toBeInTheDocument()
+  })
 })

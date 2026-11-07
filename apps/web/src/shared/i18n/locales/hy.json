@@ -263,7 +263,8 @@
     "pokerBuyIn": "Սեղանի մոտ եք բերում ձեր ամբողջ մնացորդը՝ {{amount}} ֆիշկա։ Բլայնդեր {{small}}/{{big}}։",
     "groupBadge": "«{{group}}» խումբ",
     "tableBet": "Խաղադրույք {{amount}}",
-    "tableBlinds": "Բլայնդեր {{small}}/{{big}}"
+    "tableBlinds": "Բլայնդեր {{small}}/{{big}}",
+    "whatToPlay": "Ի՞նչ ենք խաղալու"
   },
   "room": {
     "players": "Խաղացողներ",
@@ -360,7 +361,9 @@
     "barMine": "Ձեր բարը",
     "barTheirs": "Մրցակցի բարը",
     "offMine": "Դուրս",
-    "offTheirs": "Մրցակցինը"
+    "offTheirs": "Մրցակցինը",
+    "pips": "Միավորներ",
+    "pipsLabel": "Միավորներ՝ դուք {{mine}}, մրցակից {{theirs}}"
   },
   "checkers": {
     "moveWhite": "Քայլում են սպիտակները",

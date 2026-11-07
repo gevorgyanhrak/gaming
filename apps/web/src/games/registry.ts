@@ -27,6 +27,16 @@ export const boards: Partial<Record<string, LazyExoticComponent<ComponentType<Bo
   poker: lazy(() => import('./poker/PokerBoard')),
 }
 
+/**
+ * A small picture of each mode, for games whose modes differ enough to show (Nardi: Long and Short).
+ * The game page shows them as cards to choose from.
+ */
+export const modePreviews: Partial<
+  Record<string, LazyExoticComponent<ComponentType<{ mode: string }>>>
+> = {
+  nardi: lazy(() => import('./nardi/NardiModePreview')),
+}
+
 type View = Record<string, unknown>
 
 /** What the room page and the sounds need to know about a game, without loading its board. */

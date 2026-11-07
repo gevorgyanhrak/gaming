@@ -31,8 +31,9 @@ Steps:
 - [x] 2. Mode `long` (GameModeSeeder, listed first; deploy runs db:seed) and migration renaming the seeded
       "Classic" to "Short nardi" (only if unchanged); groups/matchmaking are per mode already; a Long game vs
       a bot through the real pipeline replays from the move log (tests/Feature/Games/LongNardiRoomTest.php) — e0aaa53.
-- [ ] 3. Frontend: NardiBoard for Long (no bar, seat 1's path and home, off tray), pip counts; the Nardi
-      page's "What shall we play?" picker with two board previews; en/ru/hy rules text.
+- [x] 3. Frontend: NardiBoard for Long (seat 1's view turned by half a board, no bar), pip counts for both
+      variants; the Nardi page's "What shall we play?" picker with two board previews (registry
+      `modePreviews`); en/ru/hy; NardiBoard test — COMMIT. Live: 1440 en, 390 hy.
 - [ ] 4. Live check (both variants, bots and two people, 390/1440), QA, UI/UX, PM; push; report.
 
 ## Next
