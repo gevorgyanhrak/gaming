@@ -4,7 +4,8 @@ namespace App\Games\Nardi\Engine;
 
 /**
  * Short Nardi (backgammon rules): positions, legal steps and their effects. Pure functions on the
- * state array; no randomness or turn handling (see NardiEngine).
+ * state array; no randomness or turn handling (see NardiEngine). Long Nardi overrides what differs
+ * (LongNardiRules); the shared search (maxPlayable) uses static calls so it plays the right variant.
  *
  * Board: points 1..24. Seat 0 moves from 24 down to 1 (home 1..6, bears off past 1); seat 1 moves
  * from 1 up to 24 (home 19..24, bears off past 24). `points` holds 24 signed counts (index 0 =
@@ -12,7 +13,7 @@ namespace App\Games\Nardi\Engine;
  *
  * A step is ['from' => int|'bar', 'to' => int|'off', 'die' => int].
  */
-final class NardiRules
+class NardiRules
 {
     public const CHECKERS = 15;
 
@@ -47,7 +48,7 @@ final class NardiRules
      */
     public static function opponent(array $state, int $seat, int $p): int
     {
-        return self::own($state, 1 - $seat, $p);
+        return static::own($state, 1 - $seat, $p);
     }
 
     public static function inHome(int $seat, int $p): bool
@@ -65,7 +66,7 @@ final class NardiRules
         }
 
         for ($p = 1; $p <= 24; $p++) {
-            if (self::own($state, $seat, $p) > 0 && ! self::inHome($seat, $p)) {
+            if (static::own($state, $seat, $p) > 0 && ! static::inHome($seat, $p)) {
                 return false;
             }
         }
@@ -88,27 +89,27 @@ final class NardiRules
         foreach (array_values(array_unique($dice)) as $die) {
             if ($state['bar'][$seat] > 0) {
                 $to = $seat === 0 ? 25 - $die : $die;
-                if (self::opponent($state, $seat, $to) < 2) {
+                if (static::opponent($state, $seat, $to) < 2) {
                     $steps[] = ['from' => 'bar', 'to' => $to, 'die' => $die];
                 }
 
                 continue;
             }
 
-            $bearOff = self::canBearOff($state, $seat);
+            $bearOff = static::canBearOff($state, $seat);
 
             for ($p = 1; $p <= 24; $p++) {
-                if (self::own($state, $seat, $p) === 0) {
+                if (static::own($state, $seat, $p) === 0) {
                     continue;
                 }
 
                 $to = $seat === 0 ? $p - $die : $p + $die;
 
                 if ($to >= 1 && $to <= 24) {
-                    if (self::opponent($state, $seat, $to) < 2) {
+                    if (static::opponent($state, $seat, $to) < 2) {
                         $steps[] = ['from' => $p, 'to' => $to, 'die' => $die];
                     }
-                } elseif ($bearOff && (($to === 0 || $to === 25) || ! self::hasCheckerFarther($state, $seat, $p))) {
+                } elseif ($bearOff && (($to === 0 || $to === 25) || ! static::hasCheckerFarther($state, $seat, $p))) {
                     // Exact bear-off, or a higher die from the farthest checker.
                     $steps[] = ['from' => $p, 'to' => 'off', 'die' => $die];
                 }
@@ -123,12 +124,12 @@ final class NardiRules
      *
      * @param  array<string, mixed>  $state
      */
-    private static function hasCheckerFarther(array $state, int $seat, int $p): bool
+    protected static function hasCheckerFarther(array $state, int $seat, int $p): bool
     {
         $range = $seat === 0 ? range($p + 1, 24) : ($p > 1 ? range(1, $p - 1) : []);
 
         foreach ($range as $q) {
-            if (self::own($state, $seat, $q) > 0) {
+            if (static::own($state, $seat, $q) > 0) {
                 return true;
             }
         }
@@ -192,7 +193,7 @@ final class NardiRules
     {
         $pips = 25 * $state['bar'][$seat];
         for ($p = 1; $p <= 24; $p++) {
-            $pips += self::own($state, $seat, $p) * ($seat === 0 ? $p : 25 - $p);
+            $pips += static::own($state, $seat, $p) * ($seat === 0 ? $p : 25 - $p);
         }
 
         return $pips;
@@ -211,15 +212,15 @@ final class NardiRules
             return 0;
         }
 
-        $key = self::key($state, $dice);
+        $key = static::key($state, $dice);
         if (isset($memo[$key])) {
             return $memo[$key];
         }
 
         $best = 0;
-        foreach (self::singleSteps($state, $seat, $dice) as $step) {
-            [$next] = self::applyStep($state, $seat, $step);
-            $best = max($best, 1 + self::maxPlayable($next, $seat, self::withoutDie($dice, $step['die']), $memo));
+        foreach (static::singleSteps($state, $seat, $dice) as $step) {
+            [$next] = static::applyStep($state, $seat, $step);
+            $best = max($best, 1 + static::maxPlayable($next, $seat, static::withoutDie($dice, $step['die']), $memo));
             if ($best === count($dice)) {
                 break;
             }

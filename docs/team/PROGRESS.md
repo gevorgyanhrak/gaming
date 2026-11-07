@@ -10,8 +10,29 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
-**TASK-046 · Nardi in two variants: Long and Short** — next in the owner's order (request and reference
-below in "Next"); first step: the plan. Owner question before building: the doubling cube.
+**TASK-046 · Nardi in two variants: Long and Short** — started 2026-11-07 (request and references below in
+"Next"). Correction: today's engine is SHORT nardi (backgammon: bar, hitting); the new variant is LONG nardi.
+
+Long nardi rules (as commonly played in Armenia/Russia): 15 checkers each start on one point (the "head":
+seat 0 on point 24, seat 1 on point 12); both move the same way round the board (seat 0 24→1, seat 1 12→1
+then 24→13); no hitting — a point with any opponent checker is closed; only one checker may leave the head
+per turn, except on a player's first turn with 6-6, 4-4 or 3-3 (two); no block of 6 points in a row unless
+an opponent checker is already ahead of it; doubles play four times; as many dice as possible, the higher if
+only one; bear off from home (the last quarter) once all 15 are there; mars (opponent bore off none) = 2.
+
+Decisions: the doubling cube is NOT built (it doubles the stake mid-game → Fishka pot rules; owner question);
+one game `nardi` with two modes (`classic` = Short, renamed for clarity; new `long`); the engine reads
+`variant` from the mode (states without it stay Short); the view adds pip counts for both players.
+
+Steps:
+- [x] 1. Engine: LongNardiRules (path model, closed points, head rule + first-turn doubles, 6-block rule,
+      bear-off, mars), NardiEngine variant switch, pips in the view, bot evaluation for Long; unit tests
+      per rule + whole bot games (tests/Unit/Games/LongNardiTest.php) — COMMIT. (Replay test: step 2.)
+- [ ] 2. Mode `long` (seeder + migration for existing installs), names "Short nardi"/"Long nardi" en/ru/hy;
+      bots, groups, matchmaking per mode; bot plays Long.
+- [ ] 3. Frontend: NardiBoard for Long (no bar, seat 1's path and home, off tray), pip counts; the Nardi
+      page's "What shall we play?" picker with two board previews; en/ru/hy rules text.
+- [ ] 4. Live check (both variants, bots and two people, 390/1440), QA, UI/UX, PM; push; report.
 
 ## Next
 

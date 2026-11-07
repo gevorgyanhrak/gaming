@@ -6,6 +6,7 @@ use App\Enums\BotDifficulty;
 use App\Gameplay\Contracts\BotStrategy;
 use App\Gameplay\Engine\Action;
 use App\Gameplay\Random\RandomSource;
+use App\Games\Nardi\Engine\LongNardiRules;
 use App\Games\Nardi\Engine\NardiEngine;
 use App\Games\Nardi\Engine\NardiRules;
 
@@ -75,13 +76,14 @@ final class NardiBot implements BotStrategy
     private function extend(array $state, array $first, array $step, array &$plans): void
     {
         $seat = $state['turn'];
-        [$next] = NardiRules::applyStep($state, $seat, $step);
-        $next['dice'] = NardiRules::withoutDie($state['dice'], $step['die']);
+        $rules = NardiEngine::rules($state);
+        [$next] = $rules::applyStep($state, $seat, $step);
+        $next['dice'] = $rules::withoutDie($state['dice'], $step['die']);
 
         $continuations = $next['dice'] === [] || $next['off'][$seat] === NardiRules::CHECKERS ? [] : $this->engine->legalSteps($next);
 
         if ($continuations === []) {
-            $plans[NardiRules::key($next, [])] ??= ['first' => $first, 'state' => $next];
+            $plans[$rules::key($next, [])] ??= ['first' => $first, 'state' => $next];
 
             return;
         }
@@ -99,14 +101,29 @@ final class NardiBot implements BotStrategy
     public function evaluate(array $state, int $seat): float
     {
         $opp = 1 - $seat;
+        $rules = NardiEngine::rules($state);
 
         if ($state['off'][$seat] === NardiRules::CHECKERS) {
             return 10_000;
         }
 
-        $score = (NardiRules::pips($state, $opp) - NardiRules::pips($state, $seat)) * 1.0;
-        $score += 8 * $state['bar'][$opp] - 8 * $state['bar'][$seat];
+        $score = ($rules::pips($state, $opp) - $rules::pips($state, $seat)) * 1.0;
         $score += 2 * $state['off'][$seat];
+
+        if ($rules === LongNardiRules::class) {
+            // Long nardi: nothing is hit; points held on the opponent's way slow them down, and
+            // checkers spread out of the head keep the game flexible.
+            for ($p = 1; $p <= 24; $p++) {
+                if (LongNardiRules::own($state, $seat, $p) > 0) {
+                    $score += LongNardiRules::inHome($opp, $p) ? 0.5 : 1.5;
+                }
+            }
+            $score -= 0.3 * max(0, LongNardiRules::own($state, $seat, LongNardiRules::point($seat, 1)) - 1);
+
+            return $score;
+        }
+
+        $score += 8 * $state['bar'][$opp] - 8 * $state['bar'][$seat];
 
         for ($p = 1; $p <= 24; $p++) {
             $own = NardiRules::own($state, $seat, $p);
@@ -164,7 +181,10 @@ final class NardiBot implements BotStrategy
         for ($a = 1; $a <= 6; $a++) {
             for ($b = $a; $b <= 6; $b++) {
                 $weight = $a === $b ? 1 : 2;
-                $reply = [...$state, 'turn' => $opp, 'dice' => $a === $b ? [$a, $a, $a, $a] : [$a, $b]];
+                $reply = [...$state, 'turn' => $opp, 'rolled' => [$a, $b], 'dice' => $a === $b ? [$a, $a, $a, $a] : [$a, $b]];
+                if (isset($state['head_moves'])) {
+                    $reply['head_moves'] = 0;    // long nardi: the head counts per turn
+                }
                 $plans = $this->engine->legalSteps($reply) === [] ? [['state' => $reply]] : $this->plans($reply);
 
                 $worst = INF;
