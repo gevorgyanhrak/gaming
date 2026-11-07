@@ -27,7 +27,7 @@ one game `nardi` with two modes (`classic` = Short, renamed for clarity; new `lo
 Steps:
 - [x] 1. Engine: LongNardiRules (path model, closed points, head rule + first-turn doubles, 6-block rule,
       bear-off, mars), NardiEngine variant switch, pips in the view, bot evaluation for Long; unit tests
-      per rule + whole bot games (tests/Unit/Games/LongNardiTest.php) — COMMIT. (Replay test: step 2.)
+      per rule + whole bot games (tests/Unit/Games/LongNardiTest.php) — 61a2181. (Replay test: step 2.)
 - [ ] 2. Mode `long` (seeder + migration for existing installs), names "Short nardi"/"Long nardi" en/ru/hy;
       bots, groups, matchmaking per mode; bot plays Long.
 - [ ] 3. Frontend: NardiBoard for Long (no bar, seat 1's path and home, off tray), pip counts; the Nardi
