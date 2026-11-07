@@ -114,3 +114,23 @@ English. No code was changed.
 | Low: shown cards hide the initial; "+N" covers them | Fixed | Shown cards sit above the frame (`-top-8`, `sm:-top-11`); "+N" above the cards | Code |
 | Nit: the stage pattern reads as plain brown | Fixed | Outer ovals at 12 % | Screenshot |
 
+
+---
+
+## Re-review — 2026-11-07 (main at `b2c0d0c`, fixes in `219b76d`)
+
+Live checks, player2 at bot tables (`qa2/rv45res.mjs`). Screenshots: `scratchpad/review/p45-rr*.png`.
+
+| Fix | Check | Result |
+|---|---|---|
+| 1 · Acting seat | 6 seats at 1440 and 390: a bot's turn (`p45-rr1440-botturn.png`, `p45-rr390-botturn.png`) and my turn (`p45-rr1440-myturn.png`, `p45-rr390-myturn.png`) | **Fixed.** The acting chair glows in the turn colour and its nameplate gets a turn-coloured border; the timer ring stays. It is identifiable at a glance at both sizes. The winner looks different: a gold "+N" chip above the cards and a gold plate, no chair glow (`p45-rr1440-result.png`) |
+| 2 · Top seat | 6 seats: stage top vs the top chair | **Fixed.** 1440: stage 142, chair 154; 390: stage 170, chair 172, so the chairs are inside the stage. Only the top seat's card backs (390) and its "+N" in a result (1440) still poke slightly above the stage edge; acceptable |
+| 3 · Showdown | Showdowns at 1440 (6 seats, full house) and 390 (3 seats, two pair) | **Fixed.** Shown cards sit above the frame and the initials stay visible. "+N" sits above the cards, with 0 overlaps measured (`p45-rr1440-result.png`, `p45-rr390b-result.png`) |
+| 4 · Pattern | 1440 | **Fixed.** The 12 % ovals read as a damask-like texture behind the table, and it still doesn't compete with the cards |
+
+### Final verdict: **APPROVED**
+
+- 0 open rooms.
+- player2's balance moved only by blinds: 15,478 → 15,468, with no all-in.
+- The main browser tab is on player2, in English.
+- No code was changed.

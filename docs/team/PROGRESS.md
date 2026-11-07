@@ -33,7 +33,8 @@ Steps:
 - [x] 3a. QA (docs/qa/QA_REPORT_TASK045.md: 35/38, 3 Low → all fixed: be23f04, 5c3639b; the table info
       moved off the felt into the stage's corner on phones too).
 - [x] 3b. UI/UX review NEEDS REVISION (acting seat; Lows) → fixed, 219b76d.
-- [ ] 3c. Reviewer's check of the fixes, PM validation; push; report.
+- [x] 3c. Reviewer's check of the fixes: APPROVED (REVIEW_TASK045.md "Re-review").
+- [ ] 3d. PM validation; push; report.
 
 ## Next
 
