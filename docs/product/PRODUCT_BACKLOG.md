@@ -2,7 +2,9 @@
 
 The single task tracker (format and statuses: `docs/team/README.md`). Sources: `UI_UX_AUDIT.md`
 (UX-NNN), `PRODUCT_RESEARCH.md` (OPP-NNN), `TECHNICAL_DEBT.md` (TD-NNN).
-Last planning: 2026-11-06 (TASK-044 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK044.md`;
+Last planning: 2026-11-07 (TASK-045 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK045.md`;
+TASK-052, TASK-053 and owner question 14 added; question 11 refined).
+Before: 2026-11-06 (TASK-044 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK044.md`;
 TASK-051 and owner questions 12–13 added).
 Before: 2026-11-02 (TASK-043 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK043.md`;
 TASK-049, TASK-050 and owner questions 9–11 added).
@@ -118,6 +120,39 @@ in the re-runs. A flaky test hides real failures and blocks pushes at random.
 Acceptance criteria: the cause is found (timing/`findBy` timeout, shared state between files) and fixed;
 10 consecutive full runs pass under load; no test is skipped or given a longer global timeout to hide it.
 Depends on: —   Approval: none (test-only; after the owner's queue unless it blocks a push)
+
+### TASK-045 · Poker table redesign like the owner's screenshot  P1 · M · APPROVED
+Owner request 2026-11-02: "poker table like it, with chat" (reference: a wide oval felt, a thick rail on a
+dark patterned background, framed avatars on chairs, "+" empty seats, the dealer at the top, table info
+bottom-left, chat below). Code fb3506a, QA fixes be23f04 and 5c3639b, design fixes 219b76d; frontend only.
+QA `docs/qa/QA_REPORT_TASK045.md` (35/38; 3 Low, fixed); design `docs/design/REVIEW_TASK045.md` (re-review
+APPROVED 2026-11-07).
+Validation 2026-11-07: **APPROVED — ACCEPT WITH FOLLOW-UPS** (`docs/product/VALIDATION_TASK045.md`). The
+look of the reference is met in our own art; gameplay, the phone layout, en/ru/hy and the reaction anchors
+are all intact. Changed by decision, and the PM agrees: no "+" seats (no mid-game joining exists), and
+the dealer tray only when the top seat is free. Chat placement is still owner question 11. Follow-ups:
+TASK-052, TASK-053, owner question 14.
+
+### TASK-052 · Poker controls fit on short desktop screens        P2 · S · DONE
+Done 2026-11-07 within TASK-045: the desktop table's width follows the screen height (`sm:max-w-[min(64rem,calc((100dvh-25.5rem)*2.45))]`, aspect 2.45:1, less padding). Measured from the stage's top to the bottom of the action panel, plus the 80 px header: 795 of 900 (1440×900), 750 of 768 (1366×768), 702 of 720 (1280×720); the top seat stays inside the stage.
+Problem: with the taller stage (`sm:pt-20`) and the chat bar above it, the action area ends near the bottom
+edge at 1440×900. In `review/p45-rr1440-myturn.png` the ½ pot / Pot / All-in presets are cut off after a
+small scroll. At 1280×720 the actions may start below the fold, which costs time on a 30 s turn.
+Evidence: VALIDATION_TASK045 §C.
+Acceptance criteria: at 1280×720, 1366×768 and 1440×900 with 6 seats, my cards, Fold/Call/Raise, the slider
+and the presets are fully visible without scrolling on my turn (bounding boxes); 390×844 unchanged; no
+horizontal scroll. Fit the stage to the viewport height the way Durak does (`useFitHeight`) instead of
+shrinking controls.   Depends on: TASK-045   Approval: none (frontend)
+
+### TASK-053 · Header balance steady while chips are at a table    P2 · S · PLANNED
+Problem: during poker the header Fishka pill shows small "−1 / +3" deltas at every hand, and on a big win
+it moved several times (`52,000 → 0 → 52,000 → 52,020 → 104,000`; REVIEW_TASK040 issue 2). No fix for it
+is recorded, and the TASK-045 reviewer saw the hand deltas again.
+Acceptance criteria: with chips at a table, the pill shows no per-hand delta or bump; at game end it moves
+once, by the room's net (e.g. a win `52,000 → 104,000 [+52,000]`), checked with a 50 ms recorder at 390 and
+1440; wallet history unchanged. Backend if needed: report `at_table` until the cash-out entry exists, or
+release and credit in one transaction before broadcasting.
+Depends on: —   Approval: none (no Fishka rule change)
 
 ## Bugs
 
@@ -578,7 +613,8 @@ Validation 2026-10-29: **APPROVED** — `GameActionService::end` marks abandoned
 11. Table chat placement: your 2026-11-02 screenshot showed the chat under the table. We put a compact chat
     bar between the room header and the board, because under the board it was never visible while
     playing (design review issue 2). Keep this, or move it under the table in TASK-045 (poker) and the
-    other game redesigns?
+    other game redesigns? (2026-11-07, after TASK-045: under the table would push the poker action buttons
+    further down on desktop, so it would need TASK-052's fit-to-screen layout first.)
 12. Daily bonus amounts (TASK-044): 1,000 / 1,500 / 2,000 / 2,500 / 5,000; day 5 repeats while the streak
     holds; a missed day resets to day 1. All are admin settings. Effect: a 30-day perfect streak gives
     137,000 free Fishkas (was 30,000 at a flat 1,000), about 4.6×. Bonuses alone take a player into the
@@ -588,6 +624,11 @@ Validation 2026-10-29: **APPROVED** — `GameActionService::end` marks abandoned
 13. Collecting the daily bonus (TASK-044): it is now collected with "Collect" in the popup or the wallet
     card. Before, it was added silently at sign-in. Players who never open either no longer get it.
     Confirm this change. It matches your reference and makes the reward visible.
+14. Empty seats with "+" (your TASK-045 reference): today a table starts full and nobody can sit down while
+    it runs, so we don't show "+" seats; that would promise something that doesn't work. Do you want open
+    tables that people can join and leave mid-game, ring-game style? That is backend work: seating during a
+    game, buy-in and cash-out at any time, and how it fits the Fishka and stake rules. It would be its own
+    task, needing your approval.
 (Decided 2026-10-29: autonomous mode for B1–B3; TD-001 deleted; sound on by default; TASK-030/031
 go-ahead; room API fields for Play again; `.text-gold-gradient`; public profile stats are public. See
 DECISIONS.md.)

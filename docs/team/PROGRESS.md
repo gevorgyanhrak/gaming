@@ -10,42 +10,15 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
-**TASK-045 · Poker table redesign like the owner's screenshot** — started 2026-11-06. Reference: a wide
-oval green felt with a thick rail on a dark patterned background, framed square avatars on chairs around
-the rail, empty seats as "+", the dealer at the top, table info (name, blinds) at the bottom left, a chat
-box below. Our own art (no copied assets); gameplay, rules and the phone layout stay.
-
-Decisions (autonomous):
-- Poker gets its own classes (`poker-stage`, `poker-rail`, `poker-felt`, `poker-chair`): `.table-rim`
-  is shared with chess/checkers and stays as it is.
-- No "+" empty seats: a running table has no free seats and nobody can sit down mid-game (it would
-  promise something that doesn't exist). Players who left keep their dimmed seat.
-- The dealer: a dealer tray with chip racks at the top of the felt when no seat sits at the top; the "D"
-  button still marks the button seat.
-- Table info panel at the bottom left on wide screens (hand number, blinds); on phones it stays on the felt.
-- The table chat stays above the board (owner question 11 is open).
-
-Steps:
-- [x] 1. Stage (dark patterned backdrop), rail and felt with a watermark, framed square avatars with
-      chairs, dealer tray, info panel; phone keeps its layout with the new skin — fb3506a.
-- [x] 2. Tests (PokerBoard 9/9, all 145 web), live screenshots: 3 seats 1440 (dealer tray), 4 seats 1440
-      (seat at the top → no tray), 3 and 6 seats at 390; no horizontal scroll; seat anchors intact.
-- [x] 3a. QA (docs/qa/QA_REPORT_TASK045.md: 35/38, 3 Low → all fixed: be23f04, 5c3639b; the table info
-      moved off the felt into the stage's corner on phones too).
-- [x] 3b. UI/UX review NEEDS REVISION (acting seat; Lows) → fixed, 219b76d.
-- [x] 3c. Reviewer's check of the fixes: APPROVED (REVIEW_TASK045.md "Re-review").
-- [ ] 3d. PM validation; push; report.
+**TASK-046 · Nardi in two variants: Long and Short** — next in the owner's order (request and reference
+below in "Next"); first step: the plan. Owner question before building: the doubling cube.
 
 ## Next
 
 **Owner rule (2026-11-02): strict sequential order.** Finish one task completely (implemented, tested,
 verified, pushed) before starting the next; never two at once; nothing partial. Order = the order the
-owner gave them: TASK-043 (done) → 044 (done) → 045 (Now) → 046 → 047 → 048. Older items below those come after.
+owner gave them: TASK-043 (done) → 044 (done) → 045 (done) → 046 (Now) → 046 → 047 → 048. Older items below those come after.
 
-- **TASK-045 · Poker table redesign like the owner's screenshot** (2026-11-02): wide oval felt with a
-  thick rail on a dark patterned background, seats with avatar frames around the rail (empty seats as
-  "+"), dealer at the top, table info (name, blinds) at the bottom left, chat panel below (done in
-  TASK-043). Our own art; keep the phone layout. After TASK-044.
 - **TASK-046 · Nardi in two variants: Long and Short** (owner, 2026-11-02, screenshot of a "what shall we
   play?" picker with two board thumbnails "Длинные" / "Короткие"). Long nardi = today's engine. Short
   nardi (backgammon rules: opposite directions, hitting blots to the bar, entering from the bar, bearing
@@ -75,6 +48,11 @@ Later (older backlog):
 
 ## Done (recent)
 
+- 2026-11-07 · TASK-045 Poker table redesign (own art: stage, rail, felt, framed seats on chairs, dealer tray,
+  corner table info) — fb3506a, be23f04, 5c3639b, 219b76d, COMMIT. QA `docs/qa/QA_REPORT_TASK045.md` (35/38 →
+  fixed), design `docs/design/REVIEW_TASK045.md` (revision → Re-review APPROVED), PM ACCEPT WITH FOLLOW-UPS
+  (`docs/product/VALIDATION_TASK045.md`; TASK-052 controls fit — done here; TASK-053 header deltas per hand;
+  owner Q14 joinable seats; Q11 chat position).
 - 2026-11-06 · TASK-044 Daily bonus popup with a login streak — 8c7a0d6, 89ecad5, b599e4e, 6c816e4, d93d67f.
   QA `docs/qa/QA_REPORT_TASK044.md` (38/41 → fixed), design `docs/design/REVIEW_TASK044.md` (NEEDS REVISION →
   fixed, mid-flight screenshot), PM ACCEPT WITH FOLLOW-UPS (`docs/product/VALIDATION_TASK044.md`; owner Q12:

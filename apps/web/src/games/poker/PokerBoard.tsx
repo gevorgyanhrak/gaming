@@ -137,8 +137,8 @@ export default function PokerBoard({
   return (
     <div className="space-y-5 text-white">
       {/* The room: a dark patterned stage, the table on it, the table's info in the corner. */}
-      <div className="poker-stage relative rounded-3xl px-7 pt-14 pb-12 sm:px-14 sm:pt-20 sm:pb-16">
-        <div className="relative mx-auto aspect-[3/4] w-full max-w-5xl sm:aspect-[2.1/1]">
+      <div className="poker-stage relative rounded-3xl px-7 pt-14 pb-12 sm:px-14 sm:pt-[4.5rem] sm:pb-12">
+        <div className="relative mx-auto aspect-[3/4] w-full max-w-5xl sm:aspect-[2.45/1] sm:max-w-[min(64rem,calc((100dvh-25.5rem)*2.45))]">
           <div aria-hidden="true" className="poker-rail absolute inset-0 rounded-[50%]">
             <div className="poker-felt relative h-full w-full overflow-hidden rounded-[50%]">
               <SpadeMark />
