@@ -30,7 +30,7 @@ Steps:
       per rule + whole bot games (tests/Unit/Games/LongNardiTest.php) — 61a2181. (Replay test: step 2.)
 - [x] 2. Mode `long` (GameModeSeeder, listed first; deploy runs db:seed) and migration renaming the seeded
       "Classic" to "Short nardi" (only if unchanged); groups/matchmaking are per mode already; a Long game vs
-      a bot through the real pipeline replays from the move log (tests/Feature/Games/LongNardiRoomTest.php) — COMMIT.
+      a bot through the real pipeline replays from the move log (tests/Feature/Games/LongNardiRoomTest.php) — e0aaa53.
 - [ ] 3. Frontend: NardiBoard for Long (no bar, seat 1's path and home, off tray), pip counts; the Nardi
       page's "What shall we play?" picker with two board previews; en/ru/hy rules text.
 - [ ] 4. Live check (both variants, bots and two people, 390/1440), QA, UI/UX, PM; push; report.
