@@ -50,6 +50,8 @@ class RoomResource extends JsonResource
                 'avatar_url' => $p->isBot() ? $p->bot?->avatarUrl() : $p->user?->profile->avatarUrl(),
                 /** @var string|null */
                 'result' => $p->result?->value,
+                /** @var int|null Points the result is worth (Nardi: 2 for a mars, a double win). */
+                'score' => $p->score,
             ])->values()->all(),
             /** @var string|null */
             'end_reason' => $this->end_reason,

@@ -159,6 +159,7 @@ export function roomFixture(overrides: Partial<Room> = {}): Room {
         username: 'alice',
         avatar_url: null,
         result: null,
+        score: null,
       },
       {
         seat: 1,
@@ -168,6 +169,7 @@ export function roomFixture(overrides: Partial<Room> = {}): Room {
         username: null,
         avatar_url: null,
         result: null,
+        score: null,
       },
     ],
     end_reason: null,

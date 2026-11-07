@@ -81,6 +81,10 @@ export function GameOverPanel({
           ? t(outcomeLabel[result])
           : t('room.finished')
   const reason = !aborted && room.end_reason ? endReasonLabel[room.end_reason] : undefined
+  // A result worth two (Nardi's mars: the loser bore off none).
+  const doubleWin =
+    room.status === 'finished' &&
+    room.participants.some((p) => p.result === 'win' && (p.score ?? 0) >= 2)
   const canPlayAgain = !aborted && room.type !== 'private'
   const lobby = `/games/${room.game.slug}`
   const settings = [
@@ -116,7 +120,11 @@ export function GameOverPanel({
       >
         {title}
       </h2>
-      {reason ? <p className="mt-1 text-sm text-muted">{t(reason)}</p> : null}
+      {doubleWin ? (
+        <p className="mt-1 text-sm font-bold text-gold-light">{t('room.doubleWin')}</p>
+      ) : reason ? (
+        <p className="mt-1 text-sm text-muted">{t(reason)}</p>
+      ) : null}
       {leftTable ? <p className="mt-1 text-sm text-muted">{t('room.playsOn')}</p> : null}
       {result || leftTable ? <GameResult roomId={room.id} /> : null}
 

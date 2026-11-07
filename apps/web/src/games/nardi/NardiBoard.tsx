@@ -87,7 +87,7 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
           count: n,
           owner: who === null ? t('nardi.empty') : who === me ? t('nardi.mine') : t('nardi.theirs'),
         })}
-        className={`relative flex h-36 flex-1 flex-col items-center gap-0.5 px-0.5 sm:h-44 ${row === 'top' ? 'justify-start' : 'justify-end'} ${
+        className={`relative flex h-36 min-w-0 flex-1 flex-col items-center gap-0.5 px-px sm:h-44 sm:px-0.5 ${row === 'top' ? 'justify-start' : 'justify-end'} ${
           isTarget ? 'bg-accent/25' : ''
         } ${selected === p ? 'ring-2 ring-accent-text' : ''} disabled:cursor-default`}
       >
@@ -105,7 +105,7 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
           <span
             key={i}
             aria-hidden="true"
-            className={`relative size-5 rounded-full border sm:size-7 ${who === me ? 'border-white/60 bg-accent' : 'border-black/40 bg-fg'} ${
+            className={`relative size-[1.15rem] rounded-full border sm:size-7 ${who === me ? 'border-white/60 bg-accent' : 'border-black/40 bg-fg'} ${
               isSource && i === Math.min(n, 5) - 1 ? 'ring-2 ring-warning' : ''
             }`}
           />
@@ -160,14 +160,14 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
       </div>
 
       <div className="overflow-x-auto">
-        <div className="flex min-w-[36rem] gap-2 rounded-2xl border border-border bg-surface p-2">
+        <div className="flex flex-wrap gap-1 rounded-2xl border border-border bg-surface p-1.5 sm:min-w-[36rem] sm:flex-nowrap sm:gap-2 sm:p-2">
           <div className="flex flex-1 flex-col gap-3">
             <div className="flex">{top.slice(0, 6).map((d) => renderPoint(d, 'top'))}</div>
             <div className="flex">{bottom.slice(0, 6).map((d) => renderPoint(d, 'bottom'))}</div>
           </div>
 
           {/* The bar: Short nardi's hit checkers; Long nardi hits nothing, so it is just the board's middle. */}
-          <div className="flex w-14 flex-col items-center justify-between rounded-xl bg-bg py-2 text-center text-xs">
+          <div className="flex w-7 flex-col items-center justify-between rounded-xl bg-bg py-2 text-center text-xs sm:w-14">
             {long ? null : (
               <>
                 <BarStack label={t('nardi.barTheirs')} count={view.bar[1 - me] ?? 0} mine={false} />
@@ -189,7 +189,7 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
             <div className="flex">{bottom.slice(6).map((d) => renderPoint(d, 'bottom'))}</div>
           </div>
 
-          <div className="flex w-16 flex-col justify-between gap-2 text-center text-xs">
+          <div className="flex basis-full flex-row justify-between gap-2 text-center text-xs sm:w-16 sm:basis-auto sm:flex-col">
             <div className="rounded-xl bg-bg p-2">
               <p className="text-muted">{t('nardi.offTheirs')}</p>
               <p className="text-lg font-bold">{view.off[1 - me]}</p>
@@ -213,12 +213,12 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
 function BarStack({ label, count, mine }: { label: string; count: number; mine: boolean }) {
   return (
     <span className="flex flex-col items-center gap-1">
-      <span className="text-muted">{label}</span>
+      <span className="sr-only text-muted sm:not-sr-only">{label}</span>
       {Array.from({ length: Math.min(count, 4) }, (_, i) => (
         <span
           key={i}
           aria-hidden="true"
-          className={`size-5 rounded-full border ${mine ? 'border-white/60 bg-accent' : 'border-black/40 bg-fg'}`}
+          className={`size-4 rounded-full border sm:size-5 ${mine ? 'border-white/60 bg-accent' : 'border-black/40 bg-fg'}`}
         />
       ))}
       <span className="font-bold">{count}</span>

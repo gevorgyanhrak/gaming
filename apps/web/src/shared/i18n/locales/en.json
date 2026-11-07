@@ -313,6 +313,7 @@
     },
     "clock": "Time left: {{time}}",
     "leftTable": "You left this table.",
+    "doubleWin": "Mars! A double win.",
     "outOfChips": "You're out of chips.",
     "playsOn": "The game goes on for the others.",
     "waitingTitle": "Waiting for players",

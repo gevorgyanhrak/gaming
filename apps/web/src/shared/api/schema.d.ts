@@ -957,6 +957,8 @@ export interface components {
                 username: string | null;
                 avatar_url: string | null;
                 result: string | null;
+                /** @description Points the result is worth (Nardi: 2 for a mars, a double win). */
+                score: number | null;
             }[];
             end_reason: string | null;
             created_at: string;
