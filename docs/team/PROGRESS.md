@@ -34,7 +34,7 @@ Steps:
 - [x] 3. Frontend: NardiBoard for Long (seat 1's view turned by half a board, no bar), pip counts for both
       variants; the Nardi page's "What shall we play?" picker with two board previews (registry
       `modePreviews`); en/ru/hy; NardiBoard test — c7fc6b0. Live: 1440 en, 390 hy.
-- [x] 4a. QA (docs/qa/QA_REPORT_TASK046.md: 38/40, 1 Medium + 1 Low → fixed — COMMIT).
+- [x] 4a. QA (docs/qa/QA_REPORT_TASK046.md: 38/40, 1 Medium + 1 Low → fixed — 4876787).
 - [ ] 4b. UI/UX review, PM validation; fix; push; report.
 
 ## Next
