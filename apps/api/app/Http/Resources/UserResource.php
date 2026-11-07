@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Enums\ContactChannel;
 use App\Models\User;
+use App\Platform\Levels\Levels;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -32,6 +33,10 @@ class UserResource extends JsonResource
             /** @var string|null */
             'last_active_at' => $this->last_active_at?->toIso8601String(),
             'can_access_admin' => $this->canAccessAdmin(),
+            /** @var int */
+            'level' => $this->level,
+            /** @var array{frame: string|null, badge: string|null} The frame and badge the level unlocked. */
+            'looks' => app(Levels::class)->looks($this->level),
             'profile' => [
                 /** @var string|null */
                 'display_name' => $this->profile->display_name,

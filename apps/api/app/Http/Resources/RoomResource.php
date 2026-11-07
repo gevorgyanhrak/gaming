@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use App\Enums\RoomStatus;
 use App\Models\GameParticipant;
 use App\Models\GameRoom;
+use App\Platform\Levels\Levels;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -20,6 +21,7 @@ class RoomResource extends JsonResource
     {
         $viewer = $request->user();
         $isParticipant = $viewer !== null && $this->participants->contains('user_id', $viewer->id);
+        $levels = app(Levels::class);
 
         return [
             'id' => $this->public_id,
@@ -48,6 +50,10 @@ class RoomResource extends JsonResource
                 'username' => $p->user?->username,
                 /** @var string|null */
                 'avatar_url' => $p->isBot() ? $p->bot?->avatarUrl() : $p->user?->profile->avatarUrl(),
+                /** @var int The player's level (a bot's is fixed). */
+                'level' => ($p->isBot() ? $p->bot?->level : $p->user?->level) ?? 1,
+                /** @var string|null The avatar frame a person's level unlocked; bots have none. */
+                'frame' => $p->isBot() || $p->user === null ? null : $levels->looks($p->user->level)['frame'],
                 /** @var string|null */
                 'result' => $p->result?->value,
                 /** @var int|null Points the result is worth (Nardi: 2 for a mars, a double win). */

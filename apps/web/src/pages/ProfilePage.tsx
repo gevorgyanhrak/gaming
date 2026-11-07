@@ -33,6 +33,8 @@ export function ProfilePage() {
       <ProfileView
         user={{
           username: user.username,
+          level: user.level,
+          looks: user.looks,
           display_name: user.profile.display_name,
           avatar_url: user.profile.avatar_url,
           bio: user.profile.bio,

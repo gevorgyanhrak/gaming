@@ -62,6 +62,7 @@ return [
         'disabled' => 'Emojis and quick messages are switched off.',
         'closed' => 'This table no longer takes reactions.',
         'unknown' => 'This reaction is not available.',
+        'locked' => 'Reach level :level to send this emoji.',
         'no_such_player' => 'Choose another player at this table.',
     ],
     'play' => [

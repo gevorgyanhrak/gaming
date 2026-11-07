@@ -128,7 +128,7 @@ export interface paths {
         put?: never;
         /**
          * Collect today's daily bonus: 201 with `collected` (the Fishkas added) and the new status; a
-         *     repeat the same day collects nothing (200, `collected` 0)
+         *     repeat the same day collects nothing (200, `collected` 0). Collecting also gives XP, once a day
          */
         post: operations["v1.me.daily-bonus.store"];
         delete?: never;
@@ -225,6 +225,47 @@ export interface paths {
         get: operations["v1.me.stats"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/level": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The player's level and progress (ADR 0018): total XP, the XP where this level began and where the
+         *     next one begins (null at the top level), the frame and badge they show, the next level's reward,
+         *     and the level-ups whose rewards wait to be collected (reached while away, too)
+         */
+        get: operations["v1.me.level.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/level-ups/claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Collect every pending level-up's reward: 201 with `collected` (the Fishkas added) and the levels
+         *     collected; a repeat collects nothing (200, `collected` 0)
+         */
+        post: operations["v1.me.level-ups.claim"];
         delete?: never;
         options?: never;
         head?: never;
@@ -444,7 +485,8 @@ export interface paths {
         };
         /**
          * What players can send each other at a table: emojis by category (with search words in every UI
-         *     language) and predefined message keys by category (the texts are the client's translations)
+         *     language), predefined message keys by category (the texts are the client's translations), and the
+         *     exclusive emojis with the level that unlocks each (ADR 0018)
          */
         get: operations["v1.reactions"];
         put?: never;
@@ -808,7 +850,7 @@ export interface components {
         FishkaTransactionResource: {
             id: number;
             /** @enum {string} */
-            type: "registration_bonus" | "daily_login_bonus" | "game_entry_fee" | "game_entry_refund" | "game_stake" | "game_payout" | "poker_bet" | "poker_winning" | "admin_credit" | "admin_debit" | "insufficient_balance_bonus";
+            type: "registration_bonus" | "daily_login_bonus" | "game_entry_fee" | "game_entry_refund" | "game_stake" | "game_payout" | "poker_bet" | "poker_winning" | "admin_credit" | "admin_debit" | "insufficient_balance_bonus" | "level_reward";
             amount: number;
             balance_after: number;
             description: string | null;
@@ -896,6 +938,11 @@ export interface components {
         /** PublicUserResource */
         PublicUserResource: {
             username: string;
+            level: number;
+            looks: {
+                frame: string | null;
+                badge: string | null;
+            };
             display_name: string | null;
             avatar_url: string | null;
             bio: string | null;
@@ -956,6 +1003,10 @@ export interface components {
                 name: string | null;
                 username: string | null;
                 avatar_url: string | null;
+                /** @description The player's level (a bot's is fixed). */
+                level: number;
+                /** @description The avatar frame a person's level unlocked; bots have none. */
+                frame: string | null;
                 result: string | null;
                 /** @description Points the result is worth (Nardi: 2 for a mars, a double win). */
                 score: number | null;
@@ -1051,6 +1102,12 @@ export interface components {
             created_at: string;
             last_active_at: string | null;
             can_access_admin: boolean;
+            level: number;
+            /** @description The frame and badge the level unlocked. */
+            looks: {
+                frame: string | null;
+                badge: string | null;
+            };
             profile: {
                 display_name: string | null;
                 avatar_url: string | null;
@@ -1604,6 +1661,77 @@ export interface operations {
             401: components["responses"]["AuthenticationException"];
         };
     };
+    "v1.me.level.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            level: number;
+                            /** @description Total XP earned. */
+                            xp: number;
+                            /** @description Total XP where the current level began. */
+                            level_xp: number;
+                            /** @description Total XP where the next level begins; null at the top level. */
+                            next_level_xp: number | null;
+                            max_level: number;
+                            frame: string | null;
+                            badge: string | null;
+                            next_reward: {
+                                level: number;
+                                fishkas: number;
+                                items: {
+                                    kind: string;
+                                    key: string;
+                                }[];
+                                is_milestone: boolean;
+                            } | null;
+                            pending: {
+                                level: number;
+                                fishkas: number;
+                                items: {
+                                    kind: string;
+                                    key: string;
+                                }[];
+                                is_milestone: boolean;
+                            }[];
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.me.level-ups.claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
     "v1.matchmaking.show": {
         parameters: {
             query?: never;
@@ -2048,6 +2176,10 @@ export interface operations {
                             messages: {
                                 slug: string;
                                 keys: string[];
+                            }[];
+                            exclusive: {
+                                emoji: string;
+                                level: number;
                             }[];
                         };
                     };

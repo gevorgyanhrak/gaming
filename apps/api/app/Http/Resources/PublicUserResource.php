@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\User;
+use App\Platform\Levels\Levels;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -20,6 +21,10 @@ class PublicUserResource extends JsonResource
     {
         return [
             'username' => $this->username,
+            /** @var int */
+            'level' => $this->level,
+            /** @var array{frame: string|null, badge: string|null} */
+            'looks' => app(Levels::class)->looks($this->level),
             /** @var string|null */
             'display_name' => $this->profile->display_name,
             /** @var string|null */

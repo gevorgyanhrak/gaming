@@ -63,6 +63,19 @@ final class SettingsCatalog
             new SettingDefinition('fishka.refill_cooldown_hours', SettingType::Integer, 24, public: true, rules: ['required', 'integer', 'min:0', 'max:720']),
             new SettingDefinition('fishka.timezone', SettingType::String, 'Asia/Yerevan', rules: ['required', 'timezone:all']),
 
+            // Levels and XP (ADR 0018): what earns XP, the curve, and the reward for levels without a row.
+            new SettingDefinition('levels.xp_game', SettingType::Integer, 30, rules: ['required', 'integer', 'min:0', 'max:100000']),
+            new SettingDefinition('levels.xp_win', SettingType::Integer, 20, rules: ['required', 'integer', 'min:0', 'max:100000']),
+            new SettingDefinition('levels.xp_draw', SettingType::Integer, 10, rules: ['required', 'integer', 'min:0', 'max:100000']),
+            new SettingDefinition('levels.xp_daily', SettingType::Integer, 20, rules: ['required', 'integer', 'min:0', 'max:100000']),
+            new SettingDefinition('levels.min_game_seconds', SettingType::Integer, 30, rules: ['required', 'integer', 'min:0', 'max:3600']),
+            new SettingDefinition('levels.xp_base', SettingType::Integer, 80, rules: ['required', 'integer', 'min:1', 'max:1000000']),
+            new SettingDefinition('levels.xp_step', SettingType::Integer, 20, rules: ['required', 'integer', 'min:0', 'max:1000000']),
+            new SettingDefinition('levels.after_30_percent', SettingType::Integer, 150, rules: ['required', 'integer', 'min:100', 'max:1000']),
+            new SettingDefinition('levels.growth_percent', SettingType::Integer, 10, rules: ['required', 'integer', 'min:1', 'max:100']),
+            new SettingDefinition('levels.max_level', SettingType::Integer, 100, rules: ['required', 'integer', 'min:30', 'max:500']),
+            new SettingDefinition('levels.reward_default', SettingType::Integer, 3000, rules: ['required', 'integer', 'min:0', 'max:1000000']),
+
             // Security
             new SettingDefinition('security.session_lifetime_minutes', SettingType::Integer, (int) config('session.lifetime'), rules: ['required', 'integer', 'min:15', 'max:43200']),
         ];

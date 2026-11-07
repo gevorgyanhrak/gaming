@@ -54,8 +54,11 @@ the level badge like every other avatar.
   from 18 to 57). The same badge everywhere, no frame, no XP, no rewards.
 - **Display.** `level` (and `frame`, `badge` for people) in the current user, public profiles and room
   participants; the frontend `Avatar` takes `level`/`frame` so every avatar shows the same compact badge.
-- **Lock order** (no deadlocks): wallet → user row (daily bonus, game payouts then finisher); claims lock
-  `level_ups` rows → wallet.
+- **Lock order:** user row → wallet. A game's finisher pays XP before the pot is settled; a claim locks the
+  user row, then its `level_ups` rows, then the wallet; the daily bonus pays XP after its wallet transaction
+  has committed. The one exception is a poker player leaving (cash-out, then their result): should it meet a
+  claim by the same player at the same instant, MySQL rolls one back, and both are safe to repeat
+  (idempotency keys).
 
 ## Consequences
 - Tuning the curve or the rewards is an admin change, audited; it affects future level-ups only.

@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Gameplay\GameRegistry;
 use App\Models\User;
+use App\Platform\Levels\Levels;
 use App\Platform\Settings\Settings;
 use App\Platform\Sms\LogSmsGateway;
 use App\Platform\Sms\SmsGateway;
@@ -23,6 +24,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // One instance per request (or job), so settings are read once and never leak between requests.
         $this->app->scoped(Settings::class);
+        // Same for levels: the reward table is read once per request.
+        $this->app->scoped(Levels::class);
 
         // Engines register themselves here (see app/Games/*); one registry for the whole app.
         $this->app->singleton(GameRegistry::class);

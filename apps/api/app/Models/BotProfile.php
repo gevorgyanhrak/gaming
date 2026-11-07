@@ -17,9 +17,10 @@ use Illuminate\Support\Facades\Storage;
  * @property int $id
  * @property string $name
  * @property string|null $avatar_path
+ * @property int $level The level shown next to the bot (fixed; bots earn no XP).
  * @property bool $is_enabled
  */
-#[Fillable(['name', 'avatar_path', 'is_enabled'])]
+#[Fillable(['name', 'avatar_path', 'level', 'is_enabled'])]
 #[ObservedBy(AdminChangeObserver::class)]
 class BotProfile extends Model
 {
@@ -33,6 +34,7 @@ class BotProfile extends Model
     {
         return [
             'is_enabled' => 'boolean',
+            'level' => 'integer',
         ];
     }
 

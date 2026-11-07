@@ -23,4 +23,6 @@ enum FishkaTransactionType: string
     case AdminCredit = 'admin_credit';
     case AdminDebit = 'admin_debit';
     case InsufficientBalanceBonus = 'insufficient_balance_bonus';
+    /** A level's reward, collected from the level-up popup (ADR 0018). */
+    case LevelReward = 'level_reward';
 }

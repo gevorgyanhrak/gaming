@@ -28,6 +28,10 @@ class BotProfileForm
                         FileUpload::make('avatar_path')->label('Avatar')
                             ->image()->avatar()->acceptedFileTypes(GameForm::IMAGE_TYPES)->maxSize(1024)
                             ->disk('public')->directory('avatars/bots')->visibility('public'),
+                        TextInput::make('level')
+                            ->numeric()->integer()->required()->minValue(10)->maxValue(100)
+                            ->default(fn () => random_int(18, 57))
+                            ->helperText('Shown next to the bot like a player’s level. Fixed: bots earn no XP and no rewards.'),
                         Toggle::make('is_enabled')->label('Enabled')->default(true),
                     ]),
                 Section::make('Games')

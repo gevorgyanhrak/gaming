@@ -6,6 +6,7 @@ use App\Enums\RoomStatus;
 use App\Gameplay\Broadcasting\RoomReactionSent;
 use App\Models\GameParticipant;
 use App\Models\GameRoom;
+use App\Platform\Levels\Levels;
 use App\Platform\Settings\Settings;
 use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Repository;
@@ -39,6 +40,7 @@ class RoomReactions
     public function __construct(
         private readonly ReactionCatalog $catalog,
         private readonly Settings $settings,
+        private readonly Levels $levels,
     ) {}
 
     /**
@@ -54,8 +56,13 @@ class RoomReactions
         if (! $this->open($room)) {
             throw new HttpException(409, __('platform.reactions.closed'));
         }
-        if (! $this->catalog->has($kind, $value)) {
+        // Exclusive emojis (ADR 0018) belong to players who reached the level that unlocks them.
+        $unlocksAt = $kind === 'emoji' ? ($this->levels->emojiLevels()[$value] ?? null) : null;
+        if ($unlocksAt === null && ! $this->catalog->has($kind, $value)) {
             throw ValidationException::withMessages(['value' => __('platform.reactions.unknown')]);
+        }
+        if ($unlocksAt !== null && $from->user->level < $unlocksAt) {
+            throw ValidationException::withMessages(['value' => __('platform.reactions.locked', ['level' => $unlocksAt])]);
         }
         if ($toSeat !== null && ($toSeat === $from->seat || ! $room->participants->contains('seat', $toSeat))) {
             throw ValidationException::withMessages(['to_seat' => __('platform.reactions.no_such_player')]);

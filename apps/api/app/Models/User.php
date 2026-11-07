@@ -33,6 +33,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $email_verified_at
  * @property Carbon|null $phone_verified_at
  * @property UserStatus $status
+ * @property int $level
+ * @property int $xp
  * @property string|null $locale
  * @property Carbon|null $last_active_at
  * @property Carbon|null $terms_accepted_at
@@ -59,6 +61,8 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
      */
     protected $attributes = [
         'status' => 'active',
+        'level' => 1,
+        'xp' => 0,
     ];
 
     /**
@@ -73,6 +77,8 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             'terms_accepted_at' => 'datetime',
             'password' => 'hashed',
             'status' => UserStatus::class,
+            'level' => 'integer',
+            'xp' => 'integer',
         ];
     }
 

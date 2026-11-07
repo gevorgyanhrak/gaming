@@ -142,6 +142,34 @@ class ManageSettings extends Page
                             ->options(fn () => array_combine(timezone_identifiers_list(), timezone_identifiers_list()))
                             ->helperText('Decides when a new day (and a new daily bonus) begins.'),
                     ]),
+                Section::make('Levels and XP')->columns(2)
+                    ->description('XP is earned only on the server. Changes apply to future XP; a level never goes down. Rewards per level: Games → Level rewards.')
+                    ->schema([
+                        TextInput::make('levels.xp_game')->label('XP for a finished game')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(100000)
+                            ->helperText('Not for a game the player abandoned (timed out, left).'),
+                        TextInput::make('levels.xp_win')->label('Extra XP for a win')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(100000),
+                        TextInput::make('levels.xp_draw')->label('Extra XP for a draw')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(100000),
+                        TextInput::make('levels.xp_daily')->label('XP for collecting the daily bonus')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(100000),
+                        TextInput::make('levels.min_game_seconds')->label('Shortest game that earns XP (seconds)')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(3600)
+                            ->helperText('Stops XP farming by resigning at once.'),
+                        TextInput::make('levels.xp_base')->label('XP from level 1 to 2')
+                            ->numeric()->integer()->required()->minValue(1)->maxValue(1000000),
+                        TextInput::make('levels.xp_step')->label('Each level up to 30 needs this much more')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(1000000),
+                        TextInput::make('levels.after_30_percent')->label('Level 30 → 31 needs (% of level 29 → 30)')
+                            ->numeric()->integer()->required()->minValue(100)->maxValue(1000),
+                        TextInput::make('levels.growth_percent')->label('Each level after 30 needs % more than the last')
+                            ->numeric()->integer()->required()->minValue(1)->maxValue(100),
+                        TextInput::make('levels.max_level')->label('Top level')
+                            ->numeric()->integer()->required()->minValue(30)->maxValue(500),
+                        TextInput::make('levels.reward_default')->label('Fishkas for a level without its own reward')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(1000000),
+                    ]),
                 Section::make('Security')->columns(2)->schema([
                     TextInput::make('security.session_lifetime_minutes')->label('Session lifetime (minutes)')
                         ->numeric()->integer()->required()->minValue(15)->maxValue(43200)

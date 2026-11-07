@@ -19,6 +19,7 @@ class BotProfilesTable
             ->columns([
                 ImageColumn::make('avatar_path')->label('')->disk('public')->circular(),
                 TextColumn::make('name')->searchable()->sortable(),
+                TextColumn::make('level')->sortable(),
                 IconColumn::make('is_enabled')->label('Enabled')->boolean(),
                 TextColumn::make('game_profiles_count')->counts('gameProfiles')->label('Games'),
                 TextColumn::make('updated_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),

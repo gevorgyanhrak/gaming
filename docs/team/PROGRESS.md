@@ -20,10 +20,12 @@ Steps:
 - [x] 1. Analyse the existing architecture (users, wallets/ledger, game finish pipeline, bots, settings,
       avatars, admin) and write ADR 0018 (XP sources, curve formula, reward config, tables, events, concurrency)
       — `docs/adr/0018-levels-and-xp.md`. No leaderboard exists (N/A until one is built).
-- [ ] 2. Backend: migrations (user level/xp, level rewards config, level-up/reward history), `Levels` service
+- [x] 2. Backend: migrations (user level/xp, level rewards config, level-up/reward history), `Levels` service
       (curve from admin settings, atomic award with row lock, multi-level-ups, rewards once), XP on game finish
       (not for bots), bot levels; API (me/level, pending level-ups + collect; level in user/participant
-      resources); admin config; tests (all 13 brief checks that are backend).
+      resources); admin config; tests (all 13 brief checks that are backend) — tests/Feature/Levels/LevelsTest.php (16),
+      tests/Unit/Platform/LevelCurveTest.php; full suite 379 green. Existing players start at level 1 (no back-fill:
+      it would pay every past level's Fishkas at once).
 - [ ] 3. Frontend: LevelBadge everywhere (profile, rooms, poker seats, player lists, leaderboards, chat),
       progress bar (profile + header/menu), level-up popup with confetti and collect, milestone celebrations;
       en/ru/hy; tests; live check.

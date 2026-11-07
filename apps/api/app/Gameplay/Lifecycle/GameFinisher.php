@@ -4,19 +4,27 @@ namespace App\Gameplay\Lifecycle;
 
 use App\Enums\ParticipantResult;
 use App\Enums\RoomStatus;
+use App\Enums\XpSource;
 use App\Gameplay\Engine\Outcome;
 use App\Models\GameParticipant;
 use App\Models\GameRoom;
 use App\Models\UserGameStat;
+use App\Platform\Levels\Levels;
+use App\Platform\Settings\Settings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Ends a room: results per seat, room status, and players' statistics. Called inside the transaction
+ * Ends a room: results per seat, room status, players' statistics and XP. Called inside the transaction
  * that records the final move, so a game can never end twice.
  */
 class GameFinisher
 {
+    public function __construct(
+        private readonly Levels $levels,
+        private readonly Settings $settings,
+    ) {}
+
     /**
      * @param  list<int>  $abandonedSeats  Seats that lost by timing out or leaving.
      */
@@ -44,6 +52,7 @@ class GameFinisher
 
             if ($participant->user_id !== null) {
                 $this->recordStats($participant, $room->game_id, $result);
+                $this->awardXp($participant, $room, $result, $finishedAt->getTimestamp());
             }
         }
 
@@ -71,7 +80,30 @@ class GameFinisher
 
         if ($participant->user_id !== null) {
             $this->recordStats($participant, $gameId, $result);
+            $this->awardXp($participant, $participant->room, $result, now()->getTimestamp());
         }
+    }
+
+    /**
+     * XP for a game a person finished (ADR 0018): for taking part, plus a win or a draw. Nothing for an
+     * abandoned game or one shorter than the minimum (no farming by resigning at once). Once per room.
+     */
+    private function awardXp(GameParticipant $participant, GameRoom $room, ParticipantResult $result, int $finishedAt): void
+    {
+        if ($result === ParticipantResult::Abandoned || $participant->user_id === null) {
+            return;
+        }
+        $seconds = $room->started_at === null ? 0 : $finishedAt - $room->started_at->getTimestamp();
+        if ($seconds < (int) $this->settings->get('levels.min_game_seconds')) {
+            return;
+        }
+
+        $xp = (int) $this->settings->get('levels.xp_game') + match ($result) {
+            ParticipantResult::Win => (int) $this->settings->get('levels.xp_win'),
+            ParticipantResult::Draw => (int) $this->settings->get('levels.xp_draw'),
+            default => 0,
+        };
+        $this->levels->award($participant->user_id, $xp, XpSource::Game, "game:{$room->public_id}:{$participant->user_id}", 'game_room', $room->public_id);
     }
 
     private function recordStats(GameParticipant $participant, int $gameId, ParticipantResult $result): void

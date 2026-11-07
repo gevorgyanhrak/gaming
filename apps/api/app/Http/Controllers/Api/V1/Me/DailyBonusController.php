@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1\Me;
 
+use App\Enums\XpSource;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Platform\Fishka\FishkaWallets;
+use App\Platform\Levels\Levels;
+use App\Platform\Settings\Settings;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -37,9 +40,9 @@ class DailyBonusController extends Controller
 
     /**
      * Collect today's daily bonus: 201 with `collected` (the Fishkas added) and the new status; a
-     * repeat the same day collects nothing (200, `collected` 0).
+     * repeat the same day collects nothing (200, `collected` 0). Collecting also gives XP, once a day.
      */
-    public function store(Request $request, FishkaWallets $wallets): JsonResponse
+    public function store(Request $request, FishkaWallets $wallets, Levels $levels, Settings $settings): JsonResponse
     {
         /** @var User $user */
         $user = $request->user();
@@ -47,6 +50,10 @@ class DailyBonusController extends Controller
         // Only a bonus this request added counts (a repeat may find today's existing ledger entry).
         if ($entry !== null && ! $entry->wasRecentlyCreated) {
             $entry = null;
+        }
+        if ($entry !== null) {
+            $day = $wallets->today();
+            $levels->award($user->id, (int) $settings->get('levels.xp_daily'), XpSource::DailyBonus, "daily:{$user->id}:{$day}", 'day', $day);
         }
         $status = $wallets->dailyStatus($user);
         $data = [

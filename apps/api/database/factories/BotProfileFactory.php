@@ -17,6 +17,7 @@ class BotProfileFactory extends Factory
     {
         return [
             'name' => fake()->unique()->firstName(),
+            'level' => fake()->numberBetween(18, 57),
             'is_enabled' => true,
         ];
     }
