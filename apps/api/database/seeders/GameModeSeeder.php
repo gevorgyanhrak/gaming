@@ -19,7 +19,7 @@ class GameModeSeeder extends Seeder
             foreach ($modes as $index => $mode) {
                 $game?->modes()->firstOrCreate(
                     ['slug' => $mode['slug']],
-                    [...$mode, 'sort_order' => ($index + 1) * 10],
+                    [...$mode, 'sort_order' => $mode['sort_order'] ?? ($index + 1) * 10],
                 );
             }
         }
@@ -31,13 +31,24 @@ class GameModeSeeder extends Seeder
     private function modes(): array
     {
         return [
-            'nardi' => [[
-                'slug' => 'classic',
-                'name' => ['en' => 'Classic', 'ru' => 'Классика', 'hy' => 'Դասական'],
-                'description' => ['en' => 'Short nardi, a single game.', 'ru' => 'Короткие нарды, одна партия.', 'hy' => 'Կարճ նարդի, մեկ խաղ։'],
-                'min_players' => 2, 'max_players' => 2,
-                'config' => ['variant' => 'short', 'points_to_win' => 1, 'turn_seconds' => 60],
-            ]],
+            'nardi' => [
+                [
+                    'slug' => 'classic',
+                    'name' => ['en' => 'Short nardi', 'ru' => 'Короткие нарды', 'hy' => 'Կարճ նարդի'],
+                    'description' => ['en' => 'Short nardi, a single game.', 'ru' => 'Короткие нарды, одна партия.', 'hy' => 'Կարճ նարդի, մեկ խաղ։'],
+                    'min_players' => 2, 'max_players' => 2,
+                    'config' => ['variant' => 'short', 'points_to_win' => 1, 'turn_seconds' => 60],
+                ],
+                [
+                    // Listed first: the variant most players here know.
+                    'slug' => 'long',
+                    'sort_order' => 5,
+                    'name' => ['en' => 'Long nardi', 'ru' => 'Длинные нарды', 'hy' => 'Երկար նարդի'],
+                    'description' => ['en' => 'Long nardi: all fifteen start on the head, no hitting, a single game.', 'ru' => 'Длинные нарды: все пятнадцать с головы, без боя, одна партия.', 'hy' => 'Երկար նարդի. բոլոր տասնհինգը գլխից, առանց հարվածի, մեկ խաղ։'],
+                    'min_players' => 2, 'max_players' => 2,
+                    'config' => ['variant' => 'long', 'points_to_win' => 1, 'turn_seconds' => 60],
+                ],
+            ],
             'chess' => [
                 [
                     'slug' => 'blitz',

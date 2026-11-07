@@ -4,7 +4,7 @@ The single place that says where the work stands, so a new session (after the te
 continue without asking. **Update it after every finished step** (move items between sections, add the
 commit). Newest first inside each section. Details live in the linked files.
 
-How to resume: read "Now", check `git log --oneline -5` and `git status`, then continue with the first
+How to resume (any Claude account — this file and the repo hold everything): read "Now", check `git log --oneline -5` and `git status`, then continue with the first
 unchecked step. Owner's rules: commit and push straight to `main`; work autonomously; run lint, types,
 tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
@@ -28,8 +28,9 @@ Steps:
 - [x] 1. Engine: LongNardiRules (path model, closed points, head rule + first-turn doubles, 6-block rule,
       bear-off, mars), NardiEngine variant switch, pips in the view, bot evaluation for Long; unit tests
       per rule + whole bot games (tests/Unit/Games/LongNardiTest.php) — 61a2181. (Replay test: step 2.)
-- [ ] 2. Mode `long` (seeder + migration for existing installs), names "Short nardi"/"Long nardi" en/ru/hy;
-      bots, groups, matchmaking per mode; bot plays Long.
+- [x] 2. Mode `long` (GameModeSeeder, listed first; deploy runs db:seed) and migration renaming the seeded
+      "Classic" to "Short nardi" (only if unchanged); groups/matchmaking are per mode already; a Long game vs
+      a bot through the real pipeline replays from the move log (tests/Feature/Games/LongNardiRoomTest.php) — COMMIT.
 - [ ] 3. Frontend: NardiBoard for Long (no bar, seat 1's path and home, off tray), pip counts; the Nardi
       page's "What shall we play?" picker with two board previews; en/ru/hy rules text.
 - [ ] 4. Live check (both variants, bots and two people, 390/1440), QA, UI/UX, PM; push; report.
