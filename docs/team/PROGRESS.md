@@ -17,8 +17,9 @@ items) granted exactly once with history; pending level-ups shown on return; bot
 levels (no XP, no rewards); a level badge next to every avatar; a progress bar; a level-up popup.
 
 Steps:
-- [ ] 1. Analyse the existing architecture (users, wallets/ledger, game finish pipeline, bots, settings,
-      avatars, admin) and write ADR 0018 (XP sources, curve formula, reward config, tables, events, concurrency).
+- [x] 1. Analyse the existing architecture (users, wallets/ledger, game finish pipeline, bots, settings,
+      avatars, admin) and write ADR 0018 (XP sources, curve formula, reward config, tables, events, concurrency)
+      — `docs/adr/0018-levels-and-xp.md`. No leaderboard exists (N/A until one is built).
 - [ ] 2. Backend: migrations (user level/xp, level rewards config, level-up/reward history), `Levels` service
       (curve from admin settings, atomic award with row lock, multi-level-ups, rewards once), XP on game finish
       (not for bots), bot levels; API (me/level, pending level-ups + collect; level in user/participant

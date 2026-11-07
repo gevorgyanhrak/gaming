@@ -22,3 +22,4 @@ Records are immutable once accepted; a changed decision gets a new record that s
 | [0015](0015-fishka-wallet-ledger.md) | Fishka wallets: locked balance row, append-only ledger | Accepted |
 | [0016](0016-play-groups-and-table-stakes.md) | Play groups and table stakes | Accepted |
 | [0017](0017-table-reactions.md) | Emojis and quick messages at tables | Accepted |
+| [0018](0018-levels-and-xp.md) | Levels and XP: backend-only progression, rewards once, bot levels | Accepted |
