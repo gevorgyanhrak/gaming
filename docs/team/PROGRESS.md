@@ -49,7 +49,7 @@ Later (older backlog):
 ## Done (recent)
 
 - 2026-11-07 · TASK-045 Poker table redesign (own art: stage, rail, felt, framed seats on chairs, dealer tray,
-  corner table info) — fb3506a, be23f04, 5c3639b, 219b76d, COMMIT. QA `docs/qa/QA_REPORT_TASK045.md` (35/38 →
+  corner table info) — fb3506a, be23f04, 5c3639b, 219b76d, b5d1031. QA `docs/qa/QA_REPORT_TASK045.md` (35/38 →
   fixed), design `docs/design/REVIEW_TASK045.md` (revision → Re-review APPROVED), PM ACCEPT WITH FOLLOW-UPS
   (`docs/product/VALIDATION_TASK045.md`; TASK-052 controls fit — done here; TASK-053 header deltas per hand;
   owner Q14 joinable seats; Q11 chat position).
