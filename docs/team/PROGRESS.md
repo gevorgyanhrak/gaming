@@ -35,7 +35,8 @@ Steps:
       variants; the Nardi page's "What shall we play?" picker with two board previews (registry
       `modePreviews`); en/ru/hy; NardiBoard test — c7fc6b0. Live: 1440 en, 390 hy.
 - [x] 4a. QA (docs/qa/QA_REPORT_TASK046.md: 38/40, 1 Medium + 1 Low → fixed — 4876787).
-- [ ] 4b. UI/UX review, PM validation; fix; push; report.
+- [x] 4b-1. UI/UX review (docs/design/REVIEW_TASK046.md: NEEDS REVISION, 2 Medium + 3 Low) → all fixed (see its Fix status).
+- [ ] 4b-2. PM validation; fix; push; report.
 
 ## Next
 

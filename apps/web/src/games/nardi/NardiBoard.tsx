@@ -88,7 +88,9 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
           owner: who === null ? t('nardi.empty') : who === me ? t('nardi.mine') : t('nardi.theirs'),
         })}
         className={`relative flex h-36 min-w-0 flex-1 flex-col items-center gap-0.5 px-px sm:h-44 sm:px-0.5 ${row === 'top' ? 'justify-start' : 'justify-end'} ${
-          isTarget ? 'bg-accent/25' : ''
+          isTarget
+            ? 'rounded-md bg-accent/30 shadow-[inset_0_0_0_2px_var(--color-accent-text),0_0_12px_var(--color-accent)]'
+            : ''
         } ${selected === p ? 'ring-2 ring-accent-text' : ''} disabled:cursor-default`}
       >
         <span
@@ -167,7 +169,9 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
           </div>
 
           {/* The bar: Short nardi's hit checkers; Long nardi hits nothing, so it is just the board's middle. */}
-          <div className="flex w-7 flex-col items-center justify-between rounded-xl bg-bg py-2 text-center text-xs sm:w-14">
+          <div
+            className={`flex flex-col items-center justify-between rounded-xl bg-bg py-2 text-center text-xs ${long ? 'w-1.5 sm:w-2' : 'w-7 sm:w-14'}`}
+          >
             {long ? null : (
               <>
                 <BarStack label={t('nardi.barTheirs')} count={view.bar[1 - me] ?? 0} mine={false} />
@@ -189,7 +193,7 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
             <div className="flex">{bottom.slice(6).map((d) => renderPoint(d, 'bottom'))}</div>
           </div>
 
-          <div className="flex basis-full flex-row justify-between gap-2 text-center text-xs sm:w-16 sm:basis-auto sm:flex-col">
+          <div className="flex basis-full flex-row justify-between gap-2 text-center text-xs leading-tight sm:w-20 sm:basis-auto sm:flex-col sm:text-[0.7rem]">
             <div className="rounded-xl bg-bg p-2">
               <p className="text-muted">{t('nardi.offTheirs')}</p>
               <p className="text-lg font-bold">{view.off[1 - me]}</p>

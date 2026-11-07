@@ -6,16 +6,18 @@ export default function NardiModePreview({ mode }: { mode: string }) {
   // [column 0..11 left to right, row: top/bottom, checkers, mine?]
   const stacks: [number, 'top' | 'bottom', number, boolean][] =
     mode === 'long'
-      ? [
-          [0, 'top', 15, true],
+      ? // Your head top right (point 24), theirs diagonally opposite (point 12), as on the board.
+        [
+          [11, 'top', 15, true],
           [0, 'bottom', 15, false],
         ]
-      : [
-          [11, 'top', 2, false],
+      : // 24: 2, 13: 5, 8: 3, 6: 5 for you; mirrored for them.
+        [
+          [11, 'top', 2, true],
           [0, 'top', 5, true],
           [4, 'top', 3, false],
           [6, 'top', 5, false],
-          [11, 'bottom', 2, true],
+          [11, 'bottom', 2, false],
           [0, 'bottom', 5, false],
           [4, 'bottom', 3, true],
           [6, 'bottom', 5, true],
@@ -40,9 +42,10 @@ export default function NardiModePreview({ mode }: { mode: string }) {
             cx={x(column)}
             cy={row === 'top' ? 11 + i * 9 : 109 - i * 9}
             r="4.5"
-            fill={mine ? '#f1ead8' : '#3a2a22'}
-            stroke={mine ? '#a8956a' : '#140c08'}
-            strokeWidth="1"
+            // The board's colours: yours green, theirs cream, each with a rim that shows on the felt.
+            fill={mine ? '#2f9a5a' : '#efe6cf'}
+            stroke={mine ? '#d8f0e0' : '#5a4630'}
+            strokeWidth="1.2"
           />
         )),
       )}
