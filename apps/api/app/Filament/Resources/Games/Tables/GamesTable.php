@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Games\Tables;
 
+use App\Platform\Audit\AuditLogger;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
@@ -15,6 +16,7 @@ class GamesTable
         return $table
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
+            ->afterReordering(fn (array $order) => app(AuditLogger::class)->record('game.reordered', null, ['order' => $order], auth('admin')->user()))
             ->columns([
                 ImageColumn::make('icon_path')->label('')->disk('public')->square(),
                 TextColumn::make('name')->description(fn ($record) => $record->slug),

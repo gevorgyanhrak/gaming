@@ -15,10 +15,10 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 Steps:
 - [x] 1. UI/UX agent's design: `docs/design/HOME_REDESIGN.md` ("emerald daylight", own SVG art, rail carousel, category shelves).
-- [x] 2. Backend: `game_categories` (admin: Games → Categories, audited), `category` on each game in the catalog API; 389 tests.
+- [x] 2. Backend: `game_categories` (admin: Games → Categories, audited), `category` on each game in the catalog API.
 - [x] 3. Frontend: new `/` and signed-in `/dashboard`, `GameLobby` carousel and categories, game descriptions in ru/hy; tests; live check 16/16.
       Owner's revision (too much white, one big casino/poker picture): dark "night room" over `HomeBackdrop`, 2026-11-08.
-- [ ] 4. QA, design and PM review → fix; push.
+- [ ] 4. QA and design review → fixed (`docs/qa/QA_REPORT_TASK056.md`, 127/145, 7 bugs); PM validation → fix; push.
 
 ## Next
 

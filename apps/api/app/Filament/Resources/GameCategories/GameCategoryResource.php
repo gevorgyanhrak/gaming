@@ -7,6 +7,7 @@ use App\Filament\Resources\GameCategories\Pages\EditGameCategory;
 use App\Filament\Resources\GameCategories\Pages\ListGameCategories;
 use App\Filament\Support\Translatable;
 use App\Models\GameCategory;
+use App\Platform\Audit\AuditLogger;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -48,6 +49,7 @@ class GameCategoryResource extends Resource
         return $table
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
+            ->afterReordering(fn (array $order) => app(AuditLogger::class)->record('game_category.reordered', null, ['order' => $order], auth('admin')->user()))
             ->columns([
                 TextColumn::make('name'),
                 TextColumn::make('slug'),

@@ -83,12 +83,12 @@ export function PublicLayout() {
   const home = user.data ? '/dashboard' : '/'
   const atTable = pathname.startsWith('/rooms/')
   // The redesigned home (TASK-056): the landing page and a signed-in player's home.
-  const isHome = pathname === '/' || pathname === '/dashboard'
+  const isHome = !inMaintenance && (pathname === '/' || pathname === '/dashboard')
 
   return (
     <div className={`${isHome ? 'home-room' : 'club-room'} isolate min-h-dvh sm:p-4 lg:p-6`}>
       {isHome ? (
-        <HomeBackdrop className="pointer-events-none fixed inset-0 -z-10 size-full" />
+        <HomeBackdrop className="pointer-events-none fixed inset-x-0 top-0 -z-10 h-lvh w-full" />
       ) : null}
       <div
         className={`${isHome ? 'home-frame' : 'club-frame'} mx-auto flex min-h-dvh max-w-[96rem] flex-col overflow-clip sm:min-h-[calc(100dvh-2rem)] sm:rounded-[1.75rem] lg:min-h-[calc(100dvh-3rem)] ${
@@ -96,7 +96,7 @@ export function PublicLayout() {
         }`}
       >
         <header
-          className={`sticky top-0 z-20 border-b border-gold/15 backdrop-blur ${isHome ? 'home-scope-night bg-[#070f0c]/85' : 'bg-[#1f140f]/80'}`}
+          className={`sticky top-0 z-20 border-b border-gold/15 ${isHome ? 'home-scope-night bg-[#070f0c]/90' : 'bg-[#1f140f]/80 backdrop-blur'}`}
         >
           <div className="flex h-16 items-center justify-between gap-3 px-3 sm:h-20 sm:px-6">
             <div className="flex min-w-0 items-center gap-3">
@@ -154,7 +154,11 @@ export function PublicLayout() {
 
         {user.data ? <VerificationBanner user={user.data} /> : null}
         {user.data ? <WalletSync key={user.data.id} /> : null}
-        {user.data && !inMaintenance ? <ActiveGamesBar /> : null}
+        {user.data && !inMaintenance ? (
+          <div className={isHome ? 'home-scope-night bg-black/90' : ''}>
+            <ActiveGamesBar />
+          </div>
+        ) : null}
 
         <main className="flex-1">
           {inMaintenance ? (
@@ -219,7 +223,7 @@ export function PublicLayout() {
         <nav
           aria-label={t('nav.shortcuts')}
           data-tabbar
-          className={`fixed inset-x-0 bottom-0 z-20 flex border-t border-gold/20 ${isHome ? 'bg-[#070f0c]/95' : 'bg-[#1f140f]/95'} pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden`}
+          className={`fixed inset-x-0 bottom-0 z-20 flex border-t border-gold/20 ${isHome ? 'bg-[#070f0c]/95' : 'bg-[#1f140f]/95 backdrop-blur'} pb-[env(safe-area-inset-bottom)] lg:hidden`}
         >
           <NavLink to="/dashboard" className={tabLink}>
             <HomeIcon />

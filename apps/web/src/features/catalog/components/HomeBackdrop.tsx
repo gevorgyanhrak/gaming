@@ -130,8 +130,8 @@ export function HomeBackdrop({ className = '' }: { className?: string }) {
           <stop offset="1" stopColor="#ffdc96" stopOpacity="0" />
         </linearGradient>
         <radialGradient id="hb-vignette" cx="0.55" cy="0.55" r="0.75">
-          <stop offset="0.5" stopColor="#000" stopOpacity="0" />
-          <stop offset="1" stopColor="#000" stopOpacity="0.7" />
+          <stop offset="0.45" stopColor="#000" stopOpacity="0" />
+          <stop offset="1" stopColor="#000" stopOpacity="0.9" />
         </radialGradient>
         <pattern id="hb-carpet" width="70" height="42" patternUnits="userSpaceOnUse">
           <path

@@ -3,6 +3,7 @@
 use App\Filament\Resources\BotProfiles\Pages\CreateBotProfile;
 use App\Filament\Resources\GameCategories\GameCategoryResource;
 use App\Filament\Resources\GameCategories\Pages\CreateGameCategory;
+use App\Filament\Resources\GameCategories\Pages\ListGameCategories;
 use App\Filament\Resources\Games\Pages\EditGame;
 use App\Models\AuditLog;
 use App\Models\BotProfile;
@@ -44,7 +45,12 @@ it('creates a game category and audits it; moderators cannot', function () {
 
     $category = GameCategory::query()->where('slug', 'dice')->sole();
     expect($category->getTranslations('name'))->toBe(['en' => 'Dice games', 'ru' => 'Игры в кости'])
+        ->and($category->sort_order)->toBe(30)
         ->and(AuditLog::query()->where('action', 'like', '%created')->where('changes', 'like', '%dice%')->exists())->toBeTrue();
+
+    Livewire::test(ListGameCategories::class)->call('reorderTable', [(string) $category->id, (string) GameCategory::query()->where('slug', 'card')->value('id'), (string) GameCategory::query()->where('slug', 'board')->value('id')]);
+    expect($category->fresh()->sort_order)->toBe(1)
+        ->and(AuditLog::query()->where('action', 'game_category.reordered')->exists())->toBeTrue();
 
     signInToAdmin('moderator');
     $this->get(GameCategoryResource::getUrl('index'))->assertForbidden();

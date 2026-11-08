@@ -170,7 +170,7 @@
 
   /* The dark side of the picture, under the words. */
   .home-hero {
-    background: linear-gradient(90deg, rgb(4 10 8 / 0.84), rgb(4 10 8 / 0.58) 45%, transparent 74%);
+    background: linear-gradient(90deg, rgb(4 10 8 / 0.84), rgb(4 10 8 / 0.66) 45%, transparent 74%);
   }
 
   @media (max-width: 1023.98px) {

@@ -26,7 +26,7 @@ export function DashboardPage() {
       <title>{t('dashboard.title')}</title>
       <section className="home-scope-night home-hero border-b border-gold/20">
         <Container className="py-10 lg:py-14">
-          <div className="max-w-3xl min-w-0">
+          <div className="max-w-4xl min-w-0">
             <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
               <div className="flex items-center gap-4">
                 <Avatar
@@ -46,13 +46,13 @@ export function DashboardPage() {
                 </div>
               </div>
               <div className="flex flex-wrap gap-2 sm:ml-auto">
-                <ButtonLink to="/games" variant="gold">
+                <ButtonLink to="/games" variant="gold" className="min-h-11">
                   {t('dashboard.play')}
                 </ButtonLink>
-                <ButtonLink to="/profile" variant="secondary">
+                <ButtonLink to="/profile" variant="secondary" className="min-h-11">
                   {t('nav.profile')}
                 </ButtonLink>
-                <ButtonLink to="/settings" variant="secondary">
+                <ButtonLink to="/settings" variant="secondary" className="min-h-11">
                   {t('nav.settings')}
                 </ButtonLink>
               </div>

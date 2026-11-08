@@ -126,10 +126,10 @@ function CategoryPills({
   ]
 
   return (
-    <fieldset>
+    <fieldset className="min-w-0">
       <legend className="sr-only">{t('lobby.filterLabel')}</legend>
       {/* Phones scroll sideways rather than wrap: the rail below keeps its place. */}
-      <div className="relative -mx-4 flex snap-x [scrollbar-width:none] gap-2 overflow-x-auto px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:flex-wrap lg:px-0 [&::-webkit-scrollbar]:hidden">
+      <div className="relative -mx-4 -my-1.5 flex snap-x [scrollbar-width:none] gap-2 overflow-x-auto px-4 py-1.5 sm:-mx-6 sm:px-6 lg:-mx-2 lg:flex-wrap lg:px-2 [&::-webkit-scrollbar]:hidden">
         {options.map(({ key, label, count }) => (
           <label
             key={key ?? 'all'}
@@ -298,7 +298,7 @@ export function GameCarousel({
           // Takes up any width the cards leave free, so a two-game shelf still fills its row.
           <li
             aria-hidden="true"
-            className="hidden min-w-0 snap-start overflow-hidden rounded-2xl lg:block lg:flex-[1_0_calc((100%-3.75rem)/4)]"
+            className="hidden min-w-0 snap-start overflow-hidden rounded-2xl lg:block lg:max-w-[50%] lg:flex-[1_0_calc((100%-3.75rem)/4)]"
           >
             <CategoryCover slug={coverSlug} className="block size-full" />
           </li>

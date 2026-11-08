@@ -23,7 +23,7 @@ export function LandingPage() {
 
       <section className="home-scope-night home-hero border-b border-gold/20">
         <Container className="flex min-h-[26rem] items-center py-14 sm:min-h-[32rem] lg:min-h-[38rem]">
-          <div className="max-w-2xl text-center lg:text-left">
+          <div className="mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
             <p className="inline-flex items-center rounded-full border border-gold/45 bg-black/15 px-3 py-1 text-xs font-semibold tracking-wide text-gold-light uppercase">
               {t('landing.eyebrow')}
             </p>
