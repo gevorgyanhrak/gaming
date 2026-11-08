@@ -16,6 +16,7 @@ use App\Gameplay\Rooms\RoomStates;
 use App\Models\BotProfile;
 use App\Models\FishkaTransaction;
 use App\Models\GameMode;
+use App\Models\GameMove;
 use App\Models\GameRoom;
 use App\Models\LevelReward;
 use App\Models\LevelUp;
@@ -26,6 +27,7 @@ use App\Platform\Levels\LevelItems;
 use App\Platform\Levels\Levels;
 use App\Platform\Levels\LevelUpdated;
 use App\Platform\Settings\Settings;
+use Database\Seeders\BotSeeder;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
@@ -121,6 +123,28 @@ it('pays no XP to a player who sat a game out and left, but does to one who play
     [$winner, $loser] = resignWaiting($room->fresh(['game', 'participants']));
 
     expect($winner->fresh()->xp)->toBe(50)->and($loser->fresh()->xp)->toBe(30);
+});
+
+it('does not count turns the server played for a player as playing', function () {
+    app(Settings::class)->update(['levels.min_game_moves' => 1]);
+    [$room] = levelRoom();
+    $seat = app(RoomStates::class)->current($room)->seatsToAct[0];
+    $idle = $room->participants->firstWhere('seat', 1 - $seat);
+    $room->moves()->create(['seq' => 900, 'participant_id' => $idle->id, 'type' => 'check', 'client_action_id' => GameMove::AUTO_PREFIX.'900']);
+
+    $this->travel(60)->seconds();
+    resignWaiting($room);
+
+    expect(XpTransaction::query()->where('user_id', $idle->user_id)->count())->toBe(0);
+});
+
+it('gives seeded bots distinct, fairly high levels', function () {
+    BotProfile::query()->delete();
+    $this->seed(BotSeeder::class);
+
+    $levels = BotProfile::query()->pluck('level');
+    expect($levels)->toHaveCount(15)->and($levels->unique())->toHaveCount(15)
+        ->and($levels->min())->toBeGreaterThanOrEqual(18)->and($levels->max())->toBeLessThanOrEqual(57);
 });
 
 it('tells other tabs when the rewards are collected', function () {

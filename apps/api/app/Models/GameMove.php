@@ -37,6 +37,9 @@ class GameMove extends Model
     /** The end of a pause between rounds (see PausesBetweenRounds); no participant. */
     public const RESUME = 'resume';
 
+    /** Starts the client_action_id of a turn the server played for a player who ran out of time. */
+    public const AUTO_PREFIX = 'auto:';
+
     /**
      * @return array<string, string>
      */

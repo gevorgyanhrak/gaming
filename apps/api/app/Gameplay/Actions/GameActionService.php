@@ -130,7 +130,8 @@ class GameActionService
             $default = $engine instanceof HandlesTimeouts ? $engine->timeoutAction($current->state, $timedOut->seat) : null;
 
             if ($default !== null) {
-                $this->play($room, $current, $timedOut, $default, null);
+                // Marked as the server's, so it never counts as the player having played (ADR 0018).
+                $this->play($room, $current, $timedOut, $default, GameMove::AUTO_PREFIX.$room->state_version);
             } else {
                 $this->end($room, $current, $timedOut, GameMove::TIMEOUT, null);
             }

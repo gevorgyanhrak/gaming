@@ -2,7 +2,9 @@
 
 The single task tracker (format and statuses: `docs/team/README.md`). Sources: `UI_UX_AUDIT.md`
 (UX-NNN), `PRODUCT_RESEARCH.md` (OPP-NNN), `TECHNICAL_DEBT.md` (TD-NNN).
-Last planning: 2026-11-07 (TASK-046 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK046.md`;
+Last planning: 2026-11-08 (TASK-047 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK047.md`;
+TASK-059…062 and owner questions 18–20 added).
+Before: 2026-11-07 (TASK-046 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK046.md`;
 TASK-054, TASK-055 and owner questions 15–17 added).
 Before: 2026-11-07 (TASK-045 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK045.md`;
 TASK-052, TASK-053 and owner question 14 added; question 11 refined).
@@ -187,6 +189,62 @@ is replaced by the backend payout change (a stake rule → owner approval) and t
 Depends on: owner question 16   Approval: none for the wording
 Done 2026-11-07 (with TASK-046): the line now reads "Mars! The opponent bore off no checkers." (en/ru/hy), which is
 true whatever question 16 decides; if the owner picks a double payout, the line can say so once the backend pays it.
+
+### TASK-047 · Level & XP progression                            P1 · L · APPROVED
+Owner request 2026-11-02, brief `docs/product/briefs/TASK-047-levels-xp.md`, ADR 0018.
+Code 7935e4b (backend), d0ab709 (frontend), 19dc650 (QA and design fixes). QA `docs/qa/QA_REPORT_TASK047.md`
+(135/148; 2 Medium + 3 Low, fixed, BUG-1 in part); design `docs/design/REVIEW_TASK047.md` (NEEDS REVISION, all
+items done in code; no UI/UX re-review, and the PM checked the post-fix screenshots).
+Validation 2026-11-08: **APPROVED — ACCEPT WITH FOLLOW-UPS** (`docs/product/VALIDATION_TASK047.md`). XP, levels and
+rewards are server-only, rewards pay once, offline level-ups show on return, levels show on every avatar, en/ru/hy;
+Fishka rules unchanged; leaderboards N/A. TASK-059 and TASK-060 should go in with the "PM validation → fix" step
+before this task closes. Still owed at close-out: the summary the brief asks for and the implementation report.
+Follow-ups: TASK-059…062, owner questions 18–20.
+
+### TASK-059 · Bots get distinct levels on a new install         P1 · S · DONE
+Problem: on a new install every bot shows level 30, while the brief (§6) asks for different levels. The distinct
+levels come only from the migration's back-fill of existing bots; `make setup` and `DEPLOYMENT.md` migrate first and
+seed after, and `BotSeeder` creates bots with the column default of 30. Evidence: VALIDATION_TASK047 §A §6.
+Acceptance criteria:
+  1. After `migrate` then `db:seed` on an empty database, all 15 seeded bots have different levels within 18–57.
+  2. Running the seeder again changes no bot's level, so admin edits are kept.
+  3. A test covers 1 and 2.
+Tests: feature test for the seeder.
+Depends on: TASK-047   Approval: none (reference data, no Fishka effect). Do at TASK-047 close-out.
+
+### TASK-060 · Auto-played turns don't count as playing           P2 · S · DONE
+Problem: a player who sits idle at a poker table still earns XP. When the turn timer runs out the server plays a
+check or fold for them, and that is saved as their own move, so after about three 30-second turns they can leave with
++30 XP. Durak with three or more players has the same path. ADR 0018 and the admin help text say sitting at a table
+earns nothing. Evidence: `GameActionService::play`, `GameFinisher::awardXp`; dev DB: 211 poker and 7 Durak such rows
+with `client_action_id` null; QA BUG-1; VALIDATION_TASK047 §C. Read from code and data, not played.
+Acceptance criteria:
+  1. Only actions the player sent count toward `levels.min_game_moves`; turns the server played for them do not.
+  2. A poker player who makes no action, stays for three or more timed-out turns and leaves earns 0 XP.
+  3. A player who sends three actions and then leaves still earns the normal XP.
+  4. Bets, payouts and game results are unchanged.
+Tests: feature test with server-played turns for poker, and for Durak with three players.
+Depends on: TASK-047   Approval: none (XP only, no Fishka rule). Question 20 may change the threshold. Do at
+TASK-047 close-out.
+
+### TASK-061 · Post-fix look at levels: frames, level 30, waiting table   P3 · S · PLANNED
+Problem: some TASK-047 design fixes were checked by types and tests only, with no re-review.
+Evidence: REVIEW_TASK047 "Fix status" and "Not seen"; VALIDATION_TASK047 "Not seen after the fixes".
+Acceptance criteria:
+  1. Screenshots at 1440, 820 and 390 of: a level 25 and a level 30 player (ring round a dark tile) on the profile
+     and at poker and durak seats; the level 30 "major" popup; the waiting table with 4 seats.
+  2. Poker showdown: the badge's order against shown cards. ru and hy on seats, chat and the picker.
+  3. Anything wrong is fixed or logged as its own item.
+  4. The five badge tiers and the top-left rule for seats are in `DESIGN_SYSTEM.md`.
+Depends on: TASK-047   Approval: none. Can fold into TASK-048 (redesign).
+
+### TASK-062 · Sanity limits on the level curve settings          P3 · S · PLANNED
+Problem: extreme values the admin form accepts make the curve overflow: `toNext` goes negative around level 70 and
+`totalFor` throws. It needs about 10^17 XP to reach, so no player sees it, but an admin typo shouldn't be able to set
+it up. Evidence: QA_REPORT_TASK047 O-1.
+Acceptance criteria: the settings form refuses combinations whose total XP for `max_level` doesn't fit an integer,
+with a clear message; the defaults still save; a unit test covers the limit.
+Depends on: TASK-047   Approval: none.
 
 ## Bugs
 
@@ -673,6 +731,17 @@ Validation 2026-10-29: **APPROVED** — `GameActionService::end` marks abandoned
     TASK-055.
 17. Long nardi rule check (TASK-046): on a player's first turn, 6-6, 4-4 and 3-3 let two checkers leave the
     head (otherwise one per turn). Some players allow only 6-6 and 4-4. Is 6-6/4-4/3-3 the rule you play?
+18. Level rewards in Fishkas (TASK-047): the brief asked for Fishka bonuses but set no amounts. Built: 250 + 50 ×
+    level, with milestones of 2,500 / 5,000 / 7,500 / 10,000 / 12,500 / 25,000 at levels 5–30. That is 86,200 Fishkas
+    to level 30, and 3,000 per level above it (296,200 to level 100). Keep these? All are admin settings. Also,
+    existing players start at level 1 and get nothing for past games, because a back-fill would pay every past
+    level's Fishkas at once. Is that what you want?
+19. Level cap and pace (TASK-047): the brief says "a maximum of 30 levels initially" and also asks for harder levels
+    after 30. Built: a cap of 100 (admin setting, can be 30). Level 5 takes about 11 games and level 30 about 260.
+    Is a cap of 100 right, and is 260 games "relatively easy and fast"?
+20. What counts as a game for XP (TASK-047): today at least 30 seconds and 3 of your own moves. So a player who
+    resigns after 3 moves still gets 30 XP for the loss, and a poker sitting counts as one game. Keep this, or
+    should leaving a game pay nothing?
 (Decided 2026-10-29: autonomous mode for B1–B3; TD-001 deleted; sound on by default; TASK-030/031
 go-ahead; room API fields for Play again; `.text-gold-gradient`; public profile stats are public. See
 DECISIONS.md.)

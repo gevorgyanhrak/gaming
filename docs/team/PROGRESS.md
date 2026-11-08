@@ -10,43 +10,25 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
-**TASK-047 · Level & XP progression** — started 2026-11-07. Brief (verbatim):
-`docs/product/briefs/TASK-047-levels-xp.md`. Levels and XP live in the DB and are computed only on the backend; a
-configurable curve (1–30 easy, harder after); a reward per level (Fishkas via `FishkaWallets`, plus cosmetic
-items) granted exactly once with history; pending level-ups shown on return; bots with fixed, distinct high
-levels (no XP, no rewards); a level badge next to every avatar; a progress bar; a level-up popup.
+**TASK-056 · Home page redesign and game categories** — started 2026-11-08. Brief (verbatim):
+`docs/product/briefs/TASK-056-home-page-redesign.md`. Owner said: don't ask, do everything necessary.
 
 Steps:
-- [x] 1. Analyse the existing architecture (users, wallets/ledger, game finish pipeline, bots, settings,
-      avatars, admin) and write ADR 0018 (XP sources, curve formula, reward config, tables, events, concurrency)
-      — `docs/adr/0018-levels-and-xp.md`. No leaderboard exists (N/A until one is built).
-- [x] 2. Backend: migrations (user level/xp, level rewards config, level-up/reward history), `Levels` service
-      (curve from admin settings, atomic award with row lock, multi-level-ups, rewards once), XP on game finish
-      (not for bots), bot levels; API (me/level, pending level-ups + collect; level in user/participant
-      resources); admin config; tests (all 13 brief checks that are backend) — tests/Feature/Levels/LevelsTest.php (16),
-      tests/Unit/Platform/LevelCurveTest.php; full suite 379 green. Existing players start at level 1 (no back-fill:
-      it would pay every past level's Fishkas at once).
-- [x] 3. Frontend: LevelBadge everywhere (profile, rooms, poker seats, player lists, leaderboards, chat),
-      progress bar (profile + header/menu), level-up popup with confetti and collect, milestone celebrations;
-      en/ru/hy; tests; live check (30/30 in headless Chrome: offline popup, collect once, live popup over Reverb, none
-      over a game, badges and bot levels in all five games, phone widths). Web 156 and API 379 tests green.
-- [ ] 4. QA agent → fixed (`docs/qa/QA_REPORT_TASK047.md`); UI/UX review → fixed (`docs/design/REVIEW_TASK047.md`); PM validation → fix; push; report (XP formula, rules, rewards,
-      DB changes, files).
+- [ ] 1. Read the home page, carousel and catalog; UI/UX agent writes the design (`docs/design/HOME_REDESIGN.md`): colours and images.
+- [ ] 2. Backend: game categories, admin-managed, in the catalog API.
+- [ ] 3. Frontend: new home page, carousel, categories; en/ru/hy; tests; live check.
+- [ ] 4. QA, design and PM review → fix; push.
 
 ## Next
 
 **Owner rule (2026-11-02): strict sequential order.** Finish one task completely (implemented, tested,
 verified, pushed) before starting the next; never two at once; nothing partial. Order = the order the
-owner gave them: TASK-043 (done) → 044 (done) → 045 (done) → 046 (done) → 047 (Now) → 056 → 057 → 058 → 048 (owner set 056, 057 after 047 on 2026-11-08). Older items below those come after.
+owner gave them: TASK-043 (done) → 044 (done) → 045 (done) → 046 (done) → 047 (done) → 056 (Now) → 057 → 058 → 048 (owner set 056, 057 after 047 on 2026-11-08). Older items below those come after.
 
 - **TASK-048 · Complete platform redesign** — brief `docs/product/briefs/TASK-048-platform-redesign.md`
   (owner, 2026-11-02, verbatim). Phase 1 (PM market research → `docs/product/research/TASK-048-market-research.md`)
   not started (a parallel start was stopped on the owner's sequencing rule; nothing was written). Then UI/UX agent: design system and
   redesign of every page and game; QA. Owner rule applies: no paid VIP, no value prizes (flagged as question).
-- **TASK-056 · Home page redesign and game categories** — brief `docs/product/briefs/TASK-056-home-page-redesign.md`
-  (owner, 2026-11-08, verbatim). New home page, games carousel, games grouped by category so more can be added,
-  UI/UX agent changes the home page's background colours and images. Not started. Overlaps TASK-048 (owner to
-  say whether it goes inside 048 or ahead of it).
 - **TASK-057 · New look for the Nardi board** — brief `docs/product/briefs/TASK-057-nardi-board-look.md` (owner,
   2026-11-08, verbatim, with a reference screenshot). An original carved-wood board in that spirit, our own art,
   not a copy of the reference site. Not started.
@@ -66,6 +48,9 @@ Later (older backlog):
 
 ## Done (recent)
 
+- 2026-11-08 · TASK-047 Level & XP progression — 51acc3e, 7935e4b, d0ab709, 19dc650 + this close-out. QA `docs/qa/QA_REPORT_TASK047.md`
+  (135/148, 5 bugs → fixed), design `docs/design/REVIEW_TASK047.md` (NEEDS REVISION → all fixed), PM ACCEPT WITH FOLLOW-UPS
+  (`docs/product/VALIDATION_TASK047.md`; TASK-059, 060 done here; TASK-061, 062 and owner Q18–20 open). Summary in IMPLEMENTATION_REPORT.
 - 2026-11-07 · TASK-046 Nardi in two variants, Long (new engine variant: heads, closed points, head rule,
   no 6-wall, mars) and Short (the old backgammon engine), with a picture picker — 61a2181, e0aaa53, c7fc6b0,
   4876787, 6ea1ba0 + this close-out. QA `docs/qa/QA_REPORT_TASK046.md` (38/40 → fixed), design

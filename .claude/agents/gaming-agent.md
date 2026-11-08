@@ -122,7 +122,7 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   (`award(userId, amount, XpSource, idempotencyKey)` locks the user row, recomputes the level from `LevelCurve`
   — settings `levels.*` — writes `xp_transactions` and one `level_ups` row per level reached; `claim()` pays
   pending rewards once via `FishkaWallets::credit` type `level_reward`, key `level:{user}:{level}`). XP comes
-  from `GameFinisher` (not abandoned, not under `levels.min_game_seconds`, key `game:{room}:{user}`) and the
+  from `GameFinisher` (not abandoned, not under `levels.min_game_seconds`, at least `levels.min_game_moves` of the player's own moves — server-played turns have `client_action_id` `GameMove::AUTO_PREFIX…`, key `game:{room}:{user}`) and the
   daily bonus. Rewards per level: `level_rewards` (Filament "Level rewards"); items are the code catalog
   `LevelItems` (frames, badges, emoji packs) and are derived from the level (`looks()`, `emojiLevels()`;
   exclusive emojis are refused below their level in `RoomReactions`). Bots: `bot_profiles.level`, no XP.

@@ -2,6 +2,33 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## TASK-047 · Level & XP progression — 2026-11-08 · DONE
+
+Brief: `docs/product/briefs/TASK-047-levels-xp.md`. ADR 0018. QA: `docs/qa/QA_REPORT_TASK047.md`. Design:
+`docs/design/REVIEW_TASK047.md`. PM: `docs/product/VALIDATION_TASK047.md` (ACCEPT WITH FOLLOW-UPS; TASK-059 and 060 done here).
+
+**XP.** A finished game pays `xp_game` 30, plus `xp_win` 20 or `xp_draw` 10. The daily bonus pays `xp_daily` 20. Nothing for an
+abandoned game, a game under `min_game_seconds` (30), or fewer than `min_game_moves` (3) of the player's own moves (resigning,
+timing out, leaving and turns the server played for them don't count). Each game and day pays once. Bots earn nothing.
+
+**Curve** (XP from level L to L+1, admin settings): below 30, `80 + 20 × (L − 1)`; from 30, `⌈640 × 1.5 × 1.1^(L − 30)⌉` (990, 1,089,
+1,198…). Level 30 is 10,440 XP in total. Cap `max_level` 100. A level never goes down.
+
+**Rewards.** `level_rewards`, one row per level, edited in the admin panel ("Level rewards"): Fishkas, items and a milestone flag.
+Seeded 250 + 50 × L Fishkas; milestones at 5, 10, 15, 20, 25, 30 with bigger amounts and items. Levels without a row pay
+`levels.reward_default`. Collected once from the popup through `FishkaWallets::credit` (key `level:{user}:{level}`); level-ups reached
+while away wait in `level_ups`.
+
+**Database** (`2026_11_08_100000_create_levels_tables`): `users.level`, `users.xp`, `xp_transactions`, `level_rewards`, `level_ups`,
+`bot_profiles.level`, Fishka ledger type `level_reward`.
+
+**Files.** API: `app/Platform/Levels/*`, `GameFinisher`, `GameActionService`, `LevelController`, `DailyBonusController`, user and room
+resources, `SettingsCatalog`, Filament `LevelRewards`, `ManageSettings`, bot admin, `BotSeeder`. Web: `features/levels/*`,
+`shared/ui/LevelBadge`, `Avatar`, `frames.ts`, poker and durak boards, `PlayerList`, `WaitingTable`, table chat, emoji picker, dashboard,
+profile, menu, locales.
+
+**Tests.** API 383, web 158, live browser run over all five games.
+
 ## TASK-040 · Poker bots, real balance in Poker, game groups — 2026-11-01 · READY_FOR_REVIEW
 
 Brief: `docs/product/briefs/TASK-040-groups-poker-bots.md`. ADR 0016. QA: `docs/qa/QA_REPORT_TASK040.md`.

@@ -104,6 +104,7 @@ class GameFinisher
             ->where('game_room_id', $room->id)
             ->where('participant_id', $participant->id)
             ->whereNotIn('type', [GameMove::RESIGN, GameMove::TIMEOUT, GameMove::ABANDON])
+            ->where(fn ($moves) => $moves->whereNull('client_action_id')->orWhere('client_action_id', 'not like', GameMove::AUTO_PREFIX.'%'))
             ->count();
         if ($played < (int) $this->settings->get('levels.min_game_moves')) {
             return;

@@ -37,8 +37,11 @@ class BotSeeder extends Seeder
     {
         $games = Game::query()->pluck('id');
 
+        $index = 0;
         foreach (self::BOTS as $name => $difficulty) {
-            $bot = BotProfile::query()->firstOrCreate(['name' => $name]);
+            // Distinct, fairly high levels (18–57; 37 and 40 are coprime), the same as the migration's.
+            $level = 18 + (++$index * 37) % 40;
+            $bot = BotProfile::query()->firstOrCreate(['name' => $name], ['level' => $level]);
 
             if ($bot->wasRecentlyCreated) {
                 foreach ($games as $gameId) {
