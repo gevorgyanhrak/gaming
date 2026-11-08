@@ -51,6 +51,31 @@ describe('NardiBoard', () => {
     expect(screen.getByText('Waiting for the other player')).toBeInTheDocument()
   })
 
+  it('prints each point’s number on the board, in the player’s own numbering', () => {
+    render(<NardiBoard state={state(1, [], 0)} onAction={vi.fn()} pending={false} />)
+
+    expect(screen.getByRole('button', { name: 'Point 24: 2 checkers, yours' })).toHaveTextContent(
+      /^24/,
+    )
+  })
+
+  it('shows the turn’s time on the board, from the server’s deadline', () => {
+    const now = Date.now()
+    render(
+      <NardiBoard
+        state={{
+          ...state(0, []),
+          server_time: new Date(now).toISOString(),
+          deadline: new Date(now + 42_000).toISOString(),
+        }}
+        onAction={vi.fn()}
+        pending={false}
+      />,
+    )
+
+    expect(screen.getByText('42')).toBeInTheDocument()
+  })
+
   it('bears off through the off tray', async () => {
     const onAction = vi.fn()
     const points = Array(24).fill(0)

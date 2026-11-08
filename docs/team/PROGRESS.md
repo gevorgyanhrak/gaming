@@ -14,7 +14,7 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 in that spirit, our own art, not a copy of the reference site; includes TASK-054 (numbered points, round timer, bear-off trays).
 
 Steps:
-- [ ] 1. Read `NardiBoard`, design and build the board (Long and Short, both seats, 1440 and 390); tests; live check.
+- [x] 1. Board built: walnut case, inlaid points, numbers, round timer, trays, carved rosettes, pip dice; Long and Short; live check 25/25.
 - [ ] 2. QA and design review → fix; push.
 
 ## Next

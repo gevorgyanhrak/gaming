@@ -66,3 +66,7 @@ checked = gold), `TextField`, `Alert`, `Badge`, `Skeleton`, `States` (`EmptyStat
 
 Five tiers from `LevelBadge`: bronze, silver (10), gold (20), ruby (30), amethyst (50). At table seats the badge goes on the top-left
 of the avatar, clear of the dealer button and nameplate.
+
+## Nardi board (TASK-057)
+
+Our own look (`.nardi-*` in `styles/index.css`): walnut case, maple and garnet inlaid points, ivory and obsidian stones, teal trays, a carved six-armed rosette in each half (SVG in `NardiBoard`). Keep it clearly different from reference sites: no copied art or ornament.

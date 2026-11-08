@@ -172,7 +172,7 @@ variants are real and rule-checked (0 violations in 391 states); bots, groups, b
 variant; en/ru/hy; no UI-only claims; Fishka rules unchanged. Not built by decision: the doubling cube and a
 double payout for a mars (owner questions 15–16). Follow-ups: TASK-054, TASK-055, question 17.
 
-### TASK-054 · Nardi board extras from the owner's reference      P2 · M · PLANNED
+### TASK-054 · Nardi board extras from the owner's reference      P2 · M · DONE (in TASK-057: numbers, round timer, trays; the side panel stays the page's player list)
 Problem: the owner's second reference board has elements this task didn't promise: points numbered 1–24
 along both edges (in your own numbering), a round turn timer on the board, wooden bear-off trays at the
 side showing stacked checkers, and a side panel with both players' avatars, clocks and the stake.
