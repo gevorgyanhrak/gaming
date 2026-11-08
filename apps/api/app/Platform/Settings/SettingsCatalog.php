@@ -69,6 +69,7 @@ final class SettingsCatalog
             new SettingDefinition('levels.xp_draw', SettingType::Integer, 10, rules: ['required', 'integer', 'min:0', 'max:100000']),
             new SettingDefinition('levels.xp_daily', SettingType::Integer, 20, rules: ['required', 'integer', 'min:0', 'max:100000']),
             new SettingDefinition('levels.min_game_seconds', SettingType::Integer, 30, rules: ['required', 'integer', 'min:0', 'max:3600']),
+            new SettingDefinition('levels.min_game_moves', SettingType::Integer, 3, rules: ['required', 'integer', 'min:0', 'max:100']),
             new SettingDefinition('levels.xp_base', SettingType::Integer, 80, rules: ['required', 'integer', 'min:1', 'max:1000000']),
             new SettingDefinition('levels.xp_step', SettingType::Integer, 20, rules: ['required', 'integer', 'min:0', 'max:1000000']),
             new SettingDefinition('levels.after_30_percent', SettingType::Integer, 150, rules: ['required', 'integer', 'min:100', 'max:1000']),

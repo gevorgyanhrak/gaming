@@ -1,3 +1,4 @@
+import { frameRing } from '@/shared/ui/frames'
 import { LevelBadge } from '@/shared/ui/LevelBadge'
 import { CardBack } from '../cards/PlayingCard'
 
@@ -19,6 +20,7 @@ interface SeatProps {
   /** "Bot" when a bot plays this seat. */
   bot: string | null
   level: number | undefined
+  frame: string | null | undefined
   label: string
 }
 
@@ -54,6 +56,7 @@ export function CompactSeat({
   share,
   bot,
   level,
+  frame,
   label,
 }: SeatProps) {
   return (
@@ -70,7 +73,7 @@ export function CompactSeat({
         {role ? <Bubble role={role} small /> : null}
       </span>
       <span className="relative mt-1" data-seat-anchor={seat}>
-        <Avatar name={name} acting={acting} share={share} size="sm" level={level} />
+        <Avatar name={name} acting={acting} share={share} size="sm" level={level} frame={frame} />
         {bot ? (
           <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 rounded-full bg-black/75 px-1 text-[0.55rem] leading-tight font-semibold tracking-wide text-white/85 uppercase">
             {bot}
@@ -105,6 +108,7 @@ export function PanelSeat({
   share,
   bot,
   level,
+  frame,
   label,
 }: SeatProps) {
   return (
@@ -120,7 +124,7 @@ export function PanelSeat({
       }`}
     >
       <span className="absolute -top-6 -left-3" data-seat-anchor={seat}>
-        <Avatar name={name} acting={acting} share={share} size="md" level={level} />
+        <Avatar name={name} acting={acting} share={share} size="md" level={level} frame={frame} />
       </span>
       {role ? (
         <span className="absolute -top-8 left-11">
@@ -156,19 +160,21 @@ export function Avatar({
   share,
   size,
   level,
+  frame,
 }: {
   name: string
   acting: boolean
   share: number | null
   size: 'sm' | 'md'
   level?: number
+  frame?: string | null
 }) {
   const ring =
     acting && share !== null
       ? `conic-gradient(var(--color-turn) ${share * 360}deg, rgb(255 255 255 / 0.15) 0)`
       : acting
         ? 'var(--color-turn)'
-        : 'rgb(255 255 255 / 0.25)'
+        : (frameRing(frame) ?? 'rgb(255 255 255 / 0.25)')
   const face = (
     <span
       className="block rounded-full p-[3px] shadow-md"
@@ -188,7 +194,11 @@ export function Avatar({
   return (
     <span className="relative block">
       {face}
-      <LevelBadge level={level} size="sm" className="absolute -right-1.5 -bottom-1" />
+      <LevelBadge
+        level={level}
+        size={size === 'md' ? 'md' : 'sm'}
+        className="absolute -top-1 -left-1.5"
+      />
     </span>
   )
 }

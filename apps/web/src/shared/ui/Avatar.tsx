@@ -31,7 +31,7 @@ export function Avatar({
   ) : (
     <span
       aria-hidden="true"
-      className={`${sizes[size]} inline-flex shrink-0 items-center justify-center rounded-full bg-accent/30 font-semibold text-fg uppercase`}
+      className={`${sizes[size]} inline-flex shrink-0 items-center justify-center rounded-full bg-[#23301b] font-semibold text-fg uppercase`}
     >
       {name.charAt(0)}
     </span>
@@ -42,12 +42,12 @@ export function Avatar({
   if (level == null) return framed
 
   return (
-    <span className="relative inline-flex shrink-0">
+    <span className="relative inline-flex w-fit shrink-0">
       {framed}
       <LevelBadge
         level={level}
         size={size === 'lg' ? 'lg' : size === 'md' ? 'md' : 'sm'}
-        className={`absolute ${size === 'lg' ? '-right-1 -bottom-1' : '-right-1.5 -bottom-1'}`}
+        className={`absolute -bottom-1 ${size === 'lg' ? '-right-1' : level >= 100 ? '-right-2' : '-right-1.5'}`}
       />
     </span>
   )

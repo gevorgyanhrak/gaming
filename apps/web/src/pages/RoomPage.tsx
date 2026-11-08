@@ -214,6 +214,7 @@ export function RoomPage() {
               players={playerNames}
               bots={Object.fromEntries(data.participants.map((p) => [p.seat, p.is_bot]))}
               levels={Object.fromEntries(data.participants.map((p) => [p.seat, p.level]))}
+              frames={Object.fromEntries(data.participants.map((p) => [p.seat, p.frame]))}
             />
           </Suspense>
         ) : (

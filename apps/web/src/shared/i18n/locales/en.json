@@ -685,6 +685,7 @@
       "mute": "Mute animations"
     },
     "exclusive": "Exclusive",
+    "exclusiveHint": "Open as you level up",
     "lockedEmoji": "{{emoji}} opens at level {{level}}"
   },
   "daily": {
@@ -716,8 +717,8 @@
     "top": "Top level",
     "levelUp": "Level up!",
     "milestone": "Milestone",
+    "majorMilestone": "Major milestone",
     "reached": "You reached level {{level}}!",
-    "reachedMany": "From level {{from}} to {{to}}!",
     "rewards": "Your rewards",
     "fishkas": "Fishkas",
     "collect": "Collect",
@@ -725,6 +726,7 @@
     "later": "Later",
     "failed": "Couldn't collect the reward. Please try again.",
     "nextReward": "At level {{level}}",
+    "pendingReward": "You have a reward waiting",
     "card": "Your level",
     "items": {
       "frameGold": "Gold avatar frame",

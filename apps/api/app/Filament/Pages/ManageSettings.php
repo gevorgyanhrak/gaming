@@ -157,6 +157,9 @@ class ManageSettings extends Page
                         TextInput::make('levels.min_game_seconds')->label('Shortest game that earns XP (seconds)')
                             ->numeric()->integer()->required()->minValue(0)->maxValue(3600)
                             ->helperText('Stops XP farming by resigning at once.'),
+                        TextInput::make('levels.min_game_moves')->label('Fewest own moves that earn XP')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(100)
+                            ->helperText('Stops XP for sitting at a table, letting the clock run out or leaving without playing.'),
                         TextInput::make('levels.xp_base')->label('XP from level 1 to 2')
                             ->numeric()->integer()->required()->minValue(1)->maxValue(1000000),
                         TextInput::make('levels.xp_step')->label('Each level up to 30 needs this much more')

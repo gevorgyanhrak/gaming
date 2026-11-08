@@ -22,20 +22,20 @@ export function LevelProgress({
 
   return (
     <div className={compact ? 'space-y-1' : 'space-y-2'}>
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <span className="flex items-center gap-2">
           <LevelBadge level={level} size={compact ? 'sm' : 'md'} />
           <span
             className={
               compact
-                ? 'text-xs font-bold tracking-wide uppercase'
-                : 'text-sm font-extrabold tracking-wider uppercase'
+                ? 'sr-only'
+                : 'text-sm font-extrabold tracking-wider whitespace-nowrap uppercase'
             }
           >
             {t('level.title', { level })}
           </span>
         </span>
-        <span className="text-xs text-muted tabular-nums">
+        <span className="text-xs whitespace-nowrap text-muted tabular-nums">
           {next === null
             ? t('level.top')
             : t('level.xpOf', { xp: format(into), total: format(span) })}
@@ -43,7 +43,7 @@ export function LevelProgress({
       </div>
       <div
         role="progressbar"
-        aria-label={t('level.progressLabel', { level: level + 1 })}
+        aria-label={next === null ? t('level.top') : t('level.progressLabel', { level: level + 1 })}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={percent}

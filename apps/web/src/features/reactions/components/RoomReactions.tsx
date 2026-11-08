@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useCurrentUser } from '@/features/auth/hooks'
 import type { Room } from '@/features/play/api'
 import { usePublicConfig } from '@/features/platform/usePublicConfig'
 import { isApiError } from '@/shared/api/errors'
@@ -20,6 +21,7 @@ const REPEAT_MS = 1000
  */
 export function RoomReactions({ room, mySeat }: { room: Room; mySeat: number | null }) {
   const { t } = useTranslation()
+  const { data: user } = useCurrentUser()
   const config = usePublicConfig()
   const enabled = Boolean(config.data?.play.reactions) && mySeat !== null && reactionsOpen(room)
   const catalog = useReactionCatalog(enabled)
@@ -78,7 +80,7 @@ export function RoomReactions({ room, mySeat }: { room: Room; mySeat: number | n
         <ReactionPicker
           catalog={catalog.data}
           recipients={recipients}
-          myLevel={room.participants.find((p) => p.seat === mySeat)?.level ?? 1}
+          myLevel={user?.level ?? room.participants.find((p) => p.seat === mySeat)?.level ?? 1}
           initialTab={picker}
           onSend={deliver}
           onClose={closePicker}

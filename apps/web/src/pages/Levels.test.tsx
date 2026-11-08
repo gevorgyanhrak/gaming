@@ -59,7 +59,7 @@ describe('Level-up popup', () => {
     renderRoute('/games/chess')
 
     const dialog = await screen.findByRole('dialog', { name: 'Level up!' })
-    expect(within(dialog).getByText('From level 2 to 4!')).toBeInTheDocument()
+    expect(within(dialog).getByText('You reached level 4!')).toBeInTheDocument()
     expect(within(dialog).getByText(/\+850/)).toBeInTheDocument()
 
     await userEvent.dblClick(within(dialog).getByRole('button', { name: 'Collect' }))
@@ -110,6 +110,28 @@ describe('Level-up popup', () => {
     act(() => emit('user.1', 'level.updated', { level: 2, pending: 1 }))
 
     expect(await screen.findByRole('dialog', { name: 'Level up!' })).toBeInTheDocument()
+  })
+
+  it('offers a reward put off with "Later" again from the level card', async () => {
+    serve(levelFixture({ level: 2, pending: [up(2, 350)] }))
+    renderRoute('/dashboard')
+
+    const dialog = await screen.findByRole('dialog', { name: 'Level up!' })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Later' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+
+    expect(await screen.findByText('You have a reward waiting')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Collect' }))
+
+    expect(await screen.findByRole('dialog', { name: 'Level up!' })).toBeInTheDocument()
+  })
+
+  it('celebrates level 30 as a major milestone', async () => {
+    serve(levelFixture({ level: 30, pending: [up(30, 9000, { is_milestone: true })] }))
+    renderRoute('/games/chess')
+
+    const dialog = await screen.findByRole('dialog', { name: 'Level up!' })
+    expect(within(dialog).getByText('Major milestone')).toBeInTheDocument()
   })
 
   it('marks a milestone', async () => {

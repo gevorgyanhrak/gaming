@@ -33,6 +33,8 @@ use Illuminate\Support\Str;
 beforeEach(function () {
     Queue::fake();
     Event::fake([LevelUpdated::class]);
+    // Most tests end a game at once; the minimum moves have tests of their own.
+    app(Settings::class)->update(['levels.min_game_moves' => 0]);
 });
 
 /** A started tic-tac-toe game between two people; returns [room, alice, bob]. */
@@ -98,6 +100,36 @@ it('pays no XP for a game resigned at once, nor to a player who timed out', func
     expect(XpTransaction::query()->whereIn('user_id', $quick->participants->pluck('user_id'))->count())->toBe(0)
         ->and(XpTransaction::query()->where('user_id', $timedOut)->count())->toBe(0)
         ->and(User::query()->find($winner)->xp)->toBe(50);
+});
+
+it('pays no XP to a player who sat a game out and left, but does to one who played', function () {
+    app(Settings::class)->update(['levels.min_game_moves' => 1]);
+
+    [$idle] = levelRoom();
+    $this->travel(60)->seconds();
+    resignWaiting($idle);
+    expect(XpTransaction::query()->whereIn('user_id', $idle->participants->pluck('user_id'))->count())->toBe(0);
+
+    [$room] = levelRoom();
+    $actions = app(GameActionService::class);
+    $states = app(RoomStates::class);
+    foreach ([0, 1] as $cell) {
+        $seat = $states->current($room->fresh())->seatsToAct[0];
+        $actions->submit($room->fresh(['game', 'participants']), $room->participants->firstWhere('seat', $seat), new Action('place', ['cell' => $cell]));
+    }
+    $this->travel(60)->seconds();
+    [$winner, $loser] = resignWaiting($room->fresh(['game', 'participants']));
+
+    expect($winner->fresh()->xp)->toBe(50)->and($loser->fresh()->xp)->toBe(30);
+});
+
+it('tells other tabs when the rewards are collected', function () {
+    $user = User::factory()->create();
+    app(Levels::class)->award($user->id, 100, XpSource::Game, 'tabs-'.$user->id);
+
+    $this->actingAs($user)->postJson('/api/v1/me/level-ups/claim')->assertCreated();
+
+    Event::assertDispatched(LevelUpdated::class, fn (LevelUpdated $e) => $e->userId === $user->id && $e->pending === 0 && $e->gained === 0);
 });
 
 it('moves the progress bar and levels up when the XP is reached, with the reward waiting', function () {

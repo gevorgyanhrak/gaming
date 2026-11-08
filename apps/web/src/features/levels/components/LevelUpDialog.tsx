@@ -48,6 +48,7 @@ function Dialog({ status }: { status: LevelStatus }) {
   const queryClient = useQueryClient()
   const panel = useRef<HTMLDivElement>(null)
   const chips = useRef<HTMLParagraphElement>(null)
+  const burst = useRef<HTMLDivElement>(null)
   const format = (n: number) => n.toLocaleString(i18n.language)
   // The exclusive emojis each level opens, to show an emoji pack's emojis.
   const catalog = useQuery({
@@ -62,6 +63,7 @@ function Dialog({ status }: { status: LevelStatus }) {
   const to = pending[pending.length - 1]?.level ?? status.level
   const fishkas = pending.reduce((sum, up) => sum + up.fishkas, 0)
   const milestone = pending.some((up) => up.is_milestone)
+  const major = pending.some((up) => up.is_milestone && up.level >= 30)
 
   const sent = useRef(false)
   const collect = useMutation({
@@ -103,7 +105,21 @@ function Dialog({ status }: { status: LevelStatus }) {
     }
   }, [])
 
-  useEffect(() => confetti(panel.current, milestone ? 90 : 50), [milestone])
+  useEffect(() => {
+    const host = burst.current
+    const first = confetti(host, major ? 80 : milestone ? 90 : 50)
+    if (!major) return first
+    // A major milestone gets a second burst.
+    let second = () => {}
+    const timer = window.setTimeout(() => {
+      second = confetti(host, 60)
+    }, 700)
+    return () => {
+      first()
+      window.clearTimeout(timer)
+      second()
+    }
+  }, [milestone, major])
 
   const items = pending.flatMap((up) => up.items.map((item) => ({ item, level: up.level })))
 
@@ -121,83 +137,103 @@ function Dialog({ status }: { status: LevelStatus }) {
         aria-labelledby="level-up-title"
         aria-describedby="level-up-body"
         tabIndex={-1}
-        className="club-frame relative mb-[env(safe-area-inset-bottom)] w-full max-w-md overflow-hidden rounded-3xl text-center outline-none motion-safe:animate-rise"
+        className="club-frame relative mb-[env(safe-area-inset-bottom)] max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-hidden rounded-3xl text-center outline-none motion-safe:animate-rise"
       >
+        {/* Confetti falls over the backgrounds and behind the words and buttons. */}
         <div
-          className={`relative px-5 pt-6 pb-5 ${
-            milestone
-              ? 'bg-linear-to-b from-[#4a1430] via-[#3a1a3f] to-[#3b2a14]'
-              : 'bg-linear-to-b from-[#0d3a2a] via-[#123f2e] to-[#3b2a14]'
-          }`}
-        >
-          {milestone ? (
-            <p className="mx-auto mb-2 w-fit rounded-full bg-[#b3261e] px-3 py-0.5 text-xs font-black tracking-widest text-white uppercase">
-              {t('level.milestone')}
-            </p>
-          ) : null}
-          <h2
-            id="level-up-title"
-            className="text-gold-gradient text-3xl font-extrabold tracking-wide uppercase sm:text-4xl"
+          ref={burst}
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-[1] overflow-hidden"
+        />
+        <div className="max-h-[inherit] overflow-y-auto overscroll-contain">
+          <div
+            className={`px-5 pt-6 pb-5 ${
+              major
+                ? 'bg-linear-to-b from-[#5a1a1f] via-[#6a3a14] to-[#3b2a14]'
+                : milestone
+                  ? 'bg-linear-to-b from-[#4a1430] via-[#3a1a3f] to-[#3b2a14]'
+                  : 'bg-linear-to-b from-[#0d3a2a] via-[#123f2e] to-[#3b2a14]'
+            }`}
           >
-            {t('level.levelUp')}
-          </h2>
+            <div className="relative z-[2]">
+              {major ? (
+                <p className="mx-auto mb-2 w-fit rounded-full bg-gold px-3 py-0.5 text-xs font-black tracking-widest text-black uppercase">
+                  {t('level.majorMilestone')}
+                </p>
+              ) : milestone ? (
+                <p className="mx-auto mb-2 w-fit rounded-full bg-[#b3261e] px-3 py-0.5 text-xs font-black tracking-widest text-white uppercase">
+                  {t('level.milestone')}
+                </p>
+              ) : null}
+              <h2
+                id="level-up-title"
+                className="text-gold-gradient text-3xl font-extrabold tracking-wide uppercase sm:text-4xl"
+              >
+                {t('level.levelUp')}
+              </h2>
 
-          <div className="mt-5 flex items-center justify-center gap-4" aria-hidden="true">
-            <LevelBadge level={Math.max(1, from)} size="lg" className="opacity-70" />
-            <span className="text-2xl text-gold-light">→</span>
-            <LevelBadge
-              level={to}
-              size="lg"
-              className="scale-125 motion-safe:animate-[level-pop_700ms_cubic-bezier(0.2,0.8,0.2,1.4)_both]"
-            />
+              <div className="mt-5 flex items-center justify-center gap-4" aria-hidden="true">
+                <LevelBadge level={Math.max(1, from)} size="lg" />
+                <span className="text-2xl text-gold-light">→</span>
+                <LevelBadge
+                  level={to}
+                  size="xl"
+                  className="motion-safe:animate-[level-pop_700ms_cubic-bezier(0.2,0.8,0.2,1.4)_both]"
+                />
+              </div>
+
+              <p id="level-up-body" className="mt-4 text-base font-semibold text-white/90">
+                {t('level.reached', { level: to })}
+              </p>
+            </div>
           </div>
 
-          <p id="level-up-body" className="mt-4 text-base font-semibold text-white/90">
-            {to - from > 1
-              ? t('level.reachedMany', { from: Math.max(1, from), to })
-              : t('level.reached', { level: to })}
-          </p>
-        </div>
+          <div className="bg-linear-to-b from-[#3b2a14] to-[#24180c] px-5 pt-4 pb-1">
+            <div className="relative z-[2]">
+              <h3 className="text-xs font-semibold tracking-wider text-gold-light/80 uppercase">
+                {t('level.rewards')}
+              </h3>
+              <p
+                ref={chips}
+                className="mt-2 flex items-center justify-center gap-2 text-3xl font-extrabold text-gold-light tabular-nums drop-shadow-[0_2px_6px_rgb(0_0_0/0.6)]"
+              >
+                <FishkaIcon className="size-8" />+{format(fishkas)}
+                <span className="sr-only">{t('level.fishkas')}</span>
+              </p>
+              {items.length ? (
+                <ul className="mt-3 flex flex-wrap justify-center gap-2">
+                  {items.map(({ item, level }) => (
+                    <li
+                      key={`${level}-${item.kind}-${item.key}`}
+                      className="rounded-full border border-gold/40 bg-black/30 px-3 py-1 text-sm font-semibold"
+                    >
+                      {itemLabel(t, item)}
+                      {item.kind === 'emoji_pack' ? (
+                        <span className="ml-1.5 inline-flex gap-0.5 whitespace-nowrap">
+                          {catalog.data?.exclusive
+                            .filter((e) => e.level === level)
+                            .map((e) => e.emoji)
+                            .join('')}
+                        </span>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
 
-        <div className="bg-linear-to-b from-[#3b2a14] to-[#24180c] px-5 pt-4 pb-6">
-          <h3 className="text-xs font-semibold tracking-wider text-gold-light/80 uppercase">
-            {t('level.rewards')}
-          </h3>
-          <p
-            ref={chips}
-            className="mt-2 flex items-center justify-center gap-2 text-4xl font-extrabold text-gold-light tabular-nums drop-shadow-[0_2px_6px_rgb(0_0_0/0.6)]"
-          >
-            <FishkaIcon className="size-10" />+{format(fishkas)}
-            <span className="sr-only">{t('level.fishkas')}</span>
-          </p>
-          {items.length ? (
-            <ul className="mt-3 flex flex-wrap justify-center gap-2">
-              {items.map(({ item, level }) => (
-                <li
-                  key={`${level}-${item.kind}-${item.key}`}
-                  className="rounded-full border border-gold/40 bg-black/30 px-3 py-1 text-sm font-semibold"
-                >
-                  {itemLabel(t, item)}
-                  {item.kind === 'emoji_pack' ? (
-                    <span className="ml-1.5">
-                      {catalog.data?.exclusive
-                        .filter((e) => e.level === level)
-                        .map((e) => e.emoji)
-                        .join('')}
-                    </span>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          ) : null}
+              {collect.isError ? (
+                <p role="alert" className="mt-3 text-sm text-[#f87171]">
+                  {t('level.failed')}
+                </p>
+              ) : null}
+            </div>
+          </div>
 
-          {collect.isError ? (
-            <p role="alert" className="mt-3 text-sm text-[#f87171]">
-              {t('level.failed')}
-            </p>
-          ) : null}
-
-          <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center">
+          {/* Always in view, however long the list of rewards is. */}
+          <div className="sticky bottom-0 z-[2] flex flex-col-reverse gap-2 bg-[#24180c] px-5 pt-3 pb-5 sm:flex-row sm:justify-center">
+            <Button variant="secondary" className="min-h-12 sm:min-w-32" onClick={closeLevelUp}>
+              {t('level.later')}
+            </Button>
             <Button
               variant="gold"
               className="min-h-12 text-lg sm:min-w-48"
@@ -205,13 +241,6 @@ function Dialog({ status }: { status: LevelStatus }) {
               disabled={collect.isPending || collect.isSuccess}
             >
               {collect.isPending || collect.isSuccess ? t('level.collecting') : t('level.collect')}
-            </Button>
-            <Button
-              variant="secondary"
-              className="min-h-12 sm:order-first sm:min-w-32"
-              onClick={closeLevelUp}
-            >
-              {t('level.later')}
             </Button>
           </div>
         </div>

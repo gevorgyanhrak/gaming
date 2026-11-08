@@ -64,7 +64,7 @@ export function WaitingTable({
 
   return (
     <section className="px-9 py-10 sm:px-12 sm:py-16">
-      <div className="relative mx-auto aspect-[3/4] w-full max-w-4xl sm:aspect-[2/1]">
+      <div className="relative mx-auto aspect-[3/4] w-full max-w-4xl md:aspect-[4/3] lg:aspect-[2/1]">
         <div aria-hidden="true" className="table-rim absolute inset-0 rounded-[50%]">
           <div className="table-felt h-full w-full rounded-[50%]" />
         </div>
@@ -106,7 +106,10 @@ export function WaitingTable({
                   </span>
                   {/* The level sits on the seat's rim, outside the round crop. */}
                   {player ? (
-                    <LevelBadge level={player.level} className="absolute -right-1 bottom-0" />
+                    <LevelBadge
+                      level={player.level}
+                      className={`absolute bottom-0 ${Math.cos(angle) < -0.1 ? '-left-1' : '-right-1'}`}
+                    />
                   ) : null}
                 </span>
                 {player ? (

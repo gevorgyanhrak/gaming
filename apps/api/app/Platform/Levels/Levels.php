@@ -111,7 +111,8 @@ class Levels
     public function claim(User $user): Collection
     {
         return DB::transaction(function () use ($user) {
-            User::query()->lockForUpdate()->find($user->id);
+            /** @var User $locked */
+            $locked = User::query()->lockForUpdate()->findOrFail($user->id);
             $pending = LevelUp::query()
                 ->where('user_id', $user->id)
                 ->whereNull('claimed_at')
@@ -127,6 +128,17 @@ class Levels
                     'idempotency_key' => "level:{$user->id}:{$levelUp->level}",
                 ]);
                 $levelUp->forceFill(['claimed_at' => now(), 'fishka_transaction_id' => $entry?->id])->save();
+            }
+
+            if ($pending->isNotEmpty()) {
+                // Other tabs close their popup.
+                DB::afterCommit(function () use ($locked) {
+                    try {
+                        event(new LevelUpdated($locked->id, $locked->level, $locked->xp, 0, 0));
+                    } catch (Throwable $e) {
+                        Log::warning('Level broadcast failed.', ['user' => $locked->id, 'error' => $e->getMessage()]);
+                    }
+                });
             }
 
             return $pending;

@@ -23,7 +23,9 @@ the level badge like every other avatar.
   day can never pay XP twice. Nothing from a client is ever trusted: there is no endpoint that accepts XP.
 - **XP sources** (admin settings, group `levels`): a finished game — `xp_game` for taking part plus
   `xp_win` for a win or `xp_draw` for a draw; an abandoned game (timed out, left) gives nothing; a game
-  shorter than `min_game_seconds` gives nothing (no farming by instant resignations). Paid in the finisher's
+  shorter than `min_game_seconds` gives nothing (no farming by instant resignations), and neither does one
+  where the player made fewer than `min_game_moves` moves of their own (default 3; resigning, timing out and
+  leaving don't count as moves), so sitting at a table or letting a clock run out earns nothing. Paid in the finisher's
   transaction (key `game:{room}:{user}`). Collecting the daily bonus gives `xp_daily` (key `daily:{user}:{day}`).
   Bots are never paid (they have no user row).
 - **The curve** (admin settings, so it can be tuned without a deploy). XP needed to go from level L to L+1:

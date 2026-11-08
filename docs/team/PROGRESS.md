@@ -30,7 +30,7 @@ Steps:
       progress bar (profile + header/menu), level-up popup with confetti and collect, milestone celebrations;
       en/ru/hy; tests; live check (30/30 in headless Chrome: offline popup, collect once, live popup over Reverb, none
       over a game, badges and bot levels in all five games, phone widths). Web 156 and API 379 tests green.
-- [ ] 4. QA agent → fix; UI/UX review → fix; PM validation → fix; push; report (XP formula, rules, rewards,
+- [ ] 4. QA agent → fixed (`docs/qa/QA_REPORT_TASK047.md`); UI/UX review → fixed (`docs/design/REVIEW_TASK047.md`); PM validation → fix; push; report (XP formula, rules, rewards,
       DB changes, files).
 
 ## Next
@@ -55,6 +55,8 @@ owner gave them: TASK-043 (done) → 044 (done) → 045 (done) → 046 (done) �
   and below (today: `(max-width: 639px)` in PokerBoard). Not started.
 
 Later (older backlog):
+- From TASK-047 QA (O-2, predates it): the host's waiting table doesn't update when someone joins a table with
+  3+ seats (`RoomService::join` sends no event).
 - TASK-039 · Fishka follow-ups from PM: QA re-run of the 5 failed checks, frozen-clock midnight test,
   live multi-seat poker leave, matchmaking bot fallback without Fishkas.
 - TASK-037 · Durak bout space at 1280×720, phone role bubbles 0.65rem.

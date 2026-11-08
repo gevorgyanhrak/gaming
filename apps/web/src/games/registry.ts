@@ -16,6 +16,8 @@ export interface BoardProps {
   bots?: Partial<Record<number, boolean>>
   /** Levels by seat, for boards that show the players' avatars. */
   levels?: Partial<Record<number, number>>
+  /** Avatar frames by seat, for boards that draw their own avatars. */
+  frames?: Partial<Record<number, string | null>>
 }
 
 /**

@@ -276,7 +276,10 @@ export function ReactionPicker({
                     </Section>
                   ) : null}
                   {catalog.exclusive.length ? (
-                    <Section slug="exclusive" title={t('reactions.exclusive')}>
+                    <Section
+                      slug="exclusive"
+                      title={`${t('reactions.exclusive')} · ${t('reactions.exclusiveHint')}`}
+                    >
                       {catalog.exclusive.map((e) =>
                         e.level <= myLevel ? (
                           emojiButton(e.emoji, `exclusive-${e.emoji}`)

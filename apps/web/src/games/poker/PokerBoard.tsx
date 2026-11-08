@@ -5,6 +5,7 @@ import { useCountdown } from '@/features/play/useCountdown'
 import { walletKey } from '@/features/wallet/api'
 import { flyFishkas } from '@/features/wallet/flyFishkas'
 import { useMediaQuery } from '@/shared/lib/useMediaQuery'
+import { frameRing } from '@/shared/ui/frames'
 import { LevelBadge } from '@/shared/ui/LevelBadge'
 import { useCardLabel } from '../cards/cards'
 import { CardBack, PlayingCard } from '../cards/PlayingCard'
@@ -47,6 +48,7 @@ export default function PokerBoard({
   players = {},
   bots = {},
   levels = {},
+  frames = {},
 }: BoardProps) {
   const { t, i18n } = useTranslation()
   const labels = useCardLabel()
@@ -246,6 +248,7 @@ export default function PokerBoard({
                         share={acting ? turnShare : null}
                         winner={won}
                         level={levels[seat]}
+                        frame={frames[seat]}
                       />
                       {won && gain != null ? (
                         <span
@@ -527,12 +530,14 @@ function Avatar({
   share,
   winner = false,
   level,
+  frame,
 }: {
   name: string
   acting: boolean
   share: number | null
   winner?: boolean
   level?: number
+  frame?: string | null
 }) {
   const ring =
     acting && share !== null
@@ -541,7 +546,7 @@ function Avatar({
         ? 'var(--color-turn)'
         : winner
           ? 'var(--color-gold)'
-          : 'rgb(214 171 78 / 0.45)'
+          : (frameRing(frame) ?? 'rgb(214 171 78 / 0.45)')
   const face = (
     <span
       className="block rounded-[0.9rem] p-[3px] shadow-lg shadow-black/60 sm:rounded-2xl"

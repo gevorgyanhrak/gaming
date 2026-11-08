@@ -6,6 +6,7 @@ use App\Enums\ParticipantResult;
 use App\Enums\RoomStatus;
 use App\Enums\XpSource;
 use App\Gameplay\Engine\Outcome;
+use App\Models\GameMove;
 use App\Models\GameParticipant;
 use App\Models\GameRoom;
 use App\Models\UserGameStat;
@@ -86,7 +87,9 @@ class GameFinisher
 
     /**
      * XP for a game a person finished (ADR 0018): for taking part, plus a win or a draw. Nothing for an
-     * abandoned game or one shorter than the minimum (no farming by resigning at once). Once per room.
+     * abandoned game, one shorter than the minimum (no farming by resigning at once), or one the player
+     * didn't really play (fewer moves of their own than the minimum: sat at a table, let the clock run
+     * out, left). Once per room.
      */
     private function awardXp(GameParticipant $participant, GameRoom $room, ParticipantResult $result, int $finishedAt): void
     {
@@ -95,6 +98,14 @@ class GameFinisher
         }
         $seconds = $room->started_at === null ? 0 : $finishedAt - $room->started_at->getTimestamp();
         if ($seconds < (int) $this->settings->get('levels.min_game_seconds')) {
+            return;
+        }
+        $played = GameMove::query()
+            ->where('game_room_id', $room->id)
+            ->where('participant_id', $participant->id)
+            ->whereNotIn('type', [GameMove::RESIGN, GameMove::TIMEOUT, GameMove::ABANDON])
+            ->count();
+        if ($played < (int) $this->settings->get('levels.min_game_moves')) {
             return;
         }
 
