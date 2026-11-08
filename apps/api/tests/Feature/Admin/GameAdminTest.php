@@ -1,10 +1,13 @@
 <?php
 
 use App\Filament\Resources\BotProfiles\Pages\CreateBotProfile;
+use App\Filament\Resources\GameCategories\GameCategoryResource;
+use App\Filament\Resources\GameCategories\Pages\CreateGameCategory;
 use App\Filament\Resources\Games\Pages\EditGame;
 use App\Models\AuditLog;
 use App\Models\BotProfile;
 use App\Models\Game;
+use App\Models\GameCategory;
 use App\Models\GameMode;
 use Database\Seeders\BotSeeder;
 use Database\Seeders\ContentPageSeeder;
@@ -29,6 +32,22 @@ it('edits a game in every language and audits the change', function () {
 
     $log = AuditLog::query()->where('action', 'game.updated')->sole();
     expect($log->actor_id)->toBe($admin->id)->and($log->changes)->toHaveKey('bot_fallback_mode');
+});
+
+it('creates a game category and audits it; moderators cannot', function () {
+    signInToAdmin('admin');
+
+    Livewire::test(CreateGameCategory::class)
+        ->fillForm(['slug' => 'dice', 'name' => ['en' => 'Dice games', 'ru' => 'Игры в кости', 'hy' => '']])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $category = GameCategory::query()->where('slug', 'dice')->sole();
+    expect($category->getTranslations('name'))->toBe(['en' => 'Dice games', 'ru' => 'Игры в кости'])
+        ->and(AuditLog::query()->where('action', 'like', '%created')->where('changes', 'like', '%dice%')->exists())->toBeTrue();
+
+    signInToAdmin('moderator');
+    $this->get(GameCategoryResource::getUrl('index'))->assertForbidden();
 });
 
 it('lets admins switch a game to playable only once its engine exists', function () {

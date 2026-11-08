@@ -15,7 +15,7 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 Steps:
 - [ ] 1. Read the home page, carousel and catalog; UI/UX agent writes the design (`docs/design/HOME_REDESIGN.md`): colours and images.
-- [ ] 2. Backend: game categories, admin-managed, in the catalog API.
+- [x] 2. Backend: `game_categories` (admin: Games → Categories, audited), `category` on each game in the catalog API; 389 tests.
 - [ ] 3. Frontend: new home page, carousel, categories; en/ru/hy; tests; live check.
 - [ ] 4. QA, design and PM review → fix; push.
 

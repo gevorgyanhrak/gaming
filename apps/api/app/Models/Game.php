@@ -11,12 +11,15 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Translatable\HasTranslations;
 
 /**
  * @property int $id
  * @property string $slug
+ * @property int|null $game_category_id
+ * @property-read GameCategory|null $category
  * @property string $name
  * @property string $description
  * @property string $rules
@@ -32,7 +35,7 @@ use Spatie\Translatable\HasTranslations;
  * @property int|null $bot_fallback_timeout_seconds
  */
 #[Fillable([
-    'slug', 'name', 'description', 'rules', 'icon_path', 'thumbnail_path',
+    'slug', 'game_category_id', 'name', 'description', 'rules', 'icon_path', 'thumbnail_path',
     'min_players', 'max_players', 'is_enabled', 'is_visible', 'sort_order',
     'bots_enabled', 'bot_fallback_mode', 'bot_fallback_timeout_seconds',
 ])]
@@ -44,6 +47,14 @@ class Game extends Model
 
     /** @var list<string> */
     public array $translatable = ['name', 'description', 'rules'];
+
+    /**
+     * @return BelongsTo<GameCategory, $this>
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(GameCategory::class, 'game_category_id');
+    }
 
     /**
      * @return array<string, string>

@@ -867,6 +867,12 @@ export interface components {
         GameDetailResource: {
             slug: string;
             name: string;
+            /** @description The catalog shelf this game is on. */
+            category: {
+                slug: string;
+                name: string;
+                sort_order: number;
+            } | null;
             description: string;
             icon_url: string | null;
             thumbnail_url: string | null;
@@ -892,6 +898,12 @@ export interface components {
         GameResource: {
             slug: string;
             name: string;
+            /** @description The catalog shelf this game is on. */
+            category: {
+                slug: string;
+                name: string;
+                sort_order: number;
+            } | null;
             description: string;
             icon_url: string | null;
             thumbnail_url: string | null;

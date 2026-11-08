@@ -6,6 +6,7 @@ use App\Enums\BotFallbackMode;
 use App\Filament\Support\Translatable;
 use App\Gameplay\GameRegistry;
 use App\Models\Game;
+use App\Models\GameCategory;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -34,6 +35,11 @@ class GameForm
                     ->columnSpan(1)
                     ->schema([
                         TextInput::make('slug')->disabled(),
+                        Select::make('game_category_id')->label('Category')
+                            ->relationship('category', 'slug')
+                            ->getOptionLabelFromRecordUsing(fn (GameCategory $record) => $record->name)
+                            ->preload()
+                            ->placeholder('No category'),
                         Toggle::make('is_visible')->label('Shown in the catalog'),
                         // A game can only be played once its engine is registered (app/Games/*).
                         Toggle::make('is_enabled')->label('Playable')

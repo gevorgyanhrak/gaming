@@ -30,6 +30,7 @@ export const configFixture: PublicConfig = {
 export function gameFixture(overrides: Partial<GameDetail> = {}): GameDetail {
   return {
     slug: 'chess',
+    category: { slug: 'board', name: 'Board games', sort_order: 10 },
     name: 'Chess',
     description: 'Checkmate the king.',
     icon_url: null,

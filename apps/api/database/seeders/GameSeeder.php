@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Gameplay\GameRegistry;
 use App\Models\Game;
+use App\Models\GameCategory;
 use Illuminate\Database\Seeder;
 
 /**
@@ -22,7 +23,7 @@ class GameSeeder extends Seeder
             // New games start playable only if their engine exists; afterwards admins decide.
             Game::query()->firstOrCreate(
                 ['slug' => $game['slug']],
-                [...$game, 'sort_order' => ($index + 1) * 10, 'is_enabled' => app(GameRegistry::class)->has($game['slug']), 'is_visible' => true],
+                [...$game, 'game_category_id' => GameCategory::query()->where('slug', in_array($game['slug'], ['durak', 'poker'], true) ? 'card' : 'board')->value('id'), 'sort_order' => ($index + 1) * 10, 'is_enabled' => app(GameRegistry::class)->has($game['slug']), 'is_visible' => true],
             );
         }
     }

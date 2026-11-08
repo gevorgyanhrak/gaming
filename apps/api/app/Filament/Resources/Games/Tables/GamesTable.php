@@ -18,6 +18,7 @@ class GamesTable
             ->columns([
                 ImageColumn::make('icon_path')->label('')->disk('public')->square(),
                 TextColumn::make('name')->description(fn ($record) => $record->slug),
+                TextColumn::make('category.name')->label('Category')->placeholder('—'),
                 IconColumn::make('is_visible')->label('Visible')->boolean(),
                 IconColumn::make('is_enabled')->label('Playable')->boolean(),
                 IconColumn::make('bots_enabled')->label('Bots')->boolean(),

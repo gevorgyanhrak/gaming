@@ -20,6 +20,12 @@ class GameResource extends JsonResource
         return [
             'slug' => $this->slug,
             'name' => $this->name,
+            /** @var array{slug: string, name: string, sort_order: int}|null The catalog shelf this game is on. */
+            'category' => $this->category === null ? null : [
+                'slug' => $this->category->slug,
+                'name' => $this->category->name,
+                'sort_order' => $this->category->sort_order,
+            ],
             'description' => $this->description,
             /** @var string|null */
             'icon_url' => $this->publicUrl($this->icon_path),

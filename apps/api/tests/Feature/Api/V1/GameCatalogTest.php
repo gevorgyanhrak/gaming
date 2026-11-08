@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Game;
+use App\Models\GameCategory;
 use Database\Seeders\GameSeeder;
 
 beforeEach(function () {
@@ -17,6 +18,34 @@ it('lists visible games in catalog order', function () {
         ->assertJsonCount(2, 'data')
         ->assertJsonPath('data.0.slug', 'first')
         ->assertJsonPath('data.1.slug', 'second');
+});
+
+it('gives each game its category, translated, or none', function () {
+    $category = GameCategory::query()->where('slug', 'card')->firstOrFail();
+    Game::factory()->create(['slug' => 'first', 'sort_order' => 10, 'game_category_id' => $category->id]);
+    Game::factory()->create(['slug' => 'second', 'sort_order' => 20]);
+
+    $this->getJson('/api/v1/games', ['Accept-Language' => 'ru'])
+        ->assertOk()
+        ->assertJsonPath('data.0.category', ['slug' => 'card', 'name' => 'Карточные игры', 'sort_order' => 20])
+        ->assertJsonPath('data.1.category', null);
+});
+
+it('keeps a deleted category\'s games in the catalog', function () {
+    $category = GameCategory::query()->where('slug', 'board')->firstOrFail();
+    $game = Game::factory()->create(['game_category_id' => $category->id]);
+
+    $category->delete();
+
+    expect($game->fresh()->game_category_id)->toBeNull();
+});
+
+it('seeds the launch games into their categories', function () {
+    $this->seed(GameSeeder::class);
+
+    expect(Game::query()->with('category')->get()->mapWithKeys(fn (Game $g) => [$g->slug => $g->category?->slug])->all())->toEqual([
+        'nardi' => 'board', 'chess' => 'board', 'checkers' => 'board', 'durak' => 'card', 'poker' => 'card',
+    ]);
 });
 
 it('returns catalog fields without rules', function () {

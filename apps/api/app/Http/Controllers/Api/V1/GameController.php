@@ -17,7 +17,7 @@ class GameController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
-        return GameResource::collection(Game::query()->visible()->ordered()->get());
+        return GameResource::collection(Game::query()->visible()->ordered()->with('category')->get());
     }
 
     /**
@@ -27,7 +27,7 @@ class GameController extends Controller
     {
         return new GameDetailResource(
             Game::query()->visible()->where('slug', $slug)
-                ->with(['modes' => fn ($query) => $query->enabled()])
+                ->with(['category', 'modes' => fn ($query) => $query->enabled()])
                 ->firstOrFail(),
         );
     }
