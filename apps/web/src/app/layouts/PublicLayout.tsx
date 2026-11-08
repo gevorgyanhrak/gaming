@@ -10,6 +10,8 @@ import { useGames } from '@/features/catalog/queries'
 import { ActiveGamesBar } from '@/features/play/components/ActiveGamesBar'
 import { FishkaBalance } from '@/features/wallet/components/FishkaBalance'
 import { DailyBonusDialog } from '@/features/wallet/components/DailyBonusDialog'
+import { LevelUpDialog } from '@/features/levels/components/LevelUpDialog'
+import { useLevelSync } from '@/features/levels/hooks'
 import { OutOfFishkasDialog } from '@/features/wallet/components/OutOfFishkasDialog'
 import { useWalletSync } from '@/features/wallet/hooks'
 import { MaintenanceScreen } from '@/features/platform/MaintenanceScreen'
@@ -333,11 +335,16 @@ function SideNav({ home, signedIn }: { home: string; signedIn: boolean }) {
   )
 }
 
-/** Balance updates from the server, the daily bonus and the "out of Fishkas" popup, while signed in. */
+/**
+ * Balance and level updates from the server, the level-up and daily bonus popups and the "out of
+ * Fishkas" popup, while signed in.
+ */
 function WalletSync() {
   useWalletSync()
+  useLevelSync()
   return (
     <>
+      <LevelUpDialog />
       <DailyBonusDialog />
       <OutOfFishkasDialog />
     </>

@@ -3,6 +3,7 @@ import { useCurrentUser } from '@/features/auth/hooks'
 import { GameScene } from '@/features/catalog/components/GameArt'
 import { GameGrid } from '@/features/catalog/components/GameGrid'
 import { DashboardGames } from '@/features/play/components/DashboardGames'
+import { LevelCard } from '@/features/levels/components/LevelCard'
 import { Avatar } from '@/shared/ui/Avatar'
 import { ButtonLink } from '@/shared/ui/Button'
 import { Container } from '@/shared/ui/Container'
@@ -31,7 +32,13 @@ export function DashboardPage() {
         />
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
           <div className="flex items-center gap-4">
-            <Avatar url={user.profile.avatar_url} name={name} size="md" />
+            <Avatar
+              url={user.profile.avatar_url}
+              name={name}
+              size="md"
+              level={user.level}
+              frame={user.looks.frame}
+            />
             <div className="min-w-0">
               <h1 className="text-gold-gradient text-2xl font-extrabold sm:text-3xl">
                 {t('dashboard.welcome', { name })}
@@ -53,6 +60,7 @@ export function DashboardPage() {
             </ButtonLink>
           </div>
         </div>
+        <LevelCard className="relative mt-5 max-w-xl bg-black/25" />
       </section>
 
       <section>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Avatar } from '@/shared/ui/Avatar'
+import { LevelBadge } from '@/shared/ui/LevelBadge'
 import { Button } from '@/shared/ui/Button'
 import { FriendsIcon, LinkIcon, ShareIcon } from '@/shared/ui/icons'
 import type { Room } from '../api'
@@ -83,19 +84,30 @@ export function WaitingTable({
                   animationDelay: `${seat * 90}ms`,
                 }}
               >
-                <span
-                  data-seat-anchor={player ? seat : undefined}
-                  className={`flex size-16 items-center justify-center overflow-hidden rounded-full border-2 sm:size-24 ${
-                    player
-                      ? 'border-gold bg-surface-raised shadow-lg shadow-black/50'
-                      : 'border-gold/40 bg-linear-to-b from-[#5a4038]/90 to-[#2e1f1a]/90 shadow-inner'
-                  }`}
-                >
+                <span className="relative">
+                  <span
+                    data-seat-anchor={player ? seat : undefined}
+                    className={`flex size-16 items-center justify-center overflow-hidden rounded-full border-2 sm:size-24 ${
+                      player
+                        ? 'border-gold bg-surface-raised shadow-lg shadow-black/50'
+                        : 'border-gold/40 bg-linear-to-b from-[#5a4038]/90 to-[#2e1f1a]/90 shadow-inner'
+                    }`}
+                  >
+                    {player ? (
+                      <Avatar
+                        url={player.avatar_url}
+                        name={player.name ?? '?'}
+                        size="md"
+                        frame={player.frame}
+                      />
+                    ) : (
+                      <span className="sr-only">{t('room.emptySeat')}</span>
+                    )}
+                  </span>
+                  {/* The level sits on the seat's rim, outside the round crop. */}
                   {player ? (
-                    <Avatar url={player.avatar_url} name={player.name ?? '?'} size="md" />
-                  ) : (
-                    <span className="sr-only">{t('room.emptySeat')}</span>
-                  )}
+                    <LevelBadge level={player.level} className="absolute -right-1 bottom-0" />
+                  ) : null}
                 </span>
                 {player ? (
                   <span className="max-w-28 truncate rounded-lg border border-gold/30 bg-surface/90 px-3 py-0.5 text-sm font-semibold">

@@ -1,6 +1,8 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
+import { LevelProgress } from '@/features/levels/components/LevelProgress'
+import { useLevel } from '@/features/levels/hooks'
 import { Avatar } from '@/shared/ui/Avatar'
 import type { CurrentUser } from '../api'
 import { useLogout } from '../hooks'
@@ -13,6 +15,7 @@ export function UserMenu({ user }: { user: CurrentUser }) {
   const navigate = useNavigate()
   const logout = useLogout()
   const [open, setOpen] = useState(false)
+  const level = useLevel()
   const ref = useRef<HTMLDivElement>(null)
   const menuId = useId()
   const name = user.profile.display_name ?? user.username
@@ -43,16 +46,31 @@ export function UserMenu({ user }: { user: CurrentUser }) {
         onClick={() => setOpen((value) => !value)}
         className="flex items-center gap-2 rounded-full p-1 pr-3 hover:bg-surface-raised"
       >
-        <Avatar url={user.profile.avatar_url} name={name} size="sm" />
+        <Avatar
+          url={user.profile.avatar_url}
+          name={name}
+          size="sm"
+          level={user.level}
+          frame={user.looks.frame}
+        />
         <span className="hidden max-w-32 truncate text-sm font-medium sm:inline">{name}</span>
       </button>
 
       {open ? (
         <div
           id={menuId}
-          className="absolute right-0 mt-2 w-52 rounded-xl border border-border bg-surface p-1.5 shadow-xl shadow-black/40"
+          className="absolute right-0 mt-2 w-60 rounded-xl border border-border bg-surface p-1.5 shadow-xl shadow-black/40"
         >
           <p className="truncate px-3 py-2 text-xs text-muted">@{user.username}</p>
+          {level.data ? (
+            <Link
+              to="/profile"
+              className="mx-1 mb-1 block rounded-lg bg-black/25 px-2.5 py-2 hover:bg-black/40"
+              onClick={() => setOpen(false)}
+            >
+              <LevelProgress status={level.data} compact />
+            </Link>
+          ) : null}
           <Link to="/dashboard" className={item} onClick={() => setOpen(false)}>
             {t('nav.dashboard')}
           </Link>

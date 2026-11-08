@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
+import { LevelBadge } from '@/shared/ui/LevelBadge'
 import { CloseIcon } from '@/shared/ui/icons'
 import type { ReactionCatalog, ReactionKind } from '../api'
 import { emojiCategoryName, messageCategoryName, messageText } from '../labels'
@@ -17,6 +18,7 @@ export type Recipient = { seat: number; name: string; bot: boolean }
 export function ReactionPicker({
   catalog,
   recipients,
+  myLevel,
   initialTab,
   onSend,
   onClose,
@@ -24,6 +26,8 @@ export function ReactionPicker({
   catalog: ReactionCatalog
   /** The other players at the table. */
   recipients: Recipient[]
+  /** The sender's level: exclusive emojis open at the level shown on them (ADR 0018). */
+  myLevel: number
   initialTab: ReactionKind
   onSend: (kind: ReactionKind, value: string, toSeat: number | null) => void
   onClose: () => void
@@ -80,8 +84,11 @@ export function ReactionPicker({
     ]
   }, [catalog, query])
 
-  const recentKnown = recent.filter((emoji) =>
-    catalog.emoji.some((category) => category.emojis.some((e) => e.emoji === emoji)),
+  const unlocked = catalog.exclusive.filter((e) => e.level <= myLevel).map((e) => e.emoji)
+  const recentKnown = recent.filter(
+    (emoji) =>
+      unlocked.includes(emoji) ||
+      catalog.emoji.some((category) => category.emojis.some((e) => e.emoji === emoji)),
   )
 
   // A word for screen readers: the first (English) search word of the emoji.
@@ -214,6 +221,21 @@ export function ReactionPicker({
                 aria-label={t('reactions.categories')}
                 className="flex shrink-0 gap-0.5 overflow-x-auto px-3 pt-2"
               >
+                {catalog.exclusive.length ? (
+                  <button
+                    type="button"
+                    title={t('reactions.exclusive')}
+                    aria-label={t('reactions.exclusive')}
+                    onClick={() =>
+                      grid.current
+                        ?.querySelector('[data-category="exclusive"]')
+                        ?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+                    }
+                    className="flex size-11 shrink-0 items-center justify-center rounded-lg text-xl hover:bg-white/10"
+                  >
+                    {catalog.exclusive[0]?.emoji}
+                  </button>
+                ) : null}
                 {catalog.emoji.map((category) => (
                   <button
                     key={category.slug}
@@ -251,6 +273,36 @@ export function ReactionPicker({
                   {recentKnown.length ? (
                     <Section title={t('reactions.recent')}>
                       {recentKnown.map((emoji) => emojiButton(emoji, `recent-${emoji}`))}
+                    </Section>
+                  ) : null}
+                  {catalog.exclusive.length ? (
+                    <Section slug="exclusive" title={t('reactions.exclusive')}>
+                      {catalog.exclusive.map((e) =>
+                        e.level <= myLevel ? (
+                          emojiButton(e.emoji, `exclusive-${e.emoji}`)
+                        ) : (
+                          // Locked: shown with the level that opens it; the server refuses it anyway.
+                          <span
+                            key={`exclusive-${e.emoji}`}
+                            role="img"
+                            aria-label={t('reactions.lockedEmoji', {
+                              emoji: e.emoji,
+                              level: e.level,
+                            })}
+                            title={t('reactions.lockedEmoji', { emoji: e.emoji, level: e.level })}
+                            className="relative flex size-11 items-center justify-center rounded-xl text-[1.7rem] leading-none"
+                          >
+                            <span aria-hidden="true" className="opacity-35 grayscale">
+                              {e.emoji}
+                            </span>
+                            <LevelBadge
+                              level={e.level}
+                              size="sm"
+                              className="absolute right-0 bottom-0.5"
+                            />
+                          </span>
+                        ),
+                      )}
                     </Section>
                   ) : null}
                   {catalog.emoji.map((category) => (

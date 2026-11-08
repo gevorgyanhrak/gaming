@@ -26,9 +26,10 @@ Steps:
       resources); admin config; tests (all 13 brief checks that are backend) — tests/Feature/Levels/LevelsTest.php (16),
       tests/Unit/Platform/LevelCurveTest.php; full suite 379 green. Existing players start at level 1 (no back-fill:
       it would pay every past level's Fishkas at once).
-- [ ] 3. Frontend: LevelBadge everywhere (profile, rooms, poker seats, player lists, leaderboards, chat),
+- [x] 3. Frontend: LevelBadge everywhere (profile, rooms, poker seats, player lists, leaderboards, chat),
       progress bar (profile + header/menu), level-up popup with confetti and collect, milestone celebrations;
-      en/ru/hy; tests; live check.
+      en/ru/hy; tests; live check (30/30 in headless Chrome: offline popup, collect once, live popup over Reverb, none
+      over a game, badges and bot levels in all five games, phone widths). Web 156 and API 379 tests green.
 - [ ] 4. QA agent → fix; UI/UX review → fix; PM validation → fix; push; report (XP formula, rules, rewards,
       DB changes, files).
 
@@ -36,12 +37,22 @@ Steps:
 
 **Owner rule (2026-11-02): strict sequential order.** Finish one task completely (implemented, tested,
 verified, pushed) before starting the next; never two at once; nothing partial. Order = the order the
-owner gave them: TASK-043 (done) → 044 (done) → 045 (done) → 046 (done) → 047 (Now) → 048. Older items below those come after.
+owner gave them: TASK-043 (done) → 044 (done) → 045 (done) → 046 (done) → 047 (Now) → 056 → 057 → 058 → 048 (owner set 056, 057 after 047 on 2026-11-08). Older items below those come after.
 
 - **TASK-048 · Complete platform redesign** — brief `docs/product/briefs/TASK-048-platform-redesign.md`
   (owner, 2026-11-02, verbatim). Phase 1 (PM market research → `docs/product/research/TASK-048-market-research.md`)
   not started (a parallel start was stopped on the owner's sequencing rule; nothing was written). Then UI/UX agent: design system and
   redesign of every page and game; QA. Owner rule applies: no paid VIP, no value prizes (flagged as question).
+- **TASK-056 · Home page redesign and game categories** — brief `docs/product/briefs/TASK-056-home-page-redesign.md`
+  (owner, 2026-11-08, verbatim). New home page, games carousel, games grouped by category so more can be added,
+  UI/UX agent changes the home page's background colours and images. Not started. Overlaps TASK-048 (owner to
+  say whether it goes inside 048 or ahead of it).
+- **TASK-057 · New look for the Nardi board** — brief `docs/product/briefs/TASK-057-nardi-board-look.md` (owner,
+  2026-11-08, verbatim, with a reference screenshot). An original carved-wood board in that spirit, our own art,
+  not a copy of the reference site. Not started.
+- **TASK-058 · Poker switches to its mobile layout at 900 px** — owner, 2026-11-08, verbatim: "and poker to mobile
+  screen should be swithch whrn screen </ 900px". The phone layout of the poker table applies at widths of 900 px
+  and below (today: `(max-width: 639px)` in PokerBoard). Not started.
 
 Later (older backlog):
 - TASK-039 · Fishka follow-ups from PM: QA re-run of the 5 failed checks, frozen-clock midnight test,

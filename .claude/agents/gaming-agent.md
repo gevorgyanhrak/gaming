@@ -128,6 +128,10 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   exclusive emojis are refused below their level in `RoomReactions`). Bots: `bot_profiles.level`, no XP.
   API: `GET /me/level`, `POST /me/level-ups/claim`, `level` (+`looks`/`frame`) in me, public profile and room
   participants; broadcast `level.updated` on `user.{id}`. Lock order: user row → wallet.
+  Web: `features/levels` (`useLevel`, `useLevelSync`, `LevelUpDialog`, `LevelProgress`, `LevelCard`), `shared/ui/LevelBadge`,
+  `Avatar` takes `level`/`frame`. The level-up popup goes before the daily bonus (which waits on `useLevelUpOpen`) and
+  never over a game (`features/play/gameInProgress`). Live checks that reload pages fast hit `throttle:account`
+  (60/min per user; `/me` 429 leaves the app on skeletons): pace them.
 - Nardi variants (TASK-046): one game `nardi`, two modes — `long` (Long nardi, listed first) and `classic`
   (Short nardi = backgammon: bar, hitting). The mode's `options.variant` goes into the state; states without
   it are Short. `NardiEngine::rules($state)` picks `NardiRules` (Short, uses `static::`) or `LongNardiRules`

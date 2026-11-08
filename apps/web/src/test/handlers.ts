@@ -5,6 +5,7 @@ import type { Room, RoomState } from '@/features/play/api'
 import type { GameDetail, GameSummary } from '@/features/catalog/queries'
 import type { PublicConfig } from '@/features/platform/usePublicConfig'
 import type { DailyBonus } from '@/features/wallet/dailyBonus'
+import type { LevelStatus } from '@/features/levels/api'
 
 // Test fixtures for MSW only; never imported by application code.
 
@@ -121,6 +122,23 @@ export const reactionCatalogFixture = {
     { slug: 'greetings', keys: ['hello', 'good_luck'] },
     { slug: 'praise', keys: ['nice_move', 'good_game', 'gg'] },
   ],
+  exclusive: [{ emoji: '🔱', level: 10 }],
+}
+
+/** The player's level (GET /me/level): level 1, nothing waiting unless a test says so. */
+export function levelFixture(overrides: Partial<LevelStatus> = {}): LevelStatus {
+  return {
+    level: 1,
+    xp: 30,
+    level_xp: 0,
+    next_level_xp: 80,
+    max_level: 100,
+    frame: null,
+    badge: null,
+    next_reward: { level: 2, fishkas: 350, items: [], is_milestone: false },
+    pending: [],
+    ...overrides,
+  }
 }
 
 export const handlers = [
@@ -137,6 +155,7 @@ export const handlers = [
   http.get('*/api/v1/config', () => HttpResponse.json({ data: configFixture })),
   http.get('*/api/v1/reactions', () => HttpResponse.json({ data: reactionCatalogFixture })),
   http.get('*/api/v1/me/daily-bonus', () => HttpResponse.json({ data: dailyBonusFixture() })),
+  http.get('*/api/v1/me/level', () => HttpResponse.json({ data: levelFixture() })),
   http.get('*/api/v1/rooms/:id/reactions', () => HttpResponse.json({ data: [] })),
   http.get('*/api/v1/games', () => HttpResponse.json({ data: [summaryOf(gameFixture())] })),
 ]

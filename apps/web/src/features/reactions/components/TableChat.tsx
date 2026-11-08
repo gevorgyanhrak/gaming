@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronIcon } from '@/shared/ui/icons'
+import { LevelBadge } from '@/shared/ui/LevelBadge'
 import type { Reaction, ReactionKind } from '../api'
 import { messageText } from '../labels'
 import { setMuted, useReactionsMuted } from '../prefs'
@@ -17,6 +18,7 @@ export function TableChat({
   log,
   mySeat,
   names,
+  levels = {},
   quickTo,
   error,
   onOpen,
@@ -25,6 +27,8 @@ export function TableChat({
   log: Reaction[]
   mySeat: number | null
   names: Partial<Record<number, string>>
+  /** Levels by seat: the sender's badge in front of each line. */
+  levels?: Partial<Record<number, number>>
   /** Who the one-tap messages are for (the opponent, or everyone at a bigger table). */
   quickTo: number | null
   error: string | null
@@ -101,7 +105,14 @@ export function TableChat({
               </li>
             ) : (
               log.map((r) => (
-                <Line key={r.id} reaction={r} who={who} time={time} mine={r.from_seat === mySeat} />
+                <Line
+                  key={r.id}
+                  reaction={r}
+                  who={who}
+                  level={levels[r.from_seat]}
+                  time={time}
+                  mine={r.from_seat === mySeat}
+                />
               ))
             )}
           </ol>
@@ -161,11 +172,13 @@ export function TableChat({
 function Line({
   reaction: r,
   who,
+  level,
   time,
   mine,
 }: {
   reaction: Reaction
   who: (seat: number) => string
+  level: number | undefined
   time: Intl.DateTimeFormat
   mine: boolean
 }) {
@@ -176,6 +189,9 @@ function Line({
         {time.format(new Date(r.sent_at))}
       </time>
       <span className="min-w-0 truncate">
+        {level !== undefined ? (
+          <LevelBadge level={level} size="sm" className="mr-1 align-[1px]" />
+        ) : null}
         <span className={`font-bold ${mine ? 'text-accent-text' : 'text-gold-light'}`}>
           {who(r.from_seat)}
         </span>

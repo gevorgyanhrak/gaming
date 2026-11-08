@@ -6,6 +6,7 @@ import { useCurrentUser } from '@/features/auth/hooks'
 import { fetchMyGames, fetchMyStats, myGamesKey, myStatsKey } from '@/features/play/api'
 import { GameRecord } from '@/features/play/components/GameRecord'
 import { RoomSummary } from '@/features/play/components/RoomSummary'
+import { LevelCard } from '@/features/levels/components/LevelCard'
 import { ButtonLink } from '@/shared/ui/Button'
 import { Container } from '@/shared/ui/Container'
 import { Skeleton } from '@/shared/ui/Skeleton'
@@ -48,6 +49,7 @@ export function ProfilePage() {
           </ButtonLink>
         }
       />
+      <LevelCard />
 
       {noGames ? (
         <EmptyState title={t('profile.noGames')}>

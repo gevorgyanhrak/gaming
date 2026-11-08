@@ -1,3 +1,4 @@
+import { LevelBadge } from '@/shared/ui/LevelBadge'
 import { CardBack } from '../cards/PlayingCard'
 
 /** A player's part in the bout, shown as a speech bubble: text, background and text colour. */
@@ -17,6 +18,7 @@ interface SeatProps {
   share: number | null
   /** "Bot" when a bot plays this seat. */
   bot: string | null
+  level: number | undefined
   label: string
 }
 
@@ -43,7 +45,17 @@ export function Bubble({ role, small = false }: { role: Role; small?: boolean })
  * Phones and tablets: a narrow column per player in one row across the top of the table, with the
  * bubble, avatar, name and a few card backs with the count.
  */
-export function CompactSeat({ seat, name, count, role, acting, share, bot, label }: SeatProps) {
+export function CompactSeat({
+  seat,
+  name,
+  count,
+  role,
+  acting,
+  share,
+  bot,
+  level,
+  label,
+}: SeatProps) {
   return (
     <li
       data-seat={seat}
@@ -58,7 +70,7 @@ export function CompactSeat({ seat, name, count, role, acting, share, bot, label
         {role ? <Bubble role={role} small /> : null}
       </span>
       <span className="relative mt-1" data-seat-anchor={seat}>
-        <Avatar name={name} acting={acting} share={share} size="sm" />
+        <Avatar name={name} acting={acting} share={share} size="sm" level={level} />
         {bot ? (
           <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 rounded-full bg-black/75 px-1 text-[0.55rem] leading-tight font-semibold tracking-wide text-white/85 uppercase">
             {bot}
@@ -84,7 +96,17 @@ export function CompactSeat({ seat, name, count, role, acting, share, bot, label
 }
 
 /** Desktop: a panel with the avatar on its corner, the name, a fan of card backs and the count. */
-export function PanelSeat({ seat, name, count, role, acting, share, bot, label }: SeatProps) {
+export function PanelSeat({
+  seat,
+  name,
+  count,
+  role,
+  acting,
+  share,
+  bot,
+  level,
+  label,
+}: SeatProps) {
   return (
     <div
       data-seat={seat}
@@ -98,7 +120,7 @@ export function PanelSeat({ seat, name, count, role, acting, share, bot, label }
       }`}
     >
       <span className="absolute -top-6 -left-3" data-seat-anchor={seat}>
-        <Avatar name={name} acting={acting} share={share} size="md" />
+        <Avatar name={name} acting={acting} share={share} size="md" level={level} />
       </span>
       {role ? (
         <span className="absolute -top-8 left-11">
@@ -133,11 +155,13 @@ export function Avatar({
   acting,
   share,
   size,
+  level,
 }: {
   name: string
   acting: boolean
   share: number | null
   size: 'sm' | 'md'
+  level?: number
 }) {
   const ring =
     acting && share !== null
@@ -145,7 +169,7 @@ export function Avatar({
       : acting
         ? 'var(--color-turn)'
         : 'rgb(255 255 255 / 0.25)'
-  return (
+  const face = (
     <span
       className="block rounded-full p-[3px] shadow-md"
       style={{ background: ring }}
@@ -158,6 +182,13 @@ export function Avatar({
       >
         {name.slice(0, 1)}
       </span>
+    </span>
+  )
+  if (level === undefined) return face
+  return (
+    <span className="relative block">
+      {face}
+      <LevelBadge level={level} size="sm" className="absolute -right-1.5 -bottom-1" />
     </span>
   )
 }

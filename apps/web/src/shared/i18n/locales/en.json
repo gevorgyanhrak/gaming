@@ -683,7 +683,9 @@
       "title": "Table chat",
       "empty": "Say hello with an emoji or a quick message.",
       "mute": "Mute animations"
-    }
+    },
+    "exclusive": "Exclusive",
+    "lockedEmoji": "{{emoji}} opens at level {{level}}"
   },
   "daily": {
     "title": "Daily bonus",
@@ -704,5 +706,34 @@
     "doubleDay": "Double bonus",
     "today": "Today",
     "upcoming": "Upcoming"
+  },
+  "level": {
+    "badge": "Level {{level}}",
+    "title": "Level {{level}}",
+    "xpOf": "{{xp}} / {{total}} XP",
+    "toNext": "{{xp}} XP until level {{level}}",
+    "progressLabel": "Progress to level {{level}}",
+    "top": "Top level",
+    "levelUp": "Level up!",
+    "milestone": "Milestone",
+    "reached": "You reached level {{level}}!",
+    "reachedMany": "From level {{from}} to {{to}}!",
+    "rewards": "Your rewards",
+    "fishkas": "Fishkas",
+    "collect": "Collect",
+    "collecting": "Collecting…",
+    "later": "Later",
+    "failed": "Couldn't collect the reward. Please try again.",
+    "nextReward": "At level {{level}}",
+    "card": "Your level",
+    "items": {
+      "frameGold": "Gold avatar frame",
+      "frameLegend": "Legend avatar frame",
+      "badgeRising": "Rising star badge",
+      "badgePremium": "Premium badge",
+      "badgeChampion": "Champion badge",
+      "packRoyal": "Royal emoji pack",
+      "packLegend": "Legend emoji pack"
+    }
   }
 }

@@ -5,6 +5,7 @@ import { useCountdown } from '@/features/play/useCountdown'
 import { walletKey } from '@/features/wallet/api'
 import { flyFishkas } from '@/features/wallet/flyFishkas'
 import { useMediaQuery } from '@/shared/lib/useMediaQuery'
+import { LevelBadge } from '@/shared/ui/LevelBadge'
 import { useCardLabel } from '../cards/cards'
 import { CardBack, PlayingCard } from '../cards/PlayingCard'
 import type { BoardProps } from '../registry'
@@ -45,6 +46,7 @@ export default function PokerBoard({
   pending,
   players = {},
   bots = {},
+  levels = {},
 }: BoardProps) {
   const { t, i18n } = useTranslation()
   const labels = useCardLabel()
@@ -243,6 +245,7 @@ export default function PokerBoard({
                         acting={acting}
                         share={acting ? turnShare : null}
                         winner={won}
+                        level={levels[seat]}
                       />
                       {won && gain != null ? (
                         <span
@@ -523,11 +526,13 @@ function Avatar({
   acting,
   share,
   winner = false,
+  level,
 }: {
   name: string
   acting: boolean
   share: number | null
   winner?: boolean
+  level?: number
 }) {
   const ring =
     acting && share !== null
@@ -537,7 +542,7 @@ function Avatar({
         : winner
           ? 'var(--color-gold)'
           : 'rgb(214 171 78 / 0.45)'
-  return (
+  const face = (
     <span
       className="block rounded-[0.9rem] p-[3px] shadow-lg shadow-black/60 sm:rounded-2xl"
       style={{ background: ring }}
@@ -546,6 +551,14 @@ function Avatar({
       <span className="flex size-12 items-center justify-center rounded-[0.7rem] bg-linear-to-b from-[#4a342b] to-[#1c120c] text-xl font-bold uppercase shadow-[inset_0_0_0_1px_rgb(214_171_78/0.35)] sm:size-16 sm:rounded-xl sm:text-2xl">
         {name.slice(0, 1)}
       </span>
+    </span>
+  )
+  if (level === undefined) return face
+  return (
+    <span className="relative block">
+      {face}
+      {/* Top left: the nameplate covers the bottom of the frame, the dealer button its top right. */}
+      <LevelBadge level={level} size="md" className="absolute -top-1.5 -left-2 z-10" />
     </span>
   )
 }

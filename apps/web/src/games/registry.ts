@@ -14,6 +14,8 @@ export interface BoardProps {
   players?: Partial<Record<number, string>>
   /** Seats played by bots, for boards that show the players. */
   bots?: Partial<Record<number, boolean>>
+  /** Levels by seat, for boards that show the players' avatars. */
+  levels?: Partial<Record<number, number>>
 }
 
 /**

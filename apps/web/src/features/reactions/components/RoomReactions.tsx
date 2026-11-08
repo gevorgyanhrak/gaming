@@ -61,6 +61,7 @@ export function RoomReactions({ room, mySeat }: { room: Room; mySeat: number | n
         log={log}
         mySeat={mySeat}
         names={names}
+        levels={Object.fromEntries(room.participants.map((p) => [p.seat, p.level]))}
         quickTo={quickTo}
         error={error}
         onOpen={setPicker}
@@ -77,6 +78,7 @@ export function RoomReactions({ room, mySeat }: { room: Room; mySeat: number | n
         <ReactionPicker
           catalog={catalog.data}
           recipients={recipients}
+          myLevel={room.participants.find((p) => p.seat === mySeat)?.level ?? 1}
           initialTab={picker}
           onSend={deliver}
           onClose={closePicker}

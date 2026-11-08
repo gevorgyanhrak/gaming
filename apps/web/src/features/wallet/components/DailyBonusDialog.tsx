@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router'
 import { useCurrentUser } from '@/features/auth/hooks'
+import { useLevelUpOpen } from '@/features/levels/popup'
 import { Button } from '@/shared/ui/Button'
 import { walletKey } from '../api'
 import {
@@ -28,6 +29,7 @@ export function DailyBonusDialog() {
   const bonus = useDailyBonus()
   const { data: user } = useCurrentUser()
   const open = useDailyBonusOpen()
+  const levelUp = useLevelUpOpen()
   const { pathname } = useLocation()
   const waiting = bonus.data && !bonus.data.claimed
 
@@ -35,7 +37,10 @@ export function DailyBonusDialog() {
     if (waiting && user && !pathname.startsWith('/rooms/')) offerDailyBonus(user.id)
   }, [waiting, user, pathname])
 
-  return open && bonus.data ? createPortal(<Dialog bonus={bonus.data} />, document.body) : null
+  // A level-up popup goes first; this one waits for it.
+  return open && bonus.data && !levelUp
+    ? createPortal(<Dialog bonus={bonus.data} />, document.body)
+    : null
 }
 
 function Dialog({ bonus }: { bonus: DailyBonus }) {

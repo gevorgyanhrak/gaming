@@ -262,8 +262,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Collect every pending level-up's reward: 201 with `collected` (the Fishkas added) and the levels
-         *     collected; a repeat collects nothing (200, `collected` 0)
+         * Collect every pending level-up's reward: 201 with `collected` (the Fishkas added), the levels
+         *     collected and the new status; a repeat collects nothing (200, `collected` 0)
          */
         post: operations["v1.me.level-ups.claim"];
         delete?: never;
@@ -1726,7 +1726,89 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": string;
+                    "application/json": {
+                        data: {
+                            /** @description The Fishkas this request added (0 for a repeat). */
+                            collected: number;
+                            /** @description The levels whose rewards this request collected. */
+                            claimed: number[];
+                            status: {
+                                level: number;
+                                /** @description Total XP earned. */
+                                xp: number;
+                                /** @description Total XP where the current level began. */
+                                level_xp: number;
+                                /** @description Total XP where the next level begins; null at the top level. */
+                                next_level_xp: number | null;
+                                max_level: number;
+                                frame: string | null;
+                                badge: string | null;
+                                next_reward: {
+                                    level: number;
+                                    fishkas: number;
+                                    items: {
+                                        kind: string;
+                                        key: string;
+                                    }[];
+                                    is_milestone: boolean;
+                                } | null;
+                                pending: {
+                                    level: number;
+                                    fishkas: number;
+                                    items: {
+                                        kind: string;
+                                        key: string;
+                                    }[];
+                                    is_milestone: boolean;
+                                }[];
+                            };
+                        };
+                    };
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            /** @description The Fishkas this request added (0 for a repeat). */
+                            collected: number;
+                            /** @description The levels whose rewards this request collected. */
+                            claimed: number[];
+                            status: {
+                                level: number;
+                                /** @description Total XP earned. */
+                                xp: number;
+                                /** @description Total XP where the current level began. */
+                                level_xp: number;
+                                /** @description Total XP where the next level begins; null at the top level. */
+                                next_level_xp: number | null;
+                                max_level: number;
+                                frame: string | null;
+                                badge: string | null;
+                                next_reward: {
+                                    level: number;
+                                    fishkas: number;
+                                    items: {
+                                        kind: string;
+                                        key: string;
+                                    }[];
+                                    is_milestone: boolean;
+                                } | null;
+                                pending: {
+                                    level: number;
+                                    fishkas: number;
+                                    items: {
+                                        kind: string;
+                                        key: string;
+                                    }[];
+                                    is_milestone: boolean;
+                                }[];
+                            };
+                        };
+                    };
                 };
             };
             401: components["responses"]["AuthenticationException"];

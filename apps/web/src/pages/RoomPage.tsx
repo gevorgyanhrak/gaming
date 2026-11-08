@@ -11,6 +11,7 @@ import { RoomReactions } from '@/features/reactions/components/RoomReactions'
 import { GroupBadge } from '@/features/play/components/GroupBadge'
 import { PlayerList } from '@/features/play/components/PlayerList'
 import { WaitingTable } from '@/features/play/components/WaitingTable'
+import { useMarkGameInProgress } from '@/features/play/gameInProgress'
 import { waitingCaption } from '@/features/play/turnCaption'
 import { useCountdown } from '@/features/play/useCountdown'
 import { useGameSounds } from '@/features/play/useGameSounds'
@@ -33,7 +34,9 @@ export function RoomPage() {
   const [confirmResign, setConfirmResign] = useState(false)
   const secondsLeft = useCountdown(state.data?.deadline, state.data?.server_time)
   // Report presence while playing: leaving the page for too long loses the game.
-  usePresence(id, room.data?.status === 'active' && state.data?.seat != null && !state.data?.result)
+  const playing = room.data?.status === 'active' && state.data?.seat != null && !state.data?.result
+  usePresence(id, playing)
+  useMarkGameInProgress(playing)
   const mySeat = state.data?.seat
   const stillPlaying =
     mySeat != null && room.data?.participants.find((p) => p.seat === mySeat)?.result == null
@@ -210,6 +213,7 @@ export function RoomPage() {
               pending={act.isPending}
               players={playerNames}
               bots={Object.fromEntries(data.participants.map((p) => [p.seat, p.is_bot]))}
+              levels={Object.fromEntries(data.participants.map((p) => [p.seat, p.level]))}
             />
           </Suspense>
         ) : (

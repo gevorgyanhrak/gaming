@@ -56,6 +56,21 @@
     }
   }
 
+  /* The new level's badge in the level-up popup. */
+  @keyframes level-pop {
+    0% {
+      opacity: 0;
+      transform: scale(0.3) rotate(-12deg);
+    }
+    70% {
+      opacity: 1;
+      transform: scale(1.25) rotate(4deg);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
   @keyframes rise {
     from {
       opacity: 0;

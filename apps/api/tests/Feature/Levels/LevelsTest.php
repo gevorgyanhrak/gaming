@@ -130,7 +130,7 @@ it('handles several level-ups at once, one reward each, milestones included', fu
 
     $claim = $this->actingAs($user)->postJson('/api/v1/me/level-ups/claim')->assertCreated()->json('data');
     $sum = 350 + 400 + 450 + 2500 + 550;
-    expect($claim['collected'])->toBe($sum)->and($claim['claimed'])->toBe([2, 3, 4, 5, 6])->and($claim['pending'])->toBe([])
+    expect($claim['collected'])->toBe($sum)->and($claim['claimed'])->toBe([2, 3, 4, 5, 6])->and($claim['status']['pending'])->toBe([])
         ->and(app(FishkaWallets::class)->wallet($user)->fresh()->balance)->toBe($before + $sum)
         ->and(FishkaTransaction::query()->where('user_id', $user->id)->where('type', Type::LevelReward)->count())->toBe(5);
 });

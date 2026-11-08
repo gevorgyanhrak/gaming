@@ -2,6 +2,7 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll, vi } from 'vitest'
 import i18n from '@/shared/i18n'
+import { resetLevelUp } from '@/features/levels/popup'
 import { resetDailyBonus } from '@/features/wallet/dailyBonus'
 import { resetChannels } from './realtime'
 import { server } from './server'
@@ -24,6 +25,7 @@ afterEach(async () => {
   server.resetHandlers()
   resetChannels()
   resetDailyBonus()
+  resetLevelUp()
   await i18n.changeLanguage('en')
 })
 
