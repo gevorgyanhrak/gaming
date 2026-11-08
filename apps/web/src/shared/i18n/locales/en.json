@@ -353,6 +353,7 @@
     "dice": "Dice",
     "diceLeft": "{{count}} dice left to play",
     "pickChecker": "Pick a checker to move.",
+    "pickBar": "Enter your checker from the bar.",
     "pickTarget": "Pick where it goes.",
     "point_one": "Point {{point}}: {{count}} checker, {{owner}}",
     "point_other": "Point {{point}}: {{count}} checkers, {{owner}}",

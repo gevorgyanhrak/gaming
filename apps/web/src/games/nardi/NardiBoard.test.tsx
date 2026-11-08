@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { roomStateFixture } from '@/test/handlers'
@@ -74,6 +74,55 @@ describe('NardiBoard', () => {
     )
 
     expect(screen.getByText('42')).toBeInTheDocument()
+  })
+
+  it('dims the die that was played, whichever it was', () => {
+    render(
+      <NardiBoard
+        state={{
+          ...state(0, []),
+          view: { ...state(0, []).view, rolled: [3, 5], dice: [3] },
+        }}
+        onAction={vi.fn()}
+        pending={false}
+      />,
+    )
+
+    const dice = screen.getByLabelText('Dice')
+    expect(within(dice).getByText('5').parentElement).toHaveClass('opacity-30')
+    expect(within(dice).getByText('3').parentElement).not.toHaveClass('opacity-30')
+  })
+
+  it('says to enter from the bar when a checker has to', () => {
+    render(
+      <NardiBoard
+        state={state(0, [{ type: 'move', from: 'bar', to: 20, die: 5 }])}
+        onAction={vi.fn()}
+        pending={false}
+      />,
+    )
+
+    expect(screen.getByText('Enter your checker from the bar.')).toBeInTheDocument()
+  })
+
+  it('draws the timer as a share of the whole turn', () => {
+    const now = Date.now()
+    const { container } = render(
+      <NardiBoard
+        state={{
+          ...state(0, []),
+          turn_seconds: 60,
+          server_time: new Date(now).toISOString(),
+          deadline: new Date(now + 30_000).toISOString(),
+        }}
+        onAction={vi.fn()}
+        pending={false}
+      />,
+    )
+
+    const ring = container.querySelector('circle[stroke-dasharray]')
+    const whole = Number(ring?.getAttribute('stroke-dasharray'))
+    expect(Number(ring?.getAttribute('stroke-dashoffset'))).toBeCloseTo(whole / 2, 0)
   })
 
   it('bears off through the off tray', async () => {

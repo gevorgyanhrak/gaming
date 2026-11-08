@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { waitingCaption } from '@/features/play/turnCaption'
 import { useCountdown } from '@/features/play/useCountdown'
@@ -37,10 +37,7 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
   const steps = state.legal_actions as unknown as Step[]
   const [selected, setSelected] = useState<number | 'bar' | null>(null)
   const secondsLeft = useCountdown(state.deadline, state.server_time)
-  const [timer, setTimer] = useState({ deadline: state.deadline, total: secondsLeft })
-  if (timer.deadline !== state.deadline || (timer.total === null && secondsLeft !== null)) {
-    setTimer({ deadline: state.deadline, total: secondsLeft })
-  }
+  const board = useRef<HTMLDivElement>(null)
 
   const sources = new Set(steps.map((s) => s.from))
   const targets = steps.filter((s) => s.from === selected)
@@ -60,6 +57,8 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
     if (!step) return
     setSelected(null)
     onAction(step)
+    // The target is about to be disabled: keep the keyboard on the board, not back at the page's top.
+    board.current?.focus({ preventScroll: true })
   }
 
   const clickPoint = (p: number) => {
@@ -103,7 +102,7 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
           count: n,
           owner: who === null ? t('nardi.empty') : who === me ? t('nardi.mine') : t('nardi.theirs'),
         })}
-        className={`relative flex h-40 min-w-0 flex-1 flex-col px-px sm:h-48 sm:px-0.5 lg:h-52 ${
+        className={`relative flex h-[var(--nardi-h)] min-w-0 flex-1 flex-col px-px sm:px-0.5 ${
           isTarget
             ? 'rounded-md bg-accent/30 shadow-[inset_0_0_0_2px_var(--color-accent-text),0_0_12px_var(--color-accent)]'
             : ''
@@ -124,10 +123,15 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
             }}
           />
           {Array.from({ length: shown }, (_, i) => (
-            <Stone key={i} mine={who === me} ready={isSource && i === shown - 1} />
+            <Stone
+              key={i}
+              mine={who === me}
+              // The outermost stone: the end of the stack that reaches into the board.
+              ready={isSource && i === (row === 'top' ? shown - 1 : 0)}
+            />
           ))}
           {n > 5 ? (
-            <span className="relative rounded-full bg-black/70 px-1 text-[0.65rem] leading-tight font-bold text-gold-light">
+            <span className="relative z-10 -mt-3 rounded-full bg-black/80 px-0.5 text-[0.6rem] leading-tight font-bold text-gold-light sm:px-1 sm:text-[0.65rem]">
               +{n - 5}
             </span>
           ) : null}
@@ -141,7 +145,25 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
   const usedDice = view.rolled.length - Math.min(view.rolled.length, view.dice.length)
 
   const turnShare =
-    secondsLeft !== null && timer.total ? Math.min(1, secondsLeft / timer.total) : null
+    secondsLeft !== null && state.turn_seconds
+      ? Math.min(1, secondsLeft / state.turn_seconds)
+      : null
+  const barFirst = sources.has('bar')
+
+  // The dice as rolled (doubles play four); the ones still in the server's list stay lit.
+  const shownDice =
+    view.rolled[0] === view.rolled[1]
+      ? [view.rolled[0], view.rolled[0], view.rolled[0], view.rolled[0]]
+      : view.rolled
+  const left: number[] = [...view.dice]
+  const spent = shownDice.map(() => true)
+  for (let i = shownDice.length - 1; i >= 0; i--) {
+    const at = left.indexOf(shownDice[i] as number)
+    if (at >= 0) {
+      left.splice(at, 1)
+      spent[i] = false
+    }
+  }
 
   const halfOf = (from: number, to: number) => (
     <div className="nardi-field relative flex min-w-0 flex-1 flex-col justify-between gap-2 rounded-lg p-0.5 sm:p-1">
@@ -155,11 +177,8 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2" aria-label={t('nardi.dice')}>
-          {(view.rolled[0] === view.rolled[1]
-            ? [view.rolled[0], view.rolled[0], view.rolled[0], view.rolled[0]]
-            : view.rolled
-          ).map((die, i, all) => (
-            <Die key={i} value={die} spent={i < all.length - view.dice.length} />
+          {shownDice.map((die, i) => (
+            <Die key={i} value={die} spent={spent[i] ?? false} />
           ))}
           <span className="sr-only">
             {t('nardi.diceLeft', { count: view.dice.length, used: usedDice })}
@@ -178,15 +197,21 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
         ) : null}
         <p className="text-sm text-muted">
           {myTurn
-            ? selected === null
-              ? t('nardi.pickChecker')
-              : t('nardi.pickTarget')
+            ? selected !== null
+              ? t('nardi.pickTarget')
+              : barFirst
+                ? t('nardi.pickBar')
+                : t('nardi.pickChecker')
             : (waitingCaption(state, players, t) ?? '')}
         </p>
       </div>
 
       <div className="overflow-x-auto">
-        <div className="nardi-case flex flex-wrap gap-1 rounded-2xl p-1.5 sm:min-w-[36rem] sm:flex-nowrap sm:gap-2 sm:p-3">
+        <div
+          ref={board}
+          tabIndex={-1}
+          className="nardi-case flex flex-wrap gap-1 rounded-2xl p-1.5 outline-none sm:min-w-[36rem] sm:flex-nowrap sm:gap-2 sm:p-3"
+        >
           {halfOf(0, 6)}
 
           {/* The spine. Short nardi's hit checkers wait here; Long nardi hits nothing. */}
@@ -201,7 +226,7 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
                   disabled={pending || !sources.has('bar')}
                   aria-pressed={selected === 'bar'}
                   onClick={() => setSelected(selected === 'bar' ? null : 'bar')}
-                  className={`rounded-lg p-1 ${selected === 'bar' ? 'ring-2 ring-accent-text' : ''}`}
+                  className={`rounded-lg p-1 ${selected === 'bar' ? 'ring-2 ring-accent-text' : barFirst ? 'ring-2 ring-warning' : ''}`}
                 >
                   <BarStack label={t('nardi.barMine')} count={view.bar[me] ?? 0} mine />
                 </button>
@@ -212,7 +237,7 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
           {halfOf(6, 12)}
 
           <div className="flex basis-full flex-row items-stretch justify-between gap-2 text-center text-xs leading-tight sm:w-24 sm:basis-auto sm:flex-col sm:text-[0.7rem]">
-            <div className="nardi-tray flex flex-1 flex-col justify-between rounded-xl p-2">
+            <div className="nardi-tray flex min-h-0 flex-1 flex-col justify-between rounded-xl p-2">
               <p className="text-muted">{t('nardi.offTheirs')}</p>
               <TrayStack count={view.off[1 - me] ?? 0} mine={false} />
               <p className="text-lg font-bold">{view.off[1 - me]}</p>
@@ -222,7 +247,7 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
               type="button"
               disabled={pending || !targets.some((s) => s.to === 'off')}
               onClick={() => choose('off')}
-              className={`nardi-tray flex flex-1 flex-col justify-between rounded-xl p-2 ${targets.some((s) => s.to === 'off') ? 'ring-2 ring-accent-text' : ''}`}
+              className={`nardi-tray flex min-h-0 flex-1 flex-col justify-between rounded-xl p-2 ${targets.some((s) => s.to === 'off') ? 'ring-2 ring-accent-text' : ''}`}
             >
               <span className="block text-muted">{t('nardi.offMine')}</span>
               <TrayStack count={view.off[me] ?? 0} mine />
@@ -239,8 +264,8 @@ function Stone({ mine, ready = false }: { mine: boolean; ready?: boolean }) {
   return (
     <span
       aria-hidden="true"
-      className={`relative size-[1.3rem] shrink-0 rounded-full sm:size-7 lg:size-8 ${mine ? 'nardi-stone-light' : 'nardi-stone-dark'} ${
-        ready ? 'ring-2 ring-warning' : ''
+      className={`relative size-[var(--nardi-stone)] shrink-0 rounded-full ${mine ? 'nardi-stone-light' : 'nardi-stone-dark'} ${
+        ready ? 'nardi-ready' : ''
       }`}
     />
   )
@@ -249,7 +274,9 @@ function Stone({ mine, ready = false }: { mine: boolean; ready?: boolean }) {
 function BarStack({ label, count, mine }: { label: string; count: number; mine: boolean }) {
   return (
     <span className="flex flex-col items-center gap-1">
-      <span className="sr-only text-muted sm:not-sr-only">{label}</span>
+      <span className="sr-only text-muted sm:not-sr-only sm:max-w-12 sm:leading-tight">
+        {label}
+      </span>
       {Array.from({ length: Math.min(count, 4) }, (_, i) => (
         <span
           key={i}
@@ -265,11 +292,14 @@ function BarStack({ label, count, mine }: { label: string; count: number; mine: 
 /** Checkers borne off, stacked on edge in the tray. */
 function TrayStack({ count, mine }: { count: number; mine: boolean }) {
   return (
-    <span aria-hidden="true" className="my-1 hidden flex-col-reverse gap-px sm:flex">
+    <span
+      aria-hidden="true"
+      className="my-1 flex min-h-3 flex-row justify-center gap-px overflow-hidden sm:min-h-0 sm:flex-1 sm:flex-col-reverse sm:justify-start"
+    >
       {Array.from({ length: count }, (_, i) => (
         <span
           key={i}
-          className={`h-1.5 w-full rounded-sm ${mine ? 'bg-[#eadfc6]' : 'bg-[#2a2d31]'} shadow-[0_1px_0_rgb(0_0_0/0.5)]`}
+          className={`h-3 w-1 shrink-0 rounded-sm sm:h-1 sm:w-full ${mine ? 'bg-[#eadfc6]' : 'bg-[#8a7464]'} shadow-[0_1px_0_rgb(0_0_0/0.5)]`}
         />
       ))}
     </span>

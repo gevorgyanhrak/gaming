@@ -214,6 +214,7 @@ export function roomStateFixture(overrides: Partial<RoomState> = {}): RoomState 
     seat: 0,
     playing: true,
     seats_to_act: [0],
+    turn_seconds: 60,
     deadline: null,
     server_time: '2026-10-27T10:00:00+00:00',
     clocks: null,

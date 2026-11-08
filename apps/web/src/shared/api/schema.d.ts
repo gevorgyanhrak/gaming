@@ -1235,6 +1235,8 @@ export interface operations {
                              */
                             playing: boolean;
                             seats_to_act: number[];
+                            /** @description Length of a whole turn, for a timer drawn as a share of it. */
+                            turn_seconds: number;
                             deadline: string | null;
                             server_time: string;
                             /** @description Chess clocks: milliseconds left per seat at server_time (null with per-turn timers). */
@@ -2437,6 +2439,8 @@ export interface operations {
                              */
                             playing: boolean;
                             seats_to_act: number[];
+                            /** @description Length of a whole turn, for a timer drawn as a share of it. */
+                            turn_seconds: number;
                             deadline: string | null;
                             server_time: string;
                             /** @description Chess clocks: milliseconds left per seat at server_time (null with per-turn timers). */

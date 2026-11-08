@@ -31,6 +31,8 @@ class RoomPresenter
             // all their chips); their result is on the room.
             'playing' => $viewer !== null && $viewer->is_active,
             'seats_to_act' => $state->seatsToAct,
+            /** Length of a whole turn, for a timer drawn as a share of it. */
+            'turn_seconds' => $room->turnSeconds(),
             'deadline' => $state->deadline === null ? null : now()->setTimestamp($state->deadline)->toIso8601String(),
             'server_time' => now()->toIso8601String(),
             // Chess clocks: milliseconds left per seat at server_time (null with per-turn timers).

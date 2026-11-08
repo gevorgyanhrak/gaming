@@ -10,27 +10,21 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
-**TASK-057 · New look for the Nardi board** — started 2026-11-08. Brief: `docs/product/briefs/TASK-057-nardi-board-look.md`. An original carved-wood board
-in that spirit, our own art, not a copy of the reference site; includes TASK-054 (numbered points, round timer, bear-off trays).
+**TASK-058 · Poker switches to its mobile layout at 900 px** — started 2026-11-08 (brief in the owner's words: "and poker to mobile screen should be swithch whrn screen </ 900px").
 
 Steps:
-- [x] 1. Board built: walnut case, inlaid points, numbers, round timer, trays, carved rosettes, pip dice; Long and Short; live check 25/25.
-- [ ] 2. QA and design review → fix; push.
+- [ ] 1. Switch the table's phone layout to widths of 900 px and below; check 900, 901, 820, 390; tests; push.
 
 ## Next
 
 **Owner rule (2026-11-02): strict sequential order.** Finish one task completely (implemented, tested,
 verified, pushed) before starting the next; never two at once; nothing partial. Order = the order the
-owner gave them: TASK-043 (done) → 044 (done) → 045 (done) → 046 (done) → 047 (done) → 056 (done) → 057 (Now) → 058 → 048 (owner set 056, 057 after 047 on 2026-11-08). Older items below those come after.
+owner gave them: TASK-043 (done) → 044 (done) → 045 (done) → 046 (done) → 047 (done) → 056 (done) → 057 (done) → 058 (Now) → 048 (owner set 056, 057 after 047 on 2026-11-08). Older items below those come after.
 
 - **TASK-048 · Complete platform redesign** — brief `docs/product/briefs/TASK-048-platform-redesign.md`
   (owner, 2026-11-02, verbatim). Phase 1 (PM market research → `docs/product/research/TASK-048-market-research.md`)
   not started (a parallel start was stopped on the owner's sequencing rule; nothing was written). Then UI/UX agent: design system and
   redesign of every page and game; QA. Owner rule applies: no paid VIP, no value prizes (flagged as question).
-- **TASK-058 · Poker switches to its mobile layout at 900 px** — owner, 2026-11-08, verbatim: "and poker to mobile
-  screen should be swithch whrn screen </ 900px". The phone layout of the poker table applies at widths of 900 px
-  and below (today: `(max-width: 639px)` in PokerBoard). Not started.
-
 Later (older backlog):
 - From TASK-047 QA (O-2, predates it): the host's waiting table doesn't update when someone joins a table with
   3+ seats (`RoomService::join` sends no event).
@@ -43,6 +37,7 @@ Later (older backlog):
 
 ## Done (recent)
 
+- 2026-11-08 · TASK-057 New Nardi board (own carved walnut design), with TASK-054 — 181b10b + this commit. QA and design `docs/qa/QA_REPORT_TASK057.md` (1 High, 4 Medium → fixed).
 - 2026-11-08 · TASK-056 Home page redesign and game categories — 3909990, bc9daf7, 82b7612, 45b0ddf + this close-out. QA and design `docs/qa/QA_REPORT_TASK056.md`
   (7 bugs → fixed), PM ACCEPT WITH FOLLOW-UPS (`docs/product/VALIDATION_TASK056.md`; TASK-063, 064 done here; TASK-065 and owner Q21–23 open).
 - 2026-11-08 · TASK-047 Level & XP progression — 51acc3e, 7935e4b, d0ab709, 19dc650 + this close-out. QA `docs/qa/QA_REPORT_TASK047.md`

@@ -353,6 +353,7 @@
     "dice": "Զառեր",
     "diceLeft": "Մնացած քայլեր՝ {{count}}",
     "pickChecker": "Ընտրեք քարը։",
+    "pickBar": "Քարը մտցրեք բարից։",
     "pickTarget": "Ընտրեք, թե ուր տեղափոխել։",
     "point_one": "Կետ {{point}}՝ {{count}} քար, {{owner}}",
     "point_other": "Կետ {{point}}՝ {{count}} քար, {{owner}}",

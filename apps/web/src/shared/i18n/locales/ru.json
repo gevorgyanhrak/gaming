@@ -363,6 +363,7 @@
     "dice": "Кости",
     "diceLeft": "Осталось ходов: {{count}}",
     "pickChecker": "Выберите шашку.",
+    "pickBar": "Введите шашку с бара.",
     "pickTarget": "Выберите, куда её поставить.",
     "point_one": "Пункт {{point}}: {{count}} шашка, {{owner}}",
     "point_few": "Пункт {{point}}: {{count}} шашки, {{owner}}",

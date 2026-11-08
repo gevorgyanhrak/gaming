@@ -81,12 +81,10 @@ export default function PokerBoard({
 
   // Turn timer: the share of the turn left, for the ring round the acting player's avatar.
   const secondsLeft = useCountdown(state.deadline, state.server_time)
-  const [timer, setTimer] = useState({ deadline: state.deadline, total: secondsLeft })
-  if (timer.deadline !== state.deadline || (timer.total === null && secondsLeft !== null)) {
-    setTimer({ deadline: state.deadline, total: secondsLeft })
-  }
   const turnShare =
-    secondsLeft !== null && timer.total ? Math.min(1, secondsLeft / timer.total) : null
+    secondsLeft !== null && state.turn_seconds
+      ? Math.min(1, secondsLeft / state.turn_seconds)
+      : null
 
   const last = view.last_hand
   const result =

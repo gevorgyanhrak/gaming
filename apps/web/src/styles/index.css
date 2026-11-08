@@ -147,6 +147,26 @@
 
 @layer components {
   /* The Nardi board (TASK-057): our own walnut case, inlaid points and stones. */
+  /* Point height and stone size: the board fits under the page's own header on short laptop screens. */
+  .nardi-case {
+    --nardi-h: 10rem;
+    --nardi-stone: 1.3rem;
+  }
+
+  @media (min-width: 640px) {
+    .nardi-case {
+      --nardi-h: 12rem;
+      --nardi-stone: 1.75rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .nardi-case {
+      --nardi-h: clamp(8.25rem, calc((100dvh - 30.5rem) / 2), 13rem);
+      --nardi-stone: calc((var(--nardi-h) - 1.75rem) / 5.3);
+    }
+  }
+
   .nardi-case {
     background:
       repeating-linear-gradient(
@@ -203,15 +223,20 @@
     box-shadow:
       inset 0 0 0 2px rgb(150 105 40 / 0.65),
       inset 0 0 0 5px rgb(255 255 255 / 0.25),
-      0 2px 4px rgb(0 0 0 / 0.6);
+      var(--nardi-ready, 0 2px 4px rgb(0 0 0 / 0.6));
   }
 
   .nardi-stone-dark {
-    background: radial-gradient(circle at 34% 28%, #5a6068, #2a2d31 58%, #15171a);
+    background: radial-gradient(circle at 34% 28%, #6a5a50, #30261f 58%, #17110d);
     box-shadow:
       inset 0 0 0 2px rgb(205 145 80 / 0.75),
       inset 0 0 0 5px rgb(255 255 255 / 0.06),
-      0 2px 4px rgb(0 0 0 / 0.6);
+      var(--nardi-ready, 0 2px 4px rgb(0 0 0 / 0.6));
+  }
+
+  /* A checker that can move: a dark and a gold ring, visible on maple, garnet and walnut. */
+  .nardi-ready {
+    --nardi-ready: 0 0 0 2px #1a0f08, 0 0 0 4px #f2c14e;
   }
 
   .nardi-die {
