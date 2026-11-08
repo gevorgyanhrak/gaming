@@ -10,16 +10,13 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
-**TASK-058 · Poker switches to its mobile layout at 900 px** — started 2026-11-08 (brief in the owner's words: "and poker to mobile screen should be swithch whrn screen </ 900px").
-
-Steps:
-- [ ] 1. Switch the table's phone layout to widths of 900 px and below; check 900, 901, 820, 390; tests; push.
+Nothing in progress. TASK-047, 056, 057 and 058 are done. Next in the owner's order: TASK-048 (complete platform redesign, below), not started: it was not in the batch the owner asked to finish on 2026-11-08 and starts with market research.
 
 ## Next
 
 **Owner rule (2026-11-02): strict sequential order.** Finish one task completely (implemented, tested,
 verified, pushed) before starting the next; never two at once; nothing partial. Order = the order the
-owner gave them: TASK-043 (done) → 044 (done) → 045 (done) → 046 (done) → 047 (done) → 056 (done) → 057 (done) → 058 (Now) → 048 (owner set 056, 057 after 047 on 2026-11-08). Older items below those come after.
+owner gave them: TASK-043 (done) → 044 (done) → 045 (done) → 046 (done) → 047 (done) → 056 (done) → 057 (done) → 058 (done) → 048 (owner set 056, 057 after 047 on 2026-11-08). Older items below those come after.
 
 - **TASK-048 · Complete platform redesign** — brief `docs/product/briefs/TASK-048-platform-redesign.md`
   (owner, 2026-11-02, verbatim). Phase 1 (PM market research → `docs/product/research/TASK-048-market-research.md`)
@@ -37,6 +34,7 @@ Later (older backlog):
 
 ## Done (recent)
 
+- 2026-11-08 · TASK-058 Poker uses its phone layout at 900 px and below; the table's size follows the window height — this commit. Checked live at 1440, 901, 900, 820, 640, 639, 390, 360.
 - 2026-11-08 · TASK-057 New Nardi board (own carved walnut design), with TASK-054 — 181b10b + this commit. QA and design `docs/qa/QA_REPORT_TASK057.md` (1 High, 4 Medium → fixed).
 - 2026-11-08 · TASK-056 Home page redesign and game categories — 3909990, bc9daf7, 82b7612, 45b0ddf + this close-out. QA and design `docs/qa/QA_REPORT_TASK056.md`
   (7 bugs → fixed), PM ACCEPT WITH FOLLOW-UPS (`docs/product/VALIDATION_TASK056.md`; TASK-063, 064 done here; TASK-065 and owner Q21–23 open).

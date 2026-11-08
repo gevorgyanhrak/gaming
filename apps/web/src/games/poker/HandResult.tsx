@@ -4,12 +4,12 @@ import type { ResultSummary } from './result'
 /** The plate in the middle of the table that says who won. */
 export function ResultPlate({ summary }: { summary: ResultSummary }) {
   return (
-    <div className="max-w-[70%] rounded-2xl bg-black/70 px-4 py-2 text-center shadow-lg sm:max-w-[90%]">
+    <div className="max-w-[70%] rounded-2xl bg-black/70 px-4 py-2 text-center shadow-lg min-[901px]:max-w-[90%]">
       <p
         className={
           summary.mine
-            ? 'text-gold-gradient text-xl font-extrabold sm:text-3xl'
-            : 'text-base font-bold text-white sm:text-xl'
+            ? 'text-gold-gradient text-xl font-extrabold min-[901px]:text-3xl'
+            : 'text-base font-bold text-white min-[901px]:text-xl'
         }
       >
         {summary.headline}
