@@ -6,6 +6,27 @@
  * (accent-light too), black on the golds ≥ 6:1.
  */
 @theme {
+  --color-home-emerald-950: #083b31;
+  --color-home-emerald-900: #0b4f41;
+  --color-home-emerald-800: #0e6251;
+  --color-home-emerald-700: #107560;
+  --color-home-cream: #fff8e7;
+  --color-home-mint: #d9efe4;
+  --color-home-ivory: #f8f1e1;
+  --color-home-paper: #fffcf4;
+  --color-home-sand: #efe3ca;
+  --color-home-honey: #f3d893;
+  --color-home-ink: #1d2b25;
+  --color-home-ink-soft: #4a5a51;
+  --color-home-link: #0b6a54;
+  --color-home-line: #dccbaa;
+
+  @keyframes home-float {
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
   /* A card club at night: dark wood, brown leather, brass and green baize. */
   --color-bg: #140c09;
   --color-surface: #24170f;
@@ -143,6 +164,65 @@
 }
 
 @layer components {
+  /* Re-tints every shared token-based component inside it. */
+  .home-scope-emerald {
+    --color-bg: var(--color-home-emerald-900);
+    --color-surface: var(--color-home-emerald-800);
+    --color-surface-raised: var(--color-home-emerald-700);
+    --color-border: #2a8d75;
+    --color-fg: var(--color-home-cream);
+    --color-muted: var(--color-home-mint);
+    color: var(--color-fg);
+  }
+
+  .home-scope-ivory {
+    --color-bg: var(--color-home-ivory);
+    --color-surface: var(--color-home-paper);
+    --color-surface-raised: var(--color-home-sand);
+    --color-border: var(--color-home-line);
+    --color-fg: var(--color-home-ink);
+    --color-muted: var(--color-home-ink-soft);
+    --color-accent-text: var(--color-home-link);
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    color-scheme: light;
+  }
+
+  /* The "ways to play" band: warm honey, ivory cards. */
+  .home-band-honey {
+    background: linear-gradient(120deg, var(--color-home-honey), #f7e5b5);
+  }
+
+  .home-room {
+    background: linear-gradient(160deg, #eadfc6, #d5e3d3);
+  }
+
+  .home-frame {
+    background: var(--color-home-emerald-900);
+    border: 1px solid rgb(169 119 42 / 0.45);
+    box-shadow: 0 24px 60px rgb(40 50 40 / 0.28);
+  }
+
+  /* Text sits at the left and on phones at the top; the warm light only ever falls behind the art. */
+  .home-hero {
+    background:
+      radial-gradient(30rem 24rem at 80% 50%, rgb(255 214 130 / 0.3), transparent 65%),
+      linear-gradient(
+        140deg,
+        var(--color-home-emerald-800),
+        var(--color-home-emerald-700) 55%,
+        var(--color-home-emerald-800)
+      );
+  }
+
+  @media (max-width: 1023.98px) {
+    .home-hero {
+      background:
+        radial-gradient(30rem 16rem at 50% 100%, rgb(255 214 130 / 0.32), transparent 70%),
+        linear-gradient(170deg, var(--color-home-emerald-800), var(--color-home-emerald-700) 60%);
+    }
+  }
+
   /* Gold gradient lettering for big headings. (Plain gold text is Tailwind's `text-gold`.) */
   .text-gold-gradient {
     background: linear-gradient(

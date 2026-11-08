@@ -81,15 +81,19 @@ export function PublicLayout() {
 
   const home = user.data ? '/dashboard' : '/'
   const atTable = pathname.startsWith('/rooms/')
+  // The redesigned home (TASK-056): the landing page and a signed-in player's home.
+  const isHome = pathname === '/' || pathname === '/dashboard'
 
   return (
-    <div className="club-room min-h-dvh sm:p-4 lg:p-6">
+    <div className={`${isHome ? 'home-room' : 'club-room'} min-h-dvh sm:p-4 lg:p-6`}>
       <div
-        className={`club-frame mx-auto flex min-h-dvh max-w-[96rem] flex-col overflow-clip sm:min-h-[calc(100dvh-2rem)] sm:rounded-[1.75rem] lg:min-h-[calc(100dvh-3rem)] ${
+        className={`${isHome ? 'home-frame' : 'club-frame'} mx-auto flex min-h-dvh max-w-[96rem] flex-col overflow-clip sm:min-h-[calc(100dvh-2rem)] sm:rounded-[1.75rem] lg:min-h-[calc(100dvh-3rem)] ${
           user.data ? 'pb-16 lg:pb-0' : ''
         }`}
       >
-        <header className="sticky top-0 z-20 border-b border-gold/15 bg-[#1f140f]/80 backdrop-blur">
+        <header
+          className={`sticky top-0 z-20 border-b border-gold/15 backdrop-blur ${isHome ? 'home-scope-emerald bg-home-emerald-950/90' : 'bg-[#1f140f]/80'}`}
+        >
           <div className="flex h-16 items-center justify-between gap-3 px-3 sm:h-20 sm:px-6">
             <div className="flex min-w-0 items-center gap-3">
               {atTable ? (
@@ -161,7 +165,7 @@ export function PublicLayout() {
           )}
         </main>
 
-        <footer className="border-t border-gold/15 py-6">
+        <footer className={`border-t border-gold/15 py-6 ${isHome ? 'home-scope-emerald' : ''}`}>
           <Container className="flex flex-col items-center justify-between gap-4 text-sm text-muted sm:flex-row">
             <div className="flex flex-col items-center gap-2 sm:flex-row sm:gap-6">
               <span>
@@ -200,7 +204,7 @@ export function PublicLayout() {
       </div>
 
       {menuOpen ? (
-        <Drawer onClose={closeMenu}>
+        <Drawer onClose={closeMenu} isHome={isHome}>
           <SideNav home={home} signedIn={Boolean(user.data)} />
         </Drawer>
       ) : null}
@@ -209,7 +213,7 @@ export function PublicLayout() {
         <nav
           aria-label={t('nav.shortcuts')}
           data-tabbar
-          className="fixed inset-x-0 bottom-0 z-20 flex border-t border-gold/20 bg-[#1f140f]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+          className={`fixed inset-x-0 bottom-0 z-20 flex border-t border-gold/20 ${isHome ? 'bg-home-emerald-950/95' : 'bg-[#1f140f]/95'} pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden`}
         >
           <NavLink to="/dashboard" className={tabLink}>
             <HomeIcon />
@@ -234,7 +238,15 @@ export function PublicLayout() {
 }
 
 /** The menu panel: slides in from the left over a dimmed page; Escape or a click outside closes it. */
-function Drawer({ onClose, children }: { onClose: () => void; children: ReactNode }) {
+function Drawer({
+  onClose,
+  isHome,
+  children,
+}: {
+  onClose: () => void
+  isHome: boolean
+  children: ReactNode
+}) {
   const { t } = useTranslation()
   const panel = useRef<HTMLDivElement>(null)
 
@@ -265,7 +277,7 @@ function Drawer({ onClose, children }: { onClose: () => void; children: ReactNod
         aria-modal="true"
         aria-label={t('nav.menu')}
         tabIndex={-1}
-        className="club-frame absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col overflow-y-auto rounded-r-3xl px-3 py-5 outline-none motion-safe:animate-[drawer-in_260ms_cubic-bezier(0.2,0.8,0.2,1)]"
+        className={`${isHome ? 'home-frame home-scope-emerald' : 'club-frame'} absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col overflow-y-auto rounded-r-3xl px-3 py-5 outline-none motion-safe:animate-[drawer-in_260ms_cubic-bezier(0.2,0.8,0.2,1)]`}
       >
         <div className="mb-4 flex justify-end">
           <button

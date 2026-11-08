@@ -56,3 +56,14 @@ checked = gold), `TextField`, `Alert`, `Badge`, `Skeleton`, `States` (`EmptyStat
 - Layout: `Container` max width, 16 px gutter on phones; phone tab bar for signed-in users; boards are
   capped by viewport height so they fit without scrolling.
 - Copy: short, plain, second person; every string in en, ru and hy.
+
+## Home palette (TASK-056)
+
+`/` and `/dashboard` use the "emerald daylight" tokens (`--color-home-*` in `styles/index.css`) through two scopes that re-point
+the shared tokens: `.home-scope-emerald` (header, footer, drawer, hero) and `.home-scope-ivory` (games and ways bands). Never put a
+scope on the frame or root: the popups live there. Spec: `docs/design/HOME_REDESIGN.md`.
+
+## Level badges (TASK-047)
+
+Five tiers from `LevelBadge`: bronze, silver (10), gold (20), ruby (30), amethyst (50). At table seats the badge goes on the top-left
+of the avatar, clear of the dealer button and nameplate.

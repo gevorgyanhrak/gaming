@@ -75,6 +75,9 @@ Newest first. Format: date · decision · why · who.
 
 - 2026-10-29 · Chess and Checkers use a classic beige/brown board (`#e3d0ac` / `#8b7355`) in the wood
   frame, with a "Move: White/Black" heading · matches the reference the owner gave · owner.
+- 2026-11-08 · Home (`/` and the signed-in `/dashboard`) uses an "emerald daylight" palette (scoped `--color-home-*` tokens) instead of
+  the card-club browns · owner said the page is too dark and asked for new background colours and images (TASK-056, TASK-048
+  brief); applies to those two pages until TASK-048 · owner.
 - 2026-10-28 · "Card club" look: dark wood room, gold emphasis, green play buttons, game carousel with
   view transitions, oval tables for card games · owner asked for a bazarblot-style lobby · owner.
 - 2026-10-28 · No coins, VIP, shop, entry fees or prize wheel even where references show them · the

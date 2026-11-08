@@ -19,8 +19,8 @@
     "wallet": "Wallet"
   },
   "landing": {
-    "title": "Classic board and card games, in one place",
-    "subtitle": "Pick a game, learn the rules and get ready to play.",
+    "title": "Pull up a chair.\nYour game is waiting.",
+    "subtitle": "Play people online or practice against bots, free, any time.",
     "cta": "Browse games",
     "gamesHeading": "Games",
     "eyebrow": "Free to play · no real money",
@@ -549,9 +549,9 @@
     "slide": "slide",
     "label": "Games",
     "position": "{{index}} of {{count}}",
-    "previous": "Previous game",
-    "next": "Next game",
-    "show": "Show {{name}}"
+    "range": "{{from}}–{{to}} of {{count}}",
+    "previousPage": "Previous games",
+    "nextPage": "Next games"
   },
   "join": {
     "title": "Join a table",
@@ -737,5 +737,14 @@
       "packRoyal": "Royal emoji pack",
       "packLegend": "Legend emoji pack"
     }
+  },
+  "lobby": {
+    "all": "All games",
+    "filterLabel": "Show games by category",
+    "other": "More games",
+    "seeAll": "See all",
+    "seeAllLabel": "See all: {{category}}",
+    "count_one": "{{count}} game",
+    "count_other": "{{count}} games"
   }
 }

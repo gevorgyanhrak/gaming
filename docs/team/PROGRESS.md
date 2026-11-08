@@ -14,9 +14,9 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 `docs/product/briefs/TASK-056-home-page-redesign.md`. Owner said: don't ask, do everything necessary.
 
 Steps:
-- [ ] 1. Read the home page, carousel and catalog; UI/UX agent writes the design (`docs/design/HOME_REDESIGN.md`): colours and images.
+- [x] 1. UI/UX agent's design: `docs/design/HOME_REDESIGN.md` ("emerald daylight", own SVG art, rail carousel, category shelves).
 - [x] 2. Backend: `game_categories` (admin: Games → Categories, audited), `category` on each game in the catalog API; 389 tests.
-- [ ] 3. Frontend: new home page, carousel, categories; en/ru/hy; tests; live check.
+- [x] 3. Frontend: new `/` and signed-in `/dashboard`, `GameLobby` carousel and categories, game descriptions in ru/hy; tests; live check 16/16.
 - [ ] 4. QA, design and PM review → fix; push.
 
 ## Next

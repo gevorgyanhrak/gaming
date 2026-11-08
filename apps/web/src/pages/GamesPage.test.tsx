@@ -107,31 +107,80 @@ describe('Games catalog', () => {
     expect(screen.queryByRole('navigation', { name: 'Sections' })).not.toBeInTheDocument()
   })
 
-  it('turns the carousel with the arrows and the dots', async () => {
+  const board = { slug: 'board', name: 'Board games', sort_order: 10 }
+  const card = { slug: 'card', name: 'Card games', sort_order: 20 }
+
+  function serveCategories() {
     server.use(
       http.get('*/api/v1/games', () =>
         HttpResponse.json({
-          data: ['Nardi', 'Chess', 'Durak'].map((name) =>
-            summaryOf(gameFixture({ slug: name.toLowerCase(), name, is_playable: true })),
-          ),
+          data: [
+            summaryOf(gameFixture({ slug: 'poker', name: 'Poker', category: card })),
+            summaryOf(gameFixture({ slug: 'chess', name: 'Chess', category: board })),
+            summaryOf(gameFixture({ slug: 'nardi', name: 'Nardi', category: board })),
+            summaryOf(gameFixture({ slug: 'lotto', name: 'Lotto', category: null })),
+          ],
         }),
       ),
     )
+  }
 
+  it('shows one shelf per category, in the admin order, others last', async () => {
+    serveCategories()
     renderRoute('/games')
-    const dot = (name: string) => screen.getByRole('button', { name: `Show ${name}` })
 
-    await catalog().findByRole('link', { name: /Nardi/ })
-    expect(dot('Nardi')).toHaveAttribute('aria-current', 'true')
+    await catalog().findByRole('link', { name: /Chess/ })
+    expect(
+      catalog()
+        .getAllByRole('heading', { level: 3 })
+        .map((h) => h.textContent),
+    ).toEqual(['Board games', 'Card games', 'More games'])
+    expect(catalog().getByText('2 games')).toBeInTheDocument()
+  })
 
-    await userEvent.click(screen.getByRole('button', { name: 'Next game' }))
-    expect(dot('Chess')).toHaveAttribute('aria-current', 'true')
+  it('filters by category, and the link keeps the choice', async () => {
+    serveCategories()
+    const { router } = renderRoute('/games')
 
-    await userEvent.click(screen.getByRole('button', { name: 'Previous game' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Previous game' }))
-    expect(dot('Durak')).toHaveAttribute('aria-current', 'true')
+    await catalog().findByRole('link', { name: /Chess/ })
+    await userEvent.click(catalog().getByRole('radio', { name: /Card games/ }))
 
-    await userEvent.click(dot('Nardi'))
-    expect(dot('Nardi')).toHaveAttribute('aria-current', 'true')
+    expect(catalog().getByRole('link', { name: /Poker/ })).toBeInTheDocument()
+    expect(catalog().queryByRole('link', { name: /Chess/ })).not.toBeInTheDocument()
+    expect(router.state.location.search).toBe('?category=card')
+
+    await userEvent.click(catalog().getByRole('radio', { name: /All games/ }))
+    expect(catalog().getByRole('link', { name: /Chess/ })).toBeInTheDocument()
+    expect(router.state.location.search).toBe('')
+  })
+
+  it('has no filter with a single category', async () => {
+    server.use(
+      http.get('*/api/v1/games', () =>
+        HttpResponse.json({ data: [summaryOf(gameFixture({ category: board }))] }),
+      ),
+    )
+    renderRoute('/games')
+
+    await catalog().findByRole('link', { name: /Chess/ })
+    expect(catalog().queryByRole('radio')).not.toBeInTheDocument()
+  })
+
+  it('takes one Tab stop per shelf and walks it with the arrow keys', async () => {
+    serveCategories()
+    renderRoute('/games')
+
+    const chess = await catalog().findByRole('link', { name: /Chess/ })
+    const nardi = catalog().getByRole('link', { name: /Nardi/ })
+    expect(chess).toHaveAttribute('tabindex', '0')
+    expect(nardi).toHaveAttribute('tabindex', '-1')
+
+    chess.focus()
+    await userEvent.keyboard('{ArrowRight}')
+    expect(nardi).toHaveFocus()
+    expect(nardi).toHaveAttribute('tabindex', '0')
+
+    await userEvent.keyboard('{Home}')
+    expect(chess).toHaveFocus()
   })
 })

@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useCurrentUser } from '@/features/auth/hooks'
-import { GameScene } from '@/features/catalog/components/GameArt'
 import { GameGrid } from '@/features/catalog/components/GameGrid'
+import { HomeHeroArt } from '@/features/catalog/components/HomeArt'
 import { DashboardGames } from '@/features/play/components/DashboardGames'
 import { LevelCard } from '@/features/levels/components/LevelCard'
 import { Avatar } from '@/shared/ui/Avatar'
@@ -23,52 +23,58 @@ export function DashboardPage() {
   )
 
   return (
-    <Container className="space-y-10 py-10">
+    <>
       <title>{t('dashboard.title')}</title>
-      <section className="relative overflow-hidden rounded-3xl border border-gold/20 bg-linear-to-r from-accent/25 via-surface to-surface p-6 shadow-xl shadow-black/30 sm:p-8">
-        <GameScene
-          slug="poker"
-          className="pointer-events-none absolute inset-y-0 right-0 hidden h-full w-1/2 [mask-image:linear-gradient(to_right,transparent,black)] opacity-30 md:block"
-        />
-        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-4">
-            <Avatar
-              url={user.profile.avatar_url}
-              name={name}
-              size="md"
-              level={user.level}
-              frame={user.looks.frame}
-            />
-            <div className="min-w-0">
-              <h1 className="text-gold-gradient text-2xl font-extrabold sm:text-3xl">
-                {t('dashboard.welcome', { name })}
-              </h1>
-              <p className="mt-0.5 text-xs text-muted">
-                {t('dashboard.memberSince', { date: memberSince })}
-              </p>
+      <section className="home-scope-emerald home-hero border-b border-gold/20">
+        <Container className="grid items-center gap-8 py-10 lg:grid-cols-[1fr_22rem]">
+          <div className="min-w-0">
+            <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
+              <div className="flex items-center gap-4">
+                <Avatar
+                  url={user.profile.avatar_url}
+                  name={name}
+                  size="md"
+                  level={user.level}
+                  frame={user.looks.frame}
+                />
+                <div className="min-w-0">
+                  <h1 className="text-gold-gradient text-2xl font-extrabold sm:text-3xl">
+                    {t('dashboard.welcome', { name })}
+                  </h1>
+                  <p className="mt-0.5 text-xs text-muted">
+                    {t('dashboard.memberSince', { date: memberSince })}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 sm:ml-auto">
+                <ButtonLink to="/games" variant="gold">
+                  {t('dashboard.play')}
+                </ButtonLink>
+                <ButtonLink to="/profile" variant="secondary">
+                  {t('nav.profile')}
+                </ButtonLink>
+                <ButtonLink to="/settings" variant="secondary">
+                  {t('nav.settings')}
+                </ButtonLink>
+              </div>
             </div>
+            <LevelCard className="relative mt-5 max-w-xl bg-black/25" />
           </div>
-          <div className="flex flex-wrap gap-2 sm:ml-auto">
-            <ButtonLink to="/games" variant="gold">
-              {t('dashboard.play')}
-            </ButtonLink>
-            <ButtonLink to="/profile" variant="secondary">
-              {t('nav.profile')}
-            </ButtonLink>
-            <ButtonLink to="/settings" variant="secondary">
-              {t('nav.settings')}
-            </ButtonLink>
-          </div>
-        </div>
-        <LevelCard className="relative mt-5 max-w-xl bg-black/25" />
+          <HomeHeroArt className="hidden w-full lg:block" />
+        </Container>
       </section>
 
-      <section>
-        <h2 className="mb-6 text-2xl font-bold">{t('dashboard.gamesHeading')}</h2>
-        <GameGrid />
+      <section className="home-scope-ivory py-10 sm:py-12">
+        <Container className="space-y-10">
+          <div>
+            <h2 className="mb-6 text-3xl font-extrabold tracking-tight text-fg">
+              {t('dashboard.gamesHeading')}
+            </h2>
+            <GameGrid />
+          </div>
+          <DashboardGames />
+        </Container>
       </section>
-
-      <DashboardGames />
-    </Container>
+    </>
   )
 }
