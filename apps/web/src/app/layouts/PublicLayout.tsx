@@ -96,7 +96,7 @@ export function PublicLayout() {
         }`}
       >
         <header
-          className={`sticky top-0 z-20 border-b border-gold/15 ${isHome ? 'home-scope-night bg-[#070f0c]/90' : 'bg-[#1f140f]/80 backdrop-blur'}`}
+          className={`sticky top-0 z-20 border-b border-gold/15 ${isHome ? 'home-scope-night bg-[#070f0c]/97' : 'bg-[#1f140f]/80 backdrop-blur'}`}
         >
           <div className="flex h-16 items-center justify-between gap-3 px-3 sm:h-20 sm:px-6">
             <div className="flex min-w-0 items-center gap-3">

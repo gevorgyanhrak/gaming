@@ -10,29 +10,23 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
-**TASK-056 · Home page redesign and game categories** — started 2026-11-08. Brief (verbatim):
-`docs/product/briefs/TASK-056-home-page-redesign.md`. Owner said: don't ask, do everything necessary.
+**TASK-057 · New look for the Nardi board** — started 2026-11-08. Brief: `docs/product/briefs/TASK-057-nardi-board-look.md`. An original carved-wood board
+in that spirit, our own art, not a copy of the reference site; includes TASK-054 (numbered points, round timer, bear-off trays).
 
 Steps:
-- [x] 1. UI/UX agent's design: `docs/design/HOME_REDESIGN.md` ("emerald daylight", own SVG art, rail carousel, category shelves).
-- [x] 2. Backend: `game_categories` (admin: Games → Categories, audited), `category` on each game in the catalog API.
-- [x] 3. Frontend: new `/` and signed-in `/dashboard`, `GameLobby` carousel and categories, game descriptions in ru/hy; tests; live check 16/16.
-      Owner's revision (too much white, one big casino/poker picture): dark "night room" over `HomeBackdrop`, 2026-11-08.
-- [ ] 4. QA and design review → fixed (`docs/qa/QA_REPORT_TASK056.md`, 127/145, 7 bugs); PM validation → fix; push.
+- [ ] 1. Read `NardiBoard`, design and build the board (Long and Short, both seats, 1440 and 390); tests; live check.
+- [ ] 2. QA and design review → fix; push.
 
 ## Next
 
 **Owner rule (2026-11-02): strict sequential order.** Finish one task completely (implemented, tested,
 verified, pushed) before starting the next; never two at once; nothing partial. Order = the order the
-owner gave them: TASK-043 (done) → 044 (done) → 045 (done) → 046 (done) → 047 (done) → 056 (Now) → 057 → 058 → 048 (owner set 056, 057 after 047 on 2026-11-08). Older items below those come after.
+owner gave them: TASK-043 (done) → 044 (done) → 045 (done) → 046 (done) → 047 (done) → 056 (done) → 057 (Now) → 058 → 048 (owner set 056, 057 after 047 on 2026-11-08). Older items below those come after.
 
 - **TASK-048 · Complete platform redesign** — brief `docs/product/briefs/TASK-048-platform-redesign.md`
   (owner, 2026-11-02, verbatim). Phase 1 (PM market research → `docs/product/research/TASK-048-market-research.md`)
   not started (a parallel start was stopped on the owner's sequencing rule; nothing was written). Then UI/UX agent: design system and
   redesign of every page and game; QA. Owner rule applies: no paid VIP, no value prizes (flagged as question).
-- **TASK-057 · New look for the Nardi board** — brief `docs/product/briefs/TASK-057-nardi-board-look.md` (owner,
-  2026-11-08, verbatim, with a reference screenshot). An original carved-wood board in that spirit, our own art,
-  not a copy of the reference site. Not started.
 - **TASK-058 · Poker switches to its mobile layout at 900 px** — owner, 2026-11-08, verbatim: "and poker to mobile
   screen should be swithch whrn screen </ 900px". The phone layout of the poker table applies at widths of 900 px
   and below (today: `(max-width: 639px)` in PokerBoard). Not started.
@@ -49,6 +43,8 @@ Later (older backlog):
 
 ## Done (recent)
 
+- 2026-11-08 · TASK-056 Home page redesign and game categories — 3909990, bc9daf7, 82b7612, 45b0ddf + this close-out. QA and design `docs/qa/QA_REPORT_TASK056.md`
+  (7 bugs → fixed), PM ACCEPT WITH FOLLOW-UPS (`docs/product/VALIDATION_TASK056.md`; TASK-063, 064 done here; TASK-065 and owner Q21–23 open).
 - 2026-11-08 · TASK-047 Level & XP progression — 51acc3e, 7935e4b, d0ab709, 19dc650 + this close-out. QA `docs/qa/QA_REPORT_TASK047.md`
   (135/148, 5 bugs → fixed), design `docs/design/REVIEW_TASK047.md` (NEEDS REVISION → all fixed), PM ACCEPT WITH FOLLOW-UPS
   (`docs/product/VALIDATION_TASK047.md`; TASK-059, 060 done here; TASK-061, 062 and owner Q18–20 open). Summary in IMPLEMENTATION_REPORT.

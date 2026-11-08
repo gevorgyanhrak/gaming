@@ -262,3 +262,6 @@ put project-specific content there; propose generic improvements to the user ins
 ## Reporting back
 Lead with the outcome. List what changed (files/areas), how it was verified (commands and results), what
 is not done or not verified, and how to check it manually. Keep it concise.
+- Game catalog (TASK-056): `game_categories` + `games.game_category_id`, `category` on each game in `/games`; admin Games → Categories. Web: `GameGrid` → `features/catalog/components/GameLobby`
+  (shelves come from the games; `_other` is reserved for uncategorised), `HomeArt` posters, `HomeBackdrop` (the fixed night-room picture on `/` and `/dashboard`, `PublicLayout` `isHome`,
+  `.home-scope-night`). `GameArt` still serves game pages and the side nav.

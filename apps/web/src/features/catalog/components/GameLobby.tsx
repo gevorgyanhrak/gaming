@@ -129,7 +129,7 @@ function CategoryPills({
     <fieldset className="min-w-0">
       <legend className="sr-only">{t('lobby.filterLabel')}</legend>
       {/* Phones scroll sideways rather than wrap: the rail below keeps its place. */}
-      <div className="relative -mx-4 -my-1.5 flex snap-x [scrollbar-width:none] gap-2 overflow-x-auto px-4 py-1.5 sm:-mx-6 sm:px-6 lg:-mx-2 lg:flex-wrap lg:px-2 [&::-webkit-scrollbar]:hidden">
+      <div className="relative -mx-4 -my-1.5 flex snap-x scroll-px-4 [scrollbar-width:none] gap-2 overflow-x-auto px-4 py-1.5 sm:-mx-6 sm:scroll-px-6 sm:px-6 lg:-mx-2 lg:flex-wrap lg:px-2 [&::-webkit-scrollbar]:hidden">
         {options.map(({ key, label, count }) => (
           <label
             key={key ?? 'all'}

@@ -39,6 +39,7 @@ class GameCategoryResource extends Resource
         return $schema->columns(1)->components([
             Translatable::input('name', 'Name', maxLength: 40),
             TextInput::make('slug')->required()->maxLength(40)->alphaDash()
+                ->notIn(['_other'])
                 ->unique(ignoreRecord: true)
                 ->helperText('A short id in Latin letters, used in links. Avoid changing it later.'),
         ]);

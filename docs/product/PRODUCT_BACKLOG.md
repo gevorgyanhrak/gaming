@@ -2,7 +2,9 @@
 
 The single task tracker (format and statuses: `docs/team/README.md`). Sources: `UI_UX_AUDIT.md`
 (UX-NNN), `PRODUCT_RESEARCH.md` (OPP-NNN), `TECHNICAL_DEBT.md` (TD-NNN).
-Last planning: 2026-11-08 (TASK-047 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK047.md`;
+Last planning: 2026-11-08 (TASK-056 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK056.md`;
+TASK-063…065 and owner questions 21–23 added).
+Before: 2026-11-08 (TASK-047 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK047.md`;
 TASK-059…062 and owner questions 18–20 added).
 Before: 2026-11-07 (TASK-046 validated: ACCEPT WITH FOLLOW-UPS, `docs/product/VALIDATION_TASK046.md`;
 TASK-054, TASK-055 and owner questions 15–17 added).
@@ -245,6 +247,54 @@ it up. Evidence: QA_REPORT_TASK047 O-1.
 Acceptance criteria: the settings form refuses combinations whose total XP for `max_level` doesn't fit an integer,
 with a clear message; the defaults still save; a unit test covers the limit.
 Depends on: TASK-047   Approval: none.
+
+### TASK-056 · Home page redesign and game categories             P1 · L · APPROVED
+Owner request 2026-11-08 and revision (too much white, one big casino/poker picture), brief
+`docs/product/briefs/TASK-056-home-page-redesign.md`. Design `docs/design/HOME_REDESIGN.md` (partly superseded by the night
+room). Code 3909990 (categories), bc9daf7 (redesign), 82b7612 (night room), 45b0ddf (QA and design fixes).
+QA `docs/qa/QA_REPORT_TASK056.md` (127/145; 1 High, 4 Medium, 2 Low, all reported fixed; design review NEEDS REVISION,
+items done in code; no QA or UI/UX re-run, the PM checked the key fixes live and in post-fix screenshots).
+Validation 2026-11-08: **APPROVED — ACCEPT WITH FOLLOW-UPS** (`docs/product/VALIDATION_TASK056.md`). The home page is dark
+over one big poker-room picture, also on the signed-in `/dashboard` (deliberate); carousel reworked into shelves;
+categories from the catalog, managed in the admin panel; en/ru/hy; no real-money wording, Fishka rules unchanged. Partly
+met: 44 px for the shared header controls and language select, left to TASK-048. TASK-063 should go in with the "PM
+validation → fix" step before this task closes. Still owed at close-out: the implementation report section and the
+knowledge files. Follow-ups: TASK-063…065, owner questions 21–23.
+
+### TASK-063 · Home pages: pill gutter on phones, header see-through   P3 · S · DONE
+Problem: since the pills row can scroll (BUG-1 fix) it snaps 16 px in, so on phones the first pill sits 1 px from the
+screen edge while everything else keeps a 16 px gutter. And since the blur came off the home header, text scrolling
+under it shows through as ghost words. Evidence: measured at 360 and 390 (`scrollLeft` 16 at rest, `scroll-padding`
+auto; the rail below has `scroll-px-4`), `GameLobby.tsx:132`; `PublicLayout.tsx:99`; screenshots `g-390-games.png`,
+`s-1440-dashboard-games.png`; VALIDATION_TASK056 §C.
+Acceptance criteria:
+  1. At 360 and 390 in en, ru, hy the first pill lines up with the "Games" heading when the row is at rest and after
+     scrolling back; the last pill is still fully reachable.
+  2. No readable text shows through the home header while scrolling, at 390 and 1440. The header's text contrast does
+     not drop.
+Tests: browser check at 360, 390, 1440.
+Depends on: TASK-056   Approval: none. Do at TASK-056 close-out.
+
+### TASK-064 · Reserve the `_other` category slug                 P3 · S · DONE
+Problem: `_other` is the internal key for games without a category, and the admin form allows it as a slug, so a category
+with that slug would merge with the uncategorised games on the home page. Evidence: QA_REPORT_TASK056 O-1 (code
+reading); `GameCategoryResource.php` (`alphaDash`), `GameLobby.tsx`.
+Acceptance criteria: the category form refuses `_other` with a clear message; other slugs are unaffected; a test covers it.
+Depends on: TASK-056   Approval: none.
+
+### TASK-065 · Post-fix look at the home pages and real phones    P3 · S · PLANNED
+Problem: TASK-056's fixes were not re-run by QA or the UI/UX agent, and some surfaces can only be judged on a device.
+Evidence: VALIDATION_TASK056 "Not re-tested after the fixes"; QA_REPORT_TASK056 "Not tested".
+Acceptance criteria:
+  1. Rendered-pixel contrast of the active-games bar at 1920 and 390 with a waiting game, and 1440 with a running one,
+     at least 4.5:1. The verification banner over the lamps also passes; if not, it gets the same backing.
+  2. Screenshots: pill focus ring whole on all sides at 1440 and 390; a one-game shelf at 1440; `/` at 1920 and 2560
+     (corner vignette).
+  3. Scrolling and the address-bar collapse tried on a mid-range Android and an iPhone. The picture does not jump.
+  4. Filament reorder of categories and games, by real drag, leaves one audit row each.
+  5. A screen-reader pass over the pills and one shelf.
+  6. Anything wrong is fixed or logged as its own item.
+Depends on: TASK-056   Approval: none. Can fold into TASK-048 (redesign).
 
 ## Bugs
 
@@ -678,6 +728,8 @@ Validation 2026-10-29: **APPROVED** — `GameActionService::end` marks abandoned
 5. Content (2026-11-07: the Nardi description above the new picker is English in ru/hy too): the Poker game description is still English in hy — admin catalog text (Admin → Games),
    needs an Armenian text from the owner or a translator. Since Fishkas, the Poker description and rules
    still say "play chips with no monetary value"; update them to describe Fishkas (same admin screen).
+   (2026-11-08, TASK-056: all five card descriptions now exist in ru and hy, so only the Fishka wording is left. The
+   new Armenian strings and descriptions also need the native-speaker read in item 4.)
 6. Fishkas move between players through games: at a private Poker table a player can lose chips on
    purpose to a friend (chip dumping), and since TASK-040 (winner takes the pot) a private stake game
    moves up to 500,000 Fishkas per game when one friend resigns. With bonuses farmable on extra
@@ -742,6 +794,16 @@ Validation 2026-10-29: **APPROVED** — `GameActionService::end` marks abandoned
 20. What counts as a game for XP (TASK-047): today at least 30 seconds and 3 of your own moves. So a player who
     resigns after 3 moves still gets 30 XP for the loss, and a poker sitting counts as one game. Keep this, or
     should leaving a game pay nothing?
+21. Poker chips in the home picture (TASK-056): you asked for a casino/poker background, and it shows stacks of chips,
+    cards and a dealer button on the table. Our earlier rule kept coins and chip stacks out of the art, and you didn't
+    name chips. There are no amounts and no money wording. Keep them? The PM recommends keeping them; they are easy to
+    take out and the table still reads as poker.
+22. The big picture is drawn in code (TASK-056): our own art, no files or licence, sharp on every screen. If by "image"
+    you meant a photo or your own artwork, send one or say so. A photo needs a licensed source, and changing it from the
+    admin panel would be new work.
+23. Which pages get the night room (TASK-056): `/` and the signed-in `/dashboard` have it, because that is where "Home"
+    goes after signing in. `/games` shows the same catalog on the older dark brown look until the redesign (TASK-048).
+    Is that right, or should `/games` change now?
 (Decided 2026-10-29: autonomous mode for B1–B3; TD-001 deleted; sound on by default; TASK-030/031
 go-ahead; room API fields for Play again; `.text-gold-gradient`; public profile stats are public. See
 DECISIONS.md.)

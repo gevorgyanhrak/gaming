@@ -2,6 +2,16 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## TASK-056 · Home page redesign and game categories — 2026-11-08 · DONE
+
+Brief and the owner's revision: `docs/product/briefs/TASK-056-home-page-redesign.md`. Design: `docs/design/HOME_REDESIGN.md` (partly superseded).
+QA and design: `docs/qa/QA_REPORT_TASK056.md` (127/145, 7 bugs → fixed). PM: `docs/product/VALIDATION_TASK056.md` (ACCEPT WITH FOLLOW-UPS).
+
+- `game_categories` (slug, translated name, order) and `games.game_category_id`; admin Games → Categories, audited; `category` on each game in the catalog API.
+- `/` and `/dashboard`: a dark "night room" over one fixed picture drawn in SVG (`HomeBackdrop`), scope `.home-scope-night`. `/games` keeps its look until TASK-048.
+- `GameLobby` replaces the ring carousel: filter pills, one scrolling shelf per category, a grid for one category (`?category=`), no autoplay; `HomeArt` posters and covers.
+- Game descriptions in ru and hy; poker's line without betting words (`2026_11_08_210000`).
+
 ## TASK-047 · Level & XP progression — 2026-11-08 · DONE
 
 Brief: `docs/product/briefs/TASK-047-levels-xp.md`. ADR 0018. QA: `docs/qa/QA_REPORT_TASK047.md`. Design:
