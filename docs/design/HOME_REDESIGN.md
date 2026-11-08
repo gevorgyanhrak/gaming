@@ -7,6 +7,10 @@ The code blocks in this file are the ones used to build the mock I reviewed in h
 and 360 px (Tailwind 4 browser build, the real `index.css` tokens, the real catalog API responses in en, ru, hy). They
 are a working reference; adapt them to the codebase's lint rules, but do not change colours or layout without asking.
 
+> **Superseded in part (2026-11-08, owner's revision: too much white, one big casino/poker picture).** Colours, the hero art and
+> the ivory and honey bands below are replaced by a dark "night room": one fixed picture behind the whole page
+> (`HomeBackdrop.tsx`) and the `.home-scope-night` scope. Posters, carousel, categories, states and strings still apply.
+
 ## 1. Direction
 
 **"Emerald daylight."** Today the page is dark brown on dark brown, and the owner's words are "too dark, visually

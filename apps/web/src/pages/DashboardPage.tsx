@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { GameGrid } from '@/features/catalog/components/GameGrid'
-import { HomeHeroArt } from '@/features/catalog/components/HomeArt'
 import { DashboardGames } from '@/features/play/components/DashboardGames'
 import { LevelCard } from '@/features/levels/components/LevelCard'
 import { Avatar } from '@/shared/ui/Avatar'
@@ -25,9 +24,9 @@ export function DashboardPage() {
   return (
     <>
       <title>{t('dashboard.title')}</title>
-      <section className="home-scope-emerald home-hero border-b border-gold/20">
-        <Container className="grid items-center gap-8 py-10 lg:grid-cols-[1fr_22rem]">
-          <div className="min-w-0">
+      <section className="home-scope-night home-hero border-b border-gold/20">
+        <Container className="py-10 lg:py-14">
+          <div className="max-w-3xl min-w-0">
             <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
               <div className="flex items-center gap-4">
                 <Avatar
@@ -60,11 +59,10 @@ export function DashboardPage() {
             </div>
             <LevelCard className="relative mt-5 max-w-xl bg-black/25" />
           </div>
-          <HomeHeroArt className="hidden w-full lg:block" />
         </Container>
       </section>
 
-      <section className="home-scope-ivory py-10 sm:py-12">
+      <section className="home-scope-night bg-black/75 py-10 sm:py-12">
         <Container className="space-y-10">
           <div>
             <h2 className="mb-6 text-3xl font-extrabold tracking-tight text-fg">

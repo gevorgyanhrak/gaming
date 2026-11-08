@@ -1,8 +1,8 @@
-import { useId, type ReactNode } from 'react'
+import { type ReactNode } from 'react'
 
 /*
  * TASK-056 home page art: flat "deco poster" scenes, drawn from simple shapes, no image files.
- * HomeHeroArt: three arched windows. GamePosterScene: 320×200 poster for a game. CategoryCover:
+ * GamePosterScene: 320×200 poster for a game. CategoryCover:
  * shelf opener. CategoryCrest: 40px mark beside a shelf heading.
  */
 
@@ -72,7 +72,7 @@ function SuitMark({
 }
 
 /** A playing card, 56×80 before `scale`, turned about its own centre. */
-function Card({
+export function Card({
   x,
   y,
   rank,
@@ -108,7 +108,7 @@ function Card({
   )
 }
 
-function CardBack({
+export function CardBack({
   x,
   y,
   angle = 0,
@@ -392,105 +392,6 @@ function Points({
 
 const arch = (x: number, w: number, top: number, bottom: number) =>
   `M${x} ${bottom}V${top + w / 2}A${w / 2} ${w / 2} 0 0 1 ${x + w} ${top + w / 2}V${bottom}Z`
-
-/**
- * The hero picture: three arched windows on a gold sill. Left: chess, on ivory. Middle and tallest:
- * a fan of cards against a garnet sunburst. Right: nardi, on amber.
- */
-export function HomeHeroArt({ className = '' }: { className?: string }) {
-  const id = useId().replace(/:/g, '')
-  const left = arch(26, 196, 96, 472)
-  const mid = arch(236, 248, 14, 472)
-  const right = arch(498, 196, 96, 472)
-  return (
-    <svg viewBox="0 0 720 520" aria-hidden="true" className={className}>
-      <defs>
-        <clipPath id={`${id}-l`}>
-          <path d={left} />
-        </clipPath>
-        <clipPath id={`${id}-m`}>
-          <path d={mid} />
-        </clipPath>
-        <clipPath id={`${id}-r`}>
-          <path d={right} />
-        </clipPath>
-      </defs>
-
-      {/* Left window: a king and a pawn on a checked floor. */}
-      <g clipPath={`url(#${id}-l)`}>
-        <rect x="26" y="96" width="196" height="376" fill={c.ivory} />
-        <Rays
-          cx={124}
-          cy={440}
-          count={7}
-          step={18}
-          length={360}
-          color={c.amberLight}
-          opacity={0.55}
-        />
-        <g transform="translate(26 416)">
-          <Floor y={0} size={28} width={196} a={c.emerald} b={c.cream} />
-          <Floor y={28} size={28} width={196} a={c.cream} b={c.emerald} />
-        </g>
-        <King x={136} y={426} scale={1.42} fill={c.emeraldDeep} trim={c.gold} />
-        <Pawn x={62} y={428} scale={0.72} fill={c.goldDeep} trim={c.ink} />
-      </g>
-
-      {/* Middle window: five cards fanned against a sunburst. */}
-      <g clipPath={`url(#${id}-m)`}>
-        <rect x="236" y="14" width="248" height="458" fill={c.garnet} />
-        <Rays cx={360} cy={420} count={13} step={14} length={440} color={c.garnetLight} />
-        <path
-          d={arch(262, 196, 40, 472)}
-          fill="none"
-          stroke={c.gold}
-          strokeWidth="2"
-          opacity="0.7"
-        />
-        <g className="[transform-box:fill-box] motion-safe:animate-[home-float_7s_ease-in-out_infinite]">
-          {[
-            ['9', 'diamond', -28, 303, 338],
-            ['J', 'club', -14, 331, 314],
-            ['Q', 'heart', 0, 360, 304],
-            ['K', 'spade', 14, 389, 314],
-            ['A', 'spade', 28, 417, 338],
-          ].map(([rank, suit, angle, x, y]) => (
-            <Card
-              key={String(rank)}
-              x={Number(x)}
-              y={Number(y)}
-              rank={String(rank)}
-              suit={suit as Suit}
-              angle={Number(angle)}
-              scale={1.62}
-            />
-          ))}
-        </g>
-      </g>
-
-      {/* Right window: two dice over nardi points. */}
-      <g clipPath={`url(#${id}-r)`}>
-        <rect x="498" y="96" width="196" height="376" fill={c.amber} />
-        <Rays cx={596} cy={460} count={7} step={18} length={380} color={c.amberLight} />
-        <Points y={472} height={160} x={498} width={196} count={6} a={c.garnet} b={c.emeraldDeep} />
-        <g className="[transform-box:fill-box] motion-safe:animate-[home-float_9s_ease-in-out_infinite_-3s]">
-          <Die x={566} y={246} size={84} angle={-14} value={5} />
-          <Die x={628} y={322} size={72} angle={12} value={3} />
-        </g>
-      </g>
-
-      {/* Gold keylines and the sill. */}
-      <g fill="none" stroke={c.gold} strokeWidth="4">
-        <path d={left} />
-        <path d={mid} />
-        <path d={right} />
-      </g>
-      <rect x="10" y="472" width="700" height="14" rx="3" fill={c.gold} />
-      <rect x="28" y="486" width="664" height="10" fill={c.goldDeep} />
-      <Points y={520} height={22} x={28} width={664} count={38} a={c.emeraldLight} b={c.gold} />
-    </svg>
-  )
-}
 
 const flop: [string, Suit][] = [
   ['J', 'heart'],

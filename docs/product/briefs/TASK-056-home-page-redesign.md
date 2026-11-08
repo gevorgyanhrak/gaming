@@ -8,6 +8,12 @@ I think need redesig home page, games calusel, set categoryes by games becouse w
 
 ---
 
+Revision from the owner (2026-11-08, after seeing the first version), verbatim:
+
+home page ui is better, but i think white is more, pls again redesign it, and you can set one big background image about casini, poker...
+
+---
+
 Notes for implementers (not the owner's words):
 
 - Scope as read: a new home page; the games carousel reworked; games grouped into categories so that more games

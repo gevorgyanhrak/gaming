@@ -57,11 +57,10 @@ checked = gold), `TextField`, `Alert`, `Badge`, `Skeleton`, `States` (`EmptyStat
   capped by viewport height so they fit without scrolling.
 - Copy: short, plain, second person; every string in en, ru and hy.
 
-## Home palette (TASK-056)
+## Home pages (TASK-056)
 
-`/` and `/dashboard` use the "emerald daylight" tokens (`--color-home-*` in `styles/index.css`) through two scopes that re-point
-the shared tokens: `.home-scope-emerald` (header, footer, drawer, hero) and `.home-scope-ivory` (games and ways bands). Never put a
-scope on the frame or root: the popups live there. Spec: `docs/design/HOME_REDESIGN.md`.
+`/` and `/dashboard` show one fixed picture (`HomeBackdrop`) behind a see-through `.home-frame`, with dark see-through bands and the
+`.home-scope-night` scope, which re-points the shared tokens. Never put the scope on the frame or root: the popups live there.
 
 ## Level badges (TASK-047)
 

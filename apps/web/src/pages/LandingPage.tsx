@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { GameGrid } from '@/features/catalog/components/GameGrid'
-import { HomeHeroArt } from '@/features/catalog/components/HomeArt'
 import { usePublicConfig } from '@/features/platform/usePublicConfig'
 import { ButtonLink } from '@/shared/ui/Button'
 import { Container } from '@/shared/ui/Container'
@@ -22,9 +21,9 @@ export function LandingPage() {
     <>
       {config.data ? <title>{config.data.name}</title> : null}
 
-      <section className="home-scope-emerald home-hero border-b border-gold/20">
-        <Container className="grid items-center gap-8 py-12 sm:py-16 lg:grid-cols-[1fr_1.05fr] lg:gap-12 lg:py-20">
-          <div className="text-center lg:text-left">
+      <section className="home-scope-night home-hero border-b border-gold/20">
+        <Container className="flex min-h-[26rem] items-center py-14 sm:min-h-[32rem] lg:min-h-[38rem]">
+          <div className="max-w-2xl text-center lg:text-left">
             <p className="inline-flex items-center rounded-full border border-gold/45 bg-black/15 px-3 py-1 text-xs font-semibold tracking-wide text-gold-light uppercase">
               {t('landing.eyebrow')}
             </p>
@@ -54,11 +53,13 @@ export function LandingPage() {
               </a>
             </div>
           </div>
-          <HomeHeroArt className="mx-auto block w-full max-w-[22rem] sm:max-w-[34rem] lg:max-w-none" />
         </Container>
       </section>
 
-      <section id="games" className="home-scope-ivory scroll-mt-24 py-12 sm:py-16">
+      <section
+        id="games"
+        className="home-scope-night scroll-mt-24 border-b border-gold/20 bg-black/75 py-12 sm:py-16"
+      >
         <Container>
           <h2 className="mb-6 text-3xl font-extrabold tracking-tight text-fg">
             {t('landing.gamesHeading')}
@@ -67,15 +68,15 @@ export function LandingPage() {
         </Container>
       </section>
 
-      <section className="home-scope-ivory home-band-honey">
+      <section className="home-scope-night bg-black/40">
         <Container className="py-12">
           <ul className="grid gap-4 sm:grid-cols-3">
             {ways.map(({ key, Icon }) => (
               <li
                 key={key}
-                className="flex gap-4 rounded-2xl border border-home-line bg-home-paper p-5 shadow-sm"
+                className="flex gap-4 rounded-2xl border border-gold/25 bg-surface/90 p-5 shadow-sm"
               >
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-home-emerald-800 text-home-cream">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gold/15 text-gold-light">
                   <Icon className="size-6" />
                 </span>
                 <span>
