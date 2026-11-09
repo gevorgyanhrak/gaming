@@ -13,7 +13,7 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 **TASK-048 · Complete platform redesign** — started 2026-11-09 (owner said yes). Brief (verbatim): `docs/product/briefs/TASK-048-platform-redesign.md`. Owner rule applies: no paid VIP, no value prizes.
 
 Steps:
-- [ ] 1. PM market research → `docs/product/research/TASK-048-market-research.md`.
+- [x] 1. PM market research → `docs/product/research/TASK-048-market-research.md` ("The Lamplit Room"; owner decisions listed at the end of its report: backend for leaderboards/friends/missions, brand name and logo, age confirmation).
 - [ ] 2. UI/UX agent: visual direction and design system (tokens, components).
 - [ ] 3. Platform redesign: every page and shared component.
 - [ ] 4. Game redesign: poker, nardi, shashki, durak, chess.
