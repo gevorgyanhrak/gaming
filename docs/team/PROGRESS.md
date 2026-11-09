@@ -10,18 +10,22 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
-Nothing in progress. TASK-047, 056, 057 and 058 are done. Next in the owner's order: TASK-048 (complete platform redesign, below), not started: it was not in the batch the owner asked to finish on 2026-11-08 and starts with market research.
+**TASK-048 · Complete platform redesign** — started 2026-11-09 (owner said yes). Brief (verbatim): `docs/product/briefs/TASK-048-platform-redesign.md`. Owner rule applies: no paid VIP, no value prizes.
+
+Steps:
+- [ ] 1. PM market research → `docs/product/research/TASK-048-market-research.md`.
+- [ ] 2. UI/UX agent: visual direction and design system (tokens, components).
+- [ ] 3. Platform redesign: every page and shared component.
+- [ ] 4. Game redesign: poker, nardi, shashki, durak, chess.
+- [ ] 5. Polish: animation, hover, loading, micro-interactions.
+- [ ] 6. QA of every page, comparison with the research, fixes, final report.
 
 ## Next
 
 **Owner rule (2026-11-02): strict sequential order.** Finish one task completely (implemented, tested,
 verified, pushed) before starting the next; never two at once; nothing partial. Order = the order the
-owner gave them: TASK-043 (done) → 044 (done) → 045 (done) → 046 (done) → 047 (done) → 056 (done) → 057 (done) → 058 (done) → 048 (owner set 056, 057 after 047 on 2026-11-08). Older items below those come after.
+owner gave them: TASK-043 (done) → 044 (done) → 045 (done) → 046 (done) → 047 (done) → 056 (done) → 057 (done) → 058 (done) → 048 (Now) (owner set 056, 057 after 047 on 2026-11-08). Older items below those come after.
 
-- **TASK-048 · Complete platform redesign** — brief `docs/product/briefs/TASK-048-platform-redesign.md`
-  (owner, 2026-11-02, verbatim). Phase 1 (PM market research → `docs/product/research/TASK-048-market-research.md`)
-  not started (a parallel start was stopped on the owner's sequencing rule; nothing was written). Then UI/UX agent: design system and
-  redesign of every page and game; QA. Owner rule applies: no paid VIP, no value prizes (flagged as question).
 Later (older backlog):
 - From TASK-047 QA (O-2, predates it): the host's waiting table doesn't update when someone joins a table with
   3+ seats (`RoomService::join` sends no event).

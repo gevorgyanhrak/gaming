@@ -77,7 +77,7 @@ Newest first. Format: date · decision · why · who.
   frame, with a "Move: White/Black" heading · matches the reference the owner gave · owner.
 - 2026-11-08 · Home (`/` and the signed-in `/dashboard`) is a dark "night room" over one big poker-room picture (`HomeBackdrop`, scoped
   `.home-scope-night`) · owner found the first version too white and asked for one big casino/poker background (TASK-056). Poker chips
-  appear in it as table pieces, as at the poker table (developer's reading of "casino, poker", owner Q21 open); still no real-money,
+  appear in it as table pieces, as at the poker table (owner confirmed keeping them, 2026-11-09); still no real-money,
   deposit or cash-prize wording · owner.
 - 2026-10-28 · "Card club" look: dark wood room, gold emphasis, green play buttons, game carousel with
   view transitions, oval tables for card games · owner asked for a bazarblot-style lobby · owner.
