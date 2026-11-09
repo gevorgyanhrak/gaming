@@ -462,7 +462,7 @@ export default function PokerBoard({
           aria-label={t('poker.lastHand')}
           className="club-panel mx-auto max-w-4xl rounded-3xl p-4 text-sm"
         >
-          <h2 className="mb-2 font-semibold text-gold">
+          <h2 className="mb-2 font-semibold text-gold-light">
             {t('poker.lastHandTitle', { hand: view.last_hand.number })}
           </h2>
           <ul className="space-y-1">
@@ -470,7 +470,7 @@ export default function PokerBoard({
               <li
                 key={i}
                 className={
-                  state.seat !== null && pot.winners.includes(state.seat) ? 'text-gold' : ''
+                  state.seat !== null && pot.winners.includes(state.seat) ? 'text-gold-light' : ''
                 }
               >
                 {t('poker.won', {

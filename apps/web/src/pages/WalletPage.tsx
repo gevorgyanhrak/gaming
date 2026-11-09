@@ -62,7 +62,7 @@ export function WalletPage() {
           <Stat
             label={t('fishka.totalSpent')}
             value={signed(wallet.data.total_spent, '−')}
-            tone={wallet.data.total_spent ? 'text-[#f87171]' : ''}
+            tone={wallet.data.total_spent ? 'text-danger' : ''}
           />
           <p className="text-sm text-muted sm:col-span-3">
             {t('fishka.rules')} {t('fishka.note')}
@@ -144,7 +144,7 @@ function Entry({ entry }: { entry: FishkaTransaction }) {
         </p>
       </div>
       <div className="text-right tabular-nums">
-        <p className={`font-bold ${gain ? 'text-success' : 'text-[#f87171]'}`}>
+        <p className={`font-bold ${gain ? 'text-success' : 'text-danger'}`}>
           {gain ? '+' : '−'}
           {Math.abs(entry.amount).toLocaleString(i18n.language)}
         </p>

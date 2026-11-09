@@ -145,7 +145,7 @@ export function RoomPage() {
         </div>
         {data.status === 'active' && view && !leftTable ? (
           <div
-            className={`max-w-[55%] shrink-0 rounded-2xl px-4 py-2 text-right ${myTurn ? 'bg-linear-to-b from-gold-light via-gold to-gold-dark text-black shadow-lg shadow-gold/20' : 'border border-border bg-surface'}`}
+            className={`max-w-[55%] shrink-0 rounded-2xl px-4 py-2 text-right ${myTurn ? 'bg-linear-to-b from-gold-light via-gold to-gold-dark text-black shadow-gold/20 shadow-lg' : 'border border-border bg-surface'}`}
             role="status"
           >
             <p className="max-w-48 truncate font-semibold">

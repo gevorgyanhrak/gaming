@@ -72,7 +72,7 @@ export function TableChat({
             onClick={() => onOpen('emoji')}
             aria-label={t('reactions.emojiButton')}
             title={t('reactions.emojiButton')}
-            className="flex size-11 shrink-0 items-center justify-center rounded-full bg-linear-to-b from-gold-light via-gold to-gold-dark text-2xl shadow-lg shadow-gold/20 transition hover:brightness-110 active:scale-95"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full bg-linear-to-b from-gold-light via-gold to-gold-dark text-2xl shadow-gold/20 shadow-lg transition hover:brightness-110 active:scale-95"
           >
             <span aria-hidden="true">😊</span>
           </button>
@@ -160,7 +160,7 @@ export function TableChat({
         ) : null}
 
         {error ? (
-          <p role="alert" className="mt-1.5 px-1 text-xs text-[#f87171]">
+          <p role="alert" className="mt-1.5 px-1 text-xs text-danger">
             {error}
           </p>
         ) : null}

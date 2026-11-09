@@ -168,7 +168,7 @@ function Dialog({ bonus }: { bonus: DailyBonus }) {
           </div>
 
           {collect.isError ? (
-            <p role="alert" className="mt-2 text-sm text-[#f87171]">
+            <p role="alert" className="mt-2 text-sm text-danger">
               {t('daily.failed')}
             </p>
           ) : null}

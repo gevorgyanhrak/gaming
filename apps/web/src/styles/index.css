@@ -1,48 +1,122 @@
 @import 'tailwindcss';
 
 /*
- * Design tokens. Dark-first: these values are the default theme.
- * Contrast (WCAG): fg/muted/accent-text on bg and surface ≥ 7:1, white on accent ≥ 4.5:1
- * (accent-light too), black on the golds ≥ 6:1.
+ * Design tokens and surfaces: "The Lamplit Room" (TASK-048, docs/design/REDESIGN_048.md).
  */
-@theme {
-  --color-home-paper: #fffcf4;
-  --color-home-ink: #1d2b25;
+@theme static {
+  /* TASK-048 "The Lamplit Room". Contrast figures: docs/design/REDESIGN_048.md §1.3. */
 
-  /* A card club at night: dark wood, brown leather, brass and green baize. */
-  --color-bg: #140c09;
-  --color-surface: #24170f;
-  --color-surface-raised: #33231a;
-  --color-border: #4a3426;
-  --color-fg: #f4ebdd;
-  --color-muted: #c2ab92;
+  /* Only the shades below exist: Tailwind's default emerald scale is switched off. */
+  --color-emerald-*: initial;
 
-  /* Green "play" buttons; links and focus rings in brass. */
-  --color-accent: #226b37;
-  --color-accent-hover: #1d5c2f;
-  --color-accent-text: #e7c36a;
-  --color-accent-light: #2a7f41;
+  /* ── Scales ──────────────────────────────────────────────────────────── */
+  --color-emerald-900: #0e3b30; /* header, rail, footer, tab bar */
+  --color-emerald-800: #114c3e; /* popups (.club-frame) */
+  --color-emerald-700: #15604d; /* panels, cards, form surfaces */
+  --color-emerald-650: #186854; /* the page field; raised on a panel */
+  --color-emerald-600: #1c7a62; /* hover fills */
+  --color-felt: #1f8a63; /* lit baize in art; large text only */
+  --color-walnut-900: #2b1b12; /* game-table surrounds only */
+  --color-walnut-800: #3f2a1c;
+  --color-walnut-700: #5a3b27; /* section bands, filter strip */
+  --color-walnut-500: #8a5e3e; /* wood highlights, never under text */
+  --color-ivory-50: #fffaef; /* name plates, card faces */
+  --color-ivory-100: #f6eedc; /* tiles, reward plates */
+  --color-sand-300: #e4d5b7; /* ivory hover, wells on ivory */
+  --color-gold-300: #f5d98a; /* small gold text, focus ring */
+  --color-gold-500: #e2b84f; /* primary fill, large gold text and graphics */
+  --color-gold-700: #8c6420; /* gold text on ivory */
+  --color-cream: #fff8e7;
+  --color-mint: #cfe4d8;
+  --color-ink: #1e2a24;
+  --color-ink-soft: #47564e;
+  --color-claret: #6d1530; /* decoration and card backs only */
 
-  /* Lobby highlights: gold for headlines and the main "play" calls to action. */
-  --color-gold-light: #f7dc8f;
-  --color-gold-dark: #b9822f;
+  /* ── Roles: same names as before, so every existing class follows ────── */
+  --color-bg: var(--color-emerald-650);
+  --color-surface: var(--color-emerald-700);
+  --color-surface-raised: var(--color-emerald-650);
+  --color-border: #2a7a63; /* decorative hairline, never the only edge of a control */
+  --color-border-strong: #86b8a8; /* edges of inputs and other controls: 3:1 or better */
+  --color-fg: var(--color-cream);
+  --color-muted: var(--color-mint);
+  --color-accent: var(--color-emerald-600);
+  --color-accent-hover: var(--color-emerald-700);
+  --color-accent-light: #24917a;
+  --color-accent-text: var(--color-gold-300); /* links and focus on green and walnut */
+  --color-link-on-ivory: #0e6b56;
+  --color-gold: var(--color-gold-500);
+  --color-gold-light: var(--color-gold-300);
+  --color-gold-dark: #b98a32; /* lower gradient stop of gold fills */
+  --color-success: #7fe3b0;
+  --color-warning: #ffe08a;
+  --color-danger: #ffb9c2;
+  --color-danger-on-ivory: #a61e32;
+  --color-scrim: rgb(7 30 24 / 0.72);
 
-  --color-success: #2fbf71;
-  --color-warning: #f0b429;
-  --color-danger: #f0506e;
-
-  /* Card tables (durak, poker): green baize, ivory faces, burgundy backs with a gold lattice. */
-  --color-felt: #0e4d31;
-  --color-card: #fbf8ef;
+  /* ── Game pieces and table signals (unchanged jobs) ──────────────────── */
+  --color-card: var(--color-ivory-50);
   --color-suit-red: #c1121f;
   --color-suit-black: #1b1b1b;
-  --color-card-back: #6d1530;
-  --color-gold: #d6ab4e;
+  --color-card-back: var(--color-claret);
   --color-turn: #f2c14e;
   --color-take: #d9483b;
   --color-beaten: #2f9e5b;
+  --color-table-room: #0d3a2f; /* behind a game table: darker on purpose */
 
+  /* Kept until Step 7 removes its one use in GameLobby. */
+  --color-home-paper: var(--color-ivory-50);
+  --color-home-ink: var(--color-ink);
+
+  /* ── Type ────────────────────────────────────────────────────────────── */
+  --font-sans: 'Noto Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Noto Serif Display', Georgia, 'Times New Roman', ui-serif, serif;
   --font-card: Georgia, 'Times New Roman', ui-serif, serif;
+
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.625rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl: 1.75rem;
+  --text-3xl--line-height: 2.25rem;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 2.75rem;
+  --text-display-sm: 2.25rem;
+  --text-display-sm--line-height: 2.75rem;
+  --text-display: 3.5rem;
+  --text-display--line-height: 4rem;
+
+  /* ── Space, shape, depth ─────────────────────────────────────────────── */
+  --spacing-rail: 15rem;
+  --spacing-rail-icons: 4.5rem;
+  --spacing-header: 4rem;
+  --spacing-tabbar: 4rem;
+
+  --radius-control: 0.75rem;
+  --radius-card: 1rem;
+  --radius-panel: 1.25rem;
+  --radius-modal: 1.5rem;
+
+  --shadow-panel: 0 8px 24px rgb(7 30 24 / 0.32);
+  --shadow-raised: 0 14px 32px rgb(7 30 24 / 0.42);
+  --shadow-modal: 0 28px 70px rgb(7 30 24 / 0.6);
+  --shadow-gold: 0 6px 16px rgb(226 184 79 / 0.3);
+
+  /* ── Motion ──────────────────────────────────────────────────────────── */
+  --ease-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-pop: cubic-bezier(0.2, 0.8, 0.2, 1.4);
+  --motion-press: 120ms; /* active, pressed */
+  --motion-hover: 150ms; /* hover lifts, colour */
+  --motion-reveal: 200ms; /* tooltip, overlay fade */
+  --motion-enter: 260ms; /* sheet, drawer, dialog */
 
   --animate-card-in: card-in 260ms ease-out both;
   --animate-rise: rise 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
@@ -118,9 +192,17 @@
     }
   }
 
-  --font-sans:
-    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', 'Noto Sans Armenian',
-    sans-serif;
+  @keyframes sheet-up {
+    from {
+      transform: translateY(100%);
+    }
+  }
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+  }
 }
 
 @layer base {
@@ -268,121 +350,6 @@
     box-shadow: 0 24px 60px rgb(0 0 0 / 0.5);
   }
 
-  /* The dark side of the picture, under the words. */
-  .home-hero {
-    background: linear-gradient(90deg, rgb(4 10 8 / 0.84), rgb(4 10 8 / 0.66) 45%, transparent 74%);
-  }
-
-  @media (max-width: 1023.98px) {
-    .home-hero {
-      background: linear-gradient(
-        180deg,
-        rgb(4 10 8 / 0.82),
-        rgb(4 10 8 / 0.62) 70%,
-        rgb(4 10 8 / 0.15)
-      );
-    }
-  }
-
-  /* Gold gradient lettering for big headings. (Plain gold text is Tailwind's `text-gold`.) */
-  .text-gold-gradient {
-    background: linear-gradient(
-      180deg,
-      var(--color-gold-light) 10%,
-      var(--color-gold) 55%,
-      var(--color-gold-dark)
-    );
-    background-clip: text;
-    color: transparent;
-  }
-
-  /* The room behind the app: wall lamps glowing on dark wood panelling. */
-  .club-room {
-    background:
-      radial-gradient(18rem 14rem at 8% 18%, rgb(255 190 110 / 0.22), transparent 70%),
-      radial-gradient(16rem 12rem at 92% 14%, rgb(255 190 110 / 0.16), transparent 70%),
-      radial-gradient(60rem 30rem at 50% 110%, rgb(120 40 30 / 0.35), transparent 70%),
-      repeating-linear-gradient(90deg, rgb(0 0 0 / 0.12) 0 2px, transparent 2px 140px),
-      linear-gradient(#2a1810, #120a07 60%, #0c0605);
-    background-attachment: fixed;
-  }
-
-  /* The app window: smoked glass over the room, edged in brass. */
-  .club-frame {
-    background: linear-gradient(160deg, rgb(58 38 30 / 0.82), rgb(28 18 13 / 0.9));
-    border: 1px solid rgb(214 171 78 / 0.28);
-    box-shadow:
-      0 30px 80px rgb(0 0 0 / 0.55),
-      inset 0 1px 0 rgb(255 255 255 / 0.06);
-    backdrop-filter: blur(6px);
-  }
-
-  /* A panel inside the window. */
-  .club-panel {
-    background: linear-gradient(180deg, rgb(70 48 38 / 0.55), rgb(40 27 20 / 0.55));
-    border: 1px solid rgb(214 171 78 / 0.16);
-  }
-
-  /* A round brass medallion for icons. */
-  .club-medal {
-    background: radial-gradient(circle at 35% 30%, #fbe7a8, #d6ab4e 45%, #8a5a1c);
-    box-shadow:
-      0 6px 16px rgb(0 0 0 / 0.45),
-      inset 0 -3px 6px rgb(0 0 0 / 0.25);
-  }
-
-  /* A flat field of green baize with a fine weave, a little lighter in the middle. */
-  .felt-table {
-    background:
-      radial-gradient(ellipse at 50% 40%, rgb(255 255 255 / 0.07), transparent 70%),
-      repeating-linear-gradient(0deg, rgb(0 0 0 / 0.04) 0 1px, transparent 1px 3px),
-      repeating-linear-gradient(90deg, rgb(0 0 0 / 0.03) 0 1px, transparent 1px 3px),
-      linear-gradient(#16683f, var(--color-felt));
-    box-shadow: 0 16px 40px rgb(0 0 0 / 0.35);
-  }
-
-  /* An oval card table: a polished wooden rim around green baize. */
-  .table-rim {
-    padding: 14px;
-    background: linear-gradient(135deg, #9a6a38, #5a3218 35%, #a87440 55%, #4a2810 80%, #7a4a22);
-    box-shadow:
-      0 30px 70px rgb(0 0 0 / 0.6),
-      inset 0 2px 2px rgb(255 220 170 / 0.35),
-      inset 0 -3px 6px rgb(0 0 0 / 0.5);
-  }
-
-  .table-felt {
-    background:
-      radial-gradient(ellipse at 50% 40%, #237446, #165934 55%, #0e3d23),
-      repeating-linear-gradient(0deg, rgb(0 0 0 / 0.04) 0 1px, transparent 1px 3px);
-    box-shadow:
-      inset 0 0 0 2px rgb(0 0 0 / 0.35),
-      inset 0 10px 40px rgb(0 0 0 / 0.55);
-  }
-
-  /* Poker room (TASK-045): a dark patterned stage, a thick polished rail with a gold inlay and a padded
-     bumper, a lit felt, leather chair backs behind the seats. Our own pattern, drawn in CSS. */
-  .poker-stage {
-    background-color: #120c0a;
-    background-image:
-      radial-gradient(circle at 50% 50%, rgb(214 171 78 / 0.1) 0 9%, transparent 10%),
-      radial-gradient(ellipse 22% 14% at 50% 0%, rgb(214 171 78 / 0.12) 60%, transparent 62%),
-      radial-gradient(ellipse 22% 14% at 50% 100%, rgb(214 171 78 / 0.12) 60%, transparent 62%),
-      radial-gradient(ellipse 14% 22% at 0% 50%, rgb(214 171 78 / 0.12) 60%, transparent 62%),
-      radial-gradient(ellipse 14% 22% at 100% 50%, rgb(214 171 78 / 0.12) 60%, transparent 62%),
-      radial-gradient(ellipse at 50% 40%, #2a1a14 0%, #120c0a 70%);
-    background-size:
-      56px 56px,
-      56px 56px,
-      56px 56px,
-      56px 56px,
-      56px 56px,
-      100% 100%;
-    box-shadow:
-      inset 0 0 0 1px rgb(214 171 78 / 0.18),
-      inset 0 0 80px rgb(0 0 0 / 0.7);
-  }
-
   .poker-rail {
     padding: clamp(10px, 1.6vw, 22px);
     background: linear-gradient(
@@ -400,28 +367,6 @@
       inset 0 -4px 8px rgb(0 0 0 / 0.6),
       inset 0 0 0 clamp(4px, 0.6vw, 7px) #2a160b,
       inset 0 0 0 clamp(5px, 0.7vw, 8px) rgb(214 171 78 / 0.55);
-  }
-
-  .poker-felt {
-    background: radial-gradient(
-      ellipse 60% 55% at 50% 42%,
-      #2f9a5a 0%,
-      #1f7a45 45%,
-      #135530 80%,
-      #0c3d22 100%
-    );
-    box-shadow:
-      inset 0 0 0 3px rgb(0 0 0 / 0.35),
-      inset 0 0 0 5px rgb(214 171 78 / 0.18),
-      inset 0 14px 50px rgb(0 0 0 / 0.55);
-  }
-
-  .poker-chair {
-    background: linear-gradient(180deg, #3b2418 0%, #22140d 60%, #160c07 100%);
-    box-shadow:
-      0 6px 14px rgb(0 0 0 / 0.6),
-      inset 0 2px 2px rgb(255 214 160 / 0.18),
-      inset 0 -6px 10px rgb(0 0 0 / 0.5);
   }
 
   /* Draughts men: a raised rim around a dished centre, lit from the top left. */
@@ -464,5 +409,201 @@
       inset 0 0 0 3px var(--color-card),
       inset 0 0 0 4px rgb(214 171 78 / 0.7),
       0 2px 4px rgb(0 0 0 / 0.35);
+  }
+
+  /* The page: lit emerald. Pools stay faint: more light here would push small text below 4.5:1. */
+  .club-room {
+    background:
+      radial-gradient(70rem 44rem at 24% -10rem, rgb(62 176 132 / 0.06), transparent 72%),
+      radial-gradient(56rem 34rem at 92% 12rem, rgb(62 176 132 / 0.05), transparent 72%),
+      var(--color-bg);
+    background-attachment: fixed;
+  }
+
+  /* Popups and raised panels (name kept: nine call sites). */
+  .club-frame {
+    background: var(--color-emerald-800);
+    border: 1px solid rgb(226 184 79 / 0.38);
+    box-shadow: var(--shadow-modal);
+  }
+
+  /* Cards and panels on the page. */
+  .club-panel {
+    background: var(--color-surface);
+    border: 1px solid rgb(226 184 79 / 0.2);
+    box-shadow: var(--shadow-panel);
+  }
+
+  /* See-through panel over the home picture: 92% so the room shows but text stays readable. */
+  .club-panel-glass {
+    background: rgb(21 96 77 / 0.92);
+    border: 1px solid rgb(226 184 79 / 0.24);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .club-medal {
+    background: radial-gradient(
+      circle at 35% 30%,
+      #fbe7a8,
+      var(--color-gold-500) 48%,
+      var(--color-gold-dark)
+    );
+    box-shadow:
+      0 5px 12px rgb(7 30 24 / 0.4),
+      inset 0 -3px 6px rgb(92 60 12 / 0.28);
+  }
+
+  .text-gold-gradient {
+    background: linear-gradient(180deg, var(--color-gold-300) 20%, var(--color-gold-500));
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* An ivory object: name plate, "how it works" tile, reward plate. Re-points the tokens inside it. */
+  .surface-ivory {
+    --color-fg: var(--color-ink);
+    --color-muted: var(--color-ink-soft);
+    --color-accent-text: var(--color-link-on-ivory);
+    --color-border: #cdbd98;
+    --color-border-strong: #7a6a48;
+    --color-danger: var(--color-danger-on-ivory);
+    --color-gold-light: var(--color-gold-700);
+    color: var(--color-ink);
+    background: var(--color-ivory-100);
+    box-shadow:
+      0 8px 18px rgb(7 30 24 / 0.32),
+      inset 0 1px 0 rgb(255 255 255 / 0.7);
+  }
+
+  /* A walnut band: filter strip, the ladder, section bands. */
+  .surface-walnut {
+    background:
+      repeating-linear-gradient(
+        92deg,
+        rgb(0 0 0 / 0.08) 0 2px,
+        transparent 2px 11px,
+        rgb(255 225 180 / 0.04) 11px 13px,
+        transparent 13px 27px
+      ),
+      linear-gradient(180deg, var(--color-walnut-700), #4a3120);
+    border-block: 1px solid rgb(226 184 79 / 0.28);
+  }
+
+  /* The fixed picture's hero: a green scrim under the words, never a black one. */
+  .home-hero {
+    background: linear-gradient(
+      90deg,
+      rgb(14 59 48 / 0.9),
+      rgb(14 59 48 / 0.86) 44%,
+      rgb(14 59 48 / 0) 78%
+    );
+  }
+
+  @media (max-width: 1023.98px) {
+    .home-hero {
+      background: linear-gradient(
+        180deg,
+        rgb(14 59 48 / 0.78),
+        rgb(14 59 48 / 0.6) 66%,
+        rgb(14 59 48 / 0.05)
+      );
+    }
+  }
+
+  /* Behind a game table: darker on purpose, the board is the subject. */
+  .table-room {
+    background:
+      radial-gradient(70rem 32rem at 50% -8rem, rgb(255 214 150 / 0.08), transparent 70%),
+      linear-gradient(var(--color-table-room), #0b3028);
+  }
+
+  .table-rim {
+    padding: 14px;
+    background: linear-gradient(135deg, #9a6a38, #5a3218 35%, #a87440 55%, #4a2810 80%, #7a4a22);
+    box-shadow:
+      0 24px 60px rgb(7 30 24 / 0.55),
+      inset 0 2px 2px rgb(255 220 170 / 0.35),
+      inset 0 -3px 6px rgb(0 0 0 / 0.45);
+  }
+
+  /* The felt stays the brightest thing on the table; every stop keeps cream small text at 4.5:1 or more. */
+  .table-felt {
+    background:
+      radial-gradient(ellipse at 50% 40%, #237a5a, #19664b 55%, #114c3a),
+      repeating-linear-gradient(0deg, rgb(0 0 0 / 0.04) 0 1px, transparent 1px 3px);
+    box-shadow:
+      inset 0 0 0 2px rgb(0 0 0 / 0.3),
+      inset 0 10px 34px rgb(0 0 0 / 0.42);
+  }
+
+  .poker-stage {
+    background-color: var(--color-walnut-900);
+    background-image:
+      radial-gradient(circle at 50% 50%, rgb(226 184 79 / 0.1) 0 9%, transparent 10%),
+      radial-gradient(ellipse 22% 14% at 50% 0%, rgb(226 184 79 / 0.1) 60%, transparent 62%),
+      radial-gradient(ellipse 22% 14% at 50% 100%, rgb(226 184 79 / 0.1) 60%, transparent 62%),
+      radial-gradient(ellipse 14% 22% at 0% 50%, rgb(226 184 79 / 0.1) 60%, transparent 62%),
+      radial-gradient(ellipse 14% 22% at 100% 50%, rgb(226 184 79 / 0.1) 60%, transparent 62%),
+      radial-gradient(ellipse at 50% 42%, var(--color-walnut-800) 0%, var(--color-walnut-900) 74%);
+    background-size:
+      56px 56px,
+      56px 56px,
+      56px 56px,
+      56px 56px,
+      56px 56px,
+      100% 100%;
+    box-shadow:
+      inset 0 0 0 1px rgb(226 184 79 / 0.2),
+      inset 0 0 70px rgb(20 12 7 / 0.55);
+  }
+
+  .poker-felt {
+    background: radial-gradient(
+      ellipse 60% 55% at 50% 42%,
+      #2c9a68 0%,
+      #1f8a63 45%,
+      #15604d 82%,
+      #114c3e 100%
+    );
+    box-shadow:
+      inset 0 0 0 3px rgb(0 0 0 / 0.3),
+      inset 0 0 0 5px rgb(226 184 79 / 0.2),
+      inset 0 14px 46px rgb(0 0 0 / 0.42);
+  }
+
+  .poker-chair {
+    background: linear-gradient(
+      180deg,
+      #4b3020 0%,
+      var(--color-walnut-800) 60%,
+      var(--color-walnut-900) 100%
+    );
+    box-shadow:
+      0 6px 14px rgb(7 30 24 / 0.55),
+      inset 0 2px 2px rgb(255 214 160 / 0.18),
+      inset 0 -6px 10px rgb(0 0 0 / 0.4);
+  }
+}
+
+/* Outside any layer, so they win over the utilities. */
+
+/* Armenian is never set in capitals (TASK-027), and its smallest size is 13 px. */
+html:lang(hy) .uppercase {
+  text-transform: none;
+  letter-spacing: normal;
+}
+html:lang(hy) {
+  --text-xs: 0.8125rem;
+}
+
+/* A safety net behind the motion-safe: variants already in use. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
   }
 }

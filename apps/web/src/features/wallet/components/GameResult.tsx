@@ -44,7 +44,7 @@ export function GameResult({ roomId }: { roomId: string }) {
     <p
       ref={box}
       className={`mt-3 inline-flex items-center gap-2 rounded-full bg-black/30 px-4 py-1.5 text-lg font-extrabold tabular-nums ${
-        net > 0 ? 'text-success' : net < 0 ? 'text-[#f87171]' : 'text-muted'
+        net > 0 ? 'text-success' : net < 0 ? 'text-danger' : 'text-muted'
       }`}
     >
       <FishkaIcon className="size-6" />

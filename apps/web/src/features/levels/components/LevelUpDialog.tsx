@@ -222,7 +222,7 @@ function Dialog({ status }: { status: LevelStatus }) {
               ) : null}
 
               {collect.isError ? (
-                <p role="alert" className="mt-3 text-sm text-[#f87171]">
+                <p role="alert" className="mt-3 text-sm text-danger">
                   {t('level.failed')}
                 </p>
               ) : null}

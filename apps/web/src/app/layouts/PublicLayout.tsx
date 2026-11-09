@@ -96,7 +96,7 @@ export function PublicLayout() {
         }`}
       >
         <header
-          className={`sticky top-0 z-20 border-b border-gold/15 ${isHome ? 'home-scope-night bg-[#070f0c]/97' : 'bg-[#1f140f]/80 backdrop-blur'}`}
+          className={`sticky top-0 z-20 border-b border-gold/15 ${isHome ? 'home-scope-night bg-[#070f0c]/97' : 'bg-emerald-900'}`}
         >
           <div className="flex h-16 items-center justify-between gap-3 px-3 sm:h-20 sm:px-6">
             <div className="flex min-w-0 items-center gap-3">
@@ -223,7 +223,7 @@ export function PublicLayout() {
         <nav
           aria-label={t('nav.shortcuts')}
           data-tabbar
-          className={`fixed inset-x-0 bottom-0 z-20 flex border-t border-gold/20 ${isHome ? 'bg-[#070f0c]/95' : 'bg-[#1f140f]/95 backdrop-blur'} pb-[env(safe-area-inset-bottom)] lg:hidden`}
+          className={`fixed inset-x-0 bottom-0 z-20 flex border-t border-gold/20 ${isHome ? 'bg-[#070f0c]/95' : 'bg-emerald-900'} pb-[env(safe-area-inset-bottom)] lg:hidden`}
         >
           <NavLink to="/dashboard" className={tabLink}>
             <HomeIcon />
