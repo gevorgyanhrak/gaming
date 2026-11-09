@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
-import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { useLevelUpOpen } from '@/features/levels/popup'
 import { Button } from '@/shared/ui/Button'
+import { Modal } from '@/shared/ui/Modal'
 import { walletKey } from '../api'
 import {
   closeDailyBonus,
@@ -38,15 +38,12 @@ export function DailyBonusDialog() {
   }, [waiting, user, pathname])
 
   // A level-up popup goes first; this one waits for it.
-  return open && bonus.data && !levelUp
-    ? createPortal(<Dialog bonus={bonus.data} />, document.body)
-    : null
+  return open && bonus.data && !levelUp ? <Dialog bonus={bonus.data} /> : null
 }
 
 function Dialog({ bonus }: { bonus: DailyBonus }) {
   const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()
-  const panel = useRef<HTMLDivElement>(null)
   const chest = useRef<HTMLDivElement>(null)
   const format = (n: number) => n.toLocaleString(i18n.language)
 
@@ -72,133 +69,101 @@ function Dialog({ bonus }: { bonus: DailyBonus }) {
     collect.mutate()
   }
 
-  // Modal: the app behind is inert and doesn't scroll; Escape closes; focus returns where it was.
-  useEffect(() => {
-    const opener = document.activeElement as HTMLElement | null
-    const app = document.getElementById('root')
-    const overflow = document.body.style.overflow
-    app?.setAttribute('inert', '')
-    document.body.style.overflow = 'hidden'
-    panel.current?.focus()
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') closeDailyBonus()
-    }
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      app?.removeAttribute('inert')
-      document.body.style.overflow = overflow
-      opener?.focus()
-    }
-  }, [])
-
   const collected = collect.data?.collected ?? 0
   const done = bonus.claimed
   const last = bonus.days.length
   const toDouble = last - bonus.day
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center p-3 sm:items-center sm:p-4">
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm motion-safe:animate-[fade-in_200ms_ease-out]"
-        onClick={closeDailyBonus}
-      />
-      <div
-        ref={panel}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="daily-bonus-title"
-        aria-describedby="daily-bonus-body"
-        tabIndex={-1}
-        className="club-frame relative mb-[env(safe-area-inset-bottom)] w-full max-w-xl overflow-hidden rounded-3xl text-center outline-none motion-safe:animate-rise"
-      >
-        {/* Deep green felt at the top, warming to gold where the chest stands. */}
-        <div className="bg-linear-to-b from-[#0d3a2a] via-[#123f2e] to-[#3b2a14] px-4 pt-6 pb-5 sm:px-7">
-          <h2
-            id="daily-bonus-title"
-            className="text-gold-gradient text-3xl font-extrabold tracking-wide uppercase sm:text-4xl"
-          >
-            {t('daily.title')}
-          </h2>
+    <Modal
+      onClose={closeDailyBonus}
+      labelledBy="daily-bonus-title"
+      describedBy="daily-bonus-body"
+      size="lg"
+      className="text-center"
+    >
+      {/* Deep green felt at the top, warming to gold where the chest stands. */}
+      <div className="bg-emerald-800 px-4 pt-6 pb-5 sm:px-7">
+        <h2
+          id="daily-bonus-title"
+          className="text-gold-gradient text-3xl font-extrabold tracking-wide uppercase sm:text-4xl"
+        >
+          {t('daily.title')}
+        </h2>
 
-          <ol className="mt-5 flex" aria-label={t('daily.days')}>
-            {bonus.days.map(({ day, amount }) => (
-              <DayTile
-                key={day}
-                day={day}
-                amount={format(amount)}
-                state={
-                  day < bonus.day ? 'past' : day === bonus.day ? (done ? 'done' : 'today') : 'next'
-                }
-                double={day === last}
-                first={day === 1}
-              />
-            ))}
-          </ol>
+        <ol className="mt-5 flex" aria-label={t('daily.days')}>
+          {bonus.days.map(({ day, amount }) => (
+            <DayTile
+              key={day}
+              day={day}
+              amount={format(amount)}
+              state={
+                day < bonus.day ? 'past' : day === bonus.day ? (done ? 'done' : 'today') : 'next'
+              }
+              double={day === last}
+              first={day === 1}
+            />
+          ))}
+        </ol>
 
+        <p id="daily-bonus-body" className="mt-4 text-sm font-semibold text-white/90 sm:text-base">
+          {done
+            ? t('daily.comeBack', { amount: format(bonus.tomorrow) })
+            : toDouble > 0
+              ? t('daily.toDouble', { count: toDouble })
+              : t('daily.doubleToday')}
+        </p>
+      </div>
+
+      <div className="surface-ivory relative rounded-none px-4 pt-2 pb-6 sm:px-7">
+        <div className="flex items-center justify-center gap-4 sm:gap-6">
+          <div ref={chest} className="relative">
+            <Chest open={!done || collected > 0} />
+          </div>
           <p
-            id="daily-bonus-body"
-            className="mt-4 text-sm font-semibold text-white/90 sm:text-base"
+            className="flex items-center gap-2 text-4xl font-extrabold text-ink tabular-nums sm:text-5xl"
+            aria-live="polite"
           >
-            {done
-              ? t('daily.comeBack', { amount: format(bonus.tomorrow) })
-              : toDouble > 0
-                ? t('daily.toDouble', { count: toDouble })
-                : t('daily.doubleToday')}
+            <FishkaIcon className="size-10 sm:size-12" />
+            {collected > 0
+              ? `+${format(collected)}`
+              : done
+                ? t('daily.collectedAmount', { amount: format(bonus.amount) })
+                : format(bonus.amount)}
           </p>
         </div>
 
-        <div className="relative bg-linear-to-b from-[#3b2a14] to-[#24180c] px-4 pt-2 pb-6 sm:px-7">
-          <div className="flex items-center justify-center gap-4 sm:gap-6">
-            <div ref={chest} className="relative">
-              <Chest open={!done || collected > 0} />
-            </div>
-            <p
-              className="flex items-center gap-2 text-4xl font-extrabold text-gold-light tabular-nums drop-shadow-[0_2px_6px_rgb(0_0_0/0.6)] sm:text-5xl"
-              aria-live="polite"
-            >
-              <FishkaIcon className="size-10 sm:size-12" />
-              {collected > 0
-                ? `+${format(collected)}`
-                : done
-                  ? t('daily.collectedAmount', { amount: format(bonus.amount) })
-                  : format(bonus.amount)}
-            </p>
-          </div>
+        {collect.isError ? (
+          <p role="alert" className="mt-2 text-sm text-danger">
+            {t('daily.failed')}
+          </p>
+        ) : null}
 
-          {collect.isError ? (
-            <p role="alert" className="mt-2 text-sm text-danger">
-              {t('daily.failed')}
-            </p>
-          ) : null}
-
-          {/* Collect first in the tab order everywhere; on wide screens Later sits to its left. The
+        {/* Collect first in the tab order everywhere; on wide screens Later sits to its left. The
               Collect slot stays (disabled, "Collected") so the sheet doesn't jump. */}
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
-            <Button
-              variant="gold"
-              className="min-h-12 text-lg sm:min-w-48"
-              onClick={take}
-              disabled={done || collect.isPending}
-            >
-              {done
-                ? `✓ ${t('daily.collected')}`
-                : collect.isPending
-                  ? t('daily.collecting')
-                  : t('daily.collect')}
-            </Button>
-            <Button
-              variant="secondary"
-              className="min-h-12 sm:order-first sm:min-w-32"
-              onClick={closeDailyBonus}
-            >
-              {done ? t('daily.close') : t('daily.later')}
-            </Button>
-          </div>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
+          <Button
+            variant="gold"
+            className="min-h-12 text-lg sm:min-w-48"
+            onClick={take}
+            disabled={done || collect.isPending}
+          >
+            {done
+              ? `✓ ${t('daily.collected')}`
+              : collect.isPending
+                ? t('daily.collecting')
+                : t('daily.collect')}
+          </Button>
+          <Button
+            variant="secondary"
+            className="min-h-12 sm:order-first sm:min-w-32"
+            onClick={closeDailyBonus}
+          >
+            {done ? t('daily.close') : t('daily.later')}
+          </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }
 
@@ -225,8 +190,8 @@ function DayTile({
         lit
           ? 'z-10 scale-105 bg-linear-to-b from-gold-light via-gold to-gold-dark text-black shadow-[0_0_24px_rgb(214_171_78/0.7)]'
           : state === 'past'
-            ? 'bg-[#1d5a41] text-white/80'
-            : 'bg-[#4a2a1f] text-white/85'
+            ? 'bg-emerald-650 text-white/85'
+            : 'bg-walnut-700 text-white/90'
       }`}
       style={{
         clipPath: first
