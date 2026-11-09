@@ -29,8 +29,8 @@ describe('Games catalog', () => {
 
     expect(screen.getByTestId('game-grid-loading')).toBeInTheDocument()
 
-    const nardi = await catalog().findByRole('link', { name: /Nardi/ })
-    const poker = catalog().getByRole('link', { name: /Poker/ })
+    const nardi = await catalog().findByRole('link', { name: /^(?!Quick).*Nardi/ })
+    const poker = catalog().getByRole('link', { name: /^(?!Quick).*Poker/ })
 
     expect(nardi).toHaveAttribute('href', '/games/nardi')
     expect(within(nardi).getByText('2 players')).toBeInTheDocument()
@@ -65,7 +65,7 @@ describe('Games catalog', () => {
 
     await userEvent.click(within(alert).getByRole('button', { name: 'Try again' }))
 
-    expect(await catalog().findByRole('link', { name: /Chess/ })).toBeInTheDocument()
+    expect(await catalog().findByRole('link', { name: /^(?!Quick).*Chess/ })).toBeInTheDocument()
   })
 
   it('refetches games in the selected language', async () => {
@@ -77,11 +77,11 @@ describe('Games catalog', () => {
     )
 
     renderRoute('/games')
-    await catalog().findByRole('link', { name: /Chess/ })
+    await catalog().findByRole('link', { name: /^(?!Quick).*Chess/ })
 
     await userEvent.selectOptions(await screen.findByLabelText('Language'), 'ru')
 
-    expect(await catalog().findByRole('link', { name: /Шахматы/ })).toBeInTheDocument()
+    expect(await catalog().findByRole('link', { name: /^(?!Quick).*Шахматы/ })).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Игры')
   })
 
@@ -127,32 +127,31 @@ describe('Games catalog', () => {
     )
   }
 
-  it('shows one shelf per category, in the admin order, others last', async () => {
+  it('offers a filter per category, in the admin order, others last', async () => {
     serveCategories()
     renderRoute('/games')
 
-    await catalog().findByRole('link', { name: /Chess/ })
+    await catalog().findByRole('link', { name: /^(?!Quick).*Chess/ })
     expect(
       catalog()
-        .getAllByRole('heading', { level: 3 })
-        .map((h) => h.textContent),
-    ).toEqual(['Board games', 'Card games', 'More games'])
-    expect(catalog().getByText('2 games')).toBeInTheDocument()
+        .getAllByRole('radio')
+        .map((r) => r.closest('label')?.textContent),
+    ).toEqual(['All games4', 'Board games2', 'Card games1', 'More games1'])
   })
 
   it('filters by category, and the link keeps the choice', async () => {
     serveCategories()
     const { router } = renderRoute('/games')
 
-    await catalog().findByRole('link', { name: /Chess/ })
+    await catalog().findByRole('link', { name: /^(?!Quick).*Chess/ })
     await userEvent.click(catalog().getByRole('radio', { name: /Card games/ }))
 
-    expect(catalog().getByRole('link', { name: /Poker/ })).toBeInTheDocument()
-    expect(catalog().queryByRole('link', { name: /Chess/ })).not.toBeInTheDocument()
+    expect(catalog().getByRole('link', { name: /^(?!Quick).*Poker/ })).toBeInTheDocument()
+    expect(catalog().queryByRole('link', { name: /^(?!Quick).*Chess/ })).not.toBeInTheDocument()
     expect(router.state.location.search).toBe('?category=card')
 
     await userEvent.click(catalog().getByRole('radio', { name: /All games/ }))
-    expect(catalog().getByRole('link', { name: /Chess/ })).toBeInTheDocument()
+    expect(catalog().getByRole('link', { name: /^(?!Quick).*Chess/ })).toBeInTheDocument()
     expect(router.state.location.search).toBe('')
   })
 
@@ -164,25 +163,7 @@ describe('Games catalog', () => {
     )
     renderRoute('/games')
 
-    await catalog().findByRole('link', { name: /Chess/ })
+    await catalog().findByRole('link', { name: /^(?!Quick).*Chess/ })
     expect(catalog().queryByRole('radio')).not.toBeInTheDocument()
-  })
-
-  it('takes one Tab stop per shelf and walks it with the arrow keys', async () => {
-    serveCategories()
-    renderRoute('/games')
-
-    const chess = await catalog().findByRole('link', { name: /Chess/ })
-    const nardi = catalog().getByRole('link', { name: /Nardi/ })
-    expect(chess).toHaveAttribute('tabindex', '0')
-    expect(nardi).toHaveAttribute('tabindex', '-1')
-
-    chess.focus()
-    await userEvent.keyboard('{ArrowRight}')
-    expect(nardi).toHaveFocus()
-    expect(nardi).toHaveAttribute('tabindex', '0')
-
-    await userEvent.keyboard('{Home}')
-    expect(chess).toHaveFocus()
   })
 })

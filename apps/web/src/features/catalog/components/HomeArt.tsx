@@ -2,8 +2,7 @@ import { type ReactNode } from 'react'
 
 /*
  * TASK-056 home page art: flat "deco poster" scenes, drawn from simple shapes, no image files.
- * GamePosterScene: 320×200 poster for a game. CategoryCover:
- * shelf opener. CategoryCrest: 40px mark beside a shelf heading.
+ * GamePosterScene: 320×200 poster for a game.
  */
 
 const c = {
@@ -390,9 +389,6 @@ function Points({
   )
 }
 
-const arch = (x: number, w: number, top: number, bottom: number) =>
-  `M${x} ${bottom}V${top + w / 2}A${w / 2} ${w / 2} 0 0 1 ${x + w} ${top + w / 2}V${bottom}Z`
-
 const flop: [string, Suit][] = [
   ['J', 'heart'],
   ['10', 'spade'],
@@ -534,102 +530,6 @@ export function GamePosterScene({
             {name.charAt(0)}
           </text>
         </>
-      )}
-    </svg>
-  )
-}
-
-const covers: Record<string, ReactNode> = {
-  board: (
-    <>
-      <rect width="320" height="200" fill={c.emerald} />
-      <Rays cx={160} cy={220} count={13} step={13} length={300} color={c.emeraldLight} />
-      <Floor y={172} size={28} width={336} a={c.emeraldDeep} b={c.ivory} />
-      <King x={160} y={182} scale={0.8} fill={c.cream} trim={c.gold} />
-      {/* The side pieces only show when the tile is wide; at 4 columns they are cropped away whole. */}
-      <Man x={46} y={152} rx={26} tiers={2} top={c.gold} side={c.goldDeep} crown />
-      <Die x={274} y={128} size={40} angle={14} value={5} />
-    </>
-  ),
-  card: (
-    <>
-      <rect width="320" height="200" fill={c.garnet} />
-      <Rays cx={160} cy={220} count={13} step={13} length={300} color={c.garnetLight} />
-      {/* A 2×2 block stays whole when a narrow tile crops the sides. */}
-      {(['spade', 'heart', 'diamond', 'club'] as Suit[]).map((suit, i) => (
-        <g key={suit}>
-          <circle
-            cx={123 + (i % 2) * 74}
-            cy={63 + (i < 2 ? 0 : 74)}
-            r={32}
-            fill={c.cream}
-            stroke={c.gold}
-            strokeWidth="3"
-          />
-          <SuitMark suit={suit} x={123 + (i % 2) * 74 - 18} y={45 + (i < 2 ? 0 : 74)} size={36} />
-        </g>
-      ))}
-    </>
-  ),
-}
-
-/** Art that opens a shelf (from 1024px up): the category's own, or a generic one in its colour. */
-export function CategoryCover({ slug, className = '' }: { slug: string; className?: string }) {
-  const { ground, ray } = groundFor(slug)
-  return (
-    <svg
-      viewBox="0 0 320 200"
-      preserveAspectRatio="xMidYMid slice"
-      aria-hidden="true"
-      className={className}
-    >
-      {covers[slug] ?? (
-        <>
-          <rect width="320" height="200" fill={ground} />
-          <Rays cx={160} cy={220} count={13} step={13} length={300} color={ray} />
-          {[0, 1, 2].map((i) => (
-            <path
-              key={i}
-              d={arch(78 + i * 28, 164 - i * 56, 34 + i * 28, 200)}
-              fill="none"
-              stroke={c.gold}
-              strokeWidth="4"
-            />
-          ))}
-        </>
-      )}
-    </svg>
-  )
-}
-
-const crests: Record<string, ReactNode> = {
-  board: <Die x={20} y={20} size={24} angle={0} value={5} />,
-  card: <SuitMark suit="spade" x={9} y={9} size={22} fill={c.cream} />,
-}
-
-/** A small mark beside a shelf's heading: its own for known categories, a letter otherwise. */
-export function CategoryCrest({ slug, name }: { slug: string; name: string }) {
-  const { ground } =
-    slug === 'card'
-      ? { ground: c.garnet }
-      : slug === 'board'
-        ? { ground: c.emerald }
-        : groundFor(slug)
-  return (
-    <svg viewBox="0 0 40 40" aria-hidden="true" className="size-10 shrink-0 rounded-xl">
-      <rect width="40" height="40" fill={ground} />
-      {crests[slug] ?? (
-        <text
-          x="20"
-          y="27"
-          textAnchor="middle"
-          fontFamily="system-ui, 'Noto Sans Armenian', sans-serif"
-          fontSize="20"
-          fontWeight="800"
-          fill={c.cream}
-        >
-          {name.charAt(0)}
-        </text>
       )}
     </svg>
   )

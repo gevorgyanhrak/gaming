@@ -43,7 +43,7 @@
   },
   "catalog": {
     "title": "Games",
-    "subtitle": "Choose a game to read its rules.",
+    "subtitle": "Choose a game.",
     "empty": "No games are available right now.",
     "comingSoon": "Coming soon",
     "players_one": "{{count}} player",
@@ -545,15 +545,6 @@
     "awayLimit_one": "Come back within {{count}} second, or the game is lost.",
     "awayLimit_other": "Come back within {{count}} seconds, or the game is lost."
   },
-  "carousel": {
-    "carousel": "carousel",
-    "slide": "slide",
-    "label": "Games",
-    "position": "{{index}} of {{count}}",
-    "range": "{{from}}–{{to}} of {{count}}",
-    "previousPage": "Previous games",
-    "nextPage": "Next games"
-  },
   "join": {
     "title": "Join a table",
     "joining": "Joining the table…",
@@ -743,10 +734,7 @@
     "all": "All games",
     "filterLabel": "Show games by category",
     "other": "More games",
-    "seeAll": "See all",
-    "seeAllLabel": "See all: {{category}}",
-    "count_one": "{{count}} game",
-    "count_other": "{{count}} games"
+    "quickSeat": "Quick seat"
   },
   "ranks": {
     "title": "Club ranks",

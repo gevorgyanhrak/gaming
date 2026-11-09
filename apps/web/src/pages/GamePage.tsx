@@ -36,7 +36,7 @@ export function GamePage() {
         {game.isPending ? (
           <div data-testid="game-loading" className="space-y-4">
             <Skeleton className="h-14 w-1/3" />
-            <Skeleton className="aspect-[16/9] w-full max-w-2xl rounded-3xl" />
+            <Skeleton className="aspect-[16/9] w-full max-w-2xl rounded-panel" />
           </div>
         ) : game.isError ? (
           isApiError(game.error) && game.error.isNotFound ? (
@@ -53,7 +53,7 @@ export function GamePage() {
             ) : (
               <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:items-start">
                 <GameHero game={game.data} />
-                <p className="club-panel rounded-3xl px-5 py-4 text-muted motion-safe:animate-rise">
+                <p className="club-panel rounded-panel px-5 py-4 text-muted motion-safe:animate-rise">
                   {t('game.notPlayable')}
                 </p>
               </div>
@@ -61,16 +61,16 @@ export function GamePage() {
 
             <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_1.4fr]">
               {game.data.modes && game.data.modes.length > 0 ? (
-                <section className="club-panel rounded-3xl p-5 sm:p-6">
+                <section className="club-panel rounded-panel p-5 sm:p-6">
                   <h2 className="text-xl font-bold">{t('game.modes')}</h2>
                   <ul className="mt-4 space-y-3">
                     {game.data.modes.map((mode) => (
-                      <li key={mode.slug} className="rounded-2xl bg-black/20 p-4">
+                      <li key={mode.slug} className="rounded-card bg-emerald-900/40 p-4">
                         <p className="font-semibold">{mode.name}</p>
                         {mode.description ? (
                           <p className="mt-1 text-sm text-muted">{mode.description}</p>
                         ) : null}
-                        <p className="mt-2 text-xs font-medium tracking-wide text-muted uppercase">
+                        <p className="mt-2 text-xs font-medium text-muted">
                           <PlayerCount game={mode} />
                         </p>
                       </li>
@@ -79,7 +79,7 @@ export function GamePage() {
                 </section>
               ) : null}
 
-              <section className="club-panel rounded-3xl p-5 sm:p-6">
+              <section className="club-panel rounded-panel p-5 sm:p-6">
                 <h2 className="text-xl font-bold">{t('game.rules')}</h2>
                 <div className="mt-4 space-y-4 leading-relaxed text-fg/90">
                   {splitParagraphs(game.data.rules).map((paragraph, index) => (
@@ -125,7 +125,7 @@ function GameHero({ game }: { game: GameDetail }) {
     <header className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
         <ViewTransition name={titleTransition(game.slug)}>
-          <h1 className="text-gold-gradient text-4xl font-extrabold tracking-tight uppercase sm:text-6xl">
+          <h1 className="text-gold-gradient font-display text-4xl font-bold sm:text-5xl">
             {game.name}
           </h1>
         </ViewTransition>
@@ -133,37 +133,27 @@ function GameHero({ game }: { game: GameDetail }) {
       </div>
       <p className="max-w-2xl text-fg/80 motion-safe:animate-rise">{game.description}</p>
 
-      <div className="relative overflow-hidden rounded-[1.75rem] border border-gold/30 shadow-2xl shadow-black/50">
+      <div className="relative overflow-hidden rounded-panel border border-gold/30 shadow-raised">
         <ViewTransition name={artTransition(game.slug)}>
-          <GameArtwork game={game} className="aspect-[16/9] w-full" />
+          <GameArtwork game={game} className="aspect-[16/9] max-h-64 w-full lg:max-h-none" />
         </ViewTransition>
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-linear-to-t from-black/85 via-black/10 to-transparent"
-        />
-        <p className="absolute top-4 right-4 rounded-full border border-white/15 bg-black/45 px-3 py-1 text-sm font-medium backdrop-blur">
+        <p className="absolute top-3 right-3 rounded-full bg-emerald-900/85 px-3 py-1 text-sm font-medium text-fg">
           <PlayerCount game={game} />
         </p>
-        {record.length > 0 ? (
-          <dl className="absolute inset-x-0 bottom-0 grid grid-cols-3 gap-2 p-4 sm:p-6">
-            {record.map(({ key, Icon, label, value }, index) => (
-              <div
-                key={key}
-                className="flex flex-col items-center motion-safe:animate-rise"
-                style={{ animationDelay: `${250 + index * 90}ms` }}
-              >
-                <dt className="text-xs font-medium tracking-wide text-fg/80 uppercase sm:text-sm">
-                  {label}
-                </dt>
-                <dd className="mt-1 flex items-center gap-2 text-2xl font-extrabold sm:text-4xl">
-                  <Icon className="size-6 text-gold sm:size-8" />
-                  <span className={key === 'wins' ? 'text-gold' : ''}>{value}</span>
-                </dd>
-              </div>
-            ))}
-          </dl>
-        ) : null}
       </div>
+      {record.length > 0 ? (
+        <dl className="club-panel grid grid-cols-3 gap-2 rounded-panel p-4">
+          {record.map(({ key, Icon, label, value }) => (
+            <div key={key} className="flex flex-col items-center">
+              <dt className="text-xs font-medium text-muted sm:text-sm">{label}</dt>
+              <dd className="mt-1 flex items-center gap-2 text-2xl font-bold">
+                <Icon className="size-6 text-gold" />
+                <span className={key === 'wins' ? 'text-gold-light' : ''}>{value}</span>
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
     </header>
   )
 }

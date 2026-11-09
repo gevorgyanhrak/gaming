@@ -17,12 +17,9 @@ export function GameGrid() {
           <Skeleton className="h-11 w-36 rounded-full" />
           <Skeleton className="h-11 w-36 rounded-full" />
         </div>
-        <div className="flex gap-4 overflow-hidden lg:gap-5">
-          {[0, 1, 2, 3].map((i) => (
-            <Skeleton
-              key={i}
-              className="aspect-[4/5] w-[78%] shrink-0 rounded-2xl sm:w-[44%] lg:aspect-[16/10] lg:w-[calc((100%-3.75rem)/4)]"
-            />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="aspect-[3/3.4] rounded-card" />
           ))}
         </div>
       </div>

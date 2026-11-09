@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
-const sizes = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-xl' } as const
+const sizes = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-xl', xl: 'max-w-4xl' } as const
 
 /**
  * The one modal: a popup, or a bottom sheet on phones. The app behind is inert and doesn't scroll, Escape

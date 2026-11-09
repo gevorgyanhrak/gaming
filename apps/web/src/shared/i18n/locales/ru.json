@@ -43,7 +43,7 @@
   },
   "catalog": {
     "title": "Игры",
-    "subtitle": "Выберите игру, чтобы прочитать правила.",
+    "subtitle": "Выберите игру.",
     "empty": "Сейчас нет доступных игр.",
     "comingSoon": "Скоро",
     "players_one": "{{count}} игрок",
@@ -579,15 +579,6 @@
     "awayLimit_many": "Вернитесь в течение {{count}} секунд, иначе партия будет проиграна.",
     "awayLimit_other": "Вернитесь в течение {{count}} секунд, иначе партия будет проиграна."
   },
-  "carousel": {
-    "carousel": "карусель",
-    "slide": "слайд",
-    "label": "Игры",
-    "position": "{{index}} из {{count}}",
-    "range": "{{from}}–{{to}} из {{count}}",
-    "previousPage": "Предыдущие игры",
-    "nextPage": "Следующие игры"
-  },
   "join": {
     "title": "Присоединиться к столу",
     "joining": "Садимся за стол…",
@@ -793,12 +784,7 @@
     "all": "Все игры",
     "filterLabel": "Показать игры по категории",
     "other": "Другие игры",
-    "seeAll": "Показать все",
-    "seeAllLabel": "Показать все: {{category}}",
-    "count_one": "{{count}} игра",
-    "count_few": "{{count}} игры",
-    "count_many": "{{count}} игр",
-    "count_other": "{{count}} игры"
+    "quickSeat": "Быстро за стол"
   },
   "ranks": {
     "title": "Ранги клуба",
