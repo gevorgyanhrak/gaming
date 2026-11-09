@@ -16,7 +16,8 @@
     "back": "Back",
     "wallet": "Wallet",
     "walletShort": "Wallet",
-    "toggleRail": "Collapse or expand the menu"
+    "toggleRail": "Collapse or expand the menu",
+    "ranks": "Ranks"
   },
   "landing": {
     "title": "Pull up a chair.\nYour game is waiting.",
@@ -745,5 +746,8 @@
     "amethyst": "Amethyst",
     "levels": "Levels {{from}}–{{to}}",
     "levelsUp": "Levels {{from}}+"
+  },
+  "home": {
+    "tryNext": "Try next"
   }
 }

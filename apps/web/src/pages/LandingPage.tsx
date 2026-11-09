@@ -1,26 +1,17 @@
 import { useTranslation } from 'react-i18next'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { GameGrid } from '@/features/catalog/components/GameGrid'
-import { tierOf } from '@/features/levels/ranks'
+import { RankLadder } from '@/features/levels/components/RankLadder'
 import { usePublicConfig } from '@/features/platform/usePublicConfig'
 import { useMediaQuery } from '@/shared/lib/useMediaQuery'
 import { ButtonLink } from '@/shared/ui/Button'
 import { Container } from '@/shared/ui/Container'
-import { LevelBadge } from '@/shared/ui/LevelBadge'
 import { BoltIcon, BotIcon, FriendsIcon } from '@/shared/ui/icons'
 
 const ways = [
   { key: 'online', Icon: BoltIcon },
   { key: 'bots', Icon: BotIcon },
   { key: 'friends', Icon: FriendsIcon },
-] as const
-
-const tiers = [
-  { level: 1, to: 9 },
-  { level: 10, to: 19 },
-  { level: 20, to: 29 },
-  { level: 30, to: 49 },
-  { level: 50, to: null },
 ] as const
 
 export function LandingPage() {
@@ -104,21 +95,7 @@ export function LandingPage() {
       <section className="surface-walnut">
         <Container className="py-8">
           <h2 className="mb-5 text-2xl font-bold text-fg">{t('ranks.title')}</h2>
-          <ol className="grid grid-cols-5 gap-2 text-center">
-            {tiers.map(({ level, to }) => (
-              <li key={level} className="flex flex-col items-center gap-1.5">
-                <LevelBadge level={level} size="lg" />
-                <span className="text-[0.8125rem] font-semibold text-fg sm:text-base">
-                  {t(`ranks.${tierOf(level).key}`)}
-                </span>
-                <span className="text-xs text-muted">
-                  {to === null
-                    ? t('ranks.levelsUp', { from: level })
-                    : t('ranks.levels', { from: level, to })}
-                </span>
-              </li>
-            ))}
-          </ol>
+          <RankLadder />
         </Container>
       </section>
     </>

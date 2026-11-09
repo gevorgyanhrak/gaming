@@ -31,6 +31,7 @@ import {
   HistoryIcon,
   HomeIcon,
   SettingsIcon,
+  TrophyIcon,
   UserIcon,
 } from '@/shared/ui/icons'
 import { Skeleton } from '@/shared/ui/Skeleton'
@@ -168,7 +169,7 @@ export function PublicLayout() {
           </div>
         ) : null}
 
-        <main className="flex-1">
+        <main className={`flex-1 ${atTable ? 'table-room' : ''}`}>
           {inMaintenance ? (
             <MaintenanceScreen message={config.data?.maintenance.message ?? null} />
           ) : (
@@ -227,16 +228,16 @@ export function PublicLayout() {
                 <FishkaIcon className="size-6" />
                 {t('nav.walletShort')}
               </NavLink>
-              <NavLink to="/history" className={tabLink}>
-                <HistoryIcon />
-                {t('nav.historyShort')}
+              <NavLink to="/ranks" className={tabLink}>
+                <TrophyIcon />
+                {t('nav.ranks')}
               </NavLink>
               <NavLink to="/profile" className={tabLink}>
                 <UserIcon />
                 {t('nav.profile')}
               </NavLink>
             </>
-          ) : (
+          ) : user.isPending ? null : (
             <NavLink to="/login" className={tabLink}>
               <UserIcon />
               {t('nav.login')}
@@ -332,6 +333,7 @@ function Rail({
         {signedIn ? (
           <div className="flex flex-col gap-1">
             {link('/wallet', t('nav.wallet'), <FishkaIcon className="size-6" />)}
+            {link('/ranks', t('nav.ranks'), <TrophyIcon />)}
             {link('/history', t('nav.history'), <HistoryIcon />)}
             {link('/profile', t('nav.profile'), <UserIcon />)}
           </div>

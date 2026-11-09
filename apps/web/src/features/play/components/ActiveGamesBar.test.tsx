@@ -45,7 +45,7 @@ describe('Games in progress bar', () => {
 
   it('stays hidden for guests and on the game’s own page', async () => {
     renderRoute('/games')
-    expect(await screen.findByRole('link', { name: 'Log in' })).toBeInTheDocument()
+    expect((await screen.findAllByRole('link', { name: 'Log in' })).length).toBeGreaterThan(0)
     expect(screen.queryByText(/You are in a game/)).not.toBeInTheDocument()
   })
 })

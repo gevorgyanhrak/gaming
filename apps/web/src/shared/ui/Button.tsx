@@ -14,7 +14,7 @@ const variants = {
     'border border-gold/60 bg-transparent text-accent-text hover:border-gold-light hover:bg-gold/12 active:bg-gold/20',
   /** Everything else. */
   secondary:
-    'border border-border-strong/70 bg-emerald-800 text-fg hover:bg-surface-raised active:bg-emerald-900',
+    'border border-border-strong/70 bg-emerald-800 text-cream hover:bg-emerald-650 active:bg-emerald-900',
   ghost: 'text-fg hover:bg-white/8 active:bg-white/12',
   /** Resign and other destructive confirmations. */
   danger: 'border border-danger/60 bg-danger/14 text-fg hover:bg-danger/24',

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { fetchFishkaHistory, walletHistoryKey, type FishkaTransaction } from '@/features/wallet/api'
+import { DailyBonusCard } from '@/features/wallet/components/DailyBonusCard'
 import { FishkaIcon } from '@/features/wallet/components/FishkaIcon'
 import { useWallet } from '@/features/wallet/hooks'
 import { openOutOfFishkas } from '@/features/wallet/outOfFishkas'
@@ -9,7 +10,6 @@ import { Button } from '@/shared/ui/Button'
 import { Container } from '@/shared/ui/Container'
 import { Skeleton } from '@/shared/ui/Skeleton'
 import { EmptyState, QueryErrorState } from '@/shared/ui/States'
-import { openDailyBonus, useDailyBonus } from '@/features/wallet/dailyBonus'
 
 /** The player's Fishkas: balance, totals, how fees work, and every change (newest first). */
 export function WalletPage() {
@@ -34,14 +34,12 @@ export function WalletPage() {
       ) : wallet.isError ? (
         <QueryErrorState error={wallet.error} onRetry={() => void wallet.refetch()} />
       ) : (
-        <section className="club-panel grid gap-4 rounded-3xl p-5 sm:grid-cols-3 sm:p-6">
-          <div className="flex items-center gap-3 sm:col-span-3">
+        <section className="club-panel grid gap-4 rounded-panel p-5 sm:grid-cols-3 sm:p-6">
+          <div className="surface-ivory flex flex-wrap items-center gap-3 rounded-card p-4 sm:col-span-3">
             <FishkaIcon className="size-12" />
             <div>
-              <p className="text-xs font-semibold tracking-wider text-muted uppercase">
-                {t('fishka.balance')}
-              </p>
-              <p className="text-3xl font-extrabold text-gold-light tabular-nums">
+              <p className="text-xs font-semibold text-muted">{t('fishka.balance')}</p>
+              <p className="text-4xl font-bold text-ink tabular-nums">
                 {format(wallet.data.balance)}
               </p>
             </div>
@@ -84,7 +82,7 @@ export function WalletPage() {
           <EmptyState title={t('fishka.historyEmpty')} />
         ) : (
           <>
-            <ul className="club-panel divide-y divide-gold/10 rounded-3xl">
+            <ul className="club-panel divide-y divide-gold/10 rounded-panel">
               {history.data.data.map((entry) => (
                 <Entry key={entry.id} entry={entry} />
               ))}
@@ -151,33 +149,5 @@ function Entry({ entry }: { entry: FishkaTransaction }) {
         <p className="text-xs text-muted">{entry.balance_after.toLocaleString(i18n.language)}</p>
       </div>
     </li>
-  )
-}
-
-/** Today's daily bonus, and the way back to the popup after it was closed. */
-function DailyBonusCard() {
-  const { t, i18n } = useTranslation()
-  const bonus = useDailyBonus()
-  if (!bonus.data) return null
-  const { day, claimed, amount } = bonus.data
-
-  return (
-    <section className="club-panel flex flex-wrap items-center gap-3 rounded-3xl p-5 sm:p-6">
-      <FishkaIcon className="size-10" />
-      <div className="min-w-0 flex-1">
-        <h2 className="font-bold">{t('daily.title')}</h2>
-        <p className="text-sm text-muted">
-          {t('daily.day', { day })} ·{' '}
-          {claimed ? t('daily.collected') : amount.toLocaleString(i18n.language)}
-        </p>
-      </div>
-      <Button
-        variant={claimed ? 'secondary' : 'gold'}
-        className="min-h-11"
-        onClick={openDailyBonus}
-      >
-        {claimed ? t('daily.open') : t('daily.collect')}
-      </Button>
-    </section>
   )
 }

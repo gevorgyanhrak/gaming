@@ -19,6 +19,10 @@ export const routes: RouteObject[] = [
       { path: 'games', element: <GamesPage /> },
       { path: 'games/:slug', element: <GamePage /> },
       {
+        path: 'ranks',
+        lazy: () => import('@/pages/RanksPage').then((m) => ({ Component: m.RanksPage })),
+      },
+      {
         path: 'pages/:slug',
         lazy: () => import('@/pages/ContentPage').then((m) => ({ Component: m.ContentPage })),
       },

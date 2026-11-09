@@ -1,6 +1,11 @@
+import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useCurrentUser } from '@/features/auth/hooks'
+import { GameIcon } from '@/features/catalog/components/GameArt'
 import { GameGrid } from '@/features/catalog/components/GameGrid'
+import { useGames, type GameSummary } from '@/features/catalog/queries'
+import { fetchMyStats, myStatsKey } from '@/features/play/api'
+import { DailyBonusCard } from '@/features/wallet/components/DailyBonusCard'
 import { DashboardGames } from '@/features/play/components/DashboardGames'
 import { LevelCard } from '@/features/levels/components/LevelCard'
 import { Avatar } from '@/shared/ui/Avatar'
@@ -25,54 +30,74 @@ export function DashboardPage() {
     <>
       <title>{t('dashboard.title')}</title>
       <section className="home-hero">
-        <Container className="py-10 lg:py-14">
-          <div className="max-w-4xl min-w-0">
-            <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
-              <div className="flex items-center gap-4">
-                <Avatar
-                  url={user.profile.avatar_url}
-                  name={name}
-                  size="md"
-                  level={user.level}
-                  frame={user.looks.frame}
-                />
-                <div className="min-w-0">
-                  <h1 className="text-gold-gradient text-2xl font-extrabold sm:text-3xl">
-                    {t('dashboard.welcome', { name })}
-                  </h1>
-                  <p className="mt-0.5 text-xs text-muted">
-                    {t('dashboard.memberSince', { date: memberSince })}
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2 sm:ml-auto">
-                <ButtonLink to="/games" variant="gold" className="min-h-11">
+        <Container className="py-8 lg:py-12">
+          <div className="grid max-w-5xl items-center gap-6 lg:grid-cols-[1fr_1.1fr]">
+            <div className="flex min-w-0 items-center gap-4">
+              <Avatar
+                url={user.profile.avatar_url}
+                name={name}
+                size="lg"
+                level={user.level}
+                frame={user.looks.frame}
+              />
+              <div className="min-w-0">
+                <h1 className="text-gold-gradient font-display text-3xl font-bold break-words lg:text-4xl">
+                  {t('dashboard.welcome', { name })}
+                </h1>
+                <p className="mt-1 text-xs text-muted">
+                  {t('dashboard.memberSince', { date: memberSince })}
+                </p>
+                <ButtonLink to="/games" variant="gold" className="mt-3">
                   {t('dashboard.play')}
-                </ButtonLink>
-                <ButtonLink to="/profile" variant="secondary" className="min-h-11">
-                  {t('nav.profile')}
-                </ButtonLink>
-                <ButtonLink to="/settings" variant="secondary" className="min-h-11">
-                  {t('nav.settings')}
                 </ButtonLink>
               </div>
             </div>
-            <LevelCard className="relative mt-5 max-w-xl bg-emerald-900/70" />
+            <LevelCard className="relative bg-emerald-900/80" />
           </div>
         </Container>
       </section>
 
-      <Container className="pb-12">
-        <section className="club-panel-glass space-y-10 rounded-panel p-5 sm:p-6">
-          <div>
-            <h2 className="mb-6 text-3xl font-extrabold tracking-tight text-fg">
-              {t('dashboard.gamesHeading')}
-            </h2>
-            <GameGrid />
-          </div>
-          <DashboardGames />
+      <Container className="space-y-5 pb-12">
+        <div className="grid gap-5 lg:grid-cols-2">
+          <DailyBonusCard className="club-panel-glass" />
+          <TryNext />
+        </div>
+        <section className="club-panel-glass rounded-panel p-5 sm:p-6">
+          <h2 className="mb-5 text-2xl font-bold text-fg">{t('dashboard.gamesHeading')}</h2>
+          <GameGrid />
         </section>
+        <DashboardGames />
       </Container>
     </>
+  )
+}
+
+/** A game the player hasn't tried, or has played least. Only with more than one game to choose from. */
+function TryNext() {
+  const { t } = useTranslation()
+  const games = useGames()
+  const stats = useQuery({ queryKey: myStatsKey, queryFn: ({ signal }) => fetchMyStats(signal) })
+  if (!games.data || !stats.data || games.data.length < 2) return null
+
+  const played = (slug: string) => stats.data.find((row) => row.game.slug === slug)?.played ?? 0
+  const game = games.data
+    .filter((g) => g.is_playable)
+    .reduce<GameSummary | null>(
+      (least, g) => (!least || played(g.slug) < played(least.slug) ? g : least),
+      null,
+    )
+  if (!game) return null
+
+  return (
+    <section className="club-panel-glass flex items-center gap-4 rounded-panel p-5 sm:p-6">
+      <GameIcon slug={game.slug} name={game.name} className="size-10 shrink-0 text-gold" />
+      <div className="min-w-0 flex-1">
+        <h2 className="text-sm text-muted">{t('home.tryNext')}</h2>
+        <p className="truncate text-lg font-bold">{game.name}</p>
+      </div>
+      <ButtonLink to={`/games/${game.slug}`} variant="secondary">
+        {t('catalog.play')}
+      </ButtonLink>
+    </section>
   )
 }

@@ -15,7 +15,7 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 Steps:
 - [x] 1. PM market research → `docs/product/research/TASK-048-market-research.md` ("The Lamplit Room"; owner decisions listed at the end of its report: backend for leaderboards/friends/missions, brand name and logo, age confirmation).
 - [x] 2. UI/UX agent: visual direction and design system → `docs/design/REDESIGN_048.md`, preview `docs/design/preview-048-home.html` (build order in its §7; show the owner the relit home at stage 6).
-- [ ] 3. Platform redesign, by the steps in `REDESIGN_048.md` §7: [x] tokens and surfaces; [x] fonts; [x] primitives; [x] modal, tooltip (toast waits for a real use); [x] shell (`/ranks` link and TableBar come later); [x] home; [ ] lobby and game pages; [ ] dashboard; [ ] tables; [ ] remaining pages.
+- [ ] 3. Platform redesign, by the steps in `REDESIGN_048.md` §7: [x] tokens and surfaces; [x] fonts; [x] primitives; [x] modal, tooltip (toast waits for a real use); [x] shell (`/ranks` link and TableBar come later); [x] home; [x] lobby and game pages; [x] dashboard; [x] tables (surround only; Nardi's walnut unchanged); [x] remaining pages (wallet, profile, auth, ranks). Not done from the spec: TableBar and floating GameOverPanel, Toast (no real use yet), featured double-width poster.
 - [ ] 4. Game redesign: poker, nardi, shashki, durak, chess.
 - [ ] 5. Polish: animation, hover, loading, micro-interactions.
 - [ ] 6. QA of every page, comparison with the research, fixes, final report.

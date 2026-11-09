@@ -7,6 +7,8 @@ import { fetchMyGames, fetchMyStats, myGamesKey, myStatsKey } from '@/features/p
 import { GameRecord } from '@/features/play/components/GameRecord'
 import { RoomSummary } from '@/features/play/components/RoomSummary'
 import { LevelCard } from '@/features/levels/components/LevelCard'
+import { tierOf } from '@/features/levels/ranks'
+import { LevelBadge } from '@/shared/ui/LevelBadge'
 import { ButtonLink } from '@/shared/ui/Button'
 import { Container } from '@/shared/ui/Container'
 import { Skeleton } from '@/shared/ui/Skeleton'
@@ -49,7 +51,23 @@ export function ProfilePage() {
           </ButtonLink>
         }
       />
-      <LevelCard />
+      <div className="grid gap-4 lg:grid-cols-[1fr_2fr]">
+        <div className="surface-ivory flex flex-col items-center justify-center gap-2 rounded-card p-5 text-center">
+          <LevelBadge level={user.level} size="xl" />
+          <p className="font-display text-2xl font-bold text-ink">
+            {t(`ranks.${tierOf(user.level).key}`)}
+          </p>
+        </div>
+        <LevelCard />
+      </div>
+      <nav aria-label={t('nav.sections')} className="grid gap-2 sm:grid-cols-2 lg:hidden">
+        <ButtonLink to="/history" variant="secondary">
+          {t('nav.history')}
+        </ButtonLink>
+        <ButtonLink to="/settings" variant="secondary">
+          {t('nav.settings')}
+        </ButtonLink>
+      </nav>
 
       {noGames ? (
         <EmptyState title={t('profile.noGames')}>

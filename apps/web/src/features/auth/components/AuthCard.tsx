@@ -17,8 +17,8 @@ export function AuthCard({
     <Container className="flex justify-center py-12 sm:py-16">
       <title>{title}</title>
       <div className="w-full max-w-md">
-        <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8">
-          <h1 className="text-2xl font-bold">{title}</h1>
+        <div className="rounded-panel border border-gold/25 bg-surface p-6 shadow-panel sm:p-8">
+          <h1 className="text-gold-gradient text-3xl font-bold">{title}</h1>
           {subtitle ? <p className="mt-2 text-sm text-muted">{subtitle}</p> : null}
           <div className="mt-6">{children}</div>
         </div>

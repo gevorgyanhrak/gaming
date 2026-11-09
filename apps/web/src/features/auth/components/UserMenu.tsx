@@ -75,6 +75,12 @@ export function UserMenu({ user }: { user: CurrentUser }) {
           <Link to="/dashboard" className={item} onClick={() => setOpen(false)}>
             {t('nav.dashboard')}
           </Link>
+          <Link to="/wallet" className={item} onClick={() => setOpen(false)}>
+            {t('nav.wallet')}
+          </Link>
+          <Link to="/ranks" className={item} onClick={() => setOpen(false)}>
+            {t('nav.ranks')}
+          </Link>
           <Link to="/history" className={item} onClick={() => setOpen(false)}>
             {t('nav.history')}
           </Link>
