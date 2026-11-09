@@ -1,7 +1,7 @@
 import { Card, CardBack } from './HomeArt'
 
 /*
- * TASK-056: the one big picture behind the home pages, a poker room at night, drawn from simple shapes
+ * TASK-056: the one big picture behind the home pages, a poker room with the lights on, drawn from simple shapes
  * (no image files). Fixed behind the page; the sliced viewBox keeps the table in view at any width.
  */
 
@@ -64,6 +64,8 @@ function ChipStack({
 function Lamp({ x, tableY }: { x: number; tableY: number }) {
   return (
     <g>
+      {/* The warm pool the lamp throws on the wall behind it. */}
+      <ellipse cx={x} cy="330" rx="230" ry="180" fill="url(#hb-glow)" opacity="0.4" />
       <path
         d={`M${x - 50} 214 L${x + 50} 214 L${x + 190} ${tableY} L${x - 190} ${tableY}Z`}
         fill="url(#hb-cone)"
@@ -105,12 +107,12 @@ export function HomeBackdrop({ className = '' }: { className?: string }) {
     >
       <defs>
         <linearGradient id="hb-wall" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#1a0a10" />
-          <stop offset="1" stopColor="#4a1420" />
+          <stop offset="0" stopColor="#114c3e" />
+          <stop offset="1" stopColor="#15604d" />
         </linearGradient>
         <linearGradient id="hb-floor" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#2a0f14" />
-          <stop offset="1" stopColor="#0c0506" />
+          <stop offset="0" stopColor="#5a3b27" />
+          <stop offset="1" stopColor="#3f2a1c" />
         </linearGradient>
         <linearGradient id="hb-rim" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#8a5226" />
@@ -122,16 +124,16 @@ export function HomeBackdrop({ className = '' }: { className?: string }) {
           <stop offset="1" stopColor="#063a29" />
         </radialGradient>
         <radialGradient id="hb-glow">
-          <stop offset="0" stopColor="#ffdc96" stopOpacity="0.7" />
+          <stop offset="0" stopColor="#ffdc96" stopOpacity="0.95" />
           <stop offset="1" stopColor="#ffdc96" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="hb-cone" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#ffdc96" stopOpacity="0.3" />
+          <stop offset="0" stopColor="#ffdc96" stopOpacity="0.55" />
           <stop offset="1" stopColor="#ffdc96" stopOpacity="0" />
         </linearGradient>
         <radialGradient id="hb-vignette" cx="0.55" cy="0.55" r="0.75">
           <stop offset="0.45" stopColor="#000" stopOpacity="0" />
-          <stop offset="1" stopColor="#000" stopOpacity="0.9" />
+          <stop offset="1" stopColor="#071e18" stopOpacity="0.35" />
         </radialGradient>
         <pattern id="hb-carpet" width="70" height="42" patternUnits="userSpaceOnUse">
           <path
@@ -150,8 +152,8 @@ export function HomeBackdrop({ className = '' }: { className?: string }) {
         <g key={x}>
           <path
             d={`M${x + 16} 560 V170 A74 74 0 0 1 ${x + 164} 170 V560Z`}
-            fill="#000"
-            fillOpacity="0.2"
+            fill="#0e3b30"
+            fillOpacity="0.35"
             stroke={brass}
             strokeOpacity="0.35"
             strokeWidth="2.5"
@@ -166,7 +168,8 @@ export function HomeBackdrop({ className = '' }: { className?: string }) {
           {i % 2 ? <circle cx={x + 180} cy="320" r="110" fill="url(#hb-glow)" /> : null}
         </g>
       ))}
-      <rect y="556" width="1600" height="8" fill={brass} opacity="0.55" />
+      <rect y="540" width="1600" height="16" fill="#6d1530" />
+      <rect y="556" width="1600" height="8" fill={brass} opacity="0.7" />
       <rect y="564" width="1600" height="436" fill="url(#hb-floor)" />
       <rect y="564" width="1600" height="436" fill="url(#hb-carpet)" />
 

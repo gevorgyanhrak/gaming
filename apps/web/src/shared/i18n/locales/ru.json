@@ -799,5 +799,15 @@
     "count_few": "{{count}} игры",
     "count_many": "{{count}} игр",
     "count_other": "{{count}} игры"
+  },
+  "ranks": {
+    "title": "Ранги клуба",
+    "bronze": "Бронза",
+    "silver": "Серебро",
+    "gold": "Золото",
+    "ruby": "Рубин",
+    "amethyst": "Аметист",
+    "levels": "Уровни {{from}}–{{to}}",
+    "levelsUp": "Уровни {{from}}+"
   }
 }

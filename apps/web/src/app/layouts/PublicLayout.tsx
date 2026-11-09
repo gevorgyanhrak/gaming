@@ -114,7 +114,7 @@ export function PublicLayout() {
   ) : null
 
   return (
-    <div className={`${isHome ? 'home-room' : 'club-room'} isolate flex min-h-dvh`}>
+    <div className="club-room isolate flex min-h-dvh">
       {isHome ? (
         <HomeBackdrop className="pointer-events-none fixed inset-x-0 top-0 -z-10 h-lvh w-full" />
       ) : null}

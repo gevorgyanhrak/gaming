@@ -747,5 +747,15 @@
     "seeAllLabel": "Տեսնել բոլորը՝ {{category}}",
     "count_one": "{{count}} խաղ",
     "count_other": "{{count}} խաղ"
+  },
+  "ranks": {
+    "title": "Ակումբի կոչումներ",
+    "bronze": "Բրոնզ",
+    "silver": "Արծաթ",
+    "gold": "Ոսկի",
+    "ruby": "Ռուբին",
+    "amethyst": "Ամեթիստ",
+    "levels": "Մակարդակներ {{from}}–{{to}}",
+    "levelsUp": "Մակարդակներ {{from}}+"
   }
 }

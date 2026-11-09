@@ -1,9 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { GameGrid } from '@/features/catalog/components/GameGrid'
+import { tierOf } from '@/features/levels/ranks'
 import { usePublicConfig } from '@/features/platform/usePublicConfig'
+import { useMediaQuery } from '@/shared/lib/useMediaQuery'
 import { ButtonLink } from '@/shared/ui/Button'
 import { Container } from '@/shared/ui/Container'
+import { LevelBadge } from '@/shared/ui/LevelBadge'
 import { BoltIcon, BotIcon, FriendsIcon } from '@/shared/ui/icons'
 
 const ways = [
@@ -12,42 +15,50 @@ const ways = [
   { key: 'friends', Icon: FriendsIcon },
 ] as const
 
+const tiers = [
+  { level: 1, to: 9 },
+  { level: 10, to: 19 },
+  { level: 20, to: 29 },
+  { level: 30, to: 49 },
+  { level: 50, to: null },
+] as const
+
 export function LandingPage() {
   const { t } = useTranslation()
   const config = usePublicConfig()
   const { data: user } = useCurrentUser()
+  // Ivory tiles only where they stay small next to the picture.
+  const wide = useMediaQuery('(min-width: 1024px)')
 
   return (
     <>
       {config.data ? <title>{config.data.name}</title> : null}
 
-      <section className="home-scope-night home-hero border-b border-gold/20">
-        <Container className="flex min-h-[26rem] items-center py-14 sm:min-h-[32rem] lg:min-h-[38rem]">
-          <div className="mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
-            <p className="inline-flex items-center rounded-full border border-gold/45 bg-black/15 px-3 py-1 text-xs font-semibold tracking-wide text-gold-light uppercase">
+      <section className="home-hero">
+        <Container className="flex min-h-[32rem] items-center pt-14 pb-28 lg:min-h-[40rem]">
+          <div className="mx-auto max-w-3xl text-center lg:mx-0 lg:text-left">
+            <p className="inline-flex items-center rounded-full border border-gold/45 bg-emerald-900/70 px-3 py-1 text-xs font-semibold text-gold-light">
               {t('landing.eyebrow')}
             </p>
-            <h1 className="mt-5 text-4xl leading-tight font-extrabold tracking-tight text-balance whitespace-pre-line text-fg sm:text-5xl lg:text-5xl xl:text-[3.25rem]">
+            <h1 className="mt-5 font-display text-display-sm font-bold text-balance whitespace-pre-line text-fg lg:text-display">
               {t('landing.title')}
             </h1>
-            <p className="mx-auto mt-5 max-w-xl text-lg text-muted lg:mx-0">
-              {t('landing.subtitle')}
-            </p>
+            <p className="mx-auto mt-5 max-w-xl text-lg text-fg lg:mx-0">{t('landing.subtitle')}</p>
             <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
-              {/* Same rule as today: nothing while the account is unknown. */}
+              {/* Nothing while the account is unknown: a player must not be invited to sign up. */}
               {user ? (
-                <ButtonLink to="/dashboard" variant="gold" className="min-h-11 px-7 py-3 text-base">
+                <ButtonLink to="/dashboard" variant="gold" size="lg">
                   {t('landing.playNow')}
                 </ButtonLink>
               ) : user === null ? (
-                <ButtonLink to="/register" variant="gold" className="min-h-11 px-7 py-3 text-base">
+                <ButtonLink to="/register" variant="gold" size="lg">
                   {t('landing.join')}
                 </ButtonLink>
               ) : null}
               {/* A plain link: the browser's own jump to the section below. */}
               <a
                 href="#games"
-                className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border bg-surface px-7 py-3 text-base font-semibold text-fg transition hover:bg-surface-raised"
+                className="inline-flex min-h-12 items-center justify-center rounded-control border border-border-strong/70 bg-emerald-800 px-7 py-3 text-base font-semibold text-fg transition-colors duration-150 hover:bg-surface-raised"
               >
                 {t('landing.cta')}
               </a>
@@ -56,27 +67,24 @@ export function LandingPage() {
         </Container>
       </section>
 
-      <section
-        id="games"
-        className="home-scope-night scroll-mt-24 border-b border-gold/20 bg-black/75 py-12 sm:py-16"
-      >
-        <Container>
-          <h2 className="mb-6 text-3xl font-extrabold tracking-tight text-fg">
+      <Container className="relative -mt-20 pb-12">
+        <section
+          id="games"
+          aria-labelledby="home-games"
+          className="club-panel-glass scroll-mt-24 rounded-panel p-5 sm:p-6"
+        >
+          <h2 id="home-games" className="mb-5 text-2xl font-bold text-fg">
             {t('landing.gamesHeading')}
           </h2>
           <GameGrid />
-        </Container>
-      </section>
 
-      <section className="home-scope-night bg-black/40">
-        <Container className="py-12">
-          <ul className="grid gap-4 sm:grid-cols-3">
+          <ul className="mt-8 grid gap-4 sm:grid-cols-3">
             {ways.map(({ key, Icon }) => (
               <li
                 key={key}
-                className="flex gap-4 rounded-2xl border border-gold/25 bg-surface/90 p-5 shadow-sm"
+                className={`flex gap-4 rounded-card p-5 ${wide ? 'surface-ivory' : 'bg-emerald-900/60'}`}
               >
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gold/15 text-gold-light">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-ivory-100 text-emerald-800">
                   <Icon className="size-6" />
                 </span>
                 <span>
@@ -90,6 +98,27 @@ export function LandingPage() {
               </li>
             ))}
           </ul>
+        </section>
+      </Container>
+
+      <section className="surface-walnut">
+        <Container className="py-8">
+          <h2 className="mb-5 text-2xl font-bold text-fg">{t('ranks.title')}</h2>
+          <ol className="grid grid-cols-5 gap-2 text-center">
+            {tiers.map(({ level, to }) => (
+              <li key={level} className="flex flex-col items-center gap-1.5">
+                <LevelBadge level={level} size="lg" />
+                <span className="text-[0.8125rem] font-semibold text-fg sm:text-base">
+                  {t(`ranks.${tierOf(level).key}`)}
+                </span>
+                <span className="text-xs text-muted">
+                  {to === null
+                    ? t('ranks.levelsUp', { from: level })
+                    : t('ranks.levels', { from: level, to })}
+                </span>
+              </li>
+            ))}
+          </ol>
         </Container>
       </section>
     </>

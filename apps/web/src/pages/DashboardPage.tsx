@@ -24,7 +24,7 @@ export function DashboardPage() {
   return (
     <>
       <title>{t('dashboard.title')}</title>
-      <section className="home-scope-night home-hero border-b border-gold/20">
+      <section className="home-hero">
         <Container className="py-10 lg:py-14">
           <div className="max-w-4xl min-w-0">
             <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
@@ -57,13 +57,13 @@ export function DashboardPage() {
                 </ButtonLink>
               </div>
             </div>
-            <LevelCard className="relative mt-5 max-w-xl bg-black/25" />
+            <LevelCard className="relative mt-5 max-w-xl bg-emerald-900/70" />
           </div>
         </Container>
       </section>
 
-      <section className="home-scope-night bg-black/75 py-10 sm:py-12">
-        <Container className="space-y-10">
+      <Container className="pb-12">
+        <section className="club-panel-glass space-y-10 rounded-panel p-5 sm:p-6">
           <div>
             <h2 className="mb-6 text-3xl font-extrabold tracking-tight text-fg">
               {t('dashboard.gamesHeading')}
@@ -71,8 +71,8 @@ export function DashboardPage() {
             <GameGrid />
           </div>
           <DashboardGames />
-        </Container>
-      </section>
+        </section>
+      </Container>
     </>
   )
 }

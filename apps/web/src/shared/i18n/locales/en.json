@@ -747,5 +747,15 @@
     "seeAllLabel": "See all: {{category}}",
     "count_one": "{{count}} game",
     "count_other": "{{count}} games"
+  },
+  "ranks": {
+    "title": "Club ranks",
+    "bronze": "Bronze",
+    "silver": "Silver",
+    "gold": "Gold",
+    "ruby": "Ruby",
+    "amethyst": "Amethyst",
+    "levels": "Levels {{from}}–{{to}}",
+    "levelsUp": "Levels {{from}}+"
   }
 }

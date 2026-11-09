@@ -375,28 +375,6 @@
       inset 0 -2px 0 rgb(120 85 40 / 0.35);
   }
 
-  /* Home pages (TASK-056): re-tints every shared token-based component for the night room. */
-  .home-scope-night {
-    --color-bg: #0a1a15;
-    --color-surface: #12261f;
-    --color-surface-raised: #1b362c;
-    --color-border: #38594a;
-    --color-fg: #fff8e7;
-    --color-muted: #cfe0d6;
-    --color-accent-text: #f7dc8f;
-    color: var(--color-fg);
-  }
-
-  .home-room {
-    background: #0a0705;
-  }
-
-  /* See-through, so the one picture behind the page shows. */
-  .home-frame {
-    border: 1px solid rgb(214 171 78 / 0.4);
-    box-shadow: 0 24px 60px rgb(0 0 0 / 0.5);
-  }
-
   .poker-rail {
     padding: clamp(10px, 1.6vw, 22px);
     background: linear-gradient(
