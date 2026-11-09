@@ -14,7 +14,7 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 Steps:
 - [x] 1. PM market research → `docs/product/research/TASK-048-market-research.md` ("The Lamplit Room"; owner decisions listed at the end of its report: backend for leaderboards/friends/missions, brand name and logo, age confirmation).
-- [ ] 2. UI/UX agent: visual direction and design system (tokens, components).
+- [x] 2. UI/UX agent: visual direction and design system → `docs/design/REDESIGN_048.md`, preview `docs/design/preview-048-home.html` (build order in its §7; show the owner the relit home at stage 6).
 - [ ] 3. Platform redesign: every page and shared component.
 - [ ] 4. Game redesign: poker, nardi, shashki, durak, chess.
 - [ ] 5. Polish: animation, hover, loading, micro-interactions.
