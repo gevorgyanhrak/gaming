@@ -5,7 +5,7 @@ import { Button } from './Button'
 
 export function EmptyState({ title, children }: { title: string; children?: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border px-6 py-12 text-center">
+    <div className="rounded-panel border border-dashed border-border-strong/40 bg-surface/60 px-6 py-12 text-center">
       <p className="font-medium text-fg">{title}</p>
       {children ? <div className="mt-2 text-sm text-muted">{children}</div> : null}
     </div>
@@ -18,7 +18,7 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
   return (
     <div
       role="alert"
-      className="flex flex-col items-center gap-4 rounded-2xl border border-danger/30 bg-danger/5 px-6 py-10 text-center"
+      className="flex flex-col items-center gap-4 rounded-panel border border-danger/40 bg-danger/10 px-6 py-10 text-center"
     >
       <p className="text-fg">{message}</p>
       {onRetry ? (

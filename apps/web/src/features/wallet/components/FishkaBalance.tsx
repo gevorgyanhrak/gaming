@@ -44,7 +44,7 @@ export function FishkaBalance() {
             })
           : t('fishka.balanceLabel', { amount: format(balance) })
       }
-      className="relative flex min-h-11 items-center gap-1.5 rounded-full border border-gold/35 bg-black/30 py-1 pr-3 pl-1.5 text-sm font-bold text-gold-light shadow-inner transition hover:border-gold"
+      className="relative flex min-h-11 items-center gap-1.5 rounded-full border border-gold/45 bg-emerald-900/80 py-1 pr-3 pl-1.5 text-sm font-bold text-gold-light shadow-inner transition-colors duration-150 hover:border-gold"
     >
       <FishkaIcon className="size-6 shrink-0" />
       <span
@@ -57,8 +57,8 @@ export function FishkaBalance() {
         <span
           key={`delta-${id}`}
           aria-hidden="true"
-          className={`pointer-events-none absolute top-full right-2 mt-1 rounded-full bg-black/80 px-2 py-0.5 text-xs font-extrabold whitespace-nowrap tabular-nums motion-safe:animate-[fishka-delta_1800ms_ease-out_forwards] motion-reduce:hidden ${
-            delta > 0 ? 'text-beaten' : 'text-take'
+          className={`pointer-events-none absolute top-full right-2 mt-1 rounded-full bg-emerald-900 px-2 py-0.5 text-xs font-extrabold whitespace-nowrap tabular-nums motion-safe:animate-[fishka-delta_1800ms_ease-out_forwards] motion-reduce:hidden ${
+            delta > 0 ? 'text-success' : 'text-danger'
           }`}
         >
           {delta > 0 ? '+' : '−'}

@@ -2,7 +2,7 @@ import { useId, type ComponentProps, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 const control =
-  'w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 text-fg placeholder:text-muted/70 transition-colors focus:border-accent-text focus:outline-none disabled:opacity-60 aria-invalid:border-danger'
+  'min-h-11 w-full rounded-control border border-border-strong bg-emerald-900 px-3.5 py-2.5 text-fg placeholder:text-muted transition-colors duration-150 focus:border-gold-light focus:ring-2 focus:ring-gold-light/40 focus:outline-none disabled:opacity-60 aria-invalid:border-danger'
 
 interface FieldProps {
   label: string

@@ -23,12 +23,12 @@ export function Segmented<T extends string | number>({
         {label}
       </legend>
       <div
-        className={`gap-1 rounded-xl border border-border bg-bg/60 p-1 ${fill ? 'flex w-full flex-nowrap' : 'inline-flex flex-wrap'}`}
+        className={`gap-1 rounded-control border border-border bg-emerald-900/60 p-1 ${fill ? 'flex w-full flex-nowrap' : 'inline-flex flex-wrap'}`}
       >
         {options.map((option) => (
           <label
             key={option.value}
-            className={`cursor-pointer rounded-lg px-3 text-sm ${fill ? 'flex min-h-11 flex-1 items-center justify-center text-center sm:min-h-0 sm:py-1.5' : 'py-1.5'} font-medium text-muted transition-colors hover:text-fg has-checked:bg-linear-to-b has-checked:from-gold-light has-checked:to-gold has-checked:text-black has-focus-visible:outline-2 has-focus-visible:outline-accent-text`}
+            className={`cursor-pointer rounded-lg px-3 text-sm ${fill ? 'flex min-h-11 flex-1 items-center justify-center text-center sm:min-h-9 sm:py-1.5' : 'flex min-h-11 items-center py-1.5 sm:min-h-9'} font-medium text-muted transition-colors hover:text-fg has-checked:bg-linear-to-b has-checked:from-gold-light has-checked:to-gold has-checked:text-ink has-focus-visible:outline-2 has-focus-visible:outline-accent-text`}
           >
             <input
               type="radio"

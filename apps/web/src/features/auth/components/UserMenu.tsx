@@ -7,7 +7,8 @@ import { Avatar } from '@/shared/ui/Avatar'
 import type { CurrentUser } from '../api'
 import { useLogout } from '../hooks'
 
-const item = 'block w-full rounded-lg px-3 py-2 text-left text-sm text-fg hover:bg-surface-raised'
+const item =
+  'flex min-h-11 w-full items-center rounded-lg px-3 text-left text-sm text-fg hover:bg-surface-raised'
 
 /** Account disclosure menu in the header. Closes on outside click, Escape and navigation. */
 export function UserMenu({ user }: { user: CurrentUser }) {
@@ -44,7 +45,7 @@ export function UserMenu({ user }: { user: CurrentUser }) {
         aria-controls={menuId}
         aria-label={t('nav.account')}
         onClick={() => setOpen((value) => !value)}
-        className="flex items-center gap-2 rounded-full p-1 pr-3 hover:bg-surface-raised"
+        className="flex min-h-11 items-center gap-2 rounded-full p-1 pr-3 hover:bg-white/8"
       >
         <Avatar
           url={user.profile.avatar_url}
@@ -59,13 +60,13 @@ export function UserMenu({ user }: { user: CurrentUser }) {
       {open ? (
         <div
           id={menuId}
-          className="absolute right-0 mt-2 w-60 rounded-xl border border-border bg-surface p-1.5 shadow-xl shadow-black/40"
+          className="absolute right-0 mt-2 w-60 rounded-card border border-gold/30 bg-emerald-800 p-1.5 shadow-raised"
         >
           <p className="truncate px-3 py-2 text-xs text-muted">@{user.username}</p>
           {level.data ? (
             <Link
               to="/profile"
-              className="mx-1 mb-1 block rounded-lg bg-black/25 px-2.5 py-2 hover:bg-black/40"
+              className="mx-1 mb-1 block rounded-lg bg-emerald-900/60 px-2.5 py-2 hover:bg-emerald-900"
               onClick={() => setOpen(false)}
             >
               <LevelProgress status={level.data} compact />

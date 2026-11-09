@@ -31,9 +31,9 @@ export function Avatar({
   ) : (
     <span
       aria-hidden="true"
-      className={`${sizes[size]} inline-flex shrink-0 items-center justify-center rounded-full bg-[#23301b] font-semibold text-fg uppercase`}
+      className={`${sizes[size]} inline-flex shrink-0 items-center justify-center rounded-full bg-emerald-900 font-semibold text-fg`}
     >
-      {name.charAt(0)}
+      {name.charAt(0).toLocaleUpperCase()}
     </span>
   )
 
