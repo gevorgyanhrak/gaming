@@ -1,7 +1,7 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { delay, http, HttpResponse } from 'msw'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { gameFixture, summaryOf } from '@/test/handlers'
 import { renderRoute } from '@/test/render'
 import { server } from '@/test/server'
@@ -85,7 +85,12 @@ describe('Games catalog', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Игры')
   })
 
-  it('lists every game in the menu', async () => {
+  it('lists every game in the rail on wide screens', async () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: query.includes('1024'),
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    }))
     server.use(
       http.get('*/api/v1/games', () =>
         HttpResponse.json({
@@ -95,16 +100,13 @@ describe('Games catalog', () => {
     )
 
     renderRoute('/games')
-    await userEvent.click(await screen.findByRole('button', { name: 'Menu' }))
 
-    const menu = await screen.findByRole('navigation', { name: 'Sections' })
-    expect(await within(menu).findByRole('link', { name: 'Durak' })).toHaveAttribute(
+    const rail = await screen.findByRole('navigation', { name: 'Sections' })
+    expect(await within(rail).findByRole('link', { name: 'Durak' })).toHaveAttribute(
       'href',
       '/games/durak',
     )
-
-    await userEvent.keyboard('{Escape}')
-    expect(screen.queryByRole('navigation', { name: 'Sections' })).not.toBeInTheDocument()
+    vi.unstubAllGlobals()
   })
 
   const board = { slug: 'board', name: 'Board games', sort_order: 10 }

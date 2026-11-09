@@ -13,10 +13,10 @@
     "sections": "Sections",
     "shortcuts": "Shortcuts",
     "historyShort": "History",
-    "menu": "Menu",
-    "close": "Close menu",
     "back": "Back",
-    "wallet": "Wallet"
+    "wallet": "Wallet",
+    "walletShort": "Wallet",
+    "toggleRail": "Collapse or expand the menu"
   },
   "landing": {
     "title": "Pull up a chair.\nYour game is waiting.",
