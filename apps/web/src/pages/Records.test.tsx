@@ -79,7 +79,7 @@ describe('History', () => {
     // The outcome is rendered for phones (under the names) and for wider screens (right column).
     for (const [index, label, tone] of [
       [0, 'Won', 'bg-success/15'],
-      [1, 'Lost', 'bg-danger/20'],
+      [1, 'Lost', 'bg-danger/15'],
     ] as const) {
       const badges = within(rows[index]!).getAllByText(label)
       expect(badges).toHaveLength(2)
