@@ -64,7 +64,7 @@ const readRail = (): boolean | null => {
 
 /**
  * The app's shell (TASK-048): a left rail from 1024 px, a header with the balance and account, the page,
- * and a bottom bar on phones and tablets. At a table only the header remains, with the way back.
+ * and a bottom bar on phones and tablets. At a table the room shows its own bar (TableBar) instead.
  */
 export function PublicLayout() {
   const { t } = useTranslation()
@@ -123,43 +123,46 @@ export function PublicLayout() {
       {showRail ? <Rail home={home} signedIn={Boolean(user.data)} language={language} /> : null}
 
       <div className={`flex min-h-dvh min-w-0 flex-1 flex-col ${showBar ? 'pb-tabbar' : ''}`}>
-        <header className="sticky top-0 z-20 flex h-header items-center justify-between gap-3 border-b border-gold/20 bg-emerald-900 px-3 sm:px-6">
-          <div className="flex min-w-0 items-center gap-3">
-            {atTable ? (
-              <Link to={home} className={iconButton} aria-label={t('nav.back')}>
-                <BackIcon />
-              </Link>
-            ) : null}
-            {showRail ? null : (
-              <Link to={home} className="flex min-w-0 items-center gap-2.5 font-bold text-fg">
-                {brand}
-              </Link>
-            )}
-          </div>
-          <nav aria-label={t('nav.main')} className="flex items-center gap-1 sm:gap-2">
-            {user.isPending ? (
-              <Skeleton className="size-9 rounded-full" />
-            ) : user.data ? (
-              <>
-                {/* Keyed by account: another one signing in starts fresh (no "+N" for the switch). */}
-                <FishkaBalance key={user.data.id} />
-                <UserMenu user={user.data} />
-              </>
-            ) : (
-              <>
-                <NavLink
-                  to="/login"
-                  className="flex min-h-11 items-center rounded-lg px-3 text-sm font-medium whitespace-nowrap text-fg hover:text-gold-light"
-                >
-                  {t('nav.login')}
-                </NavLink>
-                <ButtonLink to="/register" variant="gold" className="whitespace-nowrap">
-                  {t('nav.register')}
-                </ButtonLink>
-              </>
-            )}
-          </nav>
-        </header>
+        {/* At a table the room draws its own bar (TableBar); during maintenance the header stays. */}
+        {atTable && !inMaintenance ? null : (
+          <header className="sticky top-0 z-20 flex h-header items-center justify-between gap-3 border-b border-gold/20 bg-emerald-900 px-3 sm:px-6">
+            <div className="flex min-w-0 items-center gap-3">
+              {atTable ? (
+                <Link to={home} className={iconButton} aria-label={t('nav.back')}>
+                  <BackIcon />
+                </Link>
+              ) : null}
+              {showRail ? null : (
+                <Link to={home} className="flex min-w-0 items-center gap-2.5 font-bold text-fg">
+                  {brand}
+                </Link>
+              )}
+            </div>
+            <nav aria-label={t('nav.main')} className="flex items-center gap-1 sm:gap-2">
+              {user.isPending ? (
+                <Skeleton className="size-9 rounded-full" />
+              ) : user.data ? (
+                <>
+                  {/* Keyed by account: another one signing in starts fresh (no "+N" for the switch). */}
+                  <FishkaBalance key={user.data.id} />
+                  <UserMenu user={user.data} />
+                </>
+              ) : (
+                <>
+                  <NavLink
+                    to="/login"
+                    className="flex min-h-11 items-center rounded-lg px-3 text-sm font-medium whitespace-nowrap text-fg hover:text-gold-light"
+                  >
+                    {t('nav.login')}
+                  </NavLink>
+                  <ButtonLink to="/register" variant="gold" className="whitespace-nowrap">
+                    {t('nav.register')}
+                  </ButtonLink>
+                </>
+              )}
+            </nav>
+          </header>
+        )}
 
         {user.data ? <VerificationBanner user={user.data} /> : null}
         {user.data ? <WalletSync key={user.data.id} /> : null}

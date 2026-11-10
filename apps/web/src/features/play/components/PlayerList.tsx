@@ -73,8 +73,14 @@ export function PlayerList({
               </span>
             ) : null}
             {player.result ? (
-              <Badge tone={resultTone[player.result as ParticipantResult]}>
-                {t(resultLabel[player.result as ParticipantResult])}
+              // A long result word in a narrow plate (a phone) truncates instead of spilling over.
+              <Badge
+                tone={resultTone[player.result as ParticipantResult]}
+                className="max-w-full min-w-0"
+              >
+                <span className="truncate">
+                  {t(resultLabel[player.result as ParticipantResult])}
+                </span>
               </Badge>
             ) : player.is_bot ? (
               <Badge>{t('room.bot')}</Badge>

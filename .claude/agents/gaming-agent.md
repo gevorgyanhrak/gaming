@@ -158,6 +158,10 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   at most one per new state version via the pure `soundFor` (result > your turn when hidden or > 2
   seats > capture > move) plus a low-time warning at 10 s; honours `preferences.sound`. The room tab
   title shows "● Your turn · {game}".
+- At a table (`/rooms/*`) `PublicLayout` drops its header; `RoomPage` renders `TableBar` (back, game + mode, `GroupBadge`
+  from md, turn status from 768 px, `FishkaBalance`). Two-player boards get facing seat plates (`PlayerList`: you left,
+  "vs" medal, turn ring). `GameOverPanel` floats over the board from 1024 px, is a `Modal` sheet below, and folds into a
+  fixed strip (`room.showTable` / `room.showResult`); it sits after the board in the relative table box.
 - After a game `GameOverPanel` (RoomPage) offers Play again with the same mode/seats/bot level
   (`room.mode.id`, `participants[].bot_difficulty`). Turn captions come from `waitingCaption`
   (`features/play/turnCaption.ts`). Invite links: `/join/:code` (`JoinPage`); `withNext` keeps the

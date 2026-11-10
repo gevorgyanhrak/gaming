@@ -3,9 +3,11 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { useMessage } from '@/features/auth/forms'
+import { useMediaQuery } from '@/shared/lib/useMediaQuery'
 import { Alert } from '@/shared/ui/Alert'
 import { Button, ButtonLink } from '@/shared/ui/Button'
-import { TrophyIcon } from '@/shared/ui/icons'
+import { CloseIcon, TrophyIcon } from '@/shared/ui/icons'
+import { Modal } from '@/shared/ui/Modal'
 import {
   createBotRoom,
   matchmakingKey,
@@ -19,9 +21,11 @@ import { GameResult } from '@/features/wallet/components/GameResult'
 import { MatchmakingStatus } from './MatchmakingStatus'
 
 /**
- * How the game ended, above the final position, with one tap into the same kind of game: a new bot
- * table with the same mode, size and level, or a new search for an online game. Private tables go
- * back to the lobby (a rematch with the same friend is a separate feature).
+ * How the game ended, with one tap into the same kind of game: a new bot table with the same mode, size
+ * and level, or a new search for an online game. Private tables go back to the lobby (a rematch with the
+ * same friend is a separate feature). It never pushes the table down (TASK-048): from 1024 px it floats
+ * over the top of the board, on phones and tablets it is a bottom sheet. Either one folds into a small
+ * strip at the bottom, to look at the final position, and opens again from there.
  */
 export function GameOverPanel({
   room,
@@ -43,6 +47,8 @@ export function GameOverPanel({
   const queryClient = useQueryClient()
   const heading = useRef<HTMLHeadingElement>(null)
   const [searching, setSearching] = useState(false)
+  const [folded, setFolded] = useState(false)
+  const wide = useMediaQuery('(min-width: 1024px)')
 
   const aborted = room.status === 'aborted'
   const level = room.participants.find((p) => p.is_bot)?.bot_difficulty as BotDifficulty | undefined
@@ -69,6 +75,12 @@ export function GameOverPanel({
   useEffect(() => {
     heading.current?.focus()
   }, [room.id])
+  // Another room (Play again) starts unfolded.
+  const [shownFor, setShownFor] = useState(room.id)
+  if (shownFor !== room.id) {
+    setShownFor(room.id)
+    setFolded(false)
+  }
 
   const title = aborted
     ? t('room.aborted')
@@ -97,11 +109,55 @@ export function GameOverPanel({
     .filter(Boolean)
     .join(' · ')
 
-  return (
-    <section
-      aria-labelledby="game-over-title"
-      className="club-frame mx-auto w-full max-w-xl rounded-3xl p-5 text-center motion-safe:animate-rise sm:p-6"
+  const playAgain = canPlayAgain ? (
+    <Button
+      onClick={() => again.mutate()}
+      disabled={again.isPending}
+      aria-busy={again.isPending}
+      className="min-h-11 w-full sm:w-auto"
     >
+      {t('room.playAgain')}
+    </Button>
+  ) : null
+
+  if (folded) {
+    return (
+      <>
+        {/* Room under the fixed strip, so the end of the page can still be reached. */}
+        <div aria-hidden="true" className="h-28 sm:h-20" />
+        <section
+          aria-label={t('room.over')}
+          className="club-frame fixed inset-x-3 bottom-3 z-30 mx-auto flex max-w-xl flex-wrap items-center gap-2 rounded-2xl p-2 motion-safe:animate-[sheet-up_260ms_cubic-bezier(0.2,0.8,0.2,1)] sm:flex-nowrap sm:gap-3 sm:pl-4"
+        >
+          <p className="w-full truncate px-2 pt-1 text-center font-bold sm:w-auto sm:flex-1 sm:p-0 sm:text-left">
+            {title}
+          </p>
+          <Button
+            variant="secondary"
+            className="min-h-11 flex-1 sm:flex-none"
+            onClick={() => setFolded(false)}
+          >
+            {t('room.showResult')}
+          </Button>
+          {playAgain ? (
+            <span className="flex flex-1 sm:flex-none [&>*]:w-full">{playAgain}</span>
+          ) : null}
+        </section>
+      </>
+    )
+  }
+
+  const content = (
+    <div className="relative p-5 text-center sm:p-6">
+      <button
+        type="button"
+        onClick={() => setFolded(true)}
+        aria-label={t('room.showTable')}
+        title={t('room.showTable')}
+        className="absolute top-2 right-2 flex size-11 items-center justify-center rounded-full text-muted transition-colors hover:bg-emerald-800 hover:text-fg"
+      >
+        <CloseIcon className="size-5" />
+      </button>
       {result === 'win' && !leftTable ? (
         <span className="club-medal mx-auto mb-3 flex size-12 items-center justify-center rounded-full text-black">
           <TrophyIcon className="size-6" />
@@ -135,16 +191,7 @@ export function GameOverPanel({
       ) : (
         <>
           <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center">
-            {canPlayAgain ? (
-              <Button
-                onClick={() => again.mutate()}
-                disabled={again.isPending}
-                aria-busy={again.isPending}
-                className="min-h-11 w-full sm:w-auto"
-              >
-                {t('room.playAgain')}
-              </Button>
-            ) : null}
+            {playAgain}
             <ButtonLink
               to={lobby}
               variant={canPlayAgain ? 'secondary' : 'primary'}
@@ -165,6 +212,26 @@ export function GameOverPanel({
           ) : null}
         </>
       )}
-    </section>
+    </div>
+  )
+
+  if (!wide) {
+    return (
+      <Modal onClose={() => setFolded(true)} labelledBy="game-over-title" sheetOnPhone>
+        {content}
+      </Modal>
+    )
+  }
+
+  // Over the top of the board: the room page puts the board in a relative box.
+  return (
+    <div className="pointer-events-none absolute inset-x-0 top-2 z-20 flex justify-center px-2">
+      <section
+        aria-labelledby="game-over-title"
+        className="club-frame pointer-events-auto w-full max-w-xl rounded-3xl shadow-modal motion-safe:animate-rise"
+      >
+        {content}
+      </section>
+    </div>
   )
 }

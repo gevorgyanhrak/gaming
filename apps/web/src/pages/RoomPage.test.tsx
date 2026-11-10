@@ -79,6 +79,15 @@ describe('Room', () => {
     expect(screen.getByText('vs')).toBeInTheDocument()
   })
 
+  it('shows the table bar in place of the site header', async () => {
+    serveRoom()
+    renderRoute('/rooms/room-1')
+
+    expect(await screen.findByRole('heading', { name: 'Tic-tac-toe' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/dashboard')
+    expect(screen.queryByRole('navigation', { name: 'Main' })).not.toBeInTheDocument()
+  })
+
   it('reports that the player is on the game page', async () => {
     serveRoom()
     let reports = 0
@@ -163,6 +172,31 @@ describe('Room', () => {
     emit('user.1', 'room.updated', roomStateFixture({ version: 0 }))
 
     expect(await screen.findByText('Your turn')).toBeInTheDocument()
+  })
+
+  it('folds the result away to show the final position, and opens it again', async () => {
+    serveRoom(
+      roomFixture({
+        status: 'finished',
+        end_reason: 'completed',
+        participants: [
+          { ...roomFixture().participants[0]!, result: 'win' },
+          { ...roomFixture().participants[1]!, result: 'loss' },
+        ],
+      }),
+      roomStateFixture({ status: 'finished', seats_to_act: [], legal_actions: [] }),
+    )
+    renderRoute('/rooms/room-1')
+
+    // Phones and tablets: a sheet over the table.
+    expect(await screen.findByRole('dialog', { name: 'You won!' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Show the table' }))
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Game over' })).toHaveTextContent('You won!')
+    expect(screen.getByRole('button', { name: 'Play again' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Result' }))
+    expect(await screen.findByRole('dialog', { name: 'You won!' })).toBeInTheDocument()
   })
 
   it('shows the result when the game is over', async () => {

@@ -336,6 +336,8 @@
     "waitingForOthers": "Waiting for the other players",
     "over": "Game over",
     "backToLobby": "Back to lobby",
+    "showTable": "Show the table",
+    "showResult": "Result",
     "sameSettings": "Same settings:",
     "share": "Share invite",
     "copyLink": "Copy link",

@@ -5,10 +5,10 @@ import { useMessage } from '@/features/auth/forms'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { leaveRoom, type ParticipantResult } from '@/features/play/api'
 import { resultLabel } from '@/features/play/labels'
-import { GameIcon } from '@/features/catalog/components/GameArt'
 import { GameOverPanel } from '@/features/play/components/GameOverPanel'
 import { RoomReactions } from '@/features/reactions/components/RoomReactions'
 import { GroupBadge } from '@/features/play/components/GroupBadge'
+import { TableBar } from '@/features/play/components/TableBar'
 import { PlayerList } from '@/features/play/components/PlayerList'
 import { WaitingTable } from '@/features/play/components/WaitingTable'
 import { useMarkGameInProgress } from '@/features/play/gameInProgress'
@@ -19,6 +19,7 @@ import { usePresence } from '@/features/play/usePresence'
 import { useRoom } from '@/features/play/useRoom'
 import { boards, traitsOf } from '@/games/registry'
 import { isApiError } from '@/shared/api/errors'
+import { useMediaQuery } from '@/shared/lib/useMediaQuery'
 import { Alert } from '@/shared/ui/Alert'
 import { Button } from '@/shared/ui/Button'
 import { Container } from '@/shared/ui/Container'
@@ -32,6 +33,7 @@ export function RoomPage() {
   const { room, state, act } = useRoom(id)
   const { data: user } = useCurrentUser()
   const [confirmResign, setConfirmResign] = useState(false)
+  const wide = useMediaQuery('(min-width: 768px)')
   const secondsLeft = useCountdown(state.data?.deadline, state.data?.server_time)
   // Report presence while playing: leaving the page for too long loses the game.
   const playing = room.data?.status === 'active' && state.data?.seat != null && !state.data?.result
@@ -54,22 +56,28 @@ export function RoomPage() {
 
   if (room.isPending) {
     return (
-      <Container className="space-y-4 py-10">
-        <Skeleton className="h-10 w-1/3" />
-        <Skeleton className="h-64 w-full" />
-      </Container>
+      <>
+        <TableBar />
+        <Container className="space-y-4 py-10">
+          <Skeleton className="h-10 w-1/3" />
+          <Skeleton className="h-64 w-full" />
+        </Container>
+      </>
     )
   }
 
   if (room.isError) {
     return (
-      <Container className="py-10">
-        {isApiError(room.error) && (room.error.status === 403 || room.error.isNotFound) ? (
-          <EmptyState title={t('room.notFound')} />
-        ) : (
-          <QueryErrorState error={room.error} onRetry={() => void room.refetch()} />
-        )}
-      </Container>
+      <>
+        <TableBar />
+        <Container className="py-10">
+          {isApiError(room.error) && (room.error.status === 403 || room.error.isNotFound) ? (
+            <EmptyState title={t('room.notFound')} />
+          ) : (
+            <QueryErrorState error={room.error} onRetry={() => void room.refetch()} />
+          )}
+        </Container>
+      </>
     )
   }
 
@@ -96,6 +104,7 @@ export function RoomPage() {
   )
   // Left a multi-player game that goes on without you.
   const leftTable = data.status === 'active' && myResult != null
+  const over = data.status === 'finished' || data.status === 'aborted' || leftTable
   // …with no chips left (a game played for chips), rather than by leaving.
   const outOfChips =
     leftTable &&
@@ -122,136 +131,131 @@ export function RoomPage() {
     data.participants.find((p) => !p.is_bot && user && p.username === user.username)?.seat ??
     0
 
+  // Whose turn it is: in the bar on wide screens, under it on phones and tablets.
+  const turnStatus =
+    data.status === 'active' && view && !leftTable ? (
+      <div
+        className={`ml-auto max-w-[60%] shrink-0 rounded-2xl px-4 py-1.5 text-right ${myTurn ? 'bg-linear-to-b from-gold-light via-gold to-gold-dark text-black shadow-gold/20 shadow-lg' : 'border border-border bg-surface'}`}
+        role="status"
+      >
+        <p className="max-w-56 truncate text-sm font-semibold sm:text-base">
+          {myTurn
+            ? t('room.yourTurn')
+            : view.seats_to_act.length === 0
+              ? // A pause between rounds (poker hands); the time left is when the next starts.
+                t(traitsOf(data.game.slug).nextRound ?? 'room.nextRound')
+              : (waitingCaption(view, playerNames, t) ?? t('room.theirTurn'))}
+        </p>
+        {secondsLeft !== null && !clocks ? (
+          <p className={`truncate text-xs sm:text-sm ${myTurn ? 'text-black/70' : 'text-muted'}`}>
+            {t('room.secondsLeft', { count: secondsLeft })}
+          </p>
+        ) : null}
+      </div>
+    ) : null
+
   return (
-    <Container className="space-y-4 py-5 sm:space-y-6 sm:py-8">
-      <title>{tabTitle}</title>
-      {/* One row on every width: the game's name stays whole and a long status (a name, another
-          language) truncates instead of wrapping, so the table below doesn't move. On a phone the
-          group badge gets a row of its own below, so the status keeps its room. */}
-      <header className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gold/15">
-            <GameIcon slug={data.game.slug} name={data.game.name} className="size-6 text-gold" />
-          </span>
-          <div className="min-w-0">
-            <h1 className="text-2xl font-bold whitespace-nowrap">{data.game.name}</h1>
-            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
-              {data.mode.name}
-              <span className="hidden min-w-0 sm:inline-flex">
-                <GroupBadge room={data} />
-              </span>
-            </p>
-          </div>
-        </div>
-        {data.status === 'active' && view && !leftTable ? (
-          <div
-            className={`max-w-[55%] shrink-0 rounded-2xl px-4 py-2 text-right ${myTurn ? 'bg-linear-to-b from-gold-light via-gold to-gold-dark text-black shadow-gold/20 shadow-lg' : 'border border-border bg-surface'}`}
-            role="status"
-          >
-            <p className="max-w-48 truncate font-semibold">
-              {myTurn
-                ? t('room.yourTurn')
-                : view.seats_to_act.length === 0
-                  ? // A pause between rounds (poker hands); the time left is when the next starts.
-                    t(traitsOf(data.game.slug).nextRound ?? 'room.nextRound')
-                  : (waitingCaption(view, playerNames, t) ?? t('room.theirTurn'))}
-            </p>
-            {secondsLeft !== null && !clocks ? (
-              <p className={`truncate text-sm ${myTurn ? 'text-black/70' : 'text-muted'}`}>
-                {t('room.secondsLeft', { count: secondsLeft })}
-              </p>
-            ) : null}
+    <>
+      <TableBar room={data} status={wide ? turnStatus : null} />
+      <Container className="space-y-4 py-4 sm:space-y-5 sm:py-6">
+        <title>{tabTitle}</title>
+        {/* Phones and tablets: the group and whose turn it is, under the bar (wider screens have both in it). */}
+        {!wide && (turnStatus || data.group) ? (
+          <div className="flex items-center justify-between gap-3">
+            <span className="min-w-0">
+              <GroupBadge room={data} />
+            </span>
+            {turnStatus}
           </div>
         ) : null}
-      </header>
-      {data.group ? (
-        <div className="-mt-4 sm:hidden">
-          <GroupBadge room={data} />
-        </div>
-      ) : null}
 
-      {/* The table chat: between the header and the table, in view while playing. */}
-      <RoomReactions
-        room={data}
-        mySeat={
-          view?.seat ??
-          data.participants.find((p) => !p.is_bot && user && p.username === user.username)?.seat ??
-          null
-        }
-      />
-
-      {data.status === 'waiting' ? (
-        <WaitingTable room={data} mySeat={tableSeat} onLeave={leave} />
-      ) : null}
-
-      {data.status === 'finished' || data.status === 'aborted' || leftTable ? (
-        <GameOverPanel
+        {/* The table chat: between the header and the table, in view while playing. */}
+        <RoomReactions
           room={data}
-          result={(myResult ?? null) as ParticipantResult | null}
-          leftTable={leftTable}
-          outOfChips={outOfChips}
+          mySeat={
+            view?.seat ??
+            data.participants.find((p) => !p.is_bot && user && p.username === user.username)
+              ?.seat ??
+            null
+          }
         />
-      ) : null}
 
-      {showPlayers ? (
-        <PlayerList
-          room={data}
-          mySeat={view?.seat ?? null}
-          seatsToAct={view?.seats_to_act ?? []}
-          clocks={clocks}
-        />
-      ) : null}
+        {data.status === 'waiting' ? (
+          <WaitingTable room={data} mySeat={tableSeat} onLeave={leave} />
+        ) : null}
 
-      {act.error ? <Alert tone="danger">{message(act.error.message)}</Alert> : null}
-
-      {view && data.status !== 'waiting' ? (
-        Board ? (
-          <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-            <Board
-              state={view}
-              onAction={(action) => act.mutate(action)}
-              pending={act.isPending}
-              players={playerNames}
-              bots={Object.fromEntries(data.participants.map((p) => [p.seat, p.is_bot]))}
-              levels={Object.fromEntries(data.participants.map((p) => [p.seat, p.level]))}
-              frames={Object.fromEntries(data.participants.map((p) => [p.seat, p.frame]))}
+        {/* The table, with the game-over panel floating over its top on wide screens. */}
+        <div className={`relative space-y-4 sm:space-y-5 ${over ? 'min-h-[22rem]' : ''}`}>
+          {showPlayers ? (
+            <PlayerList
+              room={data}
+              mySeat={view?.seat ?? null}
+              seatsToAct={view?.seats_to_act ?? []}
+              clocks={clocks}
             />
-          </Suspense>
-        ) : (
-          <EmptyState title={t('room.boardUnavailable')} />
-        )
-      ) : null}
+          ) : null}
 
-      <footer className="flex flex-wrap gap-3">
-        {data.status === 'active' && !leftTable ? (
-          confirmResign ? (
-            <>
-              <Button
-                variant="primary"
-                onClick={() => {
-                  setConfirmResign(false)
-                  leave()
-                }}
-              >
-                {t('room.confirmResign')}
+          {act.error ? <Alert tone="danger">{message(act.error.message)}</Alert> : null}
+
+          {view && data.status !== 'waiting' ? (
+            Board ? (
+              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                <Board
+                  state={view}
+                  onAction={(action) => act.mutate(action)}
+                  pending={act.isPending}
+                  players={playerNames}
+                  bots={Object.fromEntries(data.participants.map((p) => [p.seat, p.is_bot]))}
+                  levels={Object.fromEntries(data.participants.map((p) => [p.seat, p.level]))}
+                  frames={Object.fromEntries(data.participants.map((p) => [p.seat, p.frame]))}
+                />
+              </Suspense>
+            ) : (
+              <EmptyState title={t('room.boardUnavailable')} />
+            )
+          ) : null}
+          {/* After the board: a folded strip leaves its room at the end; a float or sheet doesn't care. */}
+          {over ? (
+            <GameOverPanel
+              room={data}
+              result={(myResult ?? null) as ParticipantResult | null}
+              leftTable={leftTable}
+              outOfChips={outOfChips}
+            />
+          ) : null}
+        </div>
+
+        <footer className="flex flex-wrap gap-3">
+          {data.status === 'active' && !leftTable ? (
+            confirmResign ? (
+              <>
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    setConfirmResign(false)
+                    leave()
+                  }}
+                >
+                  {t('room.confirmResign')}
+                </Button>
+                <Button variant="secondary" onClick={() => setConfirmResign(false)}>
+                  {t('room.keepPlaying')}
+                </Button>
+              </>
+            ) : (
+              <Button variant="secondary" onClick={() => setConfirmResign(true)}>
+                {t('room.resign')}
               </Button>
-              <Button variant="secondary" onClick={() => setConfirmResign(false)}>
-                {t('room.keepPlaying')}
-              </Button>
-            </>
-          ) : (
-            <Button variant="secondary" onClick={() => setConfirmResign(true)}>
-              {t('room.resign')}
-            </Button>
-          )
-        ) : null}
-        <Link
-          to="/dashboard"
-          className="self-center text-sm font-medium text-accent-text hover:underline"
-        >
-          {t('nav.dashboard')}
-        </Link>
-      </footer>
-    </Container>
+            )
+          ) : null}
+          <Link
+            to="/dashboard"
+            className="self-center text-sm font-medium text-accent-text hover:underline"
+          >
+            {t('nav.dashboard')}
+          </Link>
+        </footer>
+      </Container>
+    </>
   )
 }
