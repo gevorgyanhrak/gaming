@@ -182,7 +182,7 @@ export function Avatar({
       aria-hidden="true"
     >
       <span
-        className={`flex items-center justify-center rounded-full bg-[#1d2a24] font-bold uppercase ${
+        className={`flex items-center justify-center rounded-full bg-ink font-bold uppercase ${
           size === 'md' ? 'size-12 text-xl' : 'size-9 text-base'
         }`}
       >

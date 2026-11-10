@@ -175,7 +175,8 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* Dice, pip counts and the hint on one strip above the walnut case. */}
+      <div className="club-panel flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-card px-3 py-2 sm:px-4">
         <div className="flex items-center gap-2" aria-label={t('nardi.dice')}>
           {shownDice.map((die, i) => (
             <Die key={i} value={die} spent={spent[i] ?? false} />

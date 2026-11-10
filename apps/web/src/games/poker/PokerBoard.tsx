@@ -130,8 +130,9 @@ export default function PokerBoard({
     const [x, y] = [Math.cos(angle), Math.sin(angle)]
     // Seats across the top: under the nameplate. Seats level with the board (4 seats) are at the
     // screen's edge: under the nameplate, lined up towards the middle so the bet stays on screen.
-    if (y < -0.7) return 'top-full mt-1 left-1/2 -translate-x-1/2'
-    if (Math.abs(y) < 0.3) return `top-full mt-1 ${x < 0 ? 'left-0' : 'right-0'}`
+    // Below the "Bot" pill that hangs from the nameplate, not over it.
+    if (y < -0.7) return 'top-full mt-3.5 left-1/2 -translate-x-1/2'
+    if (Math.abs(y) < 0.3) return `top-full mt-3.5 ${x < 0 ? 'left-0' : 'right-0'}`
     if (y > 0.7) return 'bottom-full mb-1 left-1/2 -translate-x-1/2'
     return `${x < 0 ? 'left-full ml-1' : 'right-full mr-1'} top-1/2 -translate-y-1/2`
   }
@@ -443,7 +444,7 @@ export default function PokerBoard({
           </div>
         ) : (
           <p
-            className="w-full rounded-md bg-[#fdebc8] px-3 py-2 text-center text-sm text-black"
+            className="w-full rounded-md bg-ivory-100 px-3 py-2 text-center text-sm text-ink"
             aria-live="polite"
           >
             {view.street === 'over' && !state.result

@@ -410,7 +410,7 @@ export default function DurakBoard({
               ) : null}
               <p
                 data-reaction-avoid=""
-                className="line-clamp-3 min-w-0 flex-1 rounded-lg bg-[#fdebc8] px-3 py-1.5 text-sm text-black shadow"
+                className="line-clamp-3 min-w-0 flex-1 rounded-lg bg-ivory-100 px-3 py-1.5 text-sm text-ink shadow"
                 aria-live="polite"
               >
                 {status}
