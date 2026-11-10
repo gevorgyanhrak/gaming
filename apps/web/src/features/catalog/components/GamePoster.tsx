@@ -14,17 +14,29 @@ import { PlayerCount } from './PlayerCount'
 const quickPlace =
   'absolute right-2.5 bottom-[3.75rem] opacity-100 transition-opacity duration-150 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-focus-within:opacity-100 [@media(hover:hover)]:group-hover:opacity-100'
 
-/** A game's poster: art, an ivory name plate, and Quick seat, which opens the play panel on the spot. */
-export function GamePoster({ game }: { game: GameSummary }) {
+/**
+ * A game's poster: art, an ivory name plate, and Quick seat, which opens the play panel on the spot.
+ * The featured one (first in the lobby) is double width with the art's wide crop.
+ */
+export function GamePoster({
+  game,
+  featured = false,
+}: {
+  game: GameSummary
+  /** A double-width tile: wide art, a larger name. */
+  featured?: boolean
+}) {
   const { t } = useTranslation()
   const { data: user } = useCurrentUser()
   const [seating, setSeating] = useState(false)
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-card border border-gold/30 bg-emerald-800 shadow-raised transition-[transform,border-color,box-shadow] duration-150 ease-soft hover:border-gold hover:shadow-[var(--shadow-raised),0_0_0_1px_var(--color-gold)] motion-safe:hover:-translate-y-1.5">
+    <div className="group relative flex flex-1 flex-col overflow-hidden rounded-card border border-gold/30 bg-emerald-800 shadow-raised transition-[transform,border-color,box-shadow] duration-150 ease-soft hover:border-gold hover:shadow-[var(--shadow-raised),0_0_0_1px_var(--color-gold)] motion-safe:hover:-translate-y-1.5">
       <Link to={`/games/${game.slug}`} data-game-card="" className="flex flex-1 flex-col">
         <ViewTransition name={artTransition(game.slug)}>
-          <div className="relative aspect-[3/3.4] overflow-hidden">
+          <div
+            className={`relative overflow-hidden ${featured ? 'aspect-[16/9] sm:aspect-[2.4/1] lg:aspect-[16/9]' : 'aspect-[3/3.4]'}`}
+          >
             {game.thumbnail_url ? (
               <img
                 src={game.thumbnail_url}
@@ -44,7 +56,11 @@ export function GamePoster({ game }: { game: GameSummary }) {
         </ViewTransition>
         <div className="surface-ivory flex-1 rounded-none px-3 pt-2.5 pb-3 shadow-none">
           <ViewTransition name={titleTransition(game.slug)}>
-            <h3 className="text-base leading-[1.375rem] font-bold text-ink">{game.name}</h3>
+            <h3
+              className={`font-bold text-ink ${featured ? 'text-lg leading-6 sm:text-xl' : 'text-base leading-[1.375rem]'}`}
+            >
+              {game.name}
+            </h3>
           </ViewTransition>
           <p className="text-xs text-ink-soft">
             <PlayerCount game={game} />

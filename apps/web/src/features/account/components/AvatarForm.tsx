@@ -51,13 +51,14 @@ export function AvatarForm({ user }: { user: CurrentUser }) {
               event.target.value = ''
             }}
           />
-          <Button disabled={busy} onClick={() => input.current?.click()}>
+          <Button disabled={busy} loading={upload.isPending} onClick={() => input.current?.click()}>
             {t('settings.uploadAvatar')}
           </Button>
           {user.profile.avatar_url ? (
             <Button
               variant="secondary"
               disabled={busy}
+              loading={remove.isPending}
               onClick={() => remove.mutate(undefined, { onError })}
             >
               {t('settings.removeAvatar')}

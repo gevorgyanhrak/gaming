@@ -29,7 +29,8 @@ export function ResendCodeButton({
   return (
     <Button
       variant="secondary"
-      disabled={remaining > 0 || pending}
+      disabled={remaining > 0}
+      loading={pending}
       onClick={() =>
         void onResend().then(
           () => setRemaining(COOLDOWN_SECONDS),

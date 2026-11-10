@@ -245,7 +245,7 @@ export function RegisterPage() {
           </div>
         ) : null}
 
-        <Button type="submit" className="w-full" disabled={mutation.isPending}>
+        <Button type="submit" className="w-full" loading={mutation.isPending}>
           {t('auth.register')}
         </Button>
       </form>

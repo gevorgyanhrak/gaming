@@ -43,6 +43,7 @@ export function GameLobby({ games }: { games: GameSummary[] }) {
     )
 
   const shown = selected ? selected.games : games
+  const featured = !selected && shown.length >= 3
 
   return (
     <div>
@@ -56,11 +57,17 @@ export function GameLobby({ games }: { games: GameSummary[] }) {
           />
         </div>
       )}
-      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
-        {shown.map((game) => (
-          <li key={game.slug} className="flex">
+      {/* "All": the first game (the admin's order) is featured, a double-width tile with wide art. */}
+      <ul
+        className={`grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 ${featured ? 'lg:grid-cols-6' : 'lg:grid-cols-5'}`}
+      >
+        {shown.map((game, i) => (
+          <li
+            key={game.slug}
+            className={`flex ${featured && i === 0 ? 'col-span-2 sm:col-span-3 lg:col-span-2' : ''}`}
+          >
             <div className="flex w-full flex-col">
-              <GamePoster game={game} />
+              <GamePoster game={game} featured={featured && i === 0} />
             </div>
           </li>
         ))}

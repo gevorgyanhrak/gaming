@@ -89,7 +89,7 @@ export function VerifyPage() {
         <CodeField error={form.formState.errors.code?.message} {...form.register('code')} />
 
         <div className="flex flex-col gap-3 sm:flex-row-reverse">
-          <Button type="submit" className="flex-1" disabled={verify.isPending}>
+          <Button type="submit" className="flex-1" loading={verify.isPending}>
             {t('auth.verifySubmit')}
           </Button>
           <ResendCodeButton

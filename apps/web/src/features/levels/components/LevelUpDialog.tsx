@@ -208,7 +208,8 @@ function Dialog({ status }: { status: LevelStatus }) {
             variant="gold"
             className="min-h-12 text-lg sm:min-w-48"
             onClick={take}
-            disabled={collect.isPending || collect.isSuccess}
+            disabled={collect.isSuccess}
+            loading={collect.isPending}
           >
             {collect.isPending || collect.isSuccess ? t('level.collecting') : t('level.collect')}
           </Button>

@@ -157,7 +157,7 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
                   {modes.map((m) => (
                     <label
                       key={m.slug}
-                      className="club-panel flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-transparent p-2.5 transition has-checked:border-gold has-checked:shadow-[0_0_0_3px_rgb(214_171_78/0.25)] has-focus-visible:outline-2 has-focus-visible:outline-accent-text sm:p-3"
+                      className="club-panel flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-transparent p-2.5 transition hover:border-gold/40 has-checked:border-gold has-checked:shadow-[0_0_0_3px_rgb(214_171_78/0.25)] has-focus-visible:outline-2 has-focus-visible:outline-accent-text sm:p-3"
                     >
                       <input
                         type="radio"
@@ -284,7 +284,7 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
           className="group mx-auto flex w-full max-w-lg flex-col items-center rounded-2xl border border-white/20 bg-linear-to-b from-[#3f9d57] via-accent-light to-accent px-6 py-4 text-white shadow-[0_10px_30px_rgb(0_0_0/0.45),inset_0_1px_0_rgb(255_255_255/0.25)] transition [animation-delay:180ms] hover:brightness-110 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 motion-safe:animate-rise"
         >
           <span className="flex items-center gap-3 text-2xl font-extrabold tracking-wide uppercase sm:text-3xl">
-            <PlayIcon className="size-7 transition-transform group-hover:scale-110" />
+            <PlayIcon className="size-7 transition-transform motion-safe:group-hover:scale-110" />
             {t('catalog.play')}
           </span>
           <span id={`${id}-search`} className="mt-0.5 text-sm text-white/85">
@@ -351,7 +351,8 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
               type="submit"
               variant="outline"
               className="min-h-11"
-              disabled={join.isPending || !code.trim()}
+              disabled={!code.trim()}
+              loading={join.isPending}
             >
               {t('play.join')}
             </Button>

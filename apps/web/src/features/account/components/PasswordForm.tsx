@@ -80,7 +80,7 @@ export function PasswordForm({ user }: { user: CurrentUser }) {
           error={errors.password_confirmation?.message}
           {...form.register('password_confirmation')}
         />
-        <Button type="submit" disabled={mutation.isPending}>
+        <Button type="submit" loading={mutation.isPending}>
           {t('settings.changePassword')}
         </Button>
       </form>

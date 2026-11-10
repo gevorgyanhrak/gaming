@@ -85,7 +85,7 @@ export function ProfileForm({ user }: { user: CurrentUser }) {
             </option>
           ))}
         </SelectField>
-        <Button type="submit" disabled={mutation.isPending}>
+        <Button type="submit" loading={mutation.isPending}>
           {t('settings.save')}
         </Button>
       </form>

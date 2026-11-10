@@ -79,11 +79,11 @@ export function MatchmakingStatus() {
       {accept.error ? <Alert tone="danger">{message(accept.error.message)}</Alert> : null}
       <div className="flex flex-wrap gap-2">
         {ticket.status === 'bot_offered' ? (
-          <Button onClick={() => accept.mutate()} disabled={accept.isPending}>
+          <Button onClick={() => accept.mutate()} loading={accept.isPending}>
             {t('play.acceptBot')}
           </Button>
         ) : null}
-        <Button variant="secondary" onClick={() => cancel.mutate()} disabled={cancel.isPending}>
+        <Button variant="secondary" onClick={() => cancel.mutate()} loading={cancel.isPending}>
           {t('play.cancelSearch')}
         </Button>
       </div>

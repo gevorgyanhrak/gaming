@@ -194,6 +194,9 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   `FishkaBalance` header pill, `OutOfFishkasDialog` opened by the QueryClient's MutationCache on any
   422 `insufficient_fishkas`, `/wallet` page). `ApiError.code` carries server error codes. Tests render
   with the app's `createQueryClient`.
+- Buttons that wait on the server use `Button`'s `loading` prop (spinner + disabled + `aria-busy`, label kept), not
+  `disabled={x.isPending}`; board moves don't (no spinner flicker per move). Hover lifts/scales are `motion-safe:` only.
+  Watch prettier's class sorter: it trims spaces inside class strings, so never build classes as `${a ? 'x ' : ''}${b}`.
 - `Button` accepts `ref` (React 19 prop). Refs passed into custom hooks must be named `…Ref` or the
   React Compiler lint rejects writes to them.
 - Realtime: `VITE_REVERB_HOST` empty = the page's host (LAN-safe). `useRealtimeConnected()` reports the real
@@ -266,6 +269,8 @@ put project-specific content there; propose generic improvements to the user ins
 ## Reporting back
 Lead with the outcome. List what changed (files/areas), how it was verified (commands and results), what
 is not done or not verified, and how to check it manually. Keep it concise.
+- Lobby (TASK-048): in "All" the first game (admin order) is a double-width featured `GamePoster` (`featured`, wide art,
+  `lg:grid-cols-6`); category views stay plain.
 - Game catalog (TASK-056): `game_categories` + `games.game_category_id`, `category` on each game in `/games`; admin Games → Categories. Web: `GameGrid` → `features/catalog/components/GameLobby`
   (shelves come from the games; `_other` is reserved for uncategorised), `HomeArt` posters, `HomeBackdrop` (the fixed night-room picture on `/` and `/dashboard`, `PublicLayout` `isHome`,
   `.home-scope-night`). `GameArt` still serves game pages and the side nav.

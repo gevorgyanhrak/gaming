@@ -112,8 +112,7 @@ export function GameOverPanel({
   const playAgain = canPlayAgain ? (
     <Button
       onClick={() => again.mutate()}
-      disabled={again.isPending}
-      aria-busy={again.isPending}
+      loading={again.isPending}
       className="min-h-11 w-full sm:w-auto"
     >
       {t('room.playAgain')}

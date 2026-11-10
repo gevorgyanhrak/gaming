@@ -134,7 +134,7 @@ function Dialog() {
                   variant="gold"
                   className="min-h-12 w-full text-base"
                   disabled={!canTake}
-                  aria-busy={busy}
+                  loading={busy}
                   onClick={take}
                 >
                   {busy

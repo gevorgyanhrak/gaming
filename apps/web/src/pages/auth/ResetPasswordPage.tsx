@@ -99,7 +99,7 @@ export function ResetPasswordPage() {
           error={errors.password_confirmation?.message}
           {...form.register('password_confirmation')}
         />
-        <Button type="submit" className="w-full" disabled={mutation.isPending}>
+        <Button type="submit" className="w-full" loading={mutation.isPending}>
           {t('auth.resetSubmit')}
         </Button>
       </form>

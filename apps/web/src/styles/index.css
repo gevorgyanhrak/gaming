@@ -167,6 +167,7 @@
 
   --animate-card-in: card-in 260ms ease-out both;
   --animate-rise: rise 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-turn-pop: turn-pop 360ms var(--ease-pop) both;
 
   @keyframes drawer-in {
     from {
@@ -202,6 +203,19 @@
     }
     to {
       opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* The turn pill when it becomes your turn. */
+  @keyframes turn-pop {
+    0% {
+      transform: scale(0.9);
+    }
+    60% {
+      transform: scale(1.06);
+    }
+    to {
       transform: none;
     }
   }

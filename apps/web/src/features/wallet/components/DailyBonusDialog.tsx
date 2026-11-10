@@ -146,7 +146,8 @@ function Dialog({ bonus }: { bonus: DailyBonus }) {
             variant="gold"
             className="min-h-12 text-lg sm:min-w-48"
             onClick={take}
-            disabled={done || collect.isPending}
+            disabled={done}
+            loading={collect.isPending}
           >
             {done
               ? `✓ ${t('daily.collected')}`

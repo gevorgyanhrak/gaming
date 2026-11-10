@@ -135,7 +135,9 @@ export function RoomPage() {
   const turnStatus =
     data.status === 'active' && view && !leftTable ? (
       <div
-        className={`ml-auto max-w-[60%] shrink-0 rounded-2xl px-4 py-1.5 text-right ${myTurn ? 'bg-linear-to-b from-gold-light via-gold to-gold-dark text-black shadow-gold/20 shadow-lg' : 'border border-border bg-surface'}`}
+        // Keyed by whose turn it is: the pill pops once when your turn starts.
+        key={myTurn ? 'mine' : 'theirs'}
+        className={`ml-auto max-w-[60%] shrink-0 rounded-2xl px-4 py-1.5 text-right ${myTurn ? 'bg-linear-to-b from-gold-light via-gold to-gold-dark text-black shadow-gold/20 shadow-lg motion-safe:animate-turn-pop' : 'border border-border bg-surface'}`}
         role="status"
       >
         <p className="max-w-56 truncate text-sm font-semibold sm:text-base">

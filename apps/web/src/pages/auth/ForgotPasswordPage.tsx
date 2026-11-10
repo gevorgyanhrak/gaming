@@ -58,7 +58,7 @@ export function ForgotPasswordPage() {
           error={form.formState.errors.login?.message}
           {...form.register('login')}
         />
-        <Button type="submit" className="w-full" disabled={mutation.isPending}>
+        <Button type="submit" className="w-full" loading={mutation.isPending}>
           {t('auth.sendCode')}
         </Button>
       </form>

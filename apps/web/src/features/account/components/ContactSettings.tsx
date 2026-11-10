@@ -133,7 +133,7 @@ function NewContactForm({
         {...form.register('value')}
       />
       <div className="flex gap-2">
-        <Button type="submit" disabled={mutation.isPending}>
+        <Button type="submit" loading={mutation.isPending}>
           {t('auth.sendCode')}
         </Button>
         <Button variant="secondary" onClick={onCancel}>
@@ -179,7 +179,7 @@ function ConfirmContactForm({
       {formError ? <Alert tone="danger">{message(formError)}</Alert> : null}
       <CodeField error={form.formState.errors.code?.message} {...form.register('code')} />
       <div className="flex gap-2">
-        <Button type="submit" disabled={mutation.isPending}>
+        <Button type="submit" loading={mutation.isPending}>
           {t('settings.confirm')}
         </Button>
         <Button variant="secondary" onClick={onDone}>

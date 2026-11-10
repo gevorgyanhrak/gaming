@@ -89,7 +89,7 @@ export function ReactionPicker({
       key={key}
       type="button"
       onClick={() => send('emoji', emoji)}
-      className="flex size-11 items-center justify-center rounded-xl text-[1.7rem] leading-none transition hover:scale-110 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-accent-text active:scale-95"
+      className="flex size-11 items-center justify-center rounded-xl text-[1.7rem] leading-none transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-accent-text active:scale-95 motion-safe:hover:scale-110"
       aria-label={`${emoji} ${words.get(emoji) ?? ''}`.trim()}
     >
       {emoji}
