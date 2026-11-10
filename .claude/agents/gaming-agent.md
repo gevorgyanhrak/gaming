@@ -197,6 +197,8 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
 - Buttons that wait on the server use `Button`'s `loading` prop (spinner + disabled + `aria-busy`, label kept), not
   `disabled={x.isPending}`; board moves don't (no spinner flicker per move). Hover lifts/scales are `motion-safe:` only.
   Watch prettier's class sorter: it trims spaces inside class strings, so never build classes as `${a ? 'x ' : ''}${b}`.
+- Skeletons for queries that are `enabled: !!user` use `isLoading`, not `isPending` (a disabled query stays pending
+  forever, so a guest would see a skeleton that never goes).
 - `Button` accepts `ref` (React 19 prop). Refs passed into custom hooks must be named `…Ref` or the
   React Compiler lint rejects writes to them.
 - Realtime: `VITE_REVERB_HOST` empty = the page's host (LAN-safe). `useRealtimeConnected()` reports the real
