@@ -2,6 +2,31 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## TASK-048 step 4 · Game redesign (tables) — 2026-11-10 · IN PROGRESS (QA in step 6)
+
+Spec: `docs/design/REDESIGN_048.md` §4.5, §5. Rules and game logic untouched (frontend only).
+
+- `TableBar` (`features/play/components`): at `/rooms/*` the site header gives way to one bar — back, game + mode,
+  `GroupBadge` (md+), turn status (768 px+; below it sits under the bar with the group), `FishkaBalance`.
+- `PlayerList`: seat plates; two players face off (you left, "vs" medal), avatar `md` with level/frame, clock,
+  result (truncates on phones), turn ring + "To move". Used by Nardi, Checkers, Chess and finished card tables.
+- `GameOverPanel`: floats over the board from 1024 px, `Modal` bottom sheet below, folds into a fixed strip
+  ("Show the table" / "Result", Play again stays). Placed after the board inside a relative box.
+- Poker: phone bet chips sit below the "Bot" pill (they overlapped). Durak/Poker hint bubbles and Durak's avatar
+  tile use tokens (`ivory-100`, `ink`). Nardi: dice, pips and hint on one `club-panel` strip (walnut unchanged).
+- i18n (en/ru/hy): `room.youSeat`, `room.toMove`, `room.versus`, `room.showTable`, `room.showResult`.
+
+**Tests run:** `npm run typecheck` ✓ · `npm run lint` ✓ · `npm run format:check` ✓ · `npm test` → 28 files,
+**168 passed** (new: seat-plate order and turn mark, table bar replaces header, fold/unfold of the result) ·
+`npm run build` ✓. Backend untouched.
+
+**Browser check (headless Chrome, local stack, hy UI):** Chess/Checkers/Nardi/Durak/Poker bot rooms at 1440,
+820 and 390, live and finished (resigned). Durak's whole table fits at 390×844 now.
+
+**Known issues:** Poker's action buttons are below the fold at 390×844 (the oval is width-limited; as before).
+GitHub Actions not checked from this machine (`gh` not installed). Design review and PM validation come with
+step 6 QA.
+
 ## TASK-056 · Home page redesign and game categories — 2026-11-08 · DONE
 
 Brief and the owner's revision: `docs/product/briefs/TASK-056-home-page-redesign.md`. Design: `docs/design/HOME_REDESIGN.md` (partly superseded).
