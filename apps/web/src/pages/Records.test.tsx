@@ -1,4 +1,5 @@
 import { screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 import type { GameStat, Room } from '@/features/play/api'
@@ -37,6 +38,26 @@ describe('Dashboard statistics', () => {
     // The narrow layout carries the same numbers.
     expect(screen.getByText('Win streak 1 · Best 3')).toBeInTheDocument()
     expect(screen.getAllByText('33%')).toHaveLength(2)
+  })
+
+  it('says when the games and statistics failed to load, and loads them again', async () => {
+    let fail = true
+    server.use(
+      signedInAs(userFixture({ username: 'alice' })),
+      http.get('*/api/v1/me/stats', () =>
+        fail
+          ? HttpResponse.json({ message: 'Server Error' }, { status: 500 })
+          : HttpResponse.json({ data: [stat] }),
+      ),
+    )
+    renderRoute('/dashboard')
+
+    const retry = await screen.findByRole('button', { name: 'Try again' })
+    expect(screen.getByText('Something went wrong. Please try again.')).toBeInTheDocument()
+    fail = false
+    await userEvent.click(retry)
+
+    expect(await screen.findByRole('table')).toBeInTheDocument()
   })
 })
 

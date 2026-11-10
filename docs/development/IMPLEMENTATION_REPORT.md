@@ -2,6 +2,22 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## TASK-048 step 5 · Polish — 2026-11-10 · IN PROGRESS (QA in step 6)
+
+- `Button` `loading` (spinner, disabled, `aria-busy`, label kept) on every button that waits on the server: auth forms,
+  account forms, avatar, matchmaking accept/cancel, join by code, Play again, daily bonus, level-up, out-of-Fishkas,
+  resend code. Board moves unchanged.
+- Hover: scale effects (`PlayPanel` play icon, emoji picker) only with `motion-safe:`; table-size cards get a hover border.
+- Lobby "All": the first game is a double-width featured poster (16:9 art; 2.4:1 at 3 columns), others stretch to match.
+- Turn pill pops once when your turn starts (`animate-turn-pop`, `--ease-pop`, reduced motion off).
+- Loading/error: `LevelCard` and `DailyBonusCard` hold their place with a skeleton (`isLoading`, as the queries are
+  off for guests); `DashboardGames` shows an error with Try again.
+
+**Tests run:** typecheck ✓ · lint ✓ · format ✓ · `npm test` → 29 files, **171 passed** (new: `Button.test.tsx`,
+dashboard error + retry) · build ✓. Live: `/games` 1440/820/390, `/dashboard` 390, `/ranks` 1440.
+
+**Known issues:** the dashboard's "with us since" date shows an English month in Armenian (pre-existing; for step 6).
+
 ## TASK-048 step 4 · Game redesign (tables) — 2026-11-10 · IN PROGRESS (QA in step 6)
 
 Spec: `docs/design/REDESIGN_048.md` §4.5, §5. Rules and game logic untouched (frontend only).

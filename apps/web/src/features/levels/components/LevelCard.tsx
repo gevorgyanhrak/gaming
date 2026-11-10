@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { FishkaIcon } from '@/features/wallet/components/FishkaIcon'
 import { Button } from '@/shared/ui/Button'
+import { Skeleton } from '@/shared/ui/Skeleton'
 import { useLevel } from '../hooks'
 import { itemLabel } from '../items'
 import { offerLevelUp } from '../popup'
@@ -12,6 +13,8 @@ export function LevelCard({ className = '' }: { className?: string }) {
   const { t, i18n } = useTranslation()
   const level = useLevel()
   const { data: user } = useCurrentUser()
+  // Same height while loading (isLoading: the query is off for guests), so the page doesn't jump when it arrives; a failed level just isn't shown.
+  if (level.isLoading) return <Skeleton className={`h-28 w-full rounded-2xl ${className}`} />
   if (!level.data) return null
   const next = level.data.next_reward
 

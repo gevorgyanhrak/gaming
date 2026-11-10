@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { Card } from '@/shared/ui/Card'
+import { QueryErrorState } from '@/shared/ui/States'
 import { Skeleton } from '@/shared/ui/Skeleton'
 import { GameIcon } from '@/features/catalog/components/GameArt'
 import { fetchMyRooms, fetchMyStats, myRoomsKey, myStatsKey } from '../api'
@@ -22,6 +23,16 @@ export function DashboardGames() {
   })
 
   if (rooms.isPending || stats.isPending) return <Skeleton className="h-32 w-full" />
+  if (rooms.isError || stats.isError)
+    return (
+      <QueryErrorState
+        error={rooms.error ?? stats.error}
+        onRetry={() => {
+          void rooms.refetch()
+          void stats.refetch()
+        }}
+      />
+    )
 
   return (
     <div className="grid gap-6">
