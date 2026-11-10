@@ -65,6 +65,20 @@ describe('Room', () => {
     expect(body.client_action_id).toMatch(/^[0-9a-f-]{36}$/)
   })
 
+  it('faces two players off with you first and marks who is to move', async () => {
+    serveRoom(roomFixture(), roomStateFixture({ seat: 1, seats_to_act: [0], legal_actions: [] }))
+    renderRoute('/rooms/room-1')
+
+    expect(await screen.findByText('To move')).toBeInTheDocument()
+    const list = screen.getByRole('list', { name: 'Players' })
+    const plates = list.querySelectorAll('li[data-seat-anchor]')
+    // Seat 1 (Aram) is "you" in this state, so it comes first.
+    expect(plates[0]).toHaveAttribute('data-seat-anchor', '1')
+    expect(plates[1]).toHaveAttribute('aria-current', 'step')
+    expect(plates[1]).toHaveTextContent('To move')
+    expect(screen.getByText('vs')).toBeInTheDocument()
+  })
+
   it('reports that the player is on the game page', async () => {
     serveRoom()
     let reports = 0
