@@ -841,5 +841,31 @@
     "nextHandIn_other": "Next hand in {{count}} seconds",
     "waitingBid": "Waiting for {{name}} to bid…",
     "waitingFor": "Waiting for {{name}}…"
+  },
+  "domino": {
+    "you": "You",
+    "seat": "Seat {{seat}}",
+    "players": "Players",
+    "line": "Line of play",
+    "yourTiles": "Your tiles",
+    "tile": "{{a}}–{{b}} tile",
+    "leftEnd": "◀ Here",
+    "rightEnd": "Here ▶",
+    "round": "Round",
+    "target": "To",
+    "tilesLeft_one": "{{count}} tile left",
+    "tilesLeft_other": "{{count}} tiles left",
+    "pips_one": "{{count}} pip",
+    "pips_other": "{{count}} pips",
+    "yourTurn": "Your turn: play a tile",
+    "pickEnd": "Choose an end of the line",
+    "waitingFor": "Waiting for {{name}}…",
+    "nextRound": "Next round",
+    "nextRoundIn_one": "Next round in {{count}} second",
+    "nextRoundIn_other": "Next round in {{count}} seconds",
+    "roundResult": "Round result",
+    "wonOut": "{{name}} went out: +{{points}}",
+    "wonBlocked": "Blocked — {{name}} has the fewest pips: +{{points}}",
+    "blockedTie": "Blocked with a tie — nobody scores"
   }
 }

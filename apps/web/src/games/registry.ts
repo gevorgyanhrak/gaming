@@ -31,6 +31,7 @@ export const boards: Partial<Record<string, LazyExoticComponent<ComponentType<Bo
   poker: lazy(() => import('./poker/PokerBoard')),
   blackjack: lazy(() => import('./blackjack/BlackjackBoard')),
   blot: lazy(() => import('./blot/BlotBoard')),
+  domino: lazy(() => import('./domino/DominoBoard')),
 }
 
 /**
@@ -121,6 +122,16 @@ export const traits: Partial<Record<string, GameTraits>> = {
       )
     },
     nextRound: 'blot.nextHand',
+  },
+  domino: {
+    seatsOnBoard: true,
+    material: 'wood',
+    roundWon: (a, b, seat) => {
+      const before = a.last_round as { number: number } | null
+      const after = b.last_round as { number: number; winner: number | null } | null
+      return !!after && after.number > (before?.number ?? 0) && after.winner === seat
+    },
+    nextRound: 'domino.nextRound',
   },
 }
 

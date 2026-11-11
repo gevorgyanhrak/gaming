@@ -4,6 +4,7 @@ use App\Games\Blackjack\BlackjackServiceProvider;
 use App\Games\Blot\BlotServiceProvider;
 use App\Games\Checkers\CheckersServiceProvider;
 use App\Games\Chess\ChessServiceProvider;
+use App\Games\Domino\DominoServiceProvider;
 use App\Games\Durak\DurakServiceProvider;
 use App\Games\Nardi\NardiServiceProvider;
 use App\Games\Poker\PokerServiceProvider;
@@ -21,6 +22,7 @@ return [
     PokerServiceProvider::class,
     BlackjackServiceProvider::class,
     BlotServiceProvider::class,
+    DominoServiceProvider::class,
     AdminPanelProvider::class,
     HorizonServiceProvider::class,
 ];

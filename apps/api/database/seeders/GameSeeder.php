@@ -8,7 +8,7 @@ use App\Models\GameCategory;
 use Illuminate\Database\Seeder;
 
 /**
- * Seeds the games: the five launch games and those added since (Blackjack, Blot).
+ * Seeds the games: the five launch games and those added since (Blackjack, Blot, Domino).
  *
  * Idempotent and non-destructive: existing games are left untouched, so re-running
  * the seeder never overwrites changes made by administrators. A game is created playable only
@@ -129,6 +129,20 @@ class GameSeeder extends Seeder
                     'The bidding team must reach its bid with tricks, declarations and belote. If it does, each team scores its points; if not, the opponents score 162 and every declaration. In a doubled hand the winning team takes everything, doubled (redoubled: four times).',
                 ])],
                 'min_players' => 4,
+                'max_players' => 4,
+            ],
+            [
+                'slug' => 'domino',
+                'name' => ['en' => 'Domino', 'ru' => 'Домино', 'hy' => 'Դոմինո'],
+                'description' => ['en' => 'Block dominoes for 2 to 4 players. Match the ends, empty your hand, reach 100.', 'ru' => 'Блок-домино на 2–4 игроков. Подбирайте концы, избавьтесь от костей, наберите 100.', 'hy' => 'Բլոկ դոմինո 2-4 խաղացողի համար։ Համապատասխանեցրեք ծայրերը, դատարկեք ձեռքը, հավաքեք 100։'],
+                'rules' => ['en' => implode("\n\n", [
+                    'Block dominoes is played with a double-six set of 28 tiles by 2 to 4 players. Each player takes seven tiles; any tiles left over stay face down and are not used.',
+                    'In the first round the player with the highest double plays it first (if nobody has a double, the heaviest tile). In later rounds the winner of the last round starts with any tile.',
+                    'In turn, add a tile to either end of the line so that its touching half matches the number at that end. If you can\'t play, you pass; there is no drawing.',
+                    'The round ends when a player plays their last tile: they score the pips left in all the other hands. If nobody can play, the round is blocked and the player with the fewest pips scores everyone else\'s pips; a tie scores nothing.',
+                    'The first player to reach 100 points wins.',
+                ])],
+                'min_players' => 2,
                 'max_players' => 4,
             ],
         ];

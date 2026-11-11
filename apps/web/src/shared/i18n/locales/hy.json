@@ -841,5 +841,31 @@
     "nextHandIn_other": "Հաջորդ բաժանումը {{count}} վայրկյանից",
     "waitingBid": "Սպասում ենք {{name}}-ի պատվերին…",
     "waitingFor": "Սպասում ենք {{name}}-ին…"
+  },
+  "domino": {
+    "you": "Դուք",
+    "seat": "Տեղ {{seat}}",
+    "players": "Խաղացողներ",
+    "line": "Շղթա",
+    "yourTiles": "Ձեր քարերը",
+    "tile": "{{a}}–{{b}} քար",
+    "leftEnd": "◀ Այստեղ",
+    "rightEnd": "Այստեղ ▶",
+    "round": "Ռաունդ",
+    "target": "Մինչև",
+    "tilesLeft_one": "Մնաց {{count}} քար",
+    "tilesLeft_other": "Մնաց {{count}} քար",
+    "pips_one": "{{count}} միավոր",
+    "pips_other": "{{count}} միավոր",
+    "yourTurn": "Ձեր քայլն է՝ դրեք քար",
+    "pickEnd": "Ընտրեք շղթայի ծայրը",
+    "waitingFor": "Սպասում ենք {{name}}-ին…",
+    "nextRound": "Հաջորդ ռաունդ",
+    "nextRoundIn_one": "Հաջորդ ռաունդը {{count}} վայրկյանից",
+    "nextRoundIn_other": "Հաջորդ ռաունդը {{count}} վայրկյանից",
+    "roundResult": "Ռաունդի արդյունքը",
+    "wonOut": "{{name}}-ը դրեց բոլոր քարերը՝ +{{points}}",
+    "wonBlocked": "Փակված է — ամենաքիչ միավորը {{name}}-ինն է՝ +{{points}}",
+    "blockedTie": "Փակված է, ոչ-ոքի — ոչ ոք միավոր չի ստանում"
   }
 }

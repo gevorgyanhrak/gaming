@@ -22,12 +22,12 @@ use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
 // Every game with an engine is played to the end through the real API and queue jobs.
-dataset('games', ['nardi', 'checkers', 'chess', 'durak', 'poker', 'blackjack', 'blot']);
+dataset('games', ['nardi', 'checkers', 'chess', 'durak', 'poker', 'blackjack', 'blot', 'domino']);
 
 it('seeds games as playable only when their engine is registered', function () {
     $this->seed([GameSeeder::class, GameModeSeeder::class]);
 
-    expect(Game::query()->where('is_enabled', true)->pluck('slug')->all())->toBe(['nardi', 'chess', 'checkers', 'durak', 'poker', 'blackjack', 'blot']);
+    expect(Game::query()->where('is_enabled', true)->pluck('slug')->all())->toBe(['nardi', 'chess', 'checkers', 'durak', 'poker', 'blackjack', 'blot', 'domino']);
 });
 
 it('plays a full game against a bot through the API', function (string $slug) {

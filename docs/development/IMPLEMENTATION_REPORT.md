@@ -2,6 +2,24 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## New games 3/11 · Domino (Block, 2–4 players) — 2026-11-11 · DONE (owner: "Block domino")
+
+- Engine `app/Games/Domino/Engine/DominoEngine.php`: double-six set, 7 tiles each, no drawing; first round led by the
+  highest double (or heaviest tile), later by the last winner; play {tile "a-b", end left|right}; the engine passes for
+  players with no move; going out scores the others' pips, a blocked round goes to the lowest count (tie: nobody);
+  to 100; pause after each round; departures (tiles leave the game, last one standing wins); timeout plays the first
+  legal tile. Stake game. Bot `DominoBot`: easy random, medium sheds heavy tiles/doubles, hard also keeps matching ends.
+- Web: `games/domino/DominoBoard.tsx` (SVG tiles with pips, the line wrapping on the felt with doubles crosswise, end
+  slots when a tile fits both ends, other players across the top with tile counts and scores, your standing tiles,
+  round result with everyone's tiles and pips); traits; art; i18n en/ru/hy. Category: Board games.
+
+**Tests run:** `make lint-api` ✓ · `make test-api` → **468 passed** (new `Unit/Games/DominoEngineTest` 17,
+`Feature/Games/DominoTableTest` 2, Domino in `PlayThroughTest`) · web typecheck ✓ lint ✓ format ✓ · `npm test` → 32
+files, **181 passed** (new `DominoBoard.test.tsx` 3) · build ✓. Live 1440×900 and 390×844 with 3 players: moves, end
+choice, round result.
+
+**Known issues:** a long line wraps onto more rows in play order rather than turning like a snake.
+
 ## New games 2/11 · Blot (Bazar blot, 4 players) — 2026-11-11 · DONE (owner: "the first 4 player")
 
 - Engine `app/Games/Blot/Engine/BlotEngine.php` (+ `BlotCards`): 32 cards, partnerships 0+2 / 1+3, bazar (bid 8–30 ×10

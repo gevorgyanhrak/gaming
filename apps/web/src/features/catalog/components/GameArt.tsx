@@ -125,6 +125,48 @@ const scenes: Record<string, (id: string) => ReactNode> = {
       ))}
     </>
   ),
+  domino: (id) => (
+    <>
+      <Backdrop id={id} from="#3b2a14" to="#0d0904" glow="#f2c46d" />
+      {[
+        [78, 70, -14, 6, 4],
+        [132, 58, 0, 6, 6],
+        [186, 70, 14, 3, 5],
+      ].map(([x, y, angle, a, b]) => (
+        <g key={`${x}`} transform={`rotate(${angle} ${Number(x) + 28} ${Number(y) + 28})`}>
+          <rect
+            x={x}
+            y={y}
+            width="56"
+            height="100"
+            rx="8"
+            fill="#f7f1e3"
+            stroke="#b9a983"
+            strokeWidth="2"
+          />
+          <line
+            x1={Number(x) + 8}
+            y1={Number(y) + 50}
+            x2={Number(x) + 48}
+            y2={Number(y) + 50}
+            stroke="#9c8b6b"
+            strokeWidth="2"
+          />
+          {[a, b].map((n, half) =>
+            Array.from({ length: Number(n) }, (_, i) => (
+              <circle
+                key={`${half}-${i}`}
+                cx={Number(x) + 16 + (i % 2) * 24}
+                cy={Number(y) + 12 + half * 50 + Math.floor(i / 2) * 12}
+                r="4.5"
+                fill="#1d1a17"
+              />
+            )),
+          )}
+        </g>
+      ))}
+    </>
+  ),
 }
 
 /** The scene for a game, or the fallback when there is none for this slug. */
@@ -228,6 +270,15 @@ const icons: Record<string, ReactNode> = {
       <rect x="3" y="6" width="9" height="13" rx="1.5" transform="rotate(-14 7.5 12.5)" />
       <rect x="7.5" y="4.5" width="9" height="13" rx="1.5" />
       <rect x="12" y="6" width="9" height="13" rx="1.5" transform="rotate(14 16.5 12.5)" />
+    </g>
+  ),
+  domino: (
+    <g fill="none" stroke="currentColor" strokeWidth="1.8">
+      <rect x="7" y="2.5" width="10" height="19" rx="2" />
+      <path d="M8.5 12h7" />
+      <circle cx="12" cy="7" r="1.2" fill="currentColor" />
+      <circle cx="10" cy="15.5" r="1" fill="currentColor" />
+      <circle cx="14" cy="17.5" r="1" fill="currentColor" />
     </g>
   ),
 }

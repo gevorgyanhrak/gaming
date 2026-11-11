@@ -501,6 +501,62 @@ const posters: Record<string, ReactNode> = {
       </text>
     </>
   ),
+  domino: (
+    <>
+      <rect width="320" height="200" fill={c.amber} />
+      <Rays cx={160} cy={230} count={11} step={16} length={290} color={c.amberLight} />
+      {/* Three tiles in a line, a double crosswise in the middle. */}
+      {[
+        { x: 52, y: 86, w: 84, h: 42, a: 5, b: 3 },
+        { x: 139, y: 64, w: 42, h: 84, a: 3, b: 3 },
+        { x: 184, y: 86, w: 84, h: 42, a: 3, b: 6 },
+      ].map((tile) => (
+        <g key={tile.x}>
+          <rect
+            x={tile.x}
+            y={tile.y}
+            width={tile.w}
+            height={tile.h}
+            rx="7"
+            fill={c.cream}
+            stroke={c.ink}
+            strokeOpacity="0.3"
+            strokeWidth="2"
+          />
+          {tile.w > tile.h ? (
+            <line
+              x1={tile.x + tile.w / 2}
+              y1={tile.y + 6}
+              x2={tile.x + tile.w / 2}
+              y2={tile.y + tile.h - 6}
+              stroke={c.ink}
+              strokeOpacity="0.4"
+              strokeWidth="2"
+            />
+          ) : (
+            <line
+              x1={tile.x + 6}
+              y1={tile.y + tile.h / 2}
+              x2={tile.x + tile.w - 6}
+              y2={tile.y + tile.h / 2}
+              stroke={c.ink}
+              strokeOpacity="0.4"
+              strokeWidth="2"
+            />
+          )}
+          {[tile.a, tile.b].map((n, half) =>
+            Array.from({ length: n }, (_, i) => {
+              const [cx, cy] =
+                tile.w > tile.h
+                  ? [tile.x + 10 + half * 42 + (i % 3) * 11, tile.y + 13 + Math.floor(i / 3) * 16]
+                  : [tile.x + 10 + (i % 2) * 22, tile.y + 12 + half * 42 + Math.floor(i / 2) * 11]
+              return <circle key={`${half}-${i}`} cx={cx} cy={cy} r="4" fill={c.ink} />
+            }),
+          )}
+        </g>
+      ))}
+    </>
+  ),
   blot: (
     <>
       <rect width="320" height="200" fill={c.teal} />

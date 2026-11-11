@@ -100,6 +100,13 @@ class GameModeSeeder extends Seeder
                 'min_players' => 4, 'max_players' => 4,
                 'config' => ['target' => 301, 'turn_seconds' => 30, 'hand_pause_ms' => 5000],
             ]],
+            'domino' => [[
+                'slug' => 'block',
+                'name' => ['en' => 'Block domino', 'ru' => 'Блок-домино', 'hy' => 'Բլոկ դոմինո'],
+                'description' => ['en' => '2 to 4 players, no drawing, to 100.', 'ru' => 'От 2 до 4 игроков, без добора, до 100.', 'hy' => '2-ից 4 խաղացող, առանց վերցնելու, մինչև 100։'],
+                'min_players' => 2, 'max_players' => 4,
+                'config' => ['target' => 100, 'turn_seconds' => 30, 'round_pause_ms' => 4000, 'table_wait_seconds' => 20],
+            ]],
         ];
     }
 }

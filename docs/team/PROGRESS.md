@@ -16,8 +16,9 @@ time, each fully done (engine, bot, Fishkas, UI, tests) before the next. Skill: 
 Owner said no extra agents (no UI/UX/PM review rounds unless asked). Not existing yet, owner decision needed before
 promising them: achievements, leaderboard, friends (listed in the request as shared features).
 - [x] 1. Blackjack (ADR 0019) — 934db02.
-- [x] 2. Blot (Bazar blot, 4 players in 2 teams, to 301; owner chose 4 players) — this commit.
-- [ ] 3. Domino · [ ] 4. Ludo · [ ] 5. 8-ball pool · [ ] 6. Rummy · [ ] 7. Hearts · [ ] 8. Spades ·
+- [x] 2. Blot (Bazar blot, 4 players in 2 teams, to 301; owner chose 4 players) — ca711b1.
+- [x] 3. Domino (Block, 2–4 players, to 100; owner chose Block) — this commit.
+- [ ] 4. Ludo · [ ] 5. 8-ball pool · [ ] 6. Rummy · [ ] 7. Hearts · [ ] 8. Spades ·
   [ ] 9. Battleship · [ ] 10. Connect Four · [ ] 11. Solitaire
 
 **Paused by the owner's new request:** TASK-048 step 6 (QA of every page) — resume after the new games or when asked.
@@ -50,6 +51,7 @@ Later (older backlog):
 
 ## Done (recent)
 
+- 2026-11-11 · Domino (new games 3/11): Block dominoes for 2–4 — this commit.
 - 2026-11-11 · Blot (new games 2/11): Bazar blot for 4 in partnerships — this commit. CI Web green again (22d27bf: resend-countdown race in a test).
 - 2026-11-11 · Blackjack (new games 1/11): solo and 1–5 seat tables against the dealer, chips, bots — this commit.
 - 2026-11-08 · TASK-058 Poker uses its phone layout at 900 px and below; the table's size follows the window height — this commit. Checked live at 1440, 901, 900, 820, 640, 639, 390, 360.
