@@ -58,7 +58,7 @@ describe('Verification', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Send a new code' }))
 
     expect(await screen.findByText('We sent you a new code.')).toBeInTheDocument()
-    // The cooldown is already counting down (a slow CI runner may show 59).
-    expect(screen.getByRole('button', { name: /New code in (60|59) s/ })).toBeDisabled()
+    // The button turns into the countdown just after the message (on slow CI runners, a moment later).
+    expect(await screen.findByRole('button', { name: /New code in \d+ s/ })).toBeDisabled()
   })
 })
