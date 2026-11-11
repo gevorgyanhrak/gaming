@@ -52,6 +52,10 @@ export interface BlotView {
   declared: { kind: Kind; points: number; cards: string[] }[][]
   declarations_shown: boolean
   belote: number | null
+  /** Who opened the bazar this deal. */
+  opener: number | null
+  /** This deal's public events, oldest first. */
+  log: LogEntry[]
   /** Match scores in sai, per team. */
   scores: [number, number]
   target: number
@@ -71,6 +75,22 @@ export interface BlotView {
     kaput: boolean
   } | null
 }
+
+export type LogEntry =
+  | { type: 'pass' | 'contra' | 'recontra'; seat: number }
+  | { type: 'bid'; seat: number; value: number; suit: Suit | 'N' }
+  | { type: 'kaput'; seat: number; suit: Suit | 'N' }
+  | ({ type: 'contract' } & Contract)
+  | { type: 'declare'; seat: number; kind: Kind; points: number; cards: string[] }
+  | { type: 'blot' | 'reblot' | 'chakhel'; seat: number; card: string }
+  | { type: 'trick'; seat: number; points: number; last: boolean }
+  | {
+      type: 'hand_over'
+      made: boolean
+      scored: [number, number]
+      kaput: boolean
+      reverse_kaput: boolean
+    }
 
 type BlotAction =
   | { type: 'play'; card: string }
@@ -170,6 +190,84 @@ export default function BlotBoard({
   const result = view.phase === 'over' || state.result ? view.last_hand : null
   const bidding = (view.phase === 'bidding' || view.phase === 'answer') && actions.length > 0
   const teamName = (team: number) => (team === myTeam ? t('blot.us') : t('blot.them'))
+  const multiplier = (c: Contract) => (c.suit === null ? [2, 3, 5] : [1, 2, 4])[c.doubled] ?? 1
+  const tricksLeft = 8 - (view.tricks[0] ?? 0) - (view.tricks[1] ?? 0)
+
+  /** Each logged event in words: a title (the term) and a detail line. */
+  const describe = (entry: LogEntry): { title: string; detail: string } => {
+    switch (entry.type) {
+      case 'pass':
+        return { title: t('blot.call.pass'), detail: '' }
+      case 'bid':
+        return { title: `${entry.value} ${suitLabel(entry.suit)}`, detail: t('blot.log.bid') }
+      case 'kaput':
+        return {
+          title: `${t('blot.kaput')} ${suitLabel(entry.suit)}`,
+          detail: t('blot.log.kaputBid'),
+        }
+      case 'contra':
+        return { title: t('blot.call.contra'), detail: t('blot.log.contra') }
+      case 'recontra':
+        return { title: t('blot.call.recontra'), detail: t('blot.log.recontra') }
+      case 'contract':
+        return {
+          title: t('blot.log.contract', { name: name(entry.seat), contract: contractText(entry) }),
+          detail: `${t('blot.trump')}: ${suitLabel(entry.suit)} · ×${multiplier(entry)}`,
+        }
+      case 'declare':
+        return {
+          title: `${t(`blot.declaration.${entry.kind}`)} +${entry.points}`,
+          detail: t('blot.log.declare'),
+        }
+      case 'blot':
+        return {
+          title: t('blot.belote'),
+          detail: t('blot.log.blot', { card: labels.card(entry.card) }),
+        }
+      case 'reblot':
+        return {
+          title: t('blot.reblot'),
+          detail: t('blot.log.reblot', { card: labels.card(entry.card) }),
+        }
+      case 'chakhel':
+        return {
+          title: t('blot.chakhel'),
+          detail: t('blot.log.chakhel', { name: name(entry.seat), card: labels.card(entry.card) }),
+        }
+      case 'trick':
+        return entry.last
+          ? {
+              title: t('blot.lastTrick'),
+              detail: t('blot.log.lastTrick', { name: name(entry.seat), points: entry.points }),
+            }
+          : {
+              title: t('blot.trick'),
+              detail: t('blot.log.trick', { name: name(entry.seat), points: entry.points }),
+            }
+      case 'hand_over':
+        return {
+          title: entry.reverse_kaput
+            ? t('blot.reverseKaput')
+            : entry.kaput
+              ? t('blot.kaput')
+              : t(entry.made ? 'blot.log.made' : 'blot.log.failed'),
+          detail: t('blot.log.scored', {
+            us: entry.scored[myTeam] ?? 0,
+            them: entry.scored[1 - myTeam] ?? 0,
+          }),
+        }
+    }
+  }
+  // In the ticker and the history, who did it comes first.
+  const describeWithName = (entry: LogEntry) => {
+    const text = describe(entry)
+    return 'seat' in entry &&
+      entry.type !== 'contract' &&
+      entry.type !== 'chakhel' &&
+      entry.type !== 'trick'
+      ? { ...text, title: `${name(entry.seat)}: ${text.title}` }
+      : text
+  }
 
   const status =
     view.phase === 'over' && !state.result
@@ -185,7 +283,7 @@ export default function BlotBoard({
   return (
     <div className="space-y-4 text-white">
       <div className="poker-stage relative rounded-3xl p-2 min-[641px]:p-6">
-        <DeclarationToast view={view} name={name} levels={levels} />
+        <TableAnnouncement view={view} name={name} levels={levels} describe={describe} />
         {/* Match score, deal, contract and tricks, above the table. */}
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs min-[641px]:text-sm">
           <dl className="flex flex-wrap items-center gap-2" aria-label={t('blot.score')}>
@@ -228,12 +326,29 @@ export default function BlotBoard({
                 ) : null}
               </p>
             ) : null}
+            {contract && view.phase !== 'bidding' ? (
+              <p className="flex items-center gap-1.5 rounded-full border border-gold/40 bg-black/50 px-2.5 py-1">
+                <span className="text-white/70">{t('blot.trump')}</span>
+                <span
+                  className={`rounded bg-card px-1.5 font-extrabold ${red(contract.suit) ? 'text-suit-red' : 'text-suit-black'}`}
+                >
+                  {suitLabel(contract.suit)}
+                </span>
+                <span className="font-bold text-gold-light">×{multiplier(contract)}</span>
+              </p>
+            ) : null}
             {view.phase === 'playing' ? (
               <p className="rounded-full border border-white/20 bg-black/40 px-2.5 py-1 text-white/80">
                 {t('blot.tricksWon', {
                   us: view.tricks[myTeam] ?? 0,
                   them: view.tricks[1 - myTeam] ?? 0,
-                })}
+                })}{' '}
+                · {t('blot.tricksLeft', { count: tricksLeft })}
+              </p>
+            ) : null}
+            {(view.phase === 'bidding' || view.phase === 'answer') && view.opener !== null ? (
+              <p className="rounded-full border border-white/20 bg-black/40 px-2.5 py-1 text-white/80">
+                {t('blot.openedBy', { name: name(view.opener) })}
               </p>
             ) : null}
           </div>
@@ -365,12 +480,12 @@ export default function BlotBoard({
                           key={i}
                           className="flex items-center gap-1 rounded-lg bg-black/60 p-1"
                           aria-label={t('blot.declaredWith', {
-                            what: `${t(`blot.declaration.${d.kind}`)} ${d.points}`,
+                            what: `${t(`blot.declaration.${d.kind}`)} +${d.points}`,
                             cards: d.cards.map(labels.card).join(', '),
                           })}
                         >
                           <span className="rounded-full bg-gold px-1.5 py-0.5 text-[0.65rem] font-extrabold text-black">
-                            {t(`blot.declaration.${d.kind}`)} {d.points}
+                            {t(`blot.declaration.${d.kind}`)} +{d.points}
                           </span>
                           <span className="flex" aria-hidden="true">
                             {d.cards.map((card, j) => (
@@ -405,7 +520,7 @@ export default function BlotBoard({
             </span>
             {view.my_declarations.map((d) => {
               const action = declares.find((a) => a.index === d.index)
-              const text = `${t(`blot.declaration.${d.kind}`)} ${d.points}`
+              const text = `${t(`blot.declaration.${d.kind}`)} +${d.points}`
               return action ? (
                 <button
                   key={d.index}
@@ -466,6 +581,7 @@ export default function BlotBoard({
             {declares.length > 0 ? t('blot.declareFirst') : t('blot.yourTurn')}
           </p>
         ) : null}
+        <EventTicker log={view.log} describe={describeWithName} />
       </div>
     </div>
   )
@@ -589,29 +705,43 @@ export default function BlotBoard({
   }
 }
 
+/** Log entries worth a banner: the moments everyone at the table should notice. */
+const ANNOUNCED = new Set([
+  'declare',
+  'blot',
+  'reblot',
+  'contra',
+  'recontra',
+  'kaput',
+  'contract',
+  'hand_over',
+])
+
 /**
- * Announces a declaration to the whole table as it is made: the player, what they declared and the very
- * cards (from the server), turning over one after another. Each stays a few seconds (or until closed);
- * several queue up. Declarations already made when the page opened aren't announced again — they stay
- * visible at the players' seats.
+ * Announces the important moments of a deal to the whole table as they happen — a declaration with its
+ * cards turning over, Blot and Reblot, Quansh and Sur, a kaput bid, the bazar won, a kaput or reverse kaput
+ * — as a one-line banner across the top of the table frame (it covers neither the trick nor any cards).
+ * Each stays 3.5 s (or until closed) and they queue; what happened before the page opened isn't announced
+ * again (the ticker below has it).
  */
-function DeclarationToast({
+function TableAnnouncement({
   view,
   name,
   levels,
+  describe,
 }: {
   view: BlotView
   name: (seat: number) => string
   levels: Partial<Record<number, number>>
+  describe: (entry: LogEntry) => { title: string; detail: string }
 }) {
   const { t } = useTranslation()
   const labels = useCardLabel()
-  const announced = view.declared.flatMap((list, seat) =>
-    list.map((d, i) => ({ key: `${view.hand_no}:${seat}:${i}`, seat, ...d })),
-  )
-  const [seen, setSeen] = useState(() => new Set(announced.map((a) => a.key)))
-  const current = announced.find((a) => !seen.has(a.key))
-  const done = (key: string) => setSeen((s) => new Set(s).add(key))
+  const entries = view.log
+    .map((entry, i) => ({ key: `${view.hand_no}:${i}`, entry }))
+    .filter(({ entry }) => ANNOUNCED.has(entry.type))
+  const [seen, setSeen] = useState(() => new Set(entries.map((e) => e.key)))
+  const current = entries.find((e) => !seen.has(e.key))
   const currentKey = current?.key
   useEffect(() => {
     if (!currentKey) return
@@ -620,58 +750,102 @@ function DeclarationToast({
   }, [currentKey])
   if (!current) return null
 
-  const what = `${t(`blot.declaration.${current.kind}`)} ${current.points}`
-  // A one-line banner across the top of the table frame (over the score row): it never covers the trick
-  // or anyone's cards.
+  const { entry } = current
+  const seat = 'seat' in entry ? entry.seat : null
+  const cards = entry.type === 'declare' ? entry.cards : 'card' in entry ? [entry.card] : []
+  const { title, detail } = describe(entry)
   return (
     <div
       role="status"
-      aria-label={t('blot.declaredBy', {
-        name: name(current.seat),
-        what,
-        cards: current.cards.map(labels.card).join(', '),
-      })}
+      aria-label={[
+        seat !== null ? name(seat) : '',
+        title,
+        detail,
+        cards.map(labels.card).join(', '),
+      ]
+        .filter(Boolean)
+        .join(' · ')}
       className="absolute inset-x-2 top-1 z-40 mx-auto flex max-w-xl items-center gap-2 rounded-2xl border border-gold bg-[#1c120d]/95 px-2 py-1.5 shadow-[0_10px_30px_rgb(0_0_0/0.6),0_0_0_3px_rgb(214_171_78/0.25)] motion-safe:animate-rise min-[641px]:top-2 min-[641px]:gap-3 min-[641px]:px-3"
     >
-      <span className="relative flex size-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-b from-[#4a342b] to-[#1c120c] font-bold uppercase shadow-[inset_0_0_0_2px_rgb(214_171_78/0.6)]">
-        {name(current.seat).slice(0, 1)}
-        {levels[current.seat] !== undefined ? (
-          <LevelBadge
-            level={levels[current.seat] ?? 1}
-            size="sm"
-            className="absolute -top-2 -left-2"
-          />
-        ) : null}
-      </span>
+      {seat !== null ? (
+        <span className="relative flex size-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-b from-[#4a342b] to-[#1c120c] font-bold uppercase shadow-[inset_0_0_0_2px_rgb(214_171_78/0.6)]">
+          {name(seat).slice(0, 1)}
+          {levels[seat] !== undefined ? (
+            <LevelBadge level={levels[seat] ?? 1} size="sm" className="absolute -top-2 -left-2" />
+          ) : null}
+        </span>
+      ) : null}
       <span className="min-w-0 shrink">
-        <span className="block truncate text-xs font-semibold text-white/80">
-          {name(current.seat)}
-        </span>
+        {seat !== null ? (
+          <span className="block truncate text-xs font-semibold text-white/80">{name(seat)}</span>
+        ) : null}
         <span className="text-gold-gradient block text-base leading-tight font-extrabold tracking-wide whitespace-nowrap uppercase min-[641px]:text-lg">
-          {t(`blot.declaration.${current.kind}`)}
-          <span className="ml-1.5 text-sm text-gold-light">+{current.points}</span>
+          {title}
         </span>
+        {detail ? <span className="block truncate text-xs text-gold-light">{detail}</span> : null}
       </span>
-      <span className="ml-auto flex shrink-0" aria-hidden="true">
-        {current.cards.map((card, i) => (
-          <span
-            key={card}
-            className={`${i > 0 ? '-ml-3 min-[641px]:ml-1' : ''} motion-safe:animate-card-flip`}
-            style={{ animationDelay: `${150 + i * 140}ms` }}
-          >
-            <PlayingCard card={card} label={labels.card(card)} size="xs" />
-          </span>
-        ))}
-      </span>
+      {cards.length > 0 ? (
+        <span className="ml-auto flex shrink-0" aria-hidden="true">
+          {cards.map((card, i) => (
+            <span
+              key={card}
+              className={`${i > 0 ? '-ml-3 min-[641px]:ml-1' : ''} motion-safe:animate-card-flip`}
+              style={{ animationDelay: `${150 + i * 140}ms` }}
+            >
+              <PlayingCard card={card} label={labels.card(card)} size="xs" />
+            </span>
+          ))}
+        </span>
+      ) : null}
       <button
         type="button"
-        onClick={() => done(current.key)}
+        onClick={() => setSeen((s) => new Set(s).add(current.key))}
         aria-label={t('blot.closeAnnouncement')}
-        className="size-8 shrink-0 rounded-full border border-white/20 text-white/70 hover:text-white"
+        className={`size-8 shrink-0 rounded-full border border-white/20 text-white/70 hover:text-white ${cards.length > 0 ? '' : 'ml-auto'}`}
       >
         ×
       </button>
     </div>
+  )
+}
+
+/**
+ * The deal so far in one line — the latest event — with the whole list a tap away. Every player sees the
+ * same events (they come from the server), and a player who reconnects finds them here.
+ */
+function EventTicker({
+  log,
+  describe,
+}: {
+  log: LogEntry[]
+  describe: (entry: LogEntry) => { title: string; detail: string }
+}) {
+  const { t } = useTranslation()
+  const line = (entry: LogEntry) => {
+    const { title, detail } = describe(entry)
+    return detail ? `${title} — ${detail}` : title
+  }
+  const latest = log[log.length - 1]
+  if (!latest) return null
+  return (
+    <details className="group mx-auto mt-2 max-w-3xl rounded-xl border border-white/10 bg-black/35 px-3 py-1.5 text-xs text-white/85">
+      <summary className="flex min-h-7 cursor-pointer list-none items-center gap-2">
+        <span className="shrink-0 font-semibold text-gold-light">{t('blot.lastEvent')}</span>
+        <span className="min-w-0 flex-1 truncate" aria-live="polite">
+          {line(latest)}
+        </span>
+        <span className="shrink-0 text-white/50 group-open:hidden">
+          {t('blot.showEvents', { count: log.length })}
+        </span>
+      </summary>
+      <ol className="mt-1.5 max-h-40 space-y-0.5 overflow-y-auto border-t border-white/10 pt-1.5">
+        {log.map((entry, i) => (
+          <li key={i} className="text-white/75">
+            {line(entry)}
+          </li>
+        ))}
+      </ol>
+    </details>
   )
 }
 
@@ -701,11 +875,19 @@ function HandSummary({
   // The contract's value goes to the bidders when made, to the defenders when not.
   const bidRow: [number, number] = [0, 0]
   bidRow[result.made ? bidders : 1 - bidders] = result.bid_sai
+  // Declarations stay with their pair only in a made contract without Quansh; otherwise the pair that wins
+  // the deal takes them all — show them where they went.
+  const declRow: [number, number] = [...result.declaration_sai]
+  if (!result.made || result.contract.doubled > 0) {
+    const taker = result.made ? bidders : 1 - bidders
+    declRow[taker] = result.declaration_sai[0] + result.declaration_sai[1]
+    declRow[1 - taker] = 0
+  }
   const rows: { label: string; values: [number, number]; strong?: boolean; note?: string }[] = [
     { label: t('blot.cardPoints'), values: result.card_points, note: t('blot.raw') },
     { label: t('blot.tricksTaken'), values: result.tricks },
     { label: t('blot.contractValue'), values: bidRow },
-    { label: t('blot.declarations'), values: result.declaration_sai },
+    { label: t('blot.declarations'), values: declRow },
     { label: t('blot.belote'), values: result.belote_sai },
     { label: t('blot.scored'), values: result.scored, strong: true },
     { label: t('blot.matchTotal'), values: result.totals, strong: true },
@@ -761,7 +943,7 @@ function HandSummary({
         <ul className="mt-2 space-y-0.5 text-white/80">
           {result.declarations.map((d, i) => (
             <li key={i} className={d.counted ? '' : 'text-white/40 line-through'}>
-              {name(d.seat)}: {t(`blot.declaration.${d.kind}`)} {d.points}
+              {name(d.seat)}: {t(`blot.declaration.${d.kind}`)} +{d.points}
             </li>
           ))}
         </ul>

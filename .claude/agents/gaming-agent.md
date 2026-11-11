@@ -282,7 +282,8 @@ is not done or not verified, and how to check it manually. Keep it concise.
   phone seats spaced evenly when ≥ 4). Chips groups give `table_min_bet`/`table_max_bet`; traits `buyIn`/`tableTerms`
   word the lobby and `GroupBadge` per chip game. Blot: Armenian Bazar Blot per `docs/games/blot-rules.md` (scored in sai, 16 a deal, to 301 sai;
   no-trump `N`, kaput, contra ends the bidding → `answer` phase; players `declare {index}` from the server's list before
-  their first card), 4 seats, partnerships via `PlaysInTeams`
+  their first card; a public per-deal `log` drives the banner and ticker — add new table events there, not in
+  ad-hoc view fields; terms per the spec's Terms table), 4 seats, partnerships via `PlaysInTeams`
   (a leaver's partner loses too); bids are `{type:'bid', value, suit}` from a `{min,max}` range; board `games/blot`
   puts bazar controls, trick and hand result in the middle of the felt so a 900 px tall window needs no scrolling.
   Domino: Block, 2–4 seats; the engine auto-passes players without a move (no pass action); moves are

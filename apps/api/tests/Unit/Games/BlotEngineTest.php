@@ -346,16 +346,85 @@ it('shows a declaration\'s exact cards to every player as soon as it is announce
     expect(json_encode($engine->viewFor($state, 2)))->not->toContain('"KS"');
 });
 
-it('keeps blot secret until both its cards are played', function () {
+it('keeps blot secret until its holder plays the first of the king and queen', function () {
     $engine = new BlotEngine;
     $state = blotContract(HANDS, 'H');   // seat 0 holds K♥ and Q♥
 
     expect($engine->viewFor($state, 1)['belote'])->toBeNull()
         ->and($engine->viewFor($state, 0)['belote'])->toBe(0);
     $state['hands'][0] = array_values(array_diff($state['hands'][0], ['KH']));
-    expect($engine->viewFor($state, 1)['belote'])->toBeNull();
-    $state['hands'][0] = array_values(array_diff($state['hands'][0], ['QH']));
     expect($engine->viewFor($state, 1)['belote'])->toBe(0);
+});
+
+it('calls Blot on the first of the trump king and queen and Reblot on the second', function () {
+    $engine = new BlotEngine;
+    $state = blotContract(HANDS, 'H');
+    $state['hands'] = [['KH', 'QH'], ['AS', 'KS'], ['AD', 'KD'], ['AC', 'KC']];
+    $state['played_first'] = [true, true, true, true];
+
+    $first = $engine->apply($state, 0, new Action('play', ['card' => 'QH']), new SecureRandom);
+    expect($first->events[1])->toBe(['type' => 'blot', 'seat' => 0, 'card' => 'QH']);
+    $state = blotAct(blotAct(blotAct($first->state, 'play', ['card' => 'AS']), 'play', ['card' => 'AD']), 'play', ['card' => 'AC']);
+
+    $second = $engine->apply($state, 0, new Action('play', ['card' => 'KH']), new SecureRandom);
+    expect($second->events[1])->toBe(['type' => 'reblot', 'seat' => 0, 'card' => 'KH'])
+        ->and(array_column(array_filter($second->state['log'], fn ($e) => in_array($e['type'], ['blot', 'reblot'], true)), 'type'))->toBe(['blot', 'reblot']);
+});
+
+it('logs chakhel only when a player trumps a trick of another suit', function () {
+    $state = blotContract(HANDS, 'H');
+    $state['hands'] = [['AS', '7D'], ['9H', '8D'], ['KS', '9D'], ['7H', 'JD']];
+    $state['played_first'] = [true, true, true, true];
+    $state = blotAct($state, 'play', ['card' => 'AS']);
+    $state = blotAct($state, 'play', ['card' => '9H']);   // seat 1 has no spades: trumps
+
+    $chakhel = array_values(array_filter($state['log'], fn ($e) => $e['type'] === 'chakhel'));
+    expect($chakhel)->toBe([['type' => 'chakhel', 'seat' => 1, 'card' => '9H']]);
+
+    // Leading a trump is not chakhel.
+    $lead = blotContract(HANDS, 'H');
+    $lead = blotAct($lead, 'play', ['card' => 'JH']);
+    expect(array_filter($lead['log'], fn ($e) => $e['type'] === 'chakhel'))->toBe([]);
+});
+
+it('logs the bazar, who opened it, the contract, tricks and the last trick for everyone', function () {
+    $engine = new BlotEngine;
+    $state = blot();
+    $state['hands'] = HANDS;
+    $state = blotAct($state, 'pass');                                         // seat 0
+    $state = blotAct($state, 'bid', ['value' => 9, 'suit' => 'S']);           // seat 1 opens
+    $state = blotAct($state, 'bid', ['value' => 10, 'suit' => 'N']);          // seat 2
+    $state = blotAct($state, 'contra');                                       // seat 3: Quansh
+    $state = blotAct($state, 'recontra');                                     // seat 0: Sur
+
+    expect($state['opener'])->toBe(1)
+        ->and(array_column($state['log'], 'type'))->toBe(['pass', 'bid', 'bid', 'contra', 'recontra', 'contract'])
+        ->and(end($state['log']))->toMatchArray(['type' => 'contract', 'seat' => 2, 'value' => 10, 'suit' => null, 'doubled' => 2]);
+
+    $state = blotLastTrick($state, ['AD', '8D', '7D', 'QD'], [100, 38], [5, 2]);
+    $trick = array_values(array_filter($state['log'], fn ($e) => $e['type'] === 'trick'));
+    expect(end($trick))->toMatchArray(['seat' => 0, 'last' => true])
+        ->and(end($state['log'])['type'])->toBe('hand_over')
+        ->and($engine->viewFor($state, 3)['log'])->toBe($state['log']);
+});
+
+it('keeps no hidden card in the log', function () {
+    $engine = new BlotEngine;
+    $state = blotContract(HANDS, 'H');
+    $state = blotAct($state, 'play', ['card' => 'JH']);
+    $log = json_encode($engine->viewFor($state, 1)['log']);
+
+    foreach (['9H', 'AH', 'TH', 'KH', 'QH', '8H', '7H'] as $card) {
+        expect($log)->not->toContain("\"{$card}\"");
+    }
+});
+
+it('starts every deal with an empty log', function () {
+    $state = blotContract(HANDS, 'S', 10);
+    $state = blotLastTrick($state, ['AD', '8D', '7D', 'QD'], [100, 38], [5, 2]);
+    $next = (new BlotEngine)->resume($state, new SecureRandom)->state;
+
+    expect($next['log'])->toBe([])->and($next['opener'])->toBeNull();
 });
 
 it('counts only the declarations of the pair with the best one', function (array $mine, array $theirs, int $winner) {

@@ -4,6 +4,22 @@ Sources: [reblot.am rules](https://reblot.am/rules.php?lang=en) (the most comple
 [belote.club Bazar Blot rules](https://home.belote.club/en/bazar-blot-rules), [terz.am rules](https://www.terz.am/rules.php?lang=en).
 Choices where the sources disagree or are silent are marked **(choice)**.
 
+## Terms (as used at the table)
+| Term | Meaning |
+|---|---|
+| Բազար (Bazar) | the bidding |
+| Կոզր (Koz) | the trump suit |
+| Բոյ (Boy) | a no-trump game |
+| Քուանշ (Quansh) | contra — doubles the contract |
+| Սուր (Sur) | recontra — the contract pair's answer, quadruples it |
+| Կապուտ (Kaput) | taking all eight tricks (also a bid) |
+| Թարս կապուտ (Tars kaput) | the bidders take no trick at all |
+| Բլոտ / Ռեբլոտ (Blot / Reblot) | said as the holder plays the first / the second of the trump king and queen |
+| Չախել (Chakhel) | to trump a trick of another suit (having none of it) |
+| Ձեռք / Վերջին ձեռք | a trick / the last trick (+10) |
+| Տերց, Պոլտիննիկ, Սոտնի (Terz, Poltinnik, Sotni) | 3, 4, 5+ cards in sequence: 20, 50, 100 |
+| Քառյակ (Kvaryak) | four of a kind |
+
 ## Table and deal
 - 4 players, two partnerships sitting opposite (seats 0+2, 1+3). 32 cards (7–A), 8 each. Dealer rotates each deal;
   the player left of the dealer bids first and leads the first trick.
@@ -41,7 +57,10 @@ Order: trump J 9 A 10 K Q 8 7; others A 10 K Q J 9 8 7. 152 card points + 10 for
 - Only the pair with the best single declaration scores, and then all of its declarations. Best = more points; four of
   a kind beats a sequence of equal points; then the higher top card; then a sequence in trumps; then the first holder
   counting from the dealer's left.
-- **Blot** (K + Q of trumps in one hand, trump games): 20 for the holder's pair, always, announced as the cards are played.
+- **Blot** (K + Q of trumps in one hand, trump games): 20 for the holder's pair, always. "Blot" is announced as the
+  holder plays the first of the two, "Reblot" with the second; from the first, everyone knows who holds it.
+- Every call, the contract, declarations (with their cards), Blot/Reblot, chakhel and each trick go into the deal's
+  public log, the same for all players and after a reconnect.
 
 ## Scoring a deal (in "sai", points ÷ 10)
 - Card sai = card points (with the last trick) ÷ 10, a fraction of more than one half rounding up (15 → 1, 16 → 2).

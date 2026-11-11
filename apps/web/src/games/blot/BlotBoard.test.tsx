@@ -34,6 +34,8 @@ function view(extra: Partial<BlotView> = {}): BlotView {
     declared: [[], [], [], []],
     declarations_shown: false,
     belote: null,
+    opener: null,
+    log: [],
     scores: [22, 4],
     target: 301,
     last_hand: null,
@@ -72,7 +74,9 @@ describe('BlotBoard', () => {
     const score = screen.getByLabelText('Score')
     expect(within(score).getByText('22')).toBeInTheDocument()
     expect(within(score).getByText('301')).toBeInTheDocument()
-    expect(screen.getByText('Tricks: us 0 · them 0')).toBeInTheDocument()
+    expect(screen.getByText(/Tricks: us 0 · them 0\s+· 8 left/)).toBeInTheDocument()
+    expect(screen.getByText('Koz (trump)')).toBeInTheDocument()
+    expect(screen.getByText('×1')).toBeInTheDocument()
   })
 
   it('bids a number in a suit or no-trump, kaput, and contra', async () => {
@@ -94,14 +98,14 @@ describe('BlotBoard', () => {
     )
 
     await userEvent.click(screen.getByRole('button', { name: 'Higher bid' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Bid 11 in no-trump' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Bid 11 in Boy (no trump)' }))
     expect(onAction).toHaveBeenLastCalledWith({ type: 'bid', value: 11, suit: 'N' })
 
     await userEvent.click(screen.getByRole('button', { name: 'Bid kaput…' }))
     await userEvent.click(screen.getByRole('button', { name: 'Bid kaput in hearts' }))
     expect(onAction).toHaveBeenLastCalledWith({ type: 'kaput', suit: 'H' })
 
-    await userEvent.click(screen.getByRole('button', { name: 'Contra' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Quansh' }))
     expect(onAction).toHaveBeenLastCalledWith({ type: 'contra' })
   })
 
@@ -114,7 +118,7 @@ describe('BlotBoard', () => {
     )
 
     expect(screen.queryByRole('button', { name: 'Higher bid' })).not.toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Recontra' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Sur' }))
     expect(onAction).toHaveBeenCalledWith({ type: 'recontra' })
   })
 
@@ -135,9 +139,9 @@ describe('BlotBoard', () => {
     )
 
     const panel = screen.getByRole('region', { name: 'Your combinations' })
-    expect(within(panel).getByText('✓ 50 50')).toBeInTheDocument()
+    expect(within(panel).getByText('✓ Poltinnik +50')).toBeInTheDocument()
     expect(screen.getByText('Declare your combinations, then play a card')).toBeInTheDocument()
-    await userEvent.click(within(panel).getByRole('button', { name: /Declare Terz 20/ }))
+    await userEvent.click(within(panel).getByRole('button', { name: /Declare Terz \+20/ }))
     expect(onAction).toHaveBeenCalledWith({ type: 'declare', index: 0 })
   })
 
@@ -185,7 +189,7 @@ describe('BlotBoard', () => {
         .map((c) => c.textContent),
     ).toEqual(['9', '0'])
     expect(within(result).getByText('The match goes on: first to 301.')).toBeInTheDocument()
-    expect(within(result).getByText('You: Terz 20')).toBeInTheDocument()
+    expect(within(result).getByText('You: Terz +20')).toBeInTheDocument()
   })
 
   it('announces a new declaration to the table with its exact cards', async () => {
@@ -197,26 +201,24 @@ describe('BlotBoard', () => {
         {...props}
       />,
     )
-    expect(screen.queryByRole('status', { name: /declared/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('status', { name: /Terz/ })).not.toBeInTheDocument()
 
-    const declared = [
-      [],
-      [{ kind: 'terz' as const, points: 20, cards: ['7C', '8C', '9C'] }],
-      [],
-      [],
-    ]
+    const terz = { kind: 'terz' as const, points: 20, cards: ['7C', '8C', '9C'] }
     rerender(
       <BlotBoard
         state={roomStateFixture({
           seat: 0,
-          view: view({ declared }) as never,
+          view: view({
+            declared: [[], [terz], [], []],
+            log: [{ type: 'declare', seat: 1, ...terz }],
+          }) as never,
           legal_actions: legal,
         })}
         {...props}
       />,
     )
     const toast = screen.getByRole('status', {
-      name: 'Aram declared Terz 20: 7 of clubs, 8 of clubs, 9 of clubs',
+      name: 'Aram · Terz +20 · declared · 7 of clubs, 8 of clubs, 9 of clubs',
     })
     expect(within(toast).getByText('Aram')).toBeInTheDocument()
     // The cards themselves (read out by the announcement's label, so hidden from screen readers here).
@@ -224,9 +226,42 @@ describe('BlotBoard', () => {
       [...toast.querySelectorAll('[role="img"]')].map((c) => c.getAttribute('aria-label')),
     ).toEqual(['7 of clubs', '8 of clubs', '9 of clubs'])
     await userEvent.click(within(toast).getByRole('button', { name: 'Close the announcement' }))
-    expect(screen.queryByRole('status', { name: /declared/ })).not.toBeInTheDocument()
-    // The cards stay at the player's seat.
-    expect(screen.getByLabelText('Terz 20: 7 of clubs, 8 of clubs, 9 of clubs')).toBeInTheDocument()
+    expect(screen.queryByRole('status', { name: /Terz/ })).not.toBeInTheDocument()
+    // The cards stay at the player's seat, and the deal's events in the ticker.
+    expect(
+      screen.getByLabelText('Terz +20: 7 of clubs, 8 of clubs, 9 of clubs'),
+    ).toBeInTheDocument()
+    expect(screen.getAllByText('Aram: Terz +20 — declared').length).toBeGreaterThan(0)
+  })
+
+  it('announces Blot to everyone, but leaves a pass or a trick to the ticker', () => {
+    const props = { onAction: vi.fn(), pending: false, players }
+    const { rerender } = render(
+      <BlotBoard
+        state={roomStateFixture({ seat: 0, view: view() as never, legal_actions: [] })}
+        {...props}
+      />,
+    )
+    const show = (log: BlotView['log']) =>
+      rerender(
+        <BlotBoard
+          state={roomStateFixture({ seat: 0, view: view({ log }) as never, legal_actions: [] })}
+          {...props}
+        />,
+      )
+
+    show([{ type: 'blot', seat: 3, card: 'KH' }])
+    expect(
+      screen.getByRole('status', { name: /^Levon · Blot · king and queen of koz/ }),
+    ).toBeInTheDocument()
+
+    show([
+      { type: 'blot', seat: 3, card: 'KH' },
+      { type: 'trick', seat: 2, points: 14, last: false },
+      { type: 'pass', seat: 1 },
+    ])
+    expect(screen.getAllByText('Aram: Pass').length).toBeGreaterThan(0)
+    expect(screen.queryByRole('status', { name: /Pass/ })).not.toBeInTheDocument()
   })
 
   it("doesn't announce again what was declared before the page opened", () => {
@@ -238,7 +273,49 @@ describe('BlotBoard', () => {
     ]
     renderBoard(view({ declared }), [])
 
-    expect(screen.queryByRole('status', { name: /declared/ })).not.toBeInTheDocument()
-    expect(screen.getByLabelText(/^100 100: 8 of diamonds/)).toBeInTheDocument()
+    expect(screen.queryByRole('status', { name: /Sotni/ })).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/^Sotni \+100: 8 of diamonds/)).toBeInTheDocument()
+  })
+
+  it('shows declarations going to the defenders when the contract fails', () => {
+    renderBoard(
+      view({
+        phase: 'over',
+        to_act: null,
+        hand: [],
+        last_hand: {
+          number: 1,
+          contract: contract({ seat: 2, team: 0, value: 10, suit: 'C' }),
+          made: false,
+          tricks: [4, 4],
+          card_points: [73, 89],
+          card_sai: [7, 9],
+          declarations: [
+            { seat: 2, kind: 'terz', points: 20, cards: ['7C', '8C', '9C'], counted: true },
+          ],
+          declaration_sai: [2, 0],
+          belote_sai: [0, 0],
+          bid_sai: 10,
+          scored: [0, 28],
+          totals: [0, 28],
+          kaput: false,
+        },
+      }),
+      [],
+    )
+
+    const result = screen.getByRole('region', { name: 'Deal result' })
+    const decl = within(result).getByRole('row', { name: /Declarations/ })
+    expect(
+      within(decl)
+        .getAllByRole('cell')
+        .map((c) => c.textContent),
+    ).toEqual(['0', '2'])
+    const deal = within(result).getByRole('row', { name: /This deal/ })
+    expect(
+      within(deal)
+        .getAllByRole('cell')
+        .map((c) => c.textContent),
+    ).toEqual(['0', '28'])
   })
 })

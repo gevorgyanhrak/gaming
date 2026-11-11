@@ -2,6 +2,34 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## Blot: Armenian terminology, table announcements, game information — 2026-11-11 · DONE (owner request)
+
+**Analysis first:** terms mapped to their meaning in play (`docs/games/blot-rules.md` → Terms). Found: Blot was scored but
+never announced and Reblot didn't exist; Quansh/Sur showed only as a bid bubble; kaput, chakhel and the last trick were
+never announced; no shared event history (a player who looked away or reconnected couldn't tell what happened); no
+opener, multiplier or tricks-left on screen; the deal result put declarations under the pair that made them even when the
+other pair took them (failed or Quansh'd contract). The rules logic (bazar, trump, card order, combinations, blot, Quansh/
+Sur, kaput, reverse kaput, scoring) was re-checked against the spec and its tests; the only rule change: blot becomes
+public with its first card (when it is said), not after both.
+
+**Server:** a public per-deal `log` (every bazar call; `opener`; the contract with its multiplier; declarations with their
+cards; `blot` on the first of K/Q of trumps, `reblot` on the second; `chakhel` when a trick of another suit is trumped;
+each trick, marked last; the deal's end with kaput / reverse kaput) in the state, so all players and reconnects see the
+same history; no hidden card goes into it.
+
+**Web:** hy terms Բազար, Կոզր, Բոյ, Քուանշ, Սուր, Կապուտ, Թարս կապուտ, Բլոտ, Ռեբլոտ, Չախել, Ձեռք, Վերջին ձեռք, Տերց, Պոլտիննիկ,
+Սոտնի, Քառյակ (en/ru the same terms transliterated, with a gloss where it helps); combination labels read "Պոլտիննիկ +50"
+(no more "50 50"). One banner component announces only the important moments (declaration with its cards, Blot, Reblot,
+Quansh, Sur, a kaput bid, the bazar won, the deal's end) across the top of the table frame — never over the trick or cards,
+3.5 s, queued, closable; a one-line ticker under the table shows the latest event and opens to the whole deal's history.
+Chips: Կոզր with the suit and the multiplier (×1/×2/×4, Բոյ ×2/×3/×5), tricks won and left, who opened the bazar.
+
+**Tests:** unit +6 (Blot→Reblot order, chakhel only on another suit, bazar/opener/contract/tricks/last trick in the log for
+every seat, no hidden card in the log, an empty log each deal, blot public from its first card); board +3 (terms and chips,
+Blot banner vs ticker-only pass/trick, declarations shown where they went). `make test-api` → **566 passed**, `npm test` →
+**196 passed**, lint/types/format/build ✓. Live in Armenian (player1) at 1440×900 and 390×844: bazar, Poltinnik and Blot
+banners, ticker history, deal result.
+
 ## Blot: declared cards shown to the whole table — 2026-11-11 · DONE (owner request)
 
 - Server: a declaration's exact cards (from the server's own list for the hand) go to all four players the moment it is

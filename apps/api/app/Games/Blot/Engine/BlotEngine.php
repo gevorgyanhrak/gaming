@@ -29,7 +29,9 @@ use App\Gameplay\Random\RandomSource;
  * State: dealer, hand_no, phase, hands (hidden), bids, contract {seat, team, value (25 = kaput), suit
  * (null = no-trump), kaput, doubled 0|1|2}, passes, to_act, leader, trick, last_trick, tricks (count per
  * team), points (card points per team), available and declared_index (per seat, hidden), declared (per
- * seat), declarations_shown, played_first (per seat), belote (seat or null), scores (sai per team), target,
+ * seat), declarations_shown, played_first (per seat), belote (seat or null), opener (who opened the bazar),
+ * log (this deal's public events: bazar calls, the contract, declarations with their cards, blot and reblot,
+ * chakhel — trumping a trick of another suit — tricks, the deal's end), scores (sai per team), target,
  * last_hand, pause_ms, result {team, reason}.
  */
 final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRounds, PlaysInTeams, ValidatesActions
@@ -157,11 +159,16 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
             $state['declared'][$seat][] = $declaration;
             // Announced and shown at once to the whole table: exactly the cards that form it (owner's rule).
             $events[0] = ['type' => 'declare', 'seat' => $seat, 'kind' => $declaration['kind'], 'points' => $declaration['points'], 'cards' => $declaration['cards']];
+            $state['log'][] = $events[0];
 
             return new Transition($state, $events);
         }
 
         $state['bids'][] = $event;
+        $state['log'][] = $event;
+        if (($action->type === 'bid' || $action->type === 'kaput') && $state['opener'] === null) {
+            $state['opener'] = $seat;
+        }
         $state['to_act'] = ($seat + 1) % 4;
         switch ($action->type) {
             case 'bid':
@@ -229,11 +236,11 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
         $view['hand'] = $seat === null ? [] : $state['hands'][$seat];
         $view['hand_sizes'] = array_map('count', $state['hands']);
         $view['trump'] = $state['contract']['suit'] ?? null;
-        // Blot is announced as its cards are played: others learn who holds it once both are on the table.
+        // Blot is announced as the first of its cards is played: until then only its holder knows.
         $holder = $state['belote'];
         $trump = $view['trump'];
         $shown = $holder !== null && $trump !== null
-            && ! in_array('K'.$trump, $state['hands'][$holder], true) && ! in_array('Q'.$trump, $state['hands'][$holder], true);
+            && (! in_array('K'.$trump, $state['hands'][$holder], true) || ! in_array('Q'.$trump, $state['hands'][$holder], true));
         $view['belote'] = $shown || $holder === $seat ? $holder : null;
         $view['my_declarations'] = $seat === null ? [] : array_map(
             fn (array $d, int $i) => ['index' => $i, 'kind' => $d['kind'], 'points' => $d['points'], 'cards' => $d['cards'], 'declared' => in_array($i, $state['declared_index'][$seat], true)],
@@ -354,6 +361,8 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
             'declarations_shown' => false,
             'played_first' => [false, false, false, false],
             'belote' => null,
+            'opener' => null,
+            'log' => [],
         ];
     }
 
@@ -376,6 +385,7 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
             }
         }
         $state['to_act'] = $state['leader'];
+        $state['log'][] = ['type' => 'contract', ...$state['contract']];
 
         return $state;
     }
@@ -387,6 +397,19 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
      */
     private function play(array $state, int $seat, string $card, array &$events): array
     {
+        $trump = $state['contract']['suit'];
+        // Blot as the first of the trump king and queen is played, Reblot as the second.
+        if ($seat === $state['belote'] && $trump !== null && ($card === 'K'.$trump || $card === 'Q'.$trump)) {
+            $other = $card === 'K'.$trump ? 'Q'.$trump : 'K'.$trump;
+            $call = in_array($other, $state['hands'][$seat], true) ? 'blot' : 'reblot';
+            $events[] = ['type' => $call, 'seat' => $seat, 'card' => $card];
+            $state['log'][] = ['type' => $call, 'seat' => $seat, 'card' => $card];
+        }
+        // Chakhel: trumping a trick of another suit (the player has none of it).
+        if ($trump !== null && $state['trick'] !== [] && $card[1] === $trump && $state['trick'][0]['card'][1] !== $trump) {
+            $events[] = ['type' => 'chakhel', 'seat' => $seat, 'card' => $card];
+            $state['log'][] = ['type' => 'chakhel', 'seat' => $seat, 'card' => $card];
+        }
         $state['played_first'][$seat] = true;
         $state['hands'][$seat] = array_values(array_diff($state['hands'][$seat], [$card]));
         $state['trick'][] = ['seat' => $seat, 'card' => $card];
@@ -396,7 +419,6 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
             return $state;
         }
 
-        $trump = $state['contract']['suit'];
         $cards = array_column($state['trick'], 'card');
         $winner = $state['trick'][BlotCards::winning($cards, $trump)]['seat'];
         $points = array_sum(array_map(fn (string $c) => BlotCards::points($c, $trump), $cards));
@@ -411,6 +433,7 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
         $state['declarations_shown'] = true;
         $state['to_act'] = $winner;
         $events[] = ['type' => 'trick', 'winner' => $winner, 'points' => $points];
+        $state['log'][] = ['type' => 'trick', 'seat' => $winner, 'points' => $points, 'last' => $last];
 
         return $last ? $this->finishHand($state, $events) : $state;
     }
@@ -499,6 +522,7 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
             'kaput' => $allTricks || $state['tricks'][$defenders] === 8,
         ];
         $events[] = ['type' => 'hand_over', 'made' => $made, 'scored' => $scored];
+        $state['log'][] = ['type' => 'hand_over', 'made' => $made, 'scored' => $scored, 'kaput' => $allTricks, 'reverse_kaput' => $noTricks];
         $state['phase'] = 'over';
         $state['to_act'] = null;
 

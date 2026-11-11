@@ -55,6 +55,7 @@ Later (older backlog):
 
 ## Done (recent)
 
+- 2026-11-11 · Blot: Armenian terms, table announcements (Blot/Reblot, Quansh/Sur, kaput, chakhel), deal log, trump/multiplier/tricks chips — this commit.
 - 2026-11-11 · Blot: declared cards shown to all four players at once, announcement banner — this commit.
 - 2026-11-11 · Blot rebuilt to Armenian Bazar Blot rules: sai scoring (the match no longer ends after one deal), no-trump, kaput, contra/recontra, announced declarations — this commit.
 - 2026-11-11 · Rummy (new games 6/11): classic, 2–6 players — this commit.
