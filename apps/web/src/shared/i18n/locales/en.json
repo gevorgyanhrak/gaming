@@ -889,5 +889,33 @@
     "rolled": "Rolled {{dice}}",
     "home_one": "{{count}}/4 home",
     "home_other": "{{count}}/4 home"
+  },
+  "pool": {
+    "you": "You",
+    "seat": "Seat {{seat}}",
+    "table": "Pool table",
+    "placeCue": "Ball in hand: tap the table to place the cue ball",
+    "yourShot": "Your shot: aim with the pointer, set the power, shoot",
+    "waitingFor": "Waiting for {{name}}…",
+    "aimLeft": "Turn the aim left",
+    "aimRight": "Turn the aim right",
+    "moveCue": "Move the cue ball",
+    "power": "Power",
+    "shoot": "Shoot",
+    "openTable": "Open table",
+    "group": {
+      "solids": "Solids",
+      "stripes": "Stripes"
+    },
+    "foul": {
+      "scratch": "Foul: the cue ball went in",
+      "no_contact": "Foul: no ball hit",
+      "wrong_ball": "Foul: wrong ball first",
+      "no_rail": "Foul: no cushion after the hit"
+    },
+    "ballInHandFor": "ball in hand for {{name}}",
+    "potted_one": "{{name}} potted a ball",
+    "potted_other": "{{name}} potted {{count}} balls",
+    "rolling": "Balls rolling…"
   }
 }

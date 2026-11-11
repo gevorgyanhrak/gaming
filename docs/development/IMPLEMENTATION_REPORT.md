@@ -2,6 +2,28 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## New games 5/11 · 8-ball pool (1 v 1) — 2026-11-11 · DONE (owner: "go"; ADR 0020)
+
+- Physics `app/Games/Pool/Engine/PoolPhysics.php` (pure, deterministic, 2 ms steps, friction, elastic collisions,
+  cushions, open pocket mouths, no spin; paths as segments). Rules `PoolEngine`: rack (8 in the middle, solid and
+  stripe in the back corners), break from the head spot, open table, groups on the first legal pot, fouls (scratch,
+  no contact, wrong ball first, no cushion) → ball in hand anywhere, 8 wins after the group / loses early or with a
+  foul, 8 on the break re-spotted, pause while the balls roll, timeout = a soft shot at a target. Bot `PoolBot`:
+  ghost-ball candidates, path checks, tries the best few in the simulation, aim wobble by level.
+- Platform: action fields may be finite decimals (`SubmitActionRequest`).
+- Web: `games/pool/PoolBoard.tsx` — SVG table (upright on phones), solids/stripes with numbers, the shot replayed from
+  segments with `requestAnimationFrame` (skipped under reduced motion), cue and aim line that follow the pointer
+  (clipped to the cloth), fine aim buttons, power slider, cue-ball placement with ball in hand, player plates with
+  their group's balls, foul/potted notices; traits (`capture` sound on a pot, "Balls rolling…"); art; en/ru/hy.
+
+**Tests run:** `make lint-api` ✓ · `make test-api` → **504 passed** (new `Unit/Games/PoolEngineTest` 15, `PoolTableTest` 1,
+pool in `PlayThroughTest` with bot-aimed shots) · web typecheck ✓ lint ✓ format ✓ · `npm test` → 34 files, **187 passed**
+(new `PoolBoard.test.tsx` 3) · build ✓. Probe: bot games 18–32 shots, ~40 ms per simulated shot, ≤ 2.6 KB per shot.
+Live 1440×900 and 390×844: break, aiming, rolling, groups.
+
+**Known issues:** no spin, no called pocket for the 8 (agreed). The aim line shows the direction only, not where the
+cue ball will meet a ball.
+
 ## New games 4/11 · Ludo (2–4 players) — 2026-11-11 · DONE (owner: "go" on the standard rules)
 
 - Engine `app/Games/Ludo/Engine/LudoEngine.php`: four tokens, two players take opposite colours; roll (server die,

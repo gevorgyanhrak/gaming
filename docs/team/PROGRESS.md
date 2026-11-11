@@ -18,8 +18,9 @@ promising them: achievements, leaderboard, friends (listed in the request as sha
 - [x] 1. Blackjack (ADR 0019) — 934db02.
 - [x] 2. Blot (Bazar blot, 4 players in 2 teams, to 301; owner chose 4 players) — ca711b1.
 - [x] 3. Domino (Block, 2–4 players, to 100; owner chose Block) — f3f8294.
-- [x] 4. Ludo (standard rules; owner said go) — this commit.
-- [ ] 5. 8-ball pool · [ ] 6. Rummy · [ ] 7. Hearts · [ ] 8. Spades ·
+- [x] 4. Ludo (standard rules; owner said go) — 01bd960.
+- [x] 5. 8-ball pool (server physics, ADR 0020) — this commit.
+- [ ] 6. Rummy · · [ ] 7. Hearts · [ ] 8. Spades ·
   [ ] 9. Battleship · [ ] 10. Connect Four · [ ] 11. Solitaire
 
 **Paused by the owner's new request:** TASK-048 step 6 (QA of every page) — resume after the new games or when asked.
@@ -52,6 +53,7 @@ Later (older backlog):
 
 ## Done (recent)
 
+- 2026-11-11 · 8-ball pool (new games 5/11): server-side physics, 1 v 1 — this commit.
 - 2026-11-11 · Ludo (new games 4/11): 2–4 players, standard rules — this commit.
 - 2026-11-11 · Domino (new games 3/11): Block dominoes for 2–4 — this commit.
 - 2026-11-11 · Blot (new games 2/11): Bazar blot for 4 in partnerships — this commit. CI Web green again (22d27bf: resend-countdown race in a test).

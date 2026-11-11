@@ -121,14 +121,14 @@ it('lists enabled modes on the public game page', function () {
 it('seeds modes, bots and draft pages without overwriting admin changes', function () {
     $this->seed([GameSeeder::class, GameModeSeeder::class, BotSeeder::class, ContentPageSeeder::class]);
 
-    expect(GameMode::query()->count())->toBe(11)  // nardi long and short, chess blitz and rapid, checkers, durak, poker, blackjack, blot, domino, ludo
+    expect(GameMode::query()->count())->toBe(12)  // nardi long and short, chess blitz and rapid, checkers, durak, poker, blackjack, blot, domino, ludo, pool
         ->and(BotProfile::query()->pluck('name')->sort()->values()->all())->toBe(['Alex', 'Anna', 'Aram', 'Daniel', 'David', 'Elena', 'Gor', 'Igor', 'Levon', 'Mariam', 'Michael', 'Nina', 'Robert', 'Sergey', 'Viktor'])
-        ->and(BotProfile::query()->where('name', 'Levon')->sole()->gameProfiles()->count())->toBe(9);
+        ->and(BotProfile::query()->where('name', 'Levon')->sole()->gameProfiles()->count())->toBe(10);
 
     BotProfile::query()->where('name', 'Alex')->update(['is_enabled' => false]);
     $this->seed([GameModeSeeder::class, BotSeeder::class, ContentPageSeeder::class]);
 
-    expect(GameMode::query()->count())->toBe(11)  // nardi long and short, chess blitz and rapid, checkers, durak, poker, blackjack, blot, domino, ludo
+    expect(GameMode::query()->count())->toBe(12)  // nardi long and short, chess blitz and rapid, checkers, durak, poker, blackjack, blot, domino, ludo, pool
         ->and(BotProfile::query()->count())->toBe(15)
         ->and(BotProfile::query()->where('name', 'Alex')->sole()->is_enabled)->toBeFalse();
 });

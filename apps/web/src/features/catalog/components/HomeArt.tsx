@@ -501,6 +501,45 @@ const posters: Record<string, ReactNode> = {
       </text>
     </>
   ),
+  pool: (
+    <>
+      <rect width="320" height="200" fill={c.emerald} />
+      <Rays cx={160} cy={230} count={11} step={16} length={290} color={c.emeraldLight} />
+      {/* The black 8 and the cue ball. */}
+      <circle cx="190" cy="100" r="46" fill="#151515" />
+      <circle cx="190" cy="100" r="20" fill={c.cream} />
+      <text
+        x="190"
+        y="110"
+        textAnchor="middle"
+        fontFamily="system-ui, sans-serif"
+        fontSize="28"
+        fontWeight="800"
+        fill="#151515"
+      >
+        8
+      </text>
+      <circle cx="172" cy="80" r="9" fill="#fff" opacity="0.35" />
+      <circle
+        cx="96"
+        cy="126"
+        r="30"
+        fill={c.cream}
+        stroke={c.ink}
+        strokeOpacity="0.25"
+        strokeWidth="2"
+      />
+      <line
+        x1="66"
+        y1="140"
+        x2="0"
+        y2="172"
+        stroke="#c08a4c"
+        strokeWidth="10"
+        strokeLinecap="round"
+      />
+    </>
+  ),
   ludo: (
     <>
       <rect width="320" height="200" fill={c.plum} />

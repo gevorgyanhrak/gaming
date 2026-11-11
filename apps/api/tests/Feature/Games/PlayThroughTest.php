@@ -5,9 +5,12 @@ use App\Enums\FishkaTransactionType as Type;
 use App\Enums\ParticipantResult;
 use App\Enums\RoomStatus;
 use App\Gameplay\Bots\BotTurnJob;
+use App\Gameplay\Engine\Action;
 use App\Gameplay\Lifecycle\ResumeRoundJob;
+use App\Gameplay\Random\SecureRandom;
 use App\Gameplay\Rooms\RoomStates;
 use App\Gameplay\Rooms\RoomStateStore;
+use App\Games\Pool\Bot\PoolBot;
 use App\Models\BotProfile;
 use App\Models\FishkaTransaction;
 use App\Models\FishkaWallet;
@@ -22,12 +25,12 @@ use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
 // Every game with an engine is played to the end through the real API and queue jobs.
-dataset('games', ['nardi', 'checkers', 'chess', 'durak', 'poker', 'blackjack', 'blot', 'domino', 'ludo']);
+dataset('games', ['nardi', 'checkers', 'chess', 'durak', 'poker', 'blackjack', 'blot', 'domino', 'ludo', 'pool']);
 
 it('seeds games as playable only when their engine is registered', function () {
     $this->seed([GameSeeder::class, GameModeSeeder::class]);
 
-    expect(Game::query()->where('is_enabled', true)->pluck('slug')->all())->toBe(['nardi', 'chess', 'checkers', 'durak', 'poker', 'blackjack', 'blot', 'domino', 'ludo']);
+    expect(Game::query()->where('is_enabled', true)->pluck('slug')->all())->toBe(['nardi', 'chess', 'checkers', 'durak', 'poker', 'blackjack', 'blot', 'domino', 'ludo', 'pool']);
 });
 
 it('plays a full game against a bot through the API', function (string $slug) {
@@ -56,6 +59,11 @@ it('plays a full game against a bot through the API', function (string $slug) {
 
         if ($state['legal_actions'] !== []) {
             $action = $state['legal_actions'][array_rand($state['legal_actions'])];
+            if ($slug === 'pool') {
+                // Shots can't be listed: aim like a hard bot (random shots would take thousands of turns).
+                $legal = array_map(fn (array $a) => Action::fromArray($a), $state['legal_actions']);
+                $action = (new PoolBot)->chooseAction($state['view'], $legal, BotDifficulty::Hard, new SecureRandom)->toArray();
+            }
             // Range actions (poker raises) are described by min and max; play the minimum.
             if (isset($action['min'], $action['max'])) {
                 // A blot bid also names its trump suit.

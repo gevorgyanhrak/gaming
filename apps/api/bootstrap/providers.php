@@ -9,6 +9,7 @@ use App\Games\Durak\DurakServiceProvider;
 use App\Games\Ludo\LudoServiceProvider;
 use App\Games\Nardi\NardiServiceProvider;
 use App\Games\Poker\PokerServiceProvider;
+use App\Games\Pool\PoolServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\HorizonServiceProvider;
@@ -25,6 +26,7 @@ return [
     BlotServiceProvider::class,
     DominoServiceProvider::class,
     LudoServiceProvider::class,
+    PoolServiceProvider::class,
     AdminPanelProvider::class,
     HorizonServiceProvider::class,
 ];

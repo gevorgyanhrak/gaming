@@ -189,6 +189,35 @@ const scenes: Record<string, (id: string) => ReactNode> = {
       <Die x={180} y={84} angle={10} pips={3} />
     </>
   ),
+  pool: (id) => (
+    <>
+      <Backdrop id={id} from="#0f5a3e" to="#03140d" glow="#47d79a" />
+      {/* The rack, the cue ball and the cue. */}
+      {[
+        [200, 90, '#f2c230'],
+        [222, 78, '#1f4fb4'],
+        [222, 102, '#151515'],
+        [244, 66, '#c8282e'],
+        [244, 90, '#e8731d'],
+        [244, 114, '#5b2a86'],
+      ].map(([x, y, colour]) => (
+        <g key={`${x}-${y}`}>
+          <circle cx={Number(x)} cy={Number(y)} r="12" fill={String(colour)} />
+          <circle cx={Number(x) - 4} cy={Number(y) - 4} r="3.5" fill="#fff" opacity="0.45" />
+        </g>
+      ))}
+      <circle cx="100" cy="96" r="12" fill="#f8f5ec" />
+      <line
+        x1="84"
+        y1="102"
+        x2="10"
+        y2="130"
+        stroke="#c08a4c"
+        strokeWidth="7"
+        strokeLinecap="round"
+      />
+    </>
+  ),
 }
 
 /** The scene for a game, or the fallback when there is none for this slug. */
@@ -309,6 +338,23 @@ const icons: Record<string, ReactNode> = {
       <path d="M12 3.5v17M3.5 12h17" />
       <circle cx="7.5" cy="7.5" r="1.6" fill="currentColor" />
       <circle cx="16.5" cy="16.5" r="1.6" fill="currentColor" />
+    </g>
+  ),
+  pool: (
+    <g fill="none" stroke="currentColor" strokeWidth="1.8">
+      <circle cx="12" cy="12" r="8.5" />
+      <circle cx="12" cy="12" r="3.6" />
+      <text
+        x="12"
+        y="14"
+        textAnchor="middle"
+        fontSize="5"
+        fontWeight="800"
+        fill="currentColor"
+        stroke="none"
+      >
+        8
+      </text>
     </g>
   ),
 }

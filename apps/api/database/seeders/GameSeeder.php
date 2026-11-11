@@ -8,7 +8,7 @@ use App\Models\GameCategory;
 use Illuminate\Database\Seeder;
 
 /**
- * Seeds the games: the five launch games and those added since (Blackjack, Blot, Domino, Ludo).
+ * Seeds the games: the five launch games and those added since (Blackjack, Blot, Domino, Ludo, 8-ball pool).
  *
  * Idempotent and non-destructive: existing games are left untouched, so re-running
  * the seeder never overwrites changes made by administrators. A game is created playable only
@@ -158,6 +158,20 @@ class GameSeeder extends Seeder
                 ])],
                 'min_players' => 2,
                 'max_players' => 4,
+            ],
+            [
+                'slug' => 'pool',
+                'name' => ['en' => '8-ball pool', 'ru' => 'Пул «восьмёрка»', 'hy' => '8-գնդակ փուլ'],
+                'description' => ['en' => 'Classic 8-ball, one on one. Aim, set your power and clear your group before the black.', 'ru' => 'Классическая «восьмёрка» один на один. Цельтесь, выбирайте силу удара и забейте свою группу до чёрного.', 'hy' => 'Դասական 8-գնդակ, մեկը մեկի դեմ։ Նշան բռնեք, ընտրեք հարվածի ուժը և գցեք ձեր խումբը սևից առաջ։'],
+                'rules' => ['en' => implode("\n\n", [
+                    'Two players, fifteen numbered balls and the white cue ball. Balls 1–7 are solids, 9–15 stripes; the 8 is black. The first player breaks from the head spot.',
+                    'The table is open after the break: the first ball you pot without a foul makes that group yours, and the other group your opponent\'s. After potting one of your balls without a foul you shoot again.',
+                    'Fouls: potting the cue ball, hitting no ball, hitting first a ball that is not yours (on an open table, the 8), or no ball reaching a cushion after the hit when nothing is potted. After a foul your opponent places the cue ball anywhere on the table.',
+                    'Once your group is cleared, pot the 8 to win. Potting the 8 before that, or with a foul, loses the game. An 8 potted on the break goes back on the foot spot.',
+                    'Shots are played out on the server: you choose the direction and the power, and every player sees the same result.',
+                ])],
+                'min_players' => 2,
+                'max_players' => 2,
             ],
         ];
     }

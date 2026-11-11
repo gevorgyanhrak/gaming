@@ -287,4 +287,6 @@ is not done or not verified, and how to check it manually. Keep it concise.
   `{type:'play', tile:'a-b', end}`; board `games/domino` (SVG `Tile`, end slots when a tile fits both ends).
   Ludo: `roll` is an action (the engine rolls, recorded), then `{type:'move', token, to}`; board geometry
   (`TRACK`, home columns, yards) lives in `games/ludo/LudoBoard.tsx` as drawing only.
+  Pool (ADR 0020): `PoolPhysics` on the server; the board replays `last_shot.segments` by formula and never
+  simulates; one action `{type:'shoot', angle, power, x?, y?}`; a pause while the balls roll. Actions may carry decimals.
 - Poker table: its phone layout applies at 900 px and below (`min-[901px]:` / `max-[900px]:` in `PokerBoard`, `HandResult`; `useMediaQuery('(max-width: 900px)')`), TASK-058. The state sends `turn_seconds` for timers drawn as a share of the turn. Nardi board art: `.nardi-*` in `styles/index.css`.

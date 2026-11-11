@@ -1055,7 +1055,10 @@ export interface components {
             client_action_id: string;
             /** @description The version the client saw; a different current version means its view is outdated. */
             expected_version: number;
-            /** @description Game-specific fields are checked by the engine; here only their shape: a few flat values. */
+            /**
+             * @description Game-specific fields are checked by the engine; here only their shape: a few flat values
+             *     (numbers may have decimals: a pool shot's angle).
+             */
             action: {
                 type: string;
             };

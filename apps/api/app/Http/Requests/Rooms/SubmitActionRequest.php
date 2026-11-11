@@ -18,10 +18,11 @@ class SubmitActionRequest extends FormRequest
             'client_action_id' => ['required', 'uuid'],
             // The version the client saw; a different current version means its view is outdated.
             'expected_version' => ['required', 'integer', 'min:0'],
-            // Game-specific fields are checked by the engine; here only their shape: a few flat values.
+            // Game-specific fields are checked by the engine; here only their shape: a few flat values
+            // (numbers may have decimals: a pool shot's angle).
             'action' => ['required', 'array', 'max:8', function (string $attribute, mixed $value, Closure $fail) {
                 foreach ((array) $value as $field) {
-                    if (! ($field === null || is_int($field) || is_bool($field) || (is_string($field) && strlen($field) <= 64))) {
+                    if (! ($field === null || is_int($field) || is_bool($field) || (is_float($field) && is_finite($field)) || (is_string($field) && strlen($field) <= 64))) {
                         $fail(__('validation.array', ['attribute' => $attribute]));
                     }
                 }

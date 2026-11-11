@@ -1,6 +1,6 @@
 # Game Platform
 
-An online platform for classic board and card games (Nardi, Chess, Checkers, Durak, Poker, Blackjack, Blot, Domino, Ludo),
+An online platform for classic board and card games (Nardi, Chess, Checkers, Durak, Poker, Blackjack, Blot, Domino, Ludo, 8-ball pool),
 played in real time against other people or against bots. Recreational play only: no real money.
 
 - **Backend:** Laravel 13 API (`apps/api`): authoritative game state, matchmaking, bots, admin panel
@@ -19,7 +19,7 @@ Architecture and decisions: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [
 | Registration and login by email or phone, verification codes, password reset, profiles, avatars, settings, roles | ✅ Done (Phase 3). The SMS provider is not chosen yet (see below). |
 | Admin panel: users and moderation, games and modes, bots, settings, content pages, audit log, dashboard | ✅ Done (Phase 4). Game statistics join the dashboard with gameplay. |
 | Gameplay infrastructure: rooms, matchmaking with bot fallback, bots, turn timers, real-time updates, history and statistics | ✅ Done (Phase 5), tested with a test-only engine. Real games plug in from Phase 6. |
-| Playable games | ✅ All nine, with bots easy/medium/hard: Nardi (short nardi), Checkers (Russian draughts), Chess (with chess clocks), Durak (podkidnoy, 2–6 players) and Poker (no-limit hold'em sit-and-go, 2–6 seats, play chips only) Blackjack (against the dealer, alone or 1–5 seats, 10 rounds, play chips only) Blot (Bazar blot, 4 players in two teams, to 301) Domino (Block, 2–4 players, to 100) and Ludo (2–4 players). Matchmaking fills poker and durak tables of up to six (a full table starts at once, otherwise everyone waiting sits down after 20 seconds). |
+| Playable games | ✅ All ten, with bots easy/medium/hard: Nardi (short nardi), Checkers (Russian draughts), Chess (with chess clocks), Durak (podkidnoy, 2–6 players) and Poker (no-limit hold'em sit-and-go, 2–6 seats, play chips only) Blackjack (against the dealer, alone or 1–5 seats, 10 rounds, play chips only) Blot (Bazar blot, 4 players in two teams, to 301) Domino (Block, 2–4 players, to 100) Ludo (2–4 players) and 8-ball pool (1 v 1, physics on the server). Matchmaking fills poker and durak tables of up to six (a full table starts at once, otherwise everyone waiting sits down after 20 seconds). |
 
 ## Prerequisites
 

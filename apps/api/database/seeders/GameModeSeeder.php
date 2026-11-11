@@ -114,6 +114,13 @@ class GameModeSeeder extends Seeder
                 'min_players' => 2, 'max_players' => 4,
                 'config' => ['turn_seconds' => 20, 'table_wait_seconds' => 20],
             ]],
+            'pool' => [[
+                'slug' => 'eight-ball',
+                'name' => ['en' => '8-ball', 'ru' => 'Восьмёрка', 'hy' => '8-գնդակ'],
+                'description' => ['en' => 'One on one, ball in hand after a foul.', 'ru' => 'Один на один, после фола — шар с руки.', 'hy' => 'Մեկը մեկի դեմ, ֆոլից հետո՝ գնդակը ձեռքից։'],
+                'min_players' => 2, 'max_players' => 2,
+                'config' => ['turn_seconds' => 45],
+            ]],
         ];
     }
 }
