@@ -10,40 +10,49 @@ import type { BoardProps } from '../registry'
 interface Contract {
   seat: number
   team: number
+  /** 25 for kaput. */
   value: number
-  suit: Suit
+  /** null: no-trump. */
+  suit: Suit | null
+  kaput: boolean
   doubled: 0 | 1 | 2
 }
 
-interface Declaration {
-  kind: 'terz' | 'fifty' | 'hundred' | 'carre'
-  cards: string[]
-  points: number
-}
+type Kind = 'terz' | 'fifty' | 'hundred' | 'carre'
 
 export interface BlotView {
   seat: number | null
   dealer: number
   hand_no: number
-  phase: 'bidding' | 'playing' | 'over'
+  phase: 'bidding' | 'answer' | 'playing' | 'over'
   hand: string[]
   hand_sizes: number[]
   bids: {
     seat: number
-    type: 'bid' | 'pass' | 'double' | 'redouble'
+    type: 'bid' | 'kaput' | 'pass' | 'contra' | 'recontra'
     value?: number
-    suit?: Suit
+    suit?: Suit | 'N'
   }[]
   contract: Contract | null
   trump: Suit | null
   to_act: number | null
   trick: { seat: number; card: string }[]
   last_trick: { cards: { seat: number; card: string }[]; winner: number; points: number } | null
+  /** Tricks taken this deal, per team. */
   tricks: [number, number]
   points: [number, number]
-  declarations: Declaration[][]
+  my_declarations: {
+    index: number
+    kind: Kind
+    points: number
+    cards: string[]
+    declared: boolean
+  }[]
+  /** Announced declarations per seat (cards once the first trick is over). */
+  declared: { kind: Kind; points: number; cards: string[] }[][]
   declarations_shown: boolean
   belote: number | null
+  /** Match scores in sai, per team. */
   scores: [number, number]
   target: number
   last_hand: {
@@ -51,22 +60,29 @@ export interface BlotView {
     contract: Contract
     made: boolean
     tricks: [number, number]
-    declarations: [number, number]
-    belote: [number, number]
+    card_points: [number, number]
+    card_sai: [number, number]
+    declarations: { seat: number; kind: Kind; points: number; cards: string[]; counted: boolean }[]
+    declaration_sai: [number, number]
+    belote_sai: [number, number]
+    bid_sai: number
     scored: [number, number]
+    totals: [number, number]
     kaput: boolean
   } | null
 }
 
 type BlotAction =
   | { type: 'play'; card: string }
-  | { type: 'pass' | 'double' | 'redouble' }
+  | { type: 'pass' | 'contra' | 'recontra' }
   | { type: 'bid'; min: number; max: number }
+  | { type: 'kaput'; suit: Suit | 'N' }
+  | { type: 'declare'; index: number }
 
-const SUITS: Suit[] = ['S', 'H', 'D', 'C']
+const BID_SUITS: (Suit | 'N')[] = ['S', 'H', 'D', 'C', 'N']
 /** Text presentation, so iOS never draws the suits as colour emoji. */
 const suitText = (suit: Suit) => `${suitSymbols[suit]}︎`
-const red = (suit: Suit) => suit === 'H' || suit === 'D'
+const red = (suit: Suit | 'N' | null) => suit === 'H' || suit === 'D'
 
 // Display order only (alternating colours, highest first); the server decides what may be played.
 const RANKS = 'AKQJT987'
@@ -81,10 +97,11 @@ const sortHand = (cards: string[], trump: Suit | null) =>
   })
 
 /**
- * Bazar blot for two partnerships: you at the bottom, your partner opposite, the opponents left and
- * right. The bazar (bids with a suit, pass, double, redouble), the trick on the felt, your hand (only the
- * server's playable cards can be played), the contract and the score to the target. After each hand the
- * table pauses on its result.
+ * Armenian Bazar Blot for two partnerships: you at the bottom, your partner opposite, the opponents left
+ * and right. The bazar (a number with a suit or no-trump, kaput, contra, recontra), your declarations
+ * before your first card, the trick, your hand (only the server's playable cards can be played), the
+ * contract, the tricks taken and the match score in sai. After each deal the table shows how it was
+ * scored. Every number comes from the server.
  */
 export default function BlotBoard({
   state,
@@ -101,11 +118,18 @@ export default function BlotBoard({
   const myTeam = me % 2
   const actions = state.legal_actions as unknown as BlotAction[]
   const bidRange = actions.find((a): a is Extract<BlotAction, { type: 'bid' }> => a.type === 'bid')
+  const kaputs = actions.filter(
+    (a): a is Extract<BlotAction, { type: 'kaput' }> => a.type === 'kaput',
+  )
+  const declares = actions.filter(
+    (a): a is Extract<BlotAction, { type: 'declare' }> => a.type === 'declare',
+  )
   const playable = new Set(
     actions.flatMap((a) => (a.type === 'play' ? [(a as { card: string }).card] : [])),
   )
   const has = (type: BlotAction['type']) => actions.some((a) => a.type === type)
   const [value, setValue] = useState<number | null>(null)
+  const [kaputMode, setKaputMode] = useState(false)
   const bidValue = bidRange
     ? Math.min(bidRange.max, Math.max(bidRange.min, value ?? bidRange.min))
     : 0
@@ -123,21 +147,28 @@ export default function BlotBoard({
 
   const send = (action: Parameters<BoardProps['onAction']>[0]) => {
     setValue(null)
+    setKaputMode(false)
     onAction(action)
   }
+  const suitLabel = (suit: Suit | 'N' | null) =>
+    suit === null || suit === 'N' ? t('blot.noTrumpShort') : suitText(suit)
+  const contractText = (c: Contract) =>
+    `${c.kaput ? t('blot.kaputShort') : c.value} ${suitLabel(c.suit)}`
   const lastBid = (seat: number) => [...view.bids].reverse().find((b) => b.seat === seat)
   const bidText = (b: BlotView['bids'][number]) =>
     b.type === 'bid' && b.value && b.suit
-      ? `${b.value} ${suitText(b.suit)}`
-      : t(`blot.call.${b.type}` as 'blot.call.pass')
+      ? `${b.value} ${suitLabel(b.suit)}`
+      : b.type === 'kaput' && b.suit
+        ? `${t('blot.kaputShort')} ${suitLabel(b.suit)}`
+        : t(`blot.call.${b.type}` as 'blot.call.pass')
   // The trick on the felt; between tricks the last one stays until the next card is played.
   const showingLast =
-    view.trick.length === 0 && view.last_trick !== null && view.phase !== 'bidding'
+    view.trick.length === 0 && view.last_trick !== null && view.phase === 'playing'
   const trick = showingLast ? (view.last_trick?.cards ?? []) : view.trick
   const contract = view.contract
   const hand = sortHand(view.hand, view.trump)
   const result = view.phase === 'over' || state.result ? view.last_hand : null
-  const bidding = view.phase === 'bidding' && (!!bidRange || has('pass'))
+  const bidding = (view.phase === 'bidding' || view.phase === 'answer') && actions.length > 0
   const teamName = (team: number) => (team === myTeam ? t('blot.us') : t('blot.them'))
 
   const status =
@@ -147,16 +178,16 @@ export default function BlotBoard({
         : t('blot.nextHand')
       : view.to_act === null
         ? ' '
-        : view.phase === 'bidding'
+        : view.phase === 'bidding' || view.phase === 'answer'
           ? t('blot.waitingBid', { name: name(view.to_act) })
           : t('blot.waitingFor', { name: name(view.to_act) })
 
   return (
     <div className="space-y-4 text-white">
       <div className="poker-stage relative rounded-3xl p-2 min-[641px]:p-6">
-        {/* The score, the contract and the hand number, above the table. */}
+        {/* Match score, deal, contract and tricks, above the table. */}
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs min-[641px]:text-sm">
-          <dl className="flex gap-2" aria-label={t('blot.score')}>
+          <dl className="flex flex-wrap items-center gap-2" aria-label={t('blot.score')}>
             {[myTeam, 1 - myTeam].map((team) => (
               <div
                 key={team}
@@ -174,23 +205,37 @@ export default function BlotBoard({
               <dt>{t('blot.target')}</dt>
               <dd className="font-bold tabular-nums">{format(view.target)}</dd>
             </div>
+            <div className="flex items-center gap-1 px-1 text-white/60">
+              <dt>{t('blot.deal')}</dt>
+              <dd className="font-bold tabular-nums">{view.hand_no}</dd>
+            </div>
           </dl>
-          {contract ? (
-            <p className="flex items-center gap-1.5 rounded-full border border-gold/40 bg-black/50 px-2.5 py-1">
-              <span className="text-white/70">{t('blot.contract')}</span>
-              <span
-                className={`rounded bg-card px-1.5 font-extrabold ${red(contract.suit) ? 'text-suit-red' : 'text-suit-black'}`}
-              >
-                {contract.value} {suitText(contract.suit)}
-              </span>
-              <span className="font-semibold">{name(contract.seat)}</span>
-              {contract.doubled > 0 ? (
-                <span className="rounded-full bg-[#8e3a31] px-1.5 font-bold">
-                  ×{contract.doubled === 2 ? 4 : 2}
+          <div className="flex flex-wrap items-center gap-2">
+            {contract ? (
+              <p className="flex items-center gap-1.5 rounded-full border border-gold/40 bg-black/50 px-2.5 py-1">
+                <span className="text-white/70">{t('blot.contract')}</span>
+                <span
+                  className={`rounded bg-card px-1.5 font-extrabold ${red(contract.suit) ? 'text-suit-red' : 'text-suit-black'}`}
+                >
+                  {contractText(contract)}
                 </span>
-              ) : null}
-            </p>
-          ) : null}
+                <span className="font-semibold">{name(contract.seat)}</span>
+                {contract.doubled > 0 ? (
+                  <span className="rounded-full bg-[#8e3a31] px-1.5 font-bold">
+                    {t(contract.doubled === 2 ? 'blot.call.recontra' : 'blot.call.contra')}
+                  </span>
+                ) : null}
+              </p>
+            ) : null}
+            {view.phase === 'playing' ? (
+              <p className="rounded-full border border-white/20 bg-black/40 px-2.5 py-1 text-white/80">
+                {t('blot.tricksWon', {
+                  us: view.tricks[myTeam] ?? 0,
+                  them: view.tricks[1 - myTeam] ?? 0,
+                })}
+              </p>
+            ) : null}
+          </div>
         </div>
 
         <div className="relative mx-auto aspect-[1/1.08] w-full max-w-[min(40rem,calc(100dvh-25rem))] min-[641px]:aspect-[1.65/1] min-[641px]:max-w-[min(60rem,calc((100dvh-24rem)*1.65))]">
@@ -198,13 +243,21 @@ export default function BlotBoard({
             <div className="blackjack-felt relative h-full w-full rounded-[1.9rem]" />
           </div>
 
-          {/* The middle of the felt: the bazar, the trick (each card on its player's side), or the hand's result. */}
+          {/* The middle of the felt: the bazar, the trick (each card on its player's side), or the deal's result. */}
           {result ? (
-            <div className="absolute inset-x-[18%] top-1/2 z-20 flex -translate-y-1/2 justify-center min-[641px]:inset-x-[26%]">
-              <HandSummary result={result} myTeam={myTeam} name={name} format={format} />
+            <div className="absolute inset-x-[16%] top-1/2 z-20 flex -translate-y-1/2 justify-center min-[641px]:inset-x-[24%]">
+              <HandSummary
+                result={result}
+                myTeam={myTeam}
+                name={name}
+                format={format}
+                contractText={contractText}
+                target={view.target}
+                matchOver={!!state.result}
+              />
             </div>
           ) : bidding ? (
-            <div className="absolute inset-x-[24%] top-1/2 z-20 -translate-y-1/2 min-[641px]:inset-x-[25%]">
+            <div className="absolute inset-x-[22%] top-1/2 z-20 -translate-y-1/2 min-[641px]:inset-x-[24%]">
               {bidControls()}
             </div>
           ) : (
@@ -233,7 +286,7 @@ export default function BlotBoard({
                   </span>
                 )
               })}
-              {view.phase === 'bidding' ? (
+              {view.phase === 'bidding' || view.phase === 'answer' ? (
                 <p className="absolute inset-x-0 top-1/3 text-center text-sm font-extrabold tracking-[0.2em] text-gold-light/70 uppercase">
                   {t('blot.bazar')}
                 </p>
@@ -254,8 +307,9 @@ export default function BlotBoard({
             {[0, 1, 2, 3].map((seat) => {
               const where = place(seat)
               const acting = view.to_act === seat
-              const bid = view.phase === 'bidding' ? lastBid(seat) : undefined
-              const declared = view.declarations[seat] ?? []
+              const bid =
+                view.phase === 'bidding' || view.phase === 'answer' ? lastBid(seat) : undefined
+              const declared = view.declared[seat] ?? []
               const pos = [
                 // Yours sits in the near corner, clear of your cards along the edge (above them on a phone).
                 'bottom-[17%] left-[4%] min-[641px]:bottom-[4%]',
@@ -297,7 +351,7 @@ export default function BlotBoard({
                       {bidText(bid)}
                     </span>
                   ) : null}
-                  {view.declarations_shown && declared.length > 0 ? (
+                  {view.phase === 'playing' && declared.length > 0 ? (
                     <span className="flex flex-wrap justify-center gap-1">
                       {declared.map((d, i) => (
                         <span
@@ -309,7 +363,7 @@ export default function BlotBoard({
                       ))}
                     </span>
                   ) : null}
-                  {view.belote === seat && view.declarations_shown ? (
+                  {view.belote === seat && view.phase === 'playing' ? (
                     <span className="rounded-full bg-white/85 px-1.5 py-0.5 text-[0.65rem] font-extrabold text-black">
                       {t('blot.belote')}
                     </span>
@@ -319,6 +373,44 @@ export default function BlotBoard({
             })}
           </ul>
         </div>
+
+        {/* Your combinations, to announce before your first card. */}
+        {declares.length > 0 || view.my_declarations.some((d) => d.declared) ? (
+          <section
+            aria-label={t('blot.yourDeclarations')}
+            className="relative z-30 mx-auto mt-2 flex max-w-xl flex-wrap items-center justify-center gap-2 rounded-2xl border border-gold/40 bg-black/55 px-3 py-2"
+          >
+            <span className="text-xs font-semibold text-gold-light">
+              {t('blot.yourDeclarations')}
+            </span>
+            {view.my_declarations.map((d) => {
+              const action = declares.find((a) => a.index === d.index)
+              const text = `${t(`blot.declaration.${d.kind}`)} ${d.points}`
+              return action ? (
+                <button
+                  key={d.index}
+                  type="button"
+                  disabled={pending}
+                  onClick={() => send(action)}
+                  aria-label={t('blot.declareIt', {
+                    what: text,
+                    cards: d.cards.map(labels.card).join(', '),
+                  })}
+                  className="min-h-9 rounded-full border border-gold bg-gold/20 px-3 text-xs font-bold text-gold-light hover:bg-gold/30"
+                >
+                  {t('blot.declare')} · {text}
+                </button>
+              ) : d.declared ? (
+                <span
+                  key={d.index}
+                  className="rounded-full bg-gold px-3 py-1 text-xs font-bold text-black"
+                >
+                  ✓ {text}
+                </span>
+              ) : null
+            })}
+          </section>
+        ) : null}
 
         {/* Your hand, along the table's near edge. */}
         <section
@@ -351,63 +443,93 @@ export default function BlotBoard({
         </section>
         {playable.size > 0 ? (
           <p className="mt-2 text-center text-sm font-semibold text-gold-light" aria-live="polite">
-            {t('blot.yourTurn')}
+            {declares.length > 0 ? t('blot.declareFirst') : t('blot.yourTurn')}
           </p>
         ) : null}
       </div>
     </div>
   )
 
-  /** The bazar on your turn: a value, then the suit button bids it; pass, contra, recontra. */
+  /** The bazar on your turn: a number (or kaput), then the suit or no-trump button bids it; pass, contra, recontra. */
   function bidControls() {
+    const canNumber = !!bidRange && !kaputMode
     return (
-      <div className="flex w-full flex-col items-center gap-3">
-        {bidRange ? (
+      <div className="flex w-full flex-col items-center gap-2.5">
+        {bidRange || kaputs.length > 0 ? (
           <>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                aria-label={t('blot.lower')}
-                disabled={bidValue <= bidRange.min}
-                onClick={() => setValue(bidValue - 1)}
-                className="size-11 rounded-full border border-gold/40 bg-black/30 text-xl font-bold disabled:opacity-40"
-              >
-                −
-              </button>
-              <span className="min-w-20 text-center" aria-live="polite">
-                <span className="block text-2xl font-extrabold text-gold-light tabular-nums">
-                  {bidValue}
+            {canNumber ? (
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  aria-label={t('blot.lower')}
+                  disabled={bidValue <= bidRange.min}
+                  onClick={() => setValue(bidValue - 1)}
+                  className="size-10 rounded-full border border-gold/40 bg-black/30 text-xl font-bold disabled:opacity-40"
+                >
+                  −
+                </button>
+                <span className="min-w-20 text-center" aria-live="polite">
+                  <span className="block text-2xl font-extrabold text-gold-light tabular-nums">
+                    {bidValue}
+                  </span>
+                  <span className="block text-xs text-white/60">
+                    {t('blot.points', { count: bidValue * 10 })}
+                  </span>
                 </span>
-                <span className="block text-xs text-white/60">
-                  {t('blot.points', { count: bidValue * 10 })}
-                </span>
-              </span>
-              <button
-                type="button"
-                aria-label={t('blot.higher')}
-                disabled={bidValue >= bidRange.max}
-                onClick={() => setValue(bidValue + 1)}
-                className="size-11 rounded-full border border-gold/40 bg-black/30 text-xl font-bold disabled:opacity-40"
-              >
-                +
-              </button>
-            </div>
-            <div className="grid w-full max-w-md grid-cols-4 gap-1.5 min-[641px]:gap-2">
-              {SUITS.map((suit) => (
+                <button
+                  type="button"
+                  aria-label={t('blot.higher')}
+                  disabled={bidValue >= bidRange.max}
+                  onClick={() => setValue(bidValue + 1)}
+                  className="size-10 rounded-full border border-gold/40 bg-black/30 text-xl font-bold disabled:opacity-40"
+                >
+                  +
+                </button>
+              </div>
+            ) : (
+              <p className="text-center text-sm font-extrabold text-gold-light">
+                {t('blot.kaputHint')}
+              </p>
+            )}
+            <div className="grid w-full max-w-md grid-cols-5 gap-1.5 min-[641px]:gap-2">
+              {BID_SUITS.map((suit) => (
                 <button
                   key={suit}
                   type="button"
                   disabled={pending}
-                  onClick={() => send({ type: 'bid', value: bidValue, suit })}
-                  aria-label={t('blot.bidIn', { value: bidValue, suit: labels.suit(suit) })}
-                  className={`rounded-xl border border-black/20 bg-card py-1.5 text-xl font-bold shadow-lg shadow-black/40 transition hover:brightness-95 active:translate-y-px disabled:opacity-60 min-[641px]:py-2.5 min-[641px]:text-2xl ${
-                    red(suit) ? 'text-suit-red' : 'text-suit-black'
-                  }`}
+                  onClick={() =>
+                    send(
+                      canNumber ? { type: 'bid', value: bidValue, suit } : { type: 'kaput', suit },
+                    )
+                  }
+                  aria-label={
+                    canNumber
+                      ? t('blot.bidIn', {
+                          value: bidValue,
+                          suit: suit === 'N' ? t('blot.noTrump') : labels.suit(suit),
+                        })
+                      : t('blot.kaputIn', {
+                          suit: suit === 'N' ? t('blot.noTrump') : labels.suit(suit),
+                        })
+                  }
+                  className={`rounded-xl border border-black/20 bg-card py-1.5 font-bold shadow-lg shadow-black/40 transition hover:brightness-95 active:translate-y-px disabled:opacity-60 min-[641px]:py-2.5 ${
+                    suit === 'N' ? 'text-sm text-ink' : 'text-xl min-[641px]:text-2xl'
+                  } ${red(suit) ? 'text-suit-red' : suit === 'N' ? '' : 'text-suit-black'}`}
                 >
-                  {suitText(suit)}
+                  {suitLabel(suit)}
                 </button>
               ))}
             </div>
+            {kaputs.length > 0 ? (
+              <button
+                type="button"
+                aria-pressed={kaputMode}
+                onClick={() => setKaputMode((k) => !k)}
+                className="min-h-9 rounded-full border border-gold/40 bg-black/30 px-3 text-xs font-semibold aria-pressed:border-gold aria-pressed:text-gold-light"
+              >
+                {kaputMode ? t('blot.backToNumber') : t('blot.bidKaput')}
+              </button>
+            ) : null}
           </>
         ) : null}
         <div className="flex w-full max-w-md gap-2">
@@ -421,24 +543,24 @@ export default function BlotBoard({
               {t('blot.call.pass')}
             </button>
           ) : null}
-          {has('double') ? (
+          {has('contra') ? (
             <button
               type="button"
               disabled={pending}
-              onClick={() => send({ type: 'double' })}
+              onClick={() => send({ type: 'contra' })}
               className={`${actionButton} flex-1 border-[#a8473c]/60 bg-linear-to-b from-[#8e3a31] to-[#5e211b] text-white`}
             >
-              {t('blot.call.double')}
+              {t('blot.call.contra')}
             </button>
           ) : null}
-          {has('redouble') ? (
+          {has('recontra') ? (
             <button
               type="button"
               disabled={pending}
-              onClick={() => send({ type: 'redouble' })}
+              onClick={() => send({ type: 'recontra' })}
               className={`${actionButton} flex-1 border-gold/40 bg-linear-to-b from-gold-light to-gold text-black`}
             >
-              {t('blot.call.redouble')}
+              {t('blot.call.recontra')}
             </button>
           ) : null}
         </div>
@@ -447,40 +569,61 @@ export default function BlotBoard({
   }
 }
 
-/** The last hand: the contract made or not, and what each team scored. */
+/**
+ * The deal's result in sai: the contract made or not, card points, declarations, blot, the contract's
+ * value, what each pair scored, and the match total — and whether the match goes on.
+ */
 function HandSummary({
   result,
   myTeam,
   name,
   format,
+  contractText,
+  target,
+  matchOver,
 }: {
   result: NonNullable<BlotView['last_hand']>
   myTeam: number
   name: (seat: number) => string
   format: (n: number) => string
+  contractText: (c: Contract) => string
+  target: number
+  matchOver: boolean
 }) {
   const { t } = useTranslation()
-  const rows = [
-    { label: t('blot.tricks'), values: result.tricks },
-    { label: t('blot.declarations'), values: result.declarations },
-    { label: t('blot.belote'), values: result.belote },
+  const bidders = result.contract.team
+  // The contract's value goes to the bidders when made, to the defenders when not.
+  const bidRow: [number, number] = [0, 0]
+  bidRow[result.made ? bidders : 1 - bidders] = result.bid_sai
+  const rows: { label: string; values: [number, number]; strong?: boolean; note?: string }[] = [
+    { label: t('blot.cardPoints'), values: result.card_points, note: t('blot.raw') },
+    { label: t('blot.tricksTaken'), values: result.tricks },
+    { label: t('blot.contractValue'), values: bidRow },
+    { label: t('blot.declarations'), values: result.declaration_sai },
+    { label: t('blot.belote'), values: result.belote_sai },
     { label: t('blot.scored'), values: result.scored, strong: true },
+    { label: t('blot.matchTotal'), values: result.totals, strong: true },
   ]
   const won = (result.scored[myTeam] ?? 0) > (result.scored[1 - myTeam] ?? 0)
   return (
     <section
       aria-label={t('blot.handResult')}
-      className={`w-full max-w-md rounded-2xl border p-3 text-sm motion-safe:animate-rise ${won ? 'border-gold bg-black/40 shadow-[0_0_24px_rgb(214_171_78/0.35)]' : 'border-white/15 bg-black/30'}`}
+      className={`max-h-full w-full max-w-md overflow-y-auto rounded-2xl border p-3 text-xs motion-safe:animate-rise min-[641px]:text-sm ${won ? 'border-gold bg-black/60 shadow-[0_0_24px_rgb(214_171_78/0.35)]' : 'border-white/15 bg-black/55'}`}
     >
-      <p className="mb-2 text-center font-bold" role="status">
-        {result.made
-          ? t('blot.made', { name: name(result.contract.seat), value: result.contract.value })
-          : t('blot.failed', { name: name(result.contract.seat), value: result.contract.value })}
+      <p className="mb-1 text-center font-bold" role="status">
+        {t('blot.dealNumber', { n: result.number })} ·{' '}
+        {t(result.made ? 'blot.made' : 'blot.failed', {
+          name: name(result.contract.seat),
+          contract: contractText(result.contract),
+        })}
+        {result.contract.doubled > 0
+          ? ` · ${t(result.contract.doubled === 2 ? 'blot.call.recontra' : 'blot.call.contra')}`
+          : ''}
         {result.kaput ? ` · ${t('blot.kaput')}` : ''}
       </p>
       <table className="w-full text-center tabular-nums">
         <thead>
-          <tr className="text-xs text-white/60">
+          <tr className="text-white/60">
             <th scope="col" className="text-left font-normal">
               <span className="sr-only">{t('blot.score')}</span>
             </th>
@@ -500,6 +643,7 @@ function HandSummary({
             >
               <th scope="row" className="py-0.5 text-left font-normal text-white/75">
                 {row.label}
+                {row.note ? <span className="text-white/45"> ({row.note})</span> : null}
               </th>
               <td>{format(row.values[myTeam] ?? 0)}</td>
               <td>{format(row.values[1 - myTeam] ?? 0)}</td>
@@ -507,6 +651,18 @@ function HandSummary({
           ))}
         </tbody>
       </table>
+      {result.declarations.length > 0 ? (
+        <ul className="mt-2 space-y-0.5 text-white/80">
+          {result.declarations.map((d, i) => (
+            <li key={i} className={d.counted ? '' : 'text-white/40 line-through'}>
+              {name(d.seat)}: {t(`blot.declaration.${d.kind}`)} {d.points}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      <p className="mt-2 text-center text-white/70">
+        {matchOver ? t('blot.matchOver') : t('blot.matchGoesOn', { target: format(target) })}
+      </p>
     </section>
   )
 }
@@ -570,4 +726,4 @@ function Plate({
 }
 
 const actionButton =
-  'rounded-xl border px-3 py-3 text-sm font-bold shadow-lg shadow-black/40 transition hover:brightness-110 active:translate-y-px disabled:opacity-60 min-[641px]:text-base'
+  'rounded-xl border px-3 py-2.5 text-sm font-bold shadow-lg shadow-black/40 transition hover:brightness-110 active:translate-y-px disabled:opacity-60 min-[641px]:text-base'

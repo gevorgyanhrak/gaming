@@ -2,6 +2,44 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## Blot audit and rebuild to Armenian Bazar Blot rules — 2026-11-11 · DONE (owner request)
+
+**Rules:** researched and written down in `docs/games/blot-rules.md` (sources: reblot.am — the most complete, used where
+sources differ — belote.club, terz.am; every choice marked).
+
+**Bugs found in the first Blot (all fixed):**
+1. Scores were raw card points (162 a deal) against a 301 target that Armenian Blot counts in sai (÷ 10, 16 a deal); a
+   failed or doubled hand paid 162 × 2–4, so one deal could end the match — the reported "won after the first round".
+2. Wrong contract scoring: no bid added, no 16/25 base, multipliers on the wrong amounts.
+3. Bazar incomplete: no no-trump (×2, ace 19), no kaput bid, contra didn't end the bidding or open recontra.
+4. Declarations were granted automatically; now players announce them before their first card, from the list the
+   server finds in their hand (index only — names or points from a client are refused; each once).
+5. Four-of-a-kind values (9s 140, aces 110; no-trump aces 190, jacks 100) and the tie-breaks (top card, trump sequence,
+   first from the dealer's left; four of a kind over a 100).
+6. Forced overtrumping when trumps were led (the source allows any trump).
+7. Hidden information: the view named the blot holder before K and Q of trumps were played.
+8. Result screen in raw points without the bid, base or match total.
+
+**Now:** `BlotCards` (values for trump/plain/no-trump, sai rounding 15→1 16→2, declarations with comparison keys),
+`BlotEngine` (phases bidding → answer → playing → over; scoring per the spec; match end at the target with the higher
+score, ties play on; reverse kaput loses, a contra'd kaput made wins; definition version 2), `BlotBot` (no-trump, contra/
+recontra, declares). Board: no-trump and kaput bids, contra/recontra, a declarations panel, tricks taken, deal number,
+announced declarations at the seats, and a deal result in sai (card points, tricks, contract value, declarations with
+the ones not counted struck through, blot, this deal, match total, "the match goes on: first to 301").
+
+**Tests run:** `make lint-api` ✓ · `make test-api` → **559 passed** (`Unit/Games/BlotEngineTest` 50: every card value,
+trump/plain/no-trump order, trick winner, last trick, sai rounding, follow/trump/overtrump/partner rules, bazar, kaput,
+contra/recontra, redeal, declarations found/invalid/values/announce-once/shown later, six comparison cases, blot, made /
+failed / contra / recontra / no-trump / all tricks / kaput / reverse kaput, the biggest first deal not ending the match,
+accumulation, target and tie, table target, bots over whole matches; `Feature/Games/BlotTableTest` 7: a whole deal
+through the API with identical scores for all four players, rebuild from the move log, next deal; declarations only from
+the server's list, once, repeated request counted once; client-sent scores refused) · web typecheck ✓ lint ✓ format ✓ ·
+`npm test` → 35 files, **192 passed** (`BlotBoard.test.tsx` 5) · build ✓. Probe: 20 bot matches took 13–20 deals each.
+Live 1440×900 and 390×844: bazar, a whole deal, the result screen.
+
+**Known issues / choices:** kaput-contract scoring and "nobody bids after kaput" follow the most consistent reading of the
+sources (marked in the spec). On a phone the deal result covers the side seats' plates while it is shown.
+
 ## New games 6/11 · Rummy (classic, 2–6 players) — 2026-11-11 · DONE (owner: "do it")
 
 - Engine `app/Games/Rummy/Engine/RummyEngine.php`: one deck (two for 5–6), 10/7/6 cards, draw from stock or discard,

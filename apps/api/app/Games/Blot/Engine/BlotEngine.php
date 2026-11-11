@@ -15,43 +15,33 @@ use App\Gameplay\Exceptions\IllegalAction;
 use App\Gameplay\Random\RandomSource;
 
 /**
- * Bazar blot for four players in two partnerships (seats 0 and 2 against 1 and 3), to `target` points
- * (301). 32 cards, eight each.
+ * Armenian Bazar Blot for four players in two partnerships (seats 0 and 2 against 1 and 3), scored in sai
+ * to `target` (301). The rules, with their sources and the choices made where sources differ, are in
+ * docs/games/blot-rules.md; this class follows that document.
  *
- * Bidding (the bazar) starts left of the dealer: bid {value, suit} (value × 10 points, 8–30, higher than
- * the last bid), pass, double (an opponent of the bidder; nobody bids higher after it) or redouble (the
- * doubled team, which ends the bidding). Three passes after a bid or a double end it; four passes without
- * a bid redeal. The highest bid makes its
- * suit trump.
+ * Phases: bidding → answer (after a contra: the contract pair may recontra or pass) → playing → over (a
+ * pause showing the deal's result) → the next deal. Actions:
+ * - bidding: bid {value 8–24, suit S|H|D|C|N (no-trump)} (described as a range), kaput {suit}, pass, contra;
+ * - answer: recontra, pass;
+ * - playing: play {card}; before their first card a player may also declare {index} each combination the
+ *   server lists for their hand.
  *
- * Play: the player left of the dealer leads. Follow suit; when trumps are led, beat the highest trump if
- * you can. Without the led suit you must trump (beating a trump already played if you can, otherwise any
- * trump), unless your partner is winning the trick. Trumps rank J 9 A 10 K Q 8 7 (20, 14, 11, 10, 4, 3);
- * other suits A 10 K Q J 9 8 7 (11, 10, 4, 3, 2). The last trick adds 10: 162 in all; all eight tricks
- * (kaput) count 250.
- *
- * Declarations are found by the engine and shown after the first trick: sequences (three 20, four 50,
- * five 100) and four of a kind (jacks 200, nines 150, A/10/K/Q 100). Only the team with the best single
- * declaration scores its declarations (a tie goes to the team that plays first). Belote — king and queen
- * of trumps in one hand — is 20 for its holder's team.
- *
- * Scoring: the bidding team needs at least its bid (tricks + declarations + belote). Made: each team
- * scores its own points; failed: the defenders score 162 (or 250) and every declaration. A doubled hand
- * goes wholly (162 + every declaration) to the team that wins it, ×2, redoubled ×4. Belote always stays
- * with its holder. A team at `target` or more after a hand wins (the higher score; a tie plays on).
- *
- * State: dealer, hand_no, phase (bidding|playing|over), hands (hidden), bids, contract {seat, team,
- * value, suit, doubled}, passes, to_act, leader, trick [{seat, card}], last_trick, tricks [per team],
- * points [per team], declarations (per seat), declarations_shown, belote (seat or null), scores, target,
- * last_hand, pause_ms, result.
+ * State: dealer, hand_no, phase, hands (hidden), bids, contract {seat, team, value (25 = kaput), suit
+ * (null = no-trump), kaput, doubled 0|1|2}, passes, to_act, leader, trick, last_trick, tricks (count per
+ * team), points (card points per team), available and declared_index (per seat, hidden), declared (per
+ * seat), declarations_shown, played_first (per seat), belote (seat or null), scores (sai per team), target,
+ * last_hand, pause_ms, result {team, reason}.
  */
 final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRounds, PlaysInTeams, ValidatesActions
 {
     public const MIN_BID = 8;
 
-    public const MAX_BID = 30;
+    public const MAX_BID = 24;
 
-    private const KAPUT = 250;
+    public const KAPUT = 25;
+
+    /** Suit codes in bids: the four suits and N for no-trump. */
+    public const BID_SUITS = ['S', 'H', 'D', 'C', 'N'];
 
     public function initialState(GameSetup $setup, RandomSource $random): array
     {
@@ -61,7 +51,7 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
             'scores' => [0, 0],
             'target' => (int) ($setup->options['target'] ?? 301),
             'last_hand' => null,
-            'pause_ms' => (int) ($setup->options['hand_pause_ms'] ?? 5000),
+            'pause_ms' => (int) ($setup->options['hand_pause_ms'] ?? 6000),
             'result' => null,
         ];
 
@@ -89,22 +79,40 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
         if ($this->seatsToAct($state) !== [$seat]) {
             return [];
         }
-        if ($state['phase'] === 'playing') {
-            return array_map(fn (string $card) => new Action('play', ['card' => $card]), $this->playable($state, $seat));
+        $contract = $state['contract'];
+
+        if ($state['phase'] === 'answer') {
+            return [new Action('recontra'), new Action('pass')];
+        }
+        if ($state['phase'] === 'bidding') {
+            $actions = [];
+            if ($contract === null || ! $contract['kaput']) {
+                $lowest = ($contract['value'] ?? self::MIN_BID - 1) + 1;
+                if ($lowest <= self::MAX_BID) {
+                    $actions[] = new Action('bid', ['max' => self::MAX_BID, 'min' => $lowest]);
+                }
+                foreach (self::BID_SUITS as $suit) {
+                    $actions[] = new Action('kaput', ['suit' => $suit]);
+                }
+            }
+            $actions[] = new Action('pass');
+            if ($contract !== null && $contract['team'] !== $seat % 2) {
+                $actions[] = new Action('contra');
+            }
+
+            return $actions;
         }
 
-        $contract = $state['contract'];
         $actions = [];
-        $lowest = ($contract['value'] ?? self::MIN_BID - 1) + 1;
-        if ($lowest <= self::MAX_BID && ($contract['doubled'] ?? 0) === 0) {
-            $actions[] = new Action('bid', ['max' => self::MAX_BID, 'min' => $lowest]);
+        if (! $state['played_first'][$seat]) {
+            foreach ($state['available'][$seat] as $i => $declaration) {
+                if (! in_array($i, $state['declared_index'][$seat], true)) {
+                    $actions[] = new Action('declare', ['index' => $i]);
+                }
+            }
         }
-        $actions[] = new Action('pass');
-        if ($contract !== null && $contract['doubled'] === 0 && $contract['team'] !== $seat % 2) {
-            $actions[] = new Action('double');
-        }
-        if ($contract !== null && $contract['doubled'] === 1 && $contract['team'] === $seat % 2) {
-            $actions[] = new Action('redouble');
+        foreach ($this->playable($state, $seat) as $card) {
+            $actions[] = new Action('play', ['card' => $card]);
         }
 
         return $actions;
@@ -119,14 +127,13 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
             return collect($this->legalActions($state, $seat))->contains(fn (Action $legal) => $legal->equals($action));
         }
         $range = collect($this->legalActions($state, $seat))->first(fn (Action $legal) => $legal->type === 'bid');
-        $value = $action->payload['value'] ?? null;
         $keys = array_keys($action->payload);
         sort($keys);
+        $value = $action->payload['value'] ?? null;
 
-        return $range !== null
-            && $keys === ['suit', 'value']
+        return $range !== null && $keys === ['suit', 'value']
             && is_int($value) && $value >= $range->payload['min'] && $value <= $range->payload['max']
-            && in_array($action->payload['suit'], BlotCards::SUITS, true);
+            && in_array($action->payload['suit'], self::BID_SUITS, true);
     }
 
     /**
@@ -143,23 +150,46 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
         if ($action->type === 'play') {
             return new Transition($this->play($state, $seat, (string) $action->payload['card'], $events), $events);
         }
+        if ($action->type === 'declare') {
+            $i = (int) $action->payload['index'];
+            $state['declared_index'][$seat][] = $i;
+            $declaration = $state['available'][$seat][$i];
+            $state['declared'][$seat][] = $declaration;
+            $events[0] = ['type' => 'declare', 'seat' => $seat, 'kind' => $declaration['kind'], 'points' => $declaration['points']];
+
+            return new Transition($state, $events);
+        }
 
         $state['bids'][] = $event;
         $state['to_act'] = ($seat + 1) % 4;
         switch ($action->type) {
             case 'bid':
-                $state['contract'] = ['seat' => $seat, 'team' => $seat % 2, 'value' => (int) $action->payload['value'], 'suit' => (string) $action->payload['suit'], 'doubled' => 0];
+            case 'kaput':
+                $kaput = $action->type === 'kaput';
+                $suit = (string) $action->payload['suit'];
+                $state['contract'] = [
+                    'seat' => $seat,
+                    'team' => $seat % 2,
+                    'value' => $kaput ? self::KAPUT : (int) $action->payload['value'],
+                    'suit' => $suit === 'N' ? null : $suit,
+                    'kaput' => $kaput,
+                    'doubled' => 0,
+                ];
                 $state['passes'] = 0;
                 break;
-            case 'double':
+            case 'contra':
+                // Contra ends the bidding; the contract pair may answer with recontra.
                 $state['contract']['doubled'] = 1;
-                $state['passes'] = 0;
+                $state['phase'] = 'answer';
                 break;
-            case 'redouble':
+            case 'recontra':
                 $state['contract']['doubled'] = 2;
 
                 return new Transition($this->startPlay($state), $events);
             case 'pass':
+                if ($state['phase'] === 'answer') {
+                    return new Transition($this->startPlay($state), $events);
+                }
                 $state['passes']++;
                 if ($state['contract'] === null && $state['passes'] === 4) {
                     $events[] = ['type' => 'redeal'];
@@ -176,7 +206,7 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
     }
 
     /**
-     * A timed-out player passes, or plays their first playable card.
+     * A timed-out player passes, or plays their first playable card (declaring nothing).
      *
      * @param  array<string, mixed>  $state
      */
@@ -193,16 +223,30 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
     public function viewFor(array $state, ?int $seat): array
     {
         $view = $state;
-        unset($view['hands'], $view['pause_ms']);
+        unset($view['hands'], $view['pause_ms'], $view['available'], $view['declared_index']);
         $view['seat'] = $seat;
         $view['hand'] = $seat === null ? [] : $state['hands'][$seat];
         $view['hand_sizes'] = array_map('count', $state['hands']);
         $view['trump'] = $state['contract']['suit'] ?? null;
-        // Declarations are announced at the first trick and shown once it is over; your own you always see.
-        $view['declarations'] = array_map(
-            fn (array $mine, int $s) => $state['declarations_shown'] || $s === $seat ? $mine : [],
-            $state['declarations'],
-            array_keys($state['declarations']),
+        // Blot is announced as its cards are played: others learn who holds it once both are on the table.
+        $holder = $state['belote'];
+        $trump = $view['trump'];
+        $shown = $holder !== null && $trump !== null
+            && ! in_array('K'.$trump, $state['hands'][$holder], true) && ! in_array('Q'.$trump, $state['hands'][$holder], true);
+        $view['belote'] = $shown || $holder === $seat ? $holder : null;
+        $view['my_declarations'] = $seat === null ? [] : array_map(
+            fn (array $d, int $i) => ['index' => $i, 'kind' => $d['kind'], 'points' => $d['points'], 'cards' => $d['cards'], 'declared' => in_array($i, $state['declared_index'][$seat], true)],
+            $state['available'][$seat],
+            array_keys($state['available'][$seat]),
+        );
+        // Announced declarations: what and how much at once; the cards once the first trick is over.
+        $view['declared'] = array_map(
+            fn (array $list, int $s) => array_map(
+                fn (array $d) => ['kind' => $d['kind'], 'points' => $d['points'], 'cards' => $state['declarations_shown'] || $s === $seat ? $d['cards'] : []],
+                $list,
+            ),
+            $state['declared'],
+            array_keys($state['declared']),
         );
 
         return $view;
@@ -218,7 +262,7 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
         }
         $team = $state['result']['team'];
 
-        return new Outcome($this->teamOf($team, 4), 'target_reached', array_map(fn (int $seat) => $state['scores'][$seat % 2], range(0, 3)));
+        return new Outcome($this->teamOf($team, 4), $state['result']['reason'], array_map(fn (int $seat) => $state['scores'][$seat % 2], range(0, 3)));
     }
 
     /**
@@ -257,15 +301,14 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
         $trump = $state['contract']['suit'];
         $played = array_column($state['trick'], 'card');
         $led = $played[0][1];
-        $highestTrump = max(array_map(fn (string $c) => $c[1] === $trump ? BlotCards::strength($c, $led, $trump) : -1, $played));
-        $beats = fn (array $cards) => array_values(array_filter($cards, fn (string $c) => BlotCards::strength($c, $led, $trump) > $highestTrump));
 
         $follow = array_values(array_filter($hand, fn (string $c) => $c[1] === $led));
         if ($follow !== []) {
-            // Following trumps: beat the highest trump if you can.
-            return $led === $trump ? ($beats($follow) ?: $follow) : $follow;
+            return $follow;
         }
-
+        if ($trump === null) {
+            return $hand;
+        }
         $winner = $state['trick'][BlotCards::winning($played, $trump)]['seat'];
         if ($winner % 2 === $seat % 2) {
             return $hand;    // the partner is winning: anything goes
@@ -274,12 +317,14 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
         if ($trumps === []) {
             return $hand;
         }
+        $highest = max(array_map(fn (string $c) => BlotCards::strength($c, $led, $trump), $played));
+        $beating = array_values(array_filter($trumps, fn (string $c) => BlotCards::strength($c, $led, $trump) > $highest));
 
-        return $beats($trumps) ?: $trumps;
+        return $beating ?: $trumps;
     }
 
     /**
-     * Shuffle and deal eight each, then open the bidding.
+     * Shuffle and deal eight each, then open the bidding left of the dealer.
      *
      * @param  array<string, mixed>  $state
      * @return array<string, mixed>
@@ -306,14 +351,17 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
             'last_trick' => null,
             'tricks' => [0, 0],
             'points' => [0, 0],
-            'declarations' => [[], [], [], []],
+            'available' => [[], [], [], []],
+            'declared' => [[], [], [], []],
+            'declared_index' => [[], [], [], []],
             'declarations_shown' => false,
+            'played_first' => [false, false, false, false],
             'belote' => null,
         ];
     }
 
     /**
-     * The bidding is over: find everyone's declarations and lead.
+     * The bidding is over: work out what each hand may declare, and lead.
      *
      * @param  array<string, mixed>  $state
      * @return array<string, mixed>
@@ -322,10 +370,12 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
     {
         $trump = $state['contract']['suit'];
         $state['phase'] = 'playing';
-        $state['declarations'] = array_map(fn (array $hand) => BlotCards::declarations($hand), $state['hands']);
-        foreach ($state['hands'] as $seat => $hand) {
-            if (in_array('K'.$trump, $hand, true) && in_array('Q'.$trump, $hand, true)) {
-                $state['belote'] = $seat;
+        $state['available'] = array_map(fn (array $hand) => BlotCards::declarations($hand, $trump), $state['hands']);
+        if ($trump !== null) {
+            foreach ($state['hands'] as $seat => $hand) {
+                if (in_array('K'.$trump, $hand, true) && in_array('Q'.$trump, $hand, true)) {
+                    $state['belote'] = $seat;
+                }
             }
         }
         $state['to_act'] = $state['leader'];
@@ -340,6 +390,7 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
      */
     private function play(array $state, int $seat, string $card, array &$events): array
     {
+        $state['played_first'][$seat] = true;
         $state['hands'][$seat] = array_values(array_diff($state['hands'][$seat], [$card]));
         $state['trick'][] = ['seat' => $seat, 'card' => $card];
         if (count($state['trick']) < 4) {
@@ -368,7 +419,8 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
     }
 
     /**
-     * Score the hand, then pause before the next deal (or end the game).
+     * Score the deal in sai (docs/games/blot-rules.md, "Scoring a deal"), add it to the match, then pause
+     * before the next deal — or end the match.
      *
      * @param  array<string, mixed>  $state
      * @param  list<array<string, mixed>>  $events
@@ -379,71 +431,89 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
         $contract = $state['contract'];
         $bidders = $contract['team'];
         $defenders = 1 - $bidders;
+        $trump = $contract['suit'];
 
-        // Kaput: one team took every trick.
-        $tricks = $state['points'];
-        foreach ([0, 1] as $team) {
-            if ($state['tricks'][$team] === 8) {
-                $tricks = [$team => self::KAPUT, 1 - $team => 0];
-            }
-        }
-        ksort($tricks);
-        $allTricks = $tricks[0] + $tricks[1];
-
-        // Only the team with the best single declaration scores its declarations.
-        $declared = [0, 0];
+        // Declarations: only the pair with the best announced one scores, and then all of its own.
         $best = null;
         foreach (range(0, 3) as $i) {
             $seat = ($state['leader'] + $i) % 4;
-            foreach ($state['declarations'][$seat] as $declaration) {
-                $declared[$seat % 2] += $declaration['points'];
-                if ($best === null || $declaration['rank'] > $best['rank']) {
-                    $best = ['rank' => $declaration['rank'], 'team' => $seat % 2];
+            foreach ($state['declared'][$seat] as $declaration) {
+                if ($best === null || $declaration['key'] > $best['key']) {
+                    $best = ['key' => $declaration['key'], 'team' => $seat % 2];
                 }
             }
         }
-        $declarations = [0, 0];
+        $declPoints = [0, 0];
         if ($best !== null) {
-            $declarations[$best['team']] = $declared[$best['team']];
+            foreach ($state['declared'] as $seat => $list) {
+                if ($seat % 2 === $best['team']) {
+                    $declPoints[$best['team']] += array_sum(array_column($list, 'points'));
+                }
+            }
         }
-        $belote = [0, 0];
+        $belotePoints = [0, 0];
         if ($state['belote'] !== null) {
-            $belote[$state['belote'] % 2] = 20;
+            $belotePoints[$state['belote'] % 2] = 20;
         }
 
-        $total = fn (int $team) => $tricks[$team] + $declarations[$team] + $belote[$team];
-        $made = $total($bidders) >= $contract['value'] * 10;
-        $multiplier = [1, 2, 4][$contract['doubled']];
+        $allTricks = $state['tricks'][$bidders] === 8;
+        $noTricks = $state['tricks'][$bidders] === 0;
+        $made = $contract['kaput']
+            ? $allTricks
+            : $state['points'][$bidders] + $declPoints[$bidders] + $belotePoints[$bidders] >= $contract['value'] * 10;
+        $multiplier = ($trump === null ? [2, 3, 5] : [1, 2, 4])[$contract['doubled']];
+        $bid = $contract['value'] * $multiplier;
+        $declSai = [intdiv($declPoints[0], 10), intdiv($declPoints[1], 10)];
+        $cardSai = [BlotCards::sai($state['points'][0]), BlotCards::sai($state['points'][1])];
+
         $scored = [0, 0];
-        if ($contract['doubled'] === 0 && $made) {
-            $scored = [$total(0), $total(1)];
+        if ($made && $contract['doubled'] === 0) {
+            $scored[$bidders] = $bid + ($allTricks ? 25 : 16 - $cardSai[$defenders]) + $declSai[$bidders];
+            $scored[$defenders] = ($allTricks ? 0 : $cardSai[$defenders]) + $declSai[$defenders];
+        } elseif ($made) {
+            $scored[$bidders] = $bid + ($allTricks ? 25 : 16) + $declSai[0] + $declSai[1];
         } else {
-            // A failed contract, or any doubled one: the winning team takes everything.
-            $taker = $made ? $bidders : $defenders;
-            $scored[$taker] = ($allTricks + $declarations[0] + $declarations[1]) * $multiplier + $belote[$taker];
-            $scored[1 - $taker] = $belote[1 - $taker];
+            $scored[$defenders] = $bid + ($noTricks ? 25 : 16) + $declSai[0] + $declSai[1];
         }
+        $scored[0] += intdiv($belotePoints[0], 10);
+        $scored[1] += intdiv($belotePoints[1], 10);
         $state['scores'][0] += $scored[0];
         $state['scores'][1] += $scored[1];
 
+        $declarations = [];
+        foreach ($state['declared'] as $seat => $list) {
+            foreach ($list as $declaration) {
+                $declarations[] = ['seat' => $seat, 'kind' => $declaration['kind'], 'points' => $declaration['points'], 'cards' => $declaration['cards'], 'counted' => $best !== null && $seat % 2 === $best['team']];
+            }
+        }
         $state['last_hand'] = [
             'number' => $state['hand_no'],
             'contract' => $contract,
             'made' => $made,
-            'tricks' => $tricks,
+            'tricks' => $state['tricks'],
+            'card_points' => $state['points'],
+            'card_sai' => $cardSai,
             'declarations' => $declarations,
-            'belote' => $belote,
+            'declaration_sai' => $declSai,
+            'belote_sai' => [intdiv($belotePoints[0], 10), intdiv($belotePoints[1], 10)],
+            'bid_sai' => $bid,
             'scored' => $scored,
-            'kaput' => in_array(self::KAPUT, $tricks, true),
+            'totals' => $state['scores'],
+            'kaput' => $allTricks || $state['tricks'][$defenders] === 8,
         ];
         $events[] = ['type' => 'hand_over', 'made' => $made, 'scored' => $scored];
         $state['phase'] = 'over';
         $state['to_act'] = null;
 
         [$a, $b] = $state['scores'];
-        if (max($a, $b) >= $state['target'] && $a !== $b) {
-            $state['result'] = ['team' => $a > $b ? 0 : 1];
-        }
+        $state['result'] = match (true) {
+            // The bidders took no trick at all: they lose the match.
+            $noTricks => ['team' => $defenders, 'reason' => 'reverse_kaput'],
+            // A contra'd kaput that is made wins the match.
+            $contract['kaput'] && $contract['doubled'] > 0 && $made => ['team' => $bidders, 'reason' => 'kaput_contra'],
+            max($a, $b) >= $state['target'] && $a !== $b => ['team' => $a > $b ? 0 : 1, 'reason' => 'target_reached'],
+            default => null,
+        };
 
         return $state;
     }

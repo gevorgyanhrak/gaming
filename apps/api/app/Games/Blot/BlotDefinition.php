@@ -25,8 +25,9 @@ final class BlotDefinition implements GameDefinition
         return new BlotBot;
     }
 
+    /** 2: Armenian Bazar Blot rules, scored in sai (docs/games/blot-rules.md). */
     public function version(): int
     {
-        return 1;
+        return 2;
     }
 }
