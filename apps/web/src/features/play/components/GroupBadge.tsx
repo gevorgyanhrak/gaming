@@ -1,9 +1,13 @@
 import { useTranslation } from 'react-i18next'
 import type { Room } from '../api'
+import { traitsOf } from '@/games/registry'
 import { groupColor } from '../groups'
 
-/** A table's group with what it plays for: the bet (stake games) or the blinds (poker). */
-export function GroupBadge({ room }: { room: Pick<Room, 'group' | 'stake'> }) {
+/**
+ * A table's group with what it plays for: the bet (stake games), or for chip games what the game says
+ * (poker: the blinds; blackjack: the smallest bet).
+ */
+export function GroupBadge({ room }: { room: Pick<Room, 'group' | 'stake' | 'game'> }) {
   const { t, i18n } = useTranslation()
   const group = room.group
   if (!group) return null
@@ -23,7 +27,7 @@ export function GroupBadge({ room }: { room: Pick<Room, 'group' | 'stake'> }) {
       <span className="shrink-0 whitespace-nowrap text-gold-light tabular-nums">
         ·{' '}
         {group.kind === 'chips'
-          ? t('play.tableBlinds', {
+          ? t(traitsOf(room.game.slug).tableTerms ?? 'play.tableBlinds', {
               small: format(Math.max(1, Math.floor(group.min_bet / 2))),
               big: format(group.min_bet),
             })

@@ -2,6 +2,31 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## New games 1/11 · Blackjack — 2026-11-11 · DONE (owner request; ADR 0019)
+
+- Engine `app/Games/Blackjack/Engine/BlackjackEngine.php` (+ `BlackjackCards`): 1–5 seats against the dealer, bets
+  within the play group's limits, hit/stand/double/split (up to 4 hands, split aces one card), dealer peek, S17
+  (`dealer_hits_soft_17` option), 3:2 blackjack, 6-deck shoe reshuffled at a quarter, 10 rounds with a pause after
+  each, `PlaysForChips` (whole balance as chips, cash-out on leave/end), departures, timeouts (bet min / stand).
+  Bot `BlackjackBot`: basic strategy (hard), slips (medium), hits below 15 (easy).
+- Platform: `Outcome::HOUSE` (the house won; also a solo resignation is now a loss, not a draw); bot rooms with
+  `opponents: 0` (no difficulty needed) for modes with `min_players` 1; chips groups add `table_min_bet`/`table_max_bet`;
+  `BotSeeder` teaches the sample bots games no bot plays yet. Seeded: game `blackjack` (Card games), mode `classic`.
+- Web: `games/blackjack/BlackjackBoard.tsx` (half-moon table, dealer with hole card, seats round the curve, chips to
+  build a bet, Hit/Stand/Double/Split, per-hand totals and results, round result with Fishkas flying to the balance);
+  traits (`roundWon`, `buyIn`, `tableTerms`); lobby: 1 player = "Play against the dealer" (no difficulty), private
+  tables at least 2; `GroupBadge` says "Bets from N" for blackjack; art in `GameArt`/`HomeArt`; i18n en/ru/hy.
+
+**Tests run:** `make lint-api` ✓ (Pint, Larastan) · `make test-api` → **421 passed** (new: `Unit/Games/BlackjackEngineTest`
+26, `Feature/Games/BlackjackTableTest` 6, bot-seeder test, Blackjack in `PlayThroughTest`) · web typecheck ✓ lint ✓ format ✓
+· `npm test` → 30 files, **175 passed** (new `BlackjackBoard.test.tsx` 4) · build ✓. Live (headless Chrome): solo at
+1440×900 and 5 seats at 1440×900 and 390×844, 3 rounds each, bets, stands, payouts and the header balance.
+
+**Routes to review:** `/games/blackjack` (1 player → Start game; 3–5 players with bots), `/rooms/{id}`.
+
+**Known issues:** at 5 seats on a 390 px phone neighbouring seats sit close (readable, cards may touch). No UI/UX or PM
+review was run (owner asked for no extra agents). Leaving a table is labelled "Resign" (shared button).
+
 ## TASK-048 step 5 · Polish — 2026-11-10 · IN PROGRESS (QA in step 6)
 
 - `Button` `loading` (spinner, disabled, `aria-busy`, label kept) on every button that waits on the server: auth forms,

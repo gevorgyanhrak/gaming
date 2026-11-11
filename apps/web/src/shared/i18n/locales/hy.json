@@ -265,7 +265,11 @@
     "groupBadge": "«{{group}}» խումբ",
     "tableBet": "Խաղադրույք {{amount}}",
     "tableBlinds": "Բլայնդեր {{small}}/{{big}}",
-    "whatToPlay": "Ի՞նչ ենք խաղալու"
+    "whatToPlay": "Ի՞նչ ենք խաղալու",
+    "playAlone": "Խաղալ դիլերի դեմ",
+    "aloneHint": "Միայն դուք և դիլերը։ Ընտրեք ավելի շատ խաղացող՝ բոտերի հետ սեղան կիսելու համար։",
+    "blackjackBuyIn": "Սեղանի մոտ եք բերում ձեր ամբողջ մնացորդը՝ {{amount}} ֆիշկա։ Խաղադրույքներ՝ {{min}}-ից։",
+    "tableMinBet": "Խաղադրույքներ՝ {{big}}-ից"
   },
   "room": {
     "players": "Խաղացողներ",
@@ -754,5 +758,42 @@
   },
   "home": {
     "tryNext": "Փորձեք նաև"
+  },
+  "blackjack": {
+    "you": "Դուք",
+    "seat": "Տեղ {{seat}}",
+    "seats": "Խաղացողներ",
+    "dealer": "Դիլեր",
+    "dealerTotal": "Դիլերն ունի {{total}}",
+    "pays": "Բլեքջեքը վճարում է 3՝ 2-ի դիմաց",
+    "standsSoft17": "Դիլերը կանգնում է փափուկ 17-ի վրա",
+    "hitsSoft17": "Դիլերը վերցնում է փափուկ 17-ի վրա",
+    "chips_one": "{{count, number}} ֆիշկա",
+    "chips_other": "{{count, number}} ֆիշկա",
+    "betLabel": "Խաղադրույք",
+    "round": "Ռաունդ",
+    "limits": "Խաղադրույքներ",
+    "placeBet": "Կատարեք խաղադրույք",
+    "chipsLabel": "Ֆիշկաներ",
+    "amount": "Խաղադրույքի չափը",
+    "deal": "Բաժանել · {{amount}}",
+    "hit": "Եվս",
+    "stand": "Բավական է",
+    "double": "Կրկնապատկել +{{amount}}",
+    "split": "Բաժանել զույգը",
+    "yourTotal": "Ձեր միավորները՝ {{total}}",
+    "playingHand": "Ձեռք {{hand}}՝ {{count}}-ից. {{total}}",
+    "blackjack": "Բլեքջեք",
+    "bust": "Ավել",
+    "push": "Ոչ-ոքի",
+    "youWon": "Դուք շահեցիք {{amount}}",
+    "youLost": "Դուք պարտվեցիք {{amount}}",
+    "nextRound": "Հաջորդ ռաունդ",
+    "nextRoundIn_one": "Հաջորդ ռաունդը {{count}} վայրկյանից",
+    "nextRoundIn_other": "Հաջորդ ռաունդը {{count}} վայրկյանից",
+    "dealerPlays": "Դիլերն է խաղում…",
+    "tableClosed": "Սեղանը փակ է։",
+    "waitingBet": "Սպասում ենք {{name}}-ի խաղադրույքին…",
+    "waitingFor": "Սպասում ենք {{name}}-ին…"
   }
 }

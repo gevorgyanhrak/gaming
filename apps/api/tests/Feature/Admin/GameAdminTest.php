@@ -6,6 +6,7 @@ use App\Filament\Resources\GameCategories\Pages\CreateGameCategory;
 use App\Filament\Resources\GameCategories\Pages\ListGameCategories;
 use App\Filament\Resources\Games\Pages\EditGame;
 use App\Models\AuditLog;
+use App\Models\BotGameProfile;
 use App\Models\BotProfile;
 use App\Models\Game;
 use App\Models\GameCategory;
@@ -120,14 +121,29 @@ it('lists enabled modes on the public game page', function () {
 it('seeds modes, bots and draft pages without overwriting admin changes', function () {
     $this->seed([GameSeeder::class, GameModeSeeder::class, BotSeeder::class, ContentPageSeeder::class]);
 
-    expect(GameMode::query()->count())->toBe(7)  // nardi long and short, chess blitz and rapid, checkers, durak, poker
+    expect(GameMode::query()->count())->toBe(8)  // nardi long and short, chess blitz and rapid, checkers, durak, poker, blackjack
         ->and(BotProfile::query()->pluck('name')->sort()->values()->all())->toBe(['Alex', 'Anna', 'Aram', 'Daniel', 'David', 'Elena', 'Gor', 'Igor', 'Levon', 'Mariam', 'Michael', 'Nina', 'Robert', 'Sergey', 'Viktor'])
-        ->and(BotProfile::query()->where('name', 'Levon')->sole()->gameProfiles()->count())->toBe(5);
+        ->and(BotProfile::query()->where('name', 'Levon')->sole()->gameProfiles()->count())->toBe(6);
 
     BotProfile::query()->where('name', 'Alex')->update(['is_enabled' => false]);
     $this->seed([GameModeSeeder::class, BotSeeder::class, ContentPageSeeder::class]);
 
-    expect(GameMode::query()->count())->toBe(7)  // nardi long and short, chess blitz and rapid, checkers, durak, poker
+    expect(GameMode::query()->count())->toBe(8)  // nardi long and short, chess blitz and rapid, checkers, durak, poker, blackjack
         ->and(BotProfile::query()->count())->toBe(15)
         ->and(BotProfile::query()->where('name', 'Alex')->sole()->is_enabled)->toBeFalse();
+});
+
+it('teaches the sample bots a game added after them, and keeps admins\' removals', function () {
+    $this->seed([GameSeeder::class, BotSeeder::class]);
+    $blackjack = Game::query()->where('slug', 'blackjack')->sole();
+    $poker = Game::query()->where('slug', 'poker')->sole();
+    // As before Blackjack existed: no bot plays it. An admin took Levon off poker.
+    BotGameProfile::query()->where('game_id', $blackjack->id)->delete();
+    $levon = BotProfile::query()->where('name', 'Levon')->sole();
+    $levon->gameProfiles()->where('game_id', $poker->id)->delete();
+
+    $this->seed(BotSeeder::class);
+
+    expect(BotGameProfile::query()->where('game_id', $blackjack->id)->count())->toBe(15)
+        ->and($levon->gameProfiles()->where('game_id', $poker->id)->exists())->toBeFalse();
 });

@@ -1,5 +1,6 @@
 <?php
 
+use App\Games\Blackjack\BlackjackServiceProvider;
 use App\Games\Checkers\CheckersServiceProvider;
 use App\Games\Chess\ChessServiceProvider;
 use App\Games\Durak\DurakServiceProvider;
@@ -17,6 +18,7 @@ return [
     ChessServiceProvider::class,
     DurakServiceProvider::class,
     PokerServiceProvider::class,
+    BlackjackServiceProvider::class,
     AdminPanelProvider::class,
     HorizonServiceProvider::class,
 ];

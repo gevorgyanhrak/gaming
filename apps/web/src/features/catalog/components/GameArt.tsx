@@ -97,6 +97,19 @@ const scenes: Record<string, (id: string) => ReactNode> = {
       <Chips x={56} y={142} count={5} color="#d6ab4e" />
     </>
   ),
+  blackjack: (id) => (
+    <>
+      <Backdrop id={id} from="#6b1424" to="#1a0408" glow="#ff6b7d" />
+      <g transform="rotate(-10 120 100)">
+        <Face x={96} y={38} rank="A" suit="♠" />
+      </g>
+      <g transform="rotate(9 160 100)">
+        <Face x={140} y={42} rank="K" suit="♥" />
+      </g>
+      <Chips x={250} y={142} count={5} color="#1f8a4c" />
+      <Chips x={62} y={142} count={4} color="#d6ab4e" />
+    </>
+  ),
 }
 
 /** The scene for a game, or the fallback when there is none for this slug. */
@@ -187,6 +200,12 @@ const icons: Record<string, ReactNode> = {
       <circle cx="12" cy="12" r="8.5" />
       <circle cx="12" cy="12" r="4.5" />
       <path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3M6 6l2.1 2.1M15.9 15.9 18 18M18 6l-2.1 2.1M8.1 15.9 6 18" />
+    </g>
+  ),
+  blackjack: (
+    <g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
+      <rect x="4" y="5" width="10" height="14" rx="1.5" transform="rotate(-10 9 12)" />
+      <rect x="10" y="5" width="10" height="14" rx="1.5" transform="rotate(8 15 12)" />
     </g>
   ),
 }

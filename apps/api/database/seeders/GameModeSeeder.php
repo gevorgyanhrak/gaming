@@ -86,6 +86,13 @@ class GameModeSeeder extends Seeder
                 'min_players' => 2, 'max_players' => 6,
                 'config' => ['starting_chips' => 1000, 'small_blind' => 5, 'big_blind' => 10, 'turn_seconds' => 30, 'table_wait_seconds' => 20],
             ]],
+            'blackjack' => [[
+                'slug' => 'classic',
+                'name' => ['en' => 'Classic blackjack', 'ru' => 'Классический блэкджек', 'hy' => 'Դասական բլեքջեք'],
+                'description' => ['en' => '1 to 5 players against the dealer, 10 rounds. Play chips only.', 'ru' => 'От 1 до 5 игроков против дилера, 10 раундов. Только игровые фишки.', 'hy' => '1-ից 5 խաղացող դիլերի դեմ, 10 ռաունդ։ Միայն խաղային ֆիշկաներ։'],
+                'min_players' => 1, 'max_players' => 5,
+                'config' => ['rounds' => 10, 'decks' => 6, 'dealer_hits_soft_17' => false, 'max_bet_multiple' => 100, 'turn_seconds' => 30, 'table_wait_seconds' => 15, 'round_pause_ms' => 3500],
+            ]],
         ];
     }
 }

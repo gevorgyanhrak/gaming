@@ -22,12 +22,12 @@ use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
 // Every game with an engine is played to the end through the real API and queue jobs.
-dataset('games', ['nardi', 'checkers', 'chess', 'durak', 'poker']);
+dataset('games', ['nardi', 'checkers', 'chess', 'durak', 'poker', 'blackjack']);
 
 it('seeds games as playable only when their engine is registered', function () {
     $this->seed([GameSeeder::class, GameModeSeeder::class]);
 
-    expect(Game::query()->where('is_enabled', true)->pluck('slug')->all())->toBe(['nardi', 'chess', 'checkers', 'durak', 'poker']);
+    expect(Game::query()->where('is_enabled', true)->pluck('slug')->all())->toBe(['nardi', 'chess', 'checkers', 'durak', 'poker', 'blackjack']);
 });
 
 it('plays a full game against a bot through the API', function (string $slug) {
@@ -41,7 +41,7 @@ it('plays a full game against a bot through the API', function (string $slug) {
     $this->actingAs($player);
 
     // Poker and durak tables seat more than two: play against two bots there.
-    $opponents = in_array($slug, ['poker', 'durak'], true) ? ['opponents' => 2] : [];
+    $opponents = in_array($slug, ['poker', 'durak', 'blackjack'], true) ? ['opponents' => 2] : [];
     $id = $this->postJson('/api/v1/rooms', ['game_mode_id' => $game->modes()->first()->id, 'type' => 'bot', 'bot_difficulty' => 'medium', ...$opponents])
         ->assertCreated()
         ->json('data.id');
@@ -81,7 +81,7 @@ it('plays a full game against a bot through the API', function (string $slug) {
     $me = $room->participants->firstWhere('user_id', $player->id);
     $ledger = FishkaTransaction::query()->where('user_id', $player->id)->orderBy('id')->get();
     $balance = FishkaWallet::query()->findOrFail($player->id)->balance;
-    if ($slug === 'poker') {
+    if (in_array($slug, ['poker', 'blackjack'], true)) {
         // Nothing to pay back (no ledger entry) when the player lost every chip.
         $cashOut = $live['stacks'][$me->seat] > 0 ? [Type::PokerWinning] : [];
         expect($ledger->pluck('type')->all())->toBe([Type::RegistrationBonus, Type::PokerBet, ...$cashOut])

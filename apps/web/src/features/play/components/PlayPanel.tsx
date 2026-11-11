@@ -32,7 +32,7 @@ import { useWallet } from '@/features/wallet/hooks'
 import { canEnter } from '../groups'
 import { GroupPicker } from './GroupPicker'
 import { MatchmakingStatus } from './MatchmakingStatus'
-import { modePreviews } from '@/games/registry'
+import { modePreviews, traitsOf } from '@/games/registry'
 
 /**
  * The game's lobby: the hero (art and stats) with the big "play" button that finds an opponent,
@@ -60,8 +60,12 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
       )
     : []
   const [players, setPlayers] = useState<number | null>(null)
+  // Games you can play alone against the dealer start there; the others at four (or fewer).
   const tableSize =
-    tableSizes.length > 1 ? (players ?? Math.min(4, mode?.max_players ?? 2)) : undefined
+    tableSizes.length > 1
+      ? (players ?? (mode?.min_players === 1 ? 1 : Math.min(4, mode?.max_players ?? 2)))
+      : undefined
+  const alone = tableSize === 1
 
   // The group (default: the lowest the balance can enter) and, for stake games, the bet in its range.
   const groups = game.groups ?? []
@@ -99,8 +103,10 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
     mutationFn: (id: number) => createBotRoom(id, difficulty, tableSize, terms),
     onSuccess: toRoom,
   })
+  // A private table is for friends: at least two seats.
   const friend = useMutation({
-    mutationFn: (id: number) => createPrivateRoom(id, tableSize, terms),
+    mutationFn: (id: number) =>
+      createPrivateRoom(id, tableSize === undefined ? undefined : Math.max(2, tableSize), terms),
     onSuccess: toRoom,
   })
   const join = useMutation({ mutationFn: () => joinRoom(code.trim()), onSuccess: toRoom })
@@ -207,8 +213,9 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
             {chips ? (
               <p className="flex items-start gap-2 text-sm text-gold-light">
                 <FishkaIcon className="size-5 shrink-0" />
-                {t('play.pokerBuyIn', {
+                {t(traitsOf(game.slug).buyIn ?? 'play.pokerBuyIn', {
                   amount: format(balance ?? 0),
+                  min: format(group.min_bet),
                   small: format(Math.max(1, Math.floor(group.min_bet / 2))),
                   big: format(group.min_bet),
                 })}
@@ -297,14 +304,16 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
         <ModeCard
           index={0}
           Icon={BotIcon}
-          title={t('play.playBot')}
+          title={alone ? t('play.playAlone') : t('play.playBot')}
           action={{
             label: t('play.startBot'),
             disabled: busy || modeId === undefined,
             run: () => modeId !== undefined && bot.mutate(modeId),
           }}
         >
-          <div>
+          {alone ? (
+            <p className="text-sm text-muted">{t('play.aloneHint')}</p>
+          ) : (
             <Segmented
               fill
               label={t('play.botDifficulty')}
@@ -315,7 +324,7 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
               }))}
               onChange={setDifficulty}
             />
-          </div>
+          )}
         </ModeCard>
 
         <ModeCard

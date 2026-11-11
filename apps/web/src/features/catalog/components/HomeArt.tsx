@@ -479,6 +479,28 @@ const posters: Record<string, ReactNode> = {
       </text>
     </>
   ),
+  blackjack: (
+    <>
+      <rect width="320" height="200" fill={c.garnet} />
+      <Rays cx={160} cy={230} count={11} step={16} length={290} color={c.garnetLight} />
+      {/* Twenty-one: an ace and a king, and the dealer's card face down behind them. */}
+      <CardBack x={226} y={84} scale={1.05} />
+      <Card x={118} y={88} rank="A" suit="spade" angle={-10} scale={1.35} />
+      <Card x={176} y={92} rank="K" suit="heart" angle={9} scale={1.35} />
+      <circle cx="62" cy="156" r="24" fill={c.cream} stroke={c.gold} strokeWidth="3" />
+      <text
+        x="62"
+        y="164"
+        textAnchor="middle"
+        fontFamily="Georgia, serif"
+        fontSize="22"
+        fontWeight="700"
+        fill={c.ink}
+      >
+        21
+      </text>
+    </>
+  ),
 }
 
 const grounds = [

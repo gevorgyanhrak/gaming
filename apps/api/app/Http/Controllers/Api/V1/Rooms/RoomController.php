@@ -50,12 +50,12 @@ class RoomController extends Controller
             $rules->ensureCanStart($user, $mode, $type, $terms);
 
             if ($type === 'bot') {
-                $difficulty = BotDifficulty::from($request->string('bot_difficulty')->toString());
                 $opponents = $request->integer('opponents', 1);
                 $this->ensurePlayers($mode, 1 + $opponents, 'opponents');
+                $difficulty = BotDifficulty::tryFrom($request->string('bot_difficulty')->toString()) ?? BotDifficulty::Medium;
 
                 try {
-                    $picked = $bots->pickMany($mode->game, $difficulty, $opponents);
+                    $picked = $opponents === 0 ? [] : $bots->pickMany($mode->game, $difficulty, $opponents);
                 } catch (InvalidArgumentException) {
                     throw ValidationException::withMessages(['bot_difficulty' => __('platform.play.no_bot')]);
                 }

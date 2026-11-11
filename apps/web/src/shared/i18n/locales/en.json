@@ -265,7 +265,11 @@
     "groupBadge": "{{group}} group",
     "tableBet": "Bet {{amount}}",
     "tableBlinds": "Blinds {{small}}/{{big}}",
-    "whatToPlay": "What shall we play?"
+    "whatToPlay": "What shall we play?",
+    "playAlone": "Play against the dealer",
+    "aloneHint": "Just you and the dealer. Pick more players to share the table with bots.",
+    "blackjackBuyIn": "You bring your whole balance to the table: {{amount}} Fishkas. Bets from {{min}}.",
+    "tableMinBet": "Bets from {{big}}"
   },
   "room": {
     "players": "Players",
@@ -754,5 +758,42 @@
   },
   "home": {
     "tryNext": "Try next"
+  },
+  "blackjack": {
+    "you": "You",
+    "seat": "Seat {{seat}}",
+    "seats": "Players",
+    "dealer": "Dealer",
+    "dealerTotal": "Dealer has {{total}}",
+    "pays": "Blackjack pays 3 to 2",
+    "standsSoft17": "Dealer stands on soft 17",
+    "hitsSoft17": "Dealer hits soft 17",
+    "chips_one": "{{count, number}} chip",
+    "chips_other": "{{count, number}} chips",
+    "betLabel": "Bet",
+    "round": "Round",
+    "limits": "Bets",
+    "placeBet": "Place your bet",
+    "chipsLabel": "Chips",
+    "amount": "Bet amount",
+    "deal": "Deal · {{amount}}",
+    "hit": "Hit",
+    "stand": "Stand",
+    "double": "Double +{{amount}}",
+    "split": "Split",
+    "yourTotal": "Your total: {{total}}",
+    "playingHand": "Hand {{hand}} of {{count}}: {{total}}",
+    "blackjack": "Blackjack",
+    "bust": "Bust",
+    "push": "Push",
+    "youWon": "You won {{amount}}",
+    "youLost": "You lost {{amount}}",
+    "nextRound": "Next round",
+    "nextRoundIn_one": "Next round in {{count}} second",
+    "nextRoundIn_other": "Next round in {{count}} seconds",
+    "dealerPlays": "The dealer plays…",
+    "tableClosed": "The table is closed.",
+    "waitingBet": "Waiting for {{name}} to bet…",
+    "waitingFor": "Waiting for {{name}}…"
   }
 }

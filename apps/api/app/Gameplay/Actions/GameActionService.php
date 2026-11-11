@@ -318,7 +318,8 @@ class GameActionService
         $winners = $room->participants
             ->filter(fn (GameParticipant $p) => $p->seat !== $loser->seat && $p->is_active)
             ->pluck('seat')->values()->all();
-        $outcome = new Outcome($winners, $type);
+        // Alone at the table (a game against the dealer): leaving still loses, it isn't a draw.
+        $outcome = new Outcome($winners === [] ? [Outcome::HOUSE] : $winners, $type);
         $engine = $this->states->engine($room);
         if ($type === GameMove::TIMEOUT && $engine instanceof DecidesTimeouts) {
             $outcome = $engine->timeoutOutcome($current->state, $loser->seat);

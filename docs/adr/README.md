@@ -23,3 +23,4 @@ Records are immutable once accepted; a changed decision gets a new record that s
 | [0016](0016-play-groups-and-table-stakes.md) | Play groups and table stakes | Accepted |
 | [0017](0017-table-reactions.md) | Emojis and quick messages at tables | Accepted |
 | [0018](0018-levels-and-xp.md) | Levels and XP: backend-only progression, rewards once, bot levels | Accepted |
+| [0019](0019-games-against-the-house.md) | Games against the house: the dealer is the engine, solo tables, `Outcome::HOUSE` | Accepted |

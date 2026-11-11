@@ -10,6 +10,17 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
+**New games (owner, 2026-11-11)** — brief in the owner's message: add Blackjack, Domino, Ludo, 8-ball pool, Rummy, Hearts,
+Spades, Battleship, Connect Four, Solitaire, and Blot (the owner thought it existed; it didn't — "blot also"), one at a
+time, each fully done (engine, bot, Fishkas, UI, tests) before the next. Skill: `.claude/skills/game-platform-development`.
+Owner said no extra agents (no UI/UX/PM review rounds unless asked). Not existing yet, owner decision needed before
+promising them: achievements, leaderboard, friends (listed in the request as shared features).
+- [x] 1. Blackjack (ADR 0019) — this commit.
+- [ ] 2. Blot · [ ] 3. Domino · [ ] 4. Ludo · [ ] 5. 8-ball pool · [ ] 6. Rummy · [ ] 7. Hearts · [ ] 8. Spades ·
+  [ ] 9. Battleship · [ ] 10. Connect Four · [ ] 11. Solitaire
+
+**Paused by the owner's new request:** TASK-048 step 6 (QA of every page) — resume after the new games or when asked.
+
 **TASK-048 · Complete platform redesign** — started 2026-11-09 (owner said yes). Brief (verbatim): `docs/product/briefs/TASK-048-platform-redesign.md`. Owner rule applies: no paid VIP, no value prizes.
 
 Steps:
@@ -38,6 +49,7 @@ Later (older backlog):
 
 ## Done (recent)
 
+- 2026-11-11 · Blackjack (new games 1/11): solo and 1–5 seat tables against the dealer, chips, bots — this commit.
 - 2026-11-08 · TASK-058 Poker uses its phone layout at 900 px and below; the table's size follows the window height — this commit. Checked live at 1440, 901, 900, 820, 640, 639, 390, 360.
 - 2026-11-08 · TASK-057 New Nardi board (own carved walnut design), with TASK-054 — 181b10b + this commit. QA and design `docs/qa/QA_REPORT_TASK057.md` (1 High, 4 Medium → fixed).
 - 2026-11-08 · TASK-056 Home page redesign and game categories — 3909990, bc9daf7, 82b7612, 45b0ddf + this close-out. QA and design `docs/qa/QA_REPORT_TASK056.md`

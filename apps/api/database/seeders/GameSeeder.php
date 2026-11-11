@@ -8,7 +8,7 @@ use App\Models\GameCategory;
 use Illuminate\Database\Seeder;
 
 /**
- * Seeds the five launch games.
+ * Seeds the games: the five launch games and those added since (Blackjack).
  *
  * Idempotent and non-destructive: existing games are left untouched, so re-running
  * the seeder never overwrites changes made by administrators. A game is created playable only
@@ -17,13 +17,16 @@ use Illuminate\Database\Seeder;
  */
 class GameSeeder extends Seeder
 {
+    /** Games on the "Card games" shelf; the rest are board games. */
+    private const CARD_GAMES = ['durak', 'poker', 'blackjack'];
+
     public function run(): void
     {
         foreach ($this->games() as $index => $game) {
             // New games start playable only if their engine exists; afterwards admins decide.
             Game::query()->firstOrCreate(
                 ['slug' => $game['slug']],
-                [...$game, 'game_category_id' => GameCategory::query()->where('slug', in_array($game['slug'], ['durak', 'poker'], true) ? 'card' : 'board')->value('id'), 'sort_order' => ($index + 1) * 10, 'is_enabled' => app(GameRegistry::class)->has($game['slug']), 'is_visible' => true],
+                [...$game, 'game_category_id' => GameCategory::query()->where('slug', in_array($game['slug'], self::CARD_GAMES, true) ? 'card' : 'board')->value('id'), 'sort_order' => ($index + 1) * 10, 'is_enabled' => app(GameRegistry::class)->has($game['slug']), 'is_visible' => true],
             );
         }
     }
@@ -98,6 +101,20 @@ class GameSeeder extends Seeder
                 ])],
                 'min_players' => 2,
                 'max_players' => 6,
+            ],
+            [
+                'slug' => 'blackjack',
+                'name' => ['en' => 'Blackjack', 'ru' => 'Блэкджек', 'hy' => 'Բլեքջեք'],
+                'description' => ['en' => 'Beat the dealer to 21. Play alone or at a table of up to five, with play chips.', 'ru' => 'Обыграйте дилера, набрав 21. Играйте один или за столом до пяти игроков, на игровые фишки.', 'hy' => 'Հաղթեք դիլերին՝ հավաքելով 21։ Խաղացեք մենակ կամ մինչև հինգ հոգանոց սեղանի շուրջ՝ խաղային ֆիշկաներով։'],
+                'rules' => ['en' => implode("\n\n", [
+                    'Each player plays against the dealer, not against each other. Cards two to ten count their value, picture cards count ten, and an ace counts eleven or one. Get closer to 21 than the dealer without going over.',
+                    'Place your bet, then you and the dealer receive two cards; one of the dealer\'s is face down. An ace and a ten-value card is a blackjack and pays 3 to 2, unless the dealer has one too. With an ace or a ten showing, the dealer checks for blackjack first.',
+                    'On your turn, hit to take a card or stand to keep your total. Double down on your first two cards to double your bet and take exactly one more card. Split two cards of the same value into two hands with a second bet; split aces receive one card each.',
+                    'Going over 21 loses at once. The dealer then draws until reaching 17 or more and stands on soft 17. A win pays 1 to 1 and a tie returns your bet. The game lasts a set number of rounds; finishing with more chips than you brought is a win.',
+                    'Chips are play chips with no monetary value. They cannot be bought, sold or transferred.',
+                ])],
+                'min_players' => 1,
+                'max_players' => 5,
             ],
         ];
     }

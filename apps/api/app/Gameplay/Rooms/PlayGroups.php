@@ -88,14 +88,20 @@ class PlayGroups
     }
 
     /**
-     * Mode options a group adds to a table: poker blinds (big blind = the group's minimum bet).
+     * Mode options a group adds to a table played for chips: poker blinds (big blind = the group's minimum
+     * bet) and the table's bet limits (blackjack; no maximum when the group sets none).
      *
      * @return array<string, int>
      */
     public function options(PlayGroup $group): array
     {
         return $group->kind === PlayGroupKind::Chips
-            ? ['small_blind' => max(1, intdiv($group->min_bet, 2)), 'big_blind' => $group->min_bet]
+            ? array_filter([
+                'small_blind' => max(1, intdiv($group->min_bet, 2)),
+                'big_blind' => $group->min_bet,
+                'table_min_bet' => $group->min_bet,
+                'table_max_bet' => $group->max_bet,
+            ], fn (?int $value) => $value !== null)
             : [];
     }
 }

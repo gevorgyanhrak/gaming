@@ -44,7 +44,7 @@ it('seeds the launch games into their categories', function () {
     $this->seed(GameSeeder::class);
 
     expect(Game::query()->with('category')->get()->mapWithKeys(fn (Game $g) => [$g->slug => $g->category?->slug])->all())->toEqual([
-        'nardi' => 'board', 'chess' => 'board', 'checkers' => 'board', 'durak' => 'card', 'poker' => 'card',
+        'nardi' => 'board', 'chess' => 'board', 'checkers' => 'board', 'durak' => 'card', 'poker' => 'card', 'blackjack' => 'card',
     ]);
 });
 
@@ -92,12 +92,12 @@ it('returns a generic 404 for hidden or unknown games', function (string $slug) 
         ->assertExactJson(['message' => 'Not found.']);
 })->with(['secret', 'does-not-exist']);
 
-it('seeds the five launch games without overwriting admin changes', function () {
+it('seeds the games without overwriting admin changes', function () {
     $this->seed(GameSeeder::class);
 
     expect(Game::query()->ordered()->pluck('slug')->all())
-        ->toBe(['nardi', 'chess', 'checkers', 'durak', 'poker'])
-        ->and(Game::query()->where('is_enabled', true)->pluck('slug')->all())->toBe(['nardi', 'chess', 'checkers', 'durak', 'poker']);
+        ->toBe(['nardi', 'chess', 'checkers', 'durak', 'poker', 'blackjack'])
+        ->and(Game::query()->where('is_enabled', true)->pluck('slug')->all())->toBe(['nardi', 'chess', 'checkers', 'durak', 'poker', 'blackjack']);
 
     Game::query()->where('slug', 'chess')->firstOrFail()
         ->setTranslation('description', 'en', 'Edited by an admin')
@@ -105,6 +105,6 @@ it('seeds the five launch games without overwriting admin changes', function () 
 
     $this->seed(GameSeeder::class);
 
-    expect(Game::query()->count())->toBe(5)
+    expect(Game::query()->count())->toBe(6)
         ->and(Game::query()->where('slug', 'chess')->firstOrFail()->description)->toBe('Edited by an admin');
 });

@@ -29,6 +29,7 @@ export const boards: Partial<Record<string, LazyExoticComponent<ComponentType<Bo
   chess: lazy(() => import('./chess/ChessBoard')),
   durak: lazy(() => import('./durak/DurakBoard')),
   poker: lazy(() => import('./poker/PokerBoard')),
+  blackjack: lazy(() => import('./blackjack/BlackjackBoard')),
 }
 
 /**
@@ -55,6 +56,10 @@ export interface GameTraits {
   roundWon?: (prev: View, next: View, seat: number) => boolean
   /** What the header calls the pause before the next round (a translation key). */
   nextRound?: ParseKeys
+  /** What the lobby says about the buy-in of a game played for chips (amount, min, small, big). */
+  buyIn?: ParseKeys
+  /** What a chip table's badge says it plays for (small, big: the group's minimum bet and half of it). */
+  tableTerms?: ParseKeys
 }
 
 const pieces = (view: View) =>
@@ -87,6 +92,19 @@ export const traits: Partial<Record<string, GameTraits>> = {
       )
     },
     nextRound: 'poker.nextHand',
+    buyIn: 'play.pokerBuyIn',
+  },
+  blackjack: {
+    seatsOnBoard: true,
+    material: 'cards',
+    roundWon: (a, b, seat) => {
+      const before = a.last_round as { number: number } | null
+      const after = b.last_round as { number: number; net: number[] } | null
+      return !!after && after.number > (before?.number ?? 0) && (after.net[seat] ?? 0) > 0
+    },
+    nextRound: 'blackjack.nextRound',
+    buyIn: 'play.blackjackBuyIn',
+    tableTerms: 'play.tableMinBet',
   },
 }
 

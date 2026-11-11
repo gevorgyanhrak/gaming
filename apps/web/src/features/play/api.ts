@@ -51,7 +51,7 @@ export interface TableTerms {
   bet?: number
 }
 
-/** `players` (tables for more than two): everyone at the table, you included. */
+/** `players`: everyone at the table, you included (1: alone against the dealer). */
 export const createBotRoom = (
   gameModeId: number,
   difficulty: BotDifficulty,
@@ -64,7 +64,7 @@ export const createBotRoom = (
       game_mode_id: gameModeId,
       type: 'bot',
       bot_difficulty: difficulty,
-      ...(players > 2 ? { opponents: players - 1 } : {}),
+      ...(players !== 2 ? { opponents: players - 1 } : {}),
       ...terms,
     },
   }).then(unwrap)

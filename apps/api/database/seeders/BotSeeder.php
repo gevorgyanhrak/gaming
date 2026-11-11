@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\BotDifficulty;
+use App\Models\BotGameProfile;
 use App\Models\BotProfile;
 use App\Models\Game;
 use Illuminate\Database\Seeder;
@@ -36,6 +37,9 @@ class BotSeeder extends Seeder
     public function run(): void
     {
         $games = Game::query()->pluck('id');
+        // Games no bot plays yet (added since the bots were seeded): the sample bots learn them too.
+        // Games with bots keep whatever the administrators set up.
+        $newGames = Game::query()->whereNotIn('id', BotGameProfile::query()->select('game_id'))->pluck('id');
 
         $index = 0;
         foreach (self::BOTS as $name => $difficulty) {
@@ -43,10 +47,8 @@ class BotSeeder extends Seeder
             $level = 18 + (++$index * 37) % 40;
             $bot = BotProfile::query()->firstOrCreate(['name' => $name], ['level' => $level]);
 
-            if ($bot->wasRecentlyCreated) {
-                foreach ($games as $gameId) {
-                    $bot->gameProfiles()->create(['game_id' => $gameId, 'difficulty' => $difficulty]);
-                }
+            foreach ($bot->wasRecentlyCreated ? $games : $newGames as $gameId) {
+                $bot->gameProfiles()->create(['game_id' => $gameId, 'difficulty' => $difficulty]);
             }
         }
     }
