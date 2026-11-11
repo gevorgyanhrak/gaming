@@ -501,6 +501,16 @@ const posters: Record<string, ReactNode> = {
       </text>
     </>
   ),
+  rummy: (
+    <>
+      <rect width="320" height="200" fill={c.garnet} />
+      <Rays cx={160} cy={230} count={11} step={16} length={290} color={c.garnetLight} />
+      {/* A run fanned out: 5, 6, 7 of clubs. */}
+      <Card x={110} y={100} rank="5" suit="club" angle={-16} scale={1.2} />
+      <Card x={160} y={92} rank="6" suit="club" angle={0} scale={1.2} />
+      <Card x={210} y={100} rank="7" suit="club" angle={16} scale={1.2} />
+    </>
+  ),
   pool: (
     <>
       <rect width="320" height="200" fill={c.emerald} />

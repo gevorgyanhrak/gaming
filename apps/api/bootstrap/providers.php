@@ -10,6 +10,7 @@ use App\Games\Ludo\LudoServiceProvider;
 use App\Games\Nardi\NardiServiceProvider;
 use App\Games\Poker\PokerServiceProvider;
 use App\Games\Pool\PoolServiceProvider;
+use App\Games\Rummy\RummyServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\HorizonServiceProvider;
@@ -27,6 +28,7 @@ return [
     DominoServiceProvider::class,
     LudoServiceProvider::class,
     PoolServiceProvider::class,
+    RummyServiceProvider::class,
     AdminPanelProvider::class,
     HorizonServiceProvider::class,
 ];

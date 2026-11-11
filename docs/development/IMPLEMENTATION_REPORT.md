@@ -2,6 +2,25 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## New games 6/11 · Rummy (classic, 2–6 players) — 2026-11-11 · DONE (owner: "do it")
+
+- Engine `app/Games/Rummy/Engine/RummyEngine.php`: one deck (two for 5–6), 10/7/6 cards, draw from stock or discard,
+  meld sets (3–4, different suits) and runs (3+, aces low), lay off, discard (not the card just taken), going out
+  scores the others' cards (A 1, pictures 10), to 100; the discard pile becomes a new stock once a round, and when that
+  runs out the round ends with nobody scoring (found by bot games that never ended); departures; timeouts. Stake game.
+  Bot `RummyBot`: takes the discard only when it completes a meld, melds longest first, lays off, discards the most
+  expensive loose card (hard also avoids feeding layoffs).
+- Web: `games/rummy/RummyBoard.tsx` — opponents with card counts and scores, stock and discard as buttons, melds that
+  glow when the selected card can be laid off, selectable hand sorted by suit or rank, Meld / Discard enabled only for
+  the server's listed moves, round result with everyone's cards; traits; art; en/ru/hy.
+
+**Tests run:** `make lint-api` ✓ · `make test-api` → **528 passed** (new `Unit/Games/RummyEngineTest` 22, `RummyTableTest` 1,
+rummy in `PlayThroughTest`) · web typecheck ✓ lint ✓ format ✓ · `npm test` → 35 files, **190 passed** (new
+`RummyBoard.test.tsx` 3) · build ✓. Live 1440×900 and 390×844, 3 players, 6 turns each. Bot games: 30/30 finish.
+
+**Known issues:** no "rummy" bonus for going out in one turn. The dev account player2 was topped up with 20,000 Fishkas
+(admin credit, local only) after the test tables used its balance.
+
 ## New games 5/11 · 8-ball pool (1 v 1) — 2026-11-11 · DONE (owner: "go"; ADR 0020)
 
 - Physics `app/Games/Pool/Engine/PoolPhysics.php` (pure, deterministic, 2 ms steps, friction, elastic collisions,

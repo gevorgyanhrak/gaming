@@ -8,7 +8,7 @@ use App\Models\GameCategory;
 use Illuminate\Database\Seeder;
 
 /**
- * Seeds the games: the five launch games and those added since (Blackjack, Blot, Domino, Ludo, 8-ball pool).
+ * Seeds the games: the five launch games and those added since (Blackjack, Blot, Domino, Ludo, 8-ball pool, Rummy).
  *
  * Idempotent and non-destructive: existing games are left untouched, so re-running
  * the seeder never overwrites changes made by administrators. A game is created playable only
@@ -18,7 +18,7 @@ use Illuminate\Database\Seeder;
 class GameSeeder extends Seeder
 {
     /** Games on the "Card games" shelf; the rest are board games. */
-    private const CARD_GAMES = ['durak', 'poker', 'blackjack', 'blot'];
+    private const CARD_GAMES = ['durak', 'poker', 'blackjack', 'blot', 'rummy'];
 
     public function run(): void
     {
@@ -172,6 +172,19 @@ class GameSeeder extends Seeder
                 ])],
                 'min_players' => 2,
                 'max_players' => 2,
+            ],
+            [
+                'slug' => 'rummy',
+                'name' => ['en' => 'Rummy', 'ru' => 'Рамми', 'hy' => 'Ռամի'],
+                'description' => ['en' => 'Classic rummy for 2 to 6: draw, make sets and runs, go out first and reach 100.', 'ru' => 'Классический рамми на 2–6 игроков: берите карты, собирайте сеты и стриты, выходите первым и наберите 100.', 'hy' => 'Դասական ռամի 2-6 խաղացողի համար. վերցրեք թղթեր, հավաքեք սեթեր և շարքեր, դուրս եկեք առաջինը և հավաքեք 100։'],
+                'rules' => ['en' => implode("\n\n", [
+                    'Two to six players use one 52-card deck (two decks for five or six). With two players each gets ten cards, with three or four seven, with five or six six. The next card starts the discard pile.',
+                    'On your turn, draw the top card of the stock or of the discard pile. Then you may put down melds — a set of three or four cards of the same rank in different suits, or a run of three or more cards in sequence in one suit (aces are low) — and lay off cards that extend melds already on the table. End your turn by discarding a card; you may not discard the card you just took from the discard pile.',
+                    'The first player to get rid of all their cards wins the round and scores the cards left in the other hands: aces 1, pictures 10, other cards their number.',
+                    'When the stock runs out, the discard pile is shuffled into a new stock once; if that runs out too, the round ends and nobody scores. The first player to reach 100 points wins.',
+                ])],
+                'min_players' => 2,
+                'max_players' => 6,
             ],
         ];
     }

@@ -218,6 +218,28 @@ const scenes: Record<string, (id: string) => ReactNode> = {
       />
     </>
   ),
+  rummy: (id) => (
+    <>
+      <Backdrop id={id} from="#4a2163" to="#12051c" glow="#c47bff" />
+      {/* A run of hearts and a set of sevens. */}
+      {[
+        ['5', '♥', 40, 46],
+        ['6', '♥', 70, 46],
+        ['7', '♥', 100, 46],
+        ['9', '♠', 180, 56],
+        ['9', '♦', 210, 56],
+        ['9', '♣', 240, 56],
+      ].map(([rank, suit, x, y]) => (
+        <Face
+          key={`${rank}${suit}`}
+          x={Number(x)}
+          y={Number(y)}
+          rank={String(rank)}
+          suit={String(suit)}
+        />
+      ))}
+    </>
+  ),
 }
 
 /** The scene for a game, or the fallback when there is none for this slug. */
@@ -355,6 +377,13 @@ const icons: Record<string, ReactNode> = {
       >
         8
       </text>
+    </g>
+  ),
+  rummy: (
+    <g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
+      <rect x="2.5" y="6" width="8" height="12" rx="1.3" />
+      <rect x="8" y="6" width="8" height="12" rx="1.3" />
+      <rect x="13.5" y="6" width="8" height="12" rx="1.3" />
     </g>
   ),
 }

@@ -121,6 +121,13 @@ class GameModeSeeder extends Seeder
                 'min_players' => 2, 'max_players' => 2,
                 'config' => ['turn_seconds' => 45],
             ]],
+            'rummy' => [[
+                'slug' => 'classic',
+                'name' => ['en' => 'Classic rummy', 'ru' => 'Классический рамми', 'hy' => 'Դասական ռամի'],
+                'description' => ['en' => '2 to 6 players, to 100.', 'ru' => 'От 2 до 6 игроков, до 100.', 'hy' => '2-ից 6 խաղացող, մինչև 100։'],
+                'min_players' => 2, 'max_players' => 6,
+                'config' => ['target' => 100, 'turn_seconds' => 40, 'round_pause_ms' => 5000, 'table_wait_seconds' => 20],
+            ]],
         ];
     }
 }

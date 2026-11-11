@@ -258,7 +258,7 @@ stay available); staff bypass it.
 | 6 | Nardi (short nardi first), end to end | ✅ |
 | 7 | Checkers (Russian draughts) → Chess → Durak (podkidnoy, 2 players first) → Poker (NL Hold'em, play chips per table session) | ✅ |
 | 8 | Hardening, performance, monitoring, deployment | ✅ (see DEPLOYMENT.md) |
-| 9 | New games, one at a time (owner, 2026-11-11): Blackjack ✅ (ADR 0019) → Blot ✅ → Domino ✅ → Ludo ✅ → 8-ball pool ✅ (ADR 0020) → Rummy → Hearts → Spades → Battleship → Connect Four → Solitaire | in progress |
+| 9 | New games, one at a time (owner, 2026-11-11): Blackjack ✅ (ADR 0019) → Blot ✅ → Domino ✅ → Ludo ✅ → 8-ball pool ✅ (ADR 0020) → Rummy ✅ → Hearts → Spades → Battleship → Connect Four → Solitaire | in progress |
 
 ## 11. Main risks
 

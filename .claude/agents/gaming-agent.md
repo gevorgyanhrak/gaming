@@ -289,4 +289,6 @@ is not done or not verified, and how to check it manually. Keep it concise.
   (`TRACK`, home columns, yards) lives in `games/ludo/LudoBoard.tsx` as drawing only.
   Pool (ADR 0020): `PoolPhysics` on the server; the board replays `last_shot.segments` by formula and never
   simulates; one action `{type:'shoot', angle, power, x?, y?}`; a pause while the balls roll. Actions may carry decimals.
+  Rummy: melds are `{type:'meld', cards:'7S,7H,7D'}` in the server's order — the board matches the selection against
+  the listed melds, never builds one. Run bot-only games in a loop when adding a game: they find stalls (Rummy had two).
 - Poker table: its phone layout applies at 900 px and below (`min-[901px]:` / `max-[900px]:` in `PokerBoard`, `HandResult`; `useMediaQuery('(max-width: 900px)')`), TASK-058. The state sends `turn_seconds` for timers drawn as a share of the turn. Nardi board art: `.nardi-*` in `styles/index.css`.
