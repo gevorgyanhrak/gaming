@@ -19,8 +19,8 @@ promising them: achievements, leaderboard, friends (listed in the request as sha
 - [x] 2. Blot (Bazar blot, 4 players in 2 teams, to 301; owner chose 4 players) — ca711b1.
 - [x] 3. Domino (Block, 2–4 players, to 100; owner chose Block) — f3f8294.
 - [x] 4. Ludo (standard rules; owner said go) — 01bd960.
-- [x] 5. 8-ball pool (server physics, ADR 0020) — this commit.
-- [ ] 6. Rummy · · [ ] 7. Hearts · [ ] 8. Spades ·
+- [x] 5. 8-ball pool (server physics, ADR 0020) — 64a0d4c.
+- [ ] 6. Rummy · [ ] 7. Hearts · [ ] 8. Spades ·
   [ ] 9. Battleship · [ ] 10. Connect Four · [ ] 11. Solitaire
 
 **Paused by the owner's new request:** TASK-048 step 6 (QA of every page) — resume after the new games or when asked.
