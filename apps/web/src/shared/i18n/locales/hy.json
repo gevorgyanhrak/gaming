@@ -795,5 +795,51 @@
     "tableClosed": "Սեղանը փակ է։",
     "waitingBet": "Սպասում ենք {{name}}-ի խաղադրույքին…",
     "waitingFor": "Սպասում ենք {{name}}-ին…"
+  },
+  "blot": {
+    "you": "Դուք",
+    "seat": "Տեղ {{seat}}",
+    "seats": "Խաղացողներ",
+    "us": "Մենք",
+    "them": "Նրանք",
+    "score": "Հաշիվ",
+    "target": "մինչև",
+    "contract": "Պատվեր",
+    "dealer": "Բաժանող",
+    "bazar": "Բազար",
+    "trick": "Կաշառք",
+    "lastTrick": "Վերջին կաշառքը",
+    "yourCards": "Ձեր թղթերը",
+    "yourTurn": "Ձեր քայլն է՝ խաղացեք թուղթ",
+    "lower": "Ավելի քիչ",
+    "higher": "Ավելի շատ",
+    "points_one": "{{count}} միավոր",
+    "points_other": "{{count}} միավոր",
+    "bidIn": "Պատվիրել {{value}}, {{suit}}",
+    "call": {
+      "bid": "Պատվեր",
+      "pass": "Պաս",
+      "double": "Կոնտրա",
+      "redouble": "Ռեկոնտրա"
+    },
+    "declaration": {
+      "terz": "Թերց",
+      "fifty": "Հիսուն",
+      "hundred": "Հարյուր",
+      "carre": "Կարե"
+    },
+    "belote": "Բլոտ",
+    "tricks": "Կաշառքներ",
+    "declarations": "Կոմբինացիաներ",
+    "scored": "Ընդամենը",
+    "handResult": "Բաժանման արդյունքը",
+    "made": "{{name}}՝ {{value}} պատվերը կատարված է",
+    "failed": "{{name}}՝ {{value}} պատվերը չկատարվեց",
+    "kaput": "Կապուտ",
+    "nextHand": "Հաջորդ բաժանումը",
+    "nextHandIn_one": "Հաջորդ բաժանումը {{count}} վայրկյանից",
+    "nextHandIn_other": "Հաջորդ բաժանումը {{count}} վայրկյանից",
+    "waitingBid": "Սպասում ենք {{name}}-ի պատվերին…",
+    "waitingFor": "Սպասում ենք {{name}}-ին…"
   }
 }

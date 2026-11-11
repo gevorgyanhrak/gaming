@@ -795,5 +795,51 @@
     "tableClosed": "The table is closed.",
     "waitingBet": "Waiting for {{name}} to bet…",
     "waitingFor": "Waiting for {{name}}…"
+  },
+  "blot": {
+    "you": "You",
+    "seat": "Seat {{seat}}",
+    "seats": "Players",
+    "us": "Us",
+    "them": "Them",
+    "score": "Score",
+    "target": "to",
+    "contract": "Contract",
+    "dealer": "Dealer",
+    "bazar": "Bazar",
+    "trick": "Trick",
+    "lastTrick": "Last trick",
+    "yourCards": "Your cards",
+    "yourTurn": "Your turn: play a card",
+    "lower": "Lower bid",
+    "higher": "Higher bid",
+    "points_one": "{{count}} point",
+    "points_other": "{{count}} points",
+    "bidIn": "Bid {{value}} in {{suit}}",
+    "call": {
+      "bid": "Bid",
+      "pass": "Pass",
+      "double": "Contra",
+      "redouble": "Recontra"
+    },
+    "declaration": {
+      "terz": "Terz",
+      "fifty": "Fifty",
+      "hundred": "Hundred",
+      "carre": "Four"
+    },
+    "belote": "Belote",
+    "tricks": "Tricks",
+    "declarations": "Declarations",
+    "scored": "Scored",
+    "handResult": "Hand result",
+    "made": "{{name}} made {{value}}",
+    "failed": "{{name}} went down on {{value}}",
+    "kaput": "Kaput",
+    "nextHand": "Next hand",
+    "nextHandIn_one": "Next hand in {{count}} second",
+    "nextHandIn_other": "Next hand in {{count}} seconds",
+    "waitingBid": "Waiting for {{name}} to bid…",
+    "waitingFor": "Waiting for {{name}}…"
   }
 }

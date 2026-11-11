@@ -30,6 +30,7 @@ export const boards: Partial<Record<string, LazyExoticComponent<ComponentType<Bo
   durak: lazy(() => import('./durak/DurakBoard')),
   poker: lazy(() => import('./poker/PokerBoard')),
   blackjack: lazy(() => import('./blackjack/BlackjackBoard')),
+  blot: lazy(() => import('./blot/BlotBoard')),
 }
 
 /**
@@ -105,6 +106,21 @@ export const traits: Partial<Record<string, GameTraits>> = {
     nextRound: 'blackjack.nextRound',
     buyIn: 'play.blackjackBuyIn',
     tableTerms: 'play.tableMinBet',
+  },
+  // Partnerships (seats 0 and 2 against 1 and 3): a hand "won" is one your team scored more in.
+  blot: {
+    seatsOnBoard: true,
+    material: 'cards',
+    roundWon: (a, b, seat) => {
+      const before = a.last_hand as { number: number } | null
+      const after = b.last_hand as { number: number; scored: number[] } | null
+      return (
+        !!after &&
+        after.number > (before?.number ?? 0) &&
+        (after.scored[seat % 2] ?? 0) > (after.scored[1 - (seat % 2)] ?? 0)
+      )
+    },
+    nextRound: 'blot.nextHand',
   },
 }
 

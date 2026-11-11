@@ -110,6 +110,21 @@ const scenes: Record<string, (id: string) => ReactNode> = {
       <Chips x={62} y={142} count={4} color="#d6ab4e" />
     </>
   ),
+  blot: (id) => (
+    <>
+      <Backdrop id={id} from="#0f4a5c" to="#03141a" glow="#4fd2e6" />
+      {[
+        ['J', '♥', -30],
+        ['9', '♥', -10],
+        ['A', '♥', 10],
+        ['K', '♥', 30],
+      ].map(([rank, suit, angle]) => (
+        <g key={`${rank}${suit}`} transform={`rotate(${angle} 160 220)`}>
+          <Face x={132} y={42} rank={String(rank)} suit={String(suit)} />
+        </g>
+      ))}
+    </>
+  ),
 }
 
 /** The scene for a game, or the fallback when there is none for this slug. */
@@ -206,6 +221,13 @@ const icons: Record<string, ReactNode> = {
     <g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
       <rect x="4" y="5" width="10" height="14" rx="1.5" transform="rotate(-10 9 12)" />
       <rect x="10" y="5" width="10" height="14" rx="1.5" transform="rotate(8 15 12)" />
+    </g>
+  ),
+  blot: (
+    <g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
+      <rect x="3" y="6" width="9" height="13" rx="1.5" transform="rotate(-14 7.5 12.5)" />
+      <rect x="7.5" y="4.5" width="9" height="13" rx="1.5" />
+      <rect x="12" y="6" width="9" height="13" rx="1.5" transform="rotate(14 16.5 12.5)" />
     </g>
   ),
 }

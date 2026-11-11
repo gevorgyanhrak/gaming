@@ -8,7 +8,7 @@ use App\Models\GameCategory;
 use Illuminate\Database\Seeder;
 
 /**
- * Seeds the games: the five launch games and those added since (Blackjack).
+ * Seeds the games: the five launch games and those added since (Blackjack, Blot).
  *
  * Idempotent and non-destructive: existing games are left untouched, so re-running
  * the seeder never overwrites changes made by administrators. A game is created playable only
@@ -18,7 +18,7 @@ use Illuminate\Database\Seeder;
 class GameSeeder extends Seeder
 {
     /** Games on the "Card games" shelf; the rest are board games. */
-    private const CARD_GAMES = ['durak', 'poker', 'blackjack'];
+    private const CARD_GAMES = ['durak', 'poker', 'blackjack', 'blot'];
 
     public function run(): void
     {
@@ -115,6 +115,21 @@ class GameSeeder extends Seeder
                 ])],
                 'min_players' => 1,
                 'max_players' => 5,
+            ],
+            [
+                'slug' => 'blot',
+                'name' => ['en' => 'Blot', 'ru' => 'Блот', 'hy' => 'Բլոտ'],
+                'description' => ['en' => 'Bazar blot for four: two partnerships bid for trumps and race to 301.', 'ru' => 'Базар-блот на четверых: две пары торгуются за козырь и играют до 301.', 'hy' => 'Բազար բլոտ չորսով. երկու զույգ սակարկում են հաղթաթղթի համար և խաղում մինչև 301։'],
+                'rules' => ['en' => implode("\n\n", [
+                    'Four players in two partnerships (partners sit opposite) play with 32 cards, seven to ace, eight each. The first team to 301 points wins.',
+                    'The bazar: starting left of the dealer, each player bids a number (8 to 30, worth ten points each) and a trump suit higher than the last bid, or passes. An opponent of the bidder may double, and the bidding team may then redouble. Three passes end the bidding; if all four pass, the cards are dealt again.',
+                    'Play: the player left of the dealer leads. You must follow suit; when trumps are led you must beat the highest trump if you can. Without the led suit you must trump, beating any trump already played if you can, unless your partner is winning the trick. The highest trump, or else the highest card of the led suit, takes the trick.',
+                    'Trumps rank jack (20), nine (14), ace (11), ten (10), king (4), queen (3), eight, seven; other suits ace (11), ten (10), king (4), queen (3), jack (2), nine, eight, seven. The last trick adds 10: 162 in all, or 250 for taking every trick.',
+                    'Declarations are announced in the first trick: three cards in sequence 20, four 50, five 100; four jacks 200, four nines 150, four aces, tens, kings or queens 100. Only the team with the best declaration scores its declarations. The king and queen of trumps in one hand (belote) score 20.',
+                    'The bidding team must reach its bid with tricks, declarations and belote. If it does, each team scores its points; if not, the opponents score 162 and every declaration. In a doubled hand the winning team takes everything, doubled (redoubled: four times).',
+                ])],
+                'min_players' => 4,
+                'max_players' => 4,
             ],
         ];
     }

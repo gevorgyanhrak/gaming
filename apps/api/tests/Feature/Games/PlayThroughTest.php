@@ -22,12 +22,12 @@ use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
 // Every game with an engine is played to the end through the real API and queue jobs.
-dataset('games', ['nardi', 'checkers', 'chess', 'durak', 'poker', 'blackjack']);
+dataset('games', ['nardi', 'checkers', 'chess', 'durak', 'poker', 'blackjack', 'blot']);
 
 it('seeds games as playable only when their engine is registered', function () {
     $this->seed([GameSeeder::class, GameModeSeeder::class]);
 
-    expect(Game::query()->where('is_enabled', true)->pluck('slug')->all())->toBe(['nardi', 'chess', 'checkers', 'durak', 'poker', 'blackjack']);
+    expect(Game::query()->where('is_enabled', true)->pluck('slug')->all())->toBe(['nardi', 'chess', 'checkers', 'durak', 'poker', 'blackjack', 'blot']);
 });
 
 it('plays a full game against a bot through the API', function (string $slug) {
@@ -40,8 +40,12 @@ it('plays a full game against a bot through the API', function (string $slug) {
     $player = User::factory()->create();
     $this->actingAs($player);
 
-    // Poker and durak tables seat more than two: play against two bots there.
-    $opponents = in_array($slug, ['poker', 'durak', 'blackjack'], true) ? ['opponents' => 2] : [];
+    // Tables for more than two: play against two bots there (blot: always four players).
+    $opponents = match ($slug) {
+        'poker', 'durak', 'blackjack' => ['opponents' => 2],
+        'blot' => ['opponents' => 3],
+        default => [],
+    };
     $id = $this->postJson('/api/v1/rooms', ['game_mode_id' => $game->modes()->first()->id, 'type' => 'bot', 'bot_difficulty' => 'medium', ...$opponents])
         ->assertCreated()
         ->json('data.id');
@@ -54,7 +58,10 @@ it('plays a full game against a bot through the API', function (string $slug) {
             $action = $state['legal_actions'][array_rand($state['legal_actions'])];
             // Range actions (poker raises) are described by min and max; play the minimum.
             if (isset($action['min'], $action['max'])) {
-                $action = ['type' => $action['type'], 'amount' => $action['min']];
+                // A blot bid also names its trump suit.
+                $action = $slug === 'blot'
+                    ? ['type' => $action['type'], 'value' => $action['min'], 'suit' => 'S']
+                    : ['type' => $action['type'], 'amount' => $action['min']];
             }
             $this->postJson("/api/v1/rooms/{$id}/actions", [
                 'client_action_id' => (string) Str::uuid(),

@@ -25,7 +25,8 @@ Read only what the step needs. Deeper references are the files named here; backe
 Empty `winners` = draw for everyone. Randomness only via `RandomSource` (recorded; replays use `ReplayRandom`).
 Optional: `ValidatesActions` (ranges, e.g. `{type:'bet',min,max}` → client sends `{type:'bet',amount}`),
 `HandlesTimeouts` (default move), `DecidesTimeouts`, `HandlesDepartures` (3+ seat games go on),
-`PausesBetweenRounds` (`pauseMs`/`resume`), `PlaysForChips` (`buyIn`, `chipsOf`).
+`PausesBetweenRounds` (`pauseMs`/`resume`), `PlaysForChips` (`buyIn`, `chipsOf`), `PlaysInTeams` (`teamOf`: a leaver's
+partners lose too). Validate range-action payloads independent of key order (only `Action::fromArray` sorts keys).
 The platform owns turns, timers (`turn_seconds` in mode config), bots, persistence, broadcasting.
 `TurnTimeoutJob` times out `seatsToAct[0]` only: keep one seat to act at a time.
 

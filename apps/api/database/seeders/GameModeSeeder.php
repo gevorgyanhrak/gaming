@@ -93,6 +93,13 @@ class GameModeSeeder extends Seeder
                 'min_players' => 1, 'max_players' => 5,
                 'config' => ['rounds' => 10, 'decks' => 6, 'dealer_hits_soft_17' => false, 'max_bet_multiple' => 100, 'turn_seconds' => 30, 'table_wait_seconds' => 15, 'round_pause_ms' => 3500],
             ]],
+            'blot' => [[
+                'slug' => 'bazar',
+                'name' => ['en' => 'Bazar blot', 'ru' => 'Базар-блот', 'hy' => 'Բազար բլոտ'],
+                'description' => ['en' => 'Four players in two teams, to 301.', 'ru' => 'Четыре игрока, две команды, до 301.', 'hy' => 'Չորս խաղացող, երկու թիմ, մինչև 301։'],
+                'min_players' => 4, 'max_players' => 4,
+                'config' => ['target' => 301, 'turn_seconds' => 30, 'hand_pause_ms' => 5000],
+            ]],
         ];
     }
 }

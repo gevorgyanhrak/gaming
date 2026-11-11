@@ -100,7 +100,9 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
     },
   })
   const bot = useMutation({
-    mutationFn: (id: number) => createBotRoom(id, difficulty, tableSize, terms),
+    // A mode with one table size (blot: four) seats that many.
+    mutationFn: (id: number) =>
+      createBotRoom(id, difficulty, tableSize ?? mode?.min_players, terms),
     onSuccess: toRoom,
   })
   // A private table is for friends: at least two seats.

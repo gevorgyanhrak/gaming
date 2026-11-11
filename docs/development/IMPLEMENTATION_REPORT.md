@@ -2,6 +2,28 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## New games 2/11 · Blot (Bazar blot, 4 players) — 2026-11-11 · DONE (owner: "the first 4 player")
+
+- Engine `app/Games/Blot/Engine/BlotEngine.php` (+ `BlotCards`): 32 cards, partnerships 0+2 / 1+3, bazar (bid 8–30 ×10
+  with a suit, pass, contra, recontra; 4 passes redeal), follow / overtrump / must-trump unless the partner wins,
+  trump J 9 A 10 K Q 8 7, last trick +10, kaput 250, declarations (terz 20, 50, 100, carré J 200 / 9 150 / others 100;
+  only the best team's count), belote 20, made / failed / doubled scoring, to 301 (a tie plays on), pause after
+  each hand. Stake game (pot shared by the winning pair). Bot `BlotBot` (bids on trump strength, doubles with top
+  trumps, smears to a winning partner, wins cheaply; easy plays at random).
+- Platform: `Gameplay/Contracts/PlaysInTeams` — resigning, leaving or timing out loses for the whole team (used in
+  `GameActionService::end`). Lobby: a single-size mode (Blot: 4) starts bot games with that many seats.
+- Web: `games/blot/BlotBoard.tsx` (you at the bottom, partner opposite; bazar controls, trick, last trick and the hand
+  result in the middle of the felt; your hand along the near edge with only the server's playable cards enabled;
+  contract, team scores, declarations and belote badges, dealer chip); traits; art; i18n en/ru/hy.
+
+**Tests run:** `make lint-api` ✓ · `make test-api` → **448 passed** (new `Unit/Games/BlotEngineTest` 22,
+`Feature/Games/BlotTableTest` 4, Blot in `PlayThroughTest`) · web typecheck ✓ lint ✓ format ✓ · `npm test` → 31 files,
+**178 passed** (new `BlotBoard.test.tsx` 3) · build ✓. Live (headless Chrome) 1440×900 and 390×844: bazar, play,
+declarations, a made and a failed contract.
+
+**Known issues:** the lobby's stake line says "the winner takes the pot: 1,000" — for Blot that is each winner's share
+(pot 2,000 for the pair); wording could name the team. No no-trump or kaput bids (not in this ruleset).
+
 ## New games 1/11 · Blackjack — 2026-11-11 · DONE (owner request; ADR 0019)
 
 - Engine `app/Games/Blackjack/Engine/BlackjackEngine.php` (+ `BlackjackCards`): 1–5 seats against the dealer, bets

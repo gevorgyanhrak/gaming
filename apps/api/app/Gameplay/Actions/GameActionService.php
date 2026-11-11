@@ -8,6 +8,7 @@ use App\Gameplay\Contracts\HandlesDepartures;
 use App\Gameplay\Contracts\HandlesTimeouts;
 use App\Gameplay\Contracts\PausesBetweenRounds;
 use App\Gameplay\Contracts\PlaysForChips;
+use App\Gameplay\Contracts\PlaysInTeams;
 use App\Gameplay\Contracts\ValidatesActions;
 use App\Gameplay\Engine\Action;
 use App\Gameplay\Engine\ActionResult;
@@ -315,12 +316,14 @@ class GameActionService
     private function end(GameRoom $room, RoomState $current, GameParticipant $loser, string $type, ?string $clientActionId): ActionResult
     {
         $version = $current->version + 1;
+        $engine = $this->states->engine($room);
+        // In a partnership game the loser's partners lose with them.
+        $losers = $engine instanceof PlaysInTeams ? $engine->teamOf($loser->seat, $room->seats) : [$loser->seat];
         $winners = $room->participants
-            ->filter(fn (GameParticipant $p) => $p->seat !== $loser->seat && $p->is_active)
+            ->filter(fn (GameParticipant $p) => ! in_array($p->seat, $losers, true) && $p->is_active)
             ->pluck('seat')->values()->all();
         // Alone at the table (a game against the dealer): leaving still loses, it isn't a draw.
         $outcome = new Outcome($winners === [] ? [Outcome::HOUSE] : $winners, $type);
-        $engine = $this->states->engine($room);
         if ($type === GameMove::TIMEOUT && $engine instanceof DecidesTimeouts) {
             $outcome = $engine->timeoutOutcome($current->state, $loser->seat);
         }

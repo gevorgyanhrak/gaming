@@ -280,5 +280,7 @@ is not done or not verified, and how to check it manually. Keep it concise.
   Blackjack (ADR 0019): the dealer is the engine, `PlaysForChips`, rounds + pause, `Outcome::HOUSE` when nobody ends ahead;
   modes may have `min_players` 1 (bot room `opponents: 0`, no difficulty). Board `games/blackjack` (half-moon table,
   phone seats spaced evenly when ≥ 4). Chips groups give `table_min_bet`/`table_max_bet`; traits `buyIn`/`tableTerms`
-  word the lobby and `GroupBadge` per chip game. Blot does not exist yet (queued).
+  word the lobby and `GroupBadge` per chip game. Blot: Bazar blot, 4 seats, partnerships via `PlaysInTeams`
+  (a leaver's partner loses too); bids are `{type:'bid', value, suit}` from a `{min,max}` range; board `games/blot`
+  puts bazar controls, trick and hand result in the middle of the felt so a 900 px tall window needs no scrolling.
 - Poker table: its phone layout applies at 900 px and below (`min-[901px]:` / `max-[900px]:` in `PokerBoard`, `HandResult`; `useMediaQuery('(max-width: 900px)')`), TASK-058. The state sends `turn_seconds` for timers drawn as a share of the turn. Nardi board art: `.nardi-*` in `styles/index.css`.

@@ -501,6 +501,17 @@ const posters: Record<string, ReactNode> = {
       </text>
     </>
   ),
+  blot: (
+    <>
+      <rect width="320" height="200" fill={c.teal} />
+      <Rays cx={160} cy={230} count={11} step={16} length={290} color={c.tealLight} />
+      {/* The best trumps: jack and nine, with the ace and ten behind them. */}
+      <Card x={96} y={96} rank="A" suit="heart" angle={-18} scale={1.2} />
+      <Card x={136} y={86} rank="J" suit="heart" angle={-6} scale={1.3} />
+      <Card x={184} y={86} rank="9" suit="heart" angle={6} scale={1.3} />
+      <Card x={226} y={96} rank="10" suit="heart" angle={18} scale={1.2} />
+    </>
+  ),
 }
 
 const grounds = [
