@@ -931,5 +931,29 @@
     "wonOut": "{{name}} выложил все кости: +{{points}}",
     "wonBlocked": "Рыба — меньше всего очков у игрока {{name}}: +{{points}}",
     "blockedTie": "Рыба, ничья — очков никто не получает"
+  },
+  "ludo": {
+    "you": "Вы",
+    "seat": "Место {{seat}}",
+    "players": "Игроки",
+    "board": "Поле лудо",
+    "colour": {
+      "red": "красная",
+      "green": "зелёная",
+      "yellow": "жёлтая",
+      "blue": "синяя"
+    },
+    "token": "{{colour}} фишка {{n}}",
+    "moveToken": "Ходить: {{token}}",
+    "roll": "Бросить кубик",
+    "rollPrompt": "Ваш ход: бросьте кубик",
+    "movePrompt": "Выпало {{dice}}: выберите фишку",
+    "waitingFor": "Ждём игрока {{name}}…",
+    "noRoll": "Кубик ещё не брошен",
+    "rolled": "Выпало {{dice}}",
+    "home_one": "{{count}}/4 дома",
+    "home_few": "{{count}}/4 дома",
+    "home_many": "{{count}}/4 дома",
+    "home_other": "{{count}}/4 дома"
   }
 }

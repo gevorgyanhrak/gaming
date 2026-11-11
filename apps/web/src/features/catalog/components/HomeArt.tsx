@@ -501,6 +501,34 @@ const posters: Record<string, ReactNode> = {
       </text>
     </>
   ),
+  ludo: (
+    <>
+      <rect width="320" height="200" fill={c.plum} />
+      <Rays cx={160} cy={230} count={11} step={16} length={290} color={c.plumLight} />
+      {/* The cross of the board and a token of each colour. */}
+      <rect x="130" y="40" width="60" height="140" rx="6" fill={c.cream} />
+      <rect x="90" y="80" width="140" height="60" rx="6" fill={c.cream} />
+      {[
+        ['#d8443c', 110, 110],
+        ['#2f9a52', 160, 60],
+        ['#e8b923', 210, 110],
+        ['#2f6fd6', 160, 160],
+      ].map(([colour, x, y]) => (
+        <g key={String(colour)}>
+          <circle
+            cx={Number(x)}
+            cy={Number(y)}
+            r="15"
+            fill={String(colour)}
+            stroke={c.ink}
+            strokeOpacity="0.4"
+            strokeWidth="3"
+          />
+          <circle cx={Number(x) - 4} cy={Number(y) - 4} r="5" fill="#fff" fillOpacity="0.5" />
+        </g>
+      ))}
+    </>
+  ),
   domino: (
     <>
       <rect width="320" height="200" fill={c.amber} />

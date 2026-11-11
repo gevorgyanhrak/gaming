@@ -285,4 +285,6 @@ is not done or not verified, and how to check it manually. Keep it concise.
   puts bazar controls, trick and hand result in the middle of the felt so a 900 px tall window needs no scrolling.
   Domino: Block, 2–4 seats; the engine auto-passes players without a move (no pass action); moves are
   `{type:'play', tile:'a-b', end}`; board `games/domino` (SVG `Tile`, end slots when a tile fits both ends).
+  Ludo: `roll` is an action (the engine rolls, recorded), then `{type:'move', token, to}`; board geometry
+  (`TRACK`, home columns, yards) lives in `games/ludo/LudoBoard.tsx` as drawing only.
 - Poker table: its phone layout applies at 900 px and below (`min-[901px]:` / `max-[900px]:` in `PokerBoard`, `HandResult`; `useMediaQuery('(max-width: 900px)')`), TASK-058. The state sends `turn_seconds` for timers drawn as a share of the turn. Nardi board art: `.nardi-*` in `styles/index.css`.

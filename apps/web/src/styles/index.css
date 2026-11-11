@@ -166,6 +166,7 @@
   --motion-enter: 260ms; /* sheet, drawer, dialog */
 
   --animate-card-in: card-in 260ms ease-out both;
+  --animate-dice-roll: dice-roll 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-rise: rise 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-turn-pop: turn-pop 360ms var(--ease-pop) both;
 
@@ -239,6 +240,20 @@
     to {
       opacity: 0;
       transform: translateY(-10px);
+    }
+  }
+
+  @keyframes dice-roll {
+    0% {
+      transform: rotate(-200deg) scale(0.6);
+      opacity: 0.4;
+    }
+    70% {
+      transform: rotate(12deg) scale(1.08);
+      opacity: 1;
+    }
+    100% {
+      transform: none;
     }
   }
 

@@ -8,7 +8,7 @@ use App\Models\GameCategory;
 use Illuminate\Database\Seeder;
 
 /**
- * Seeds the games: the five launch games and those added since (Blackjack, Blot, Domino).
+ * Seeds the games: the five launch games and those added since (Blackjack, Blot, Domino, Ludo).
  *
  * Idempotent and non-destructive: existing games are left untouched, so re-running
  * the seeder never overwrites changes made by administrators. A game is created playable only
@@ -141,6 +141,20 @@ class GameSeeder extends Seeder
                     'In turn, add a tile to either end of the line so that its touching half matches the number at that end. If you can\'t play, you pass; there is no drawing.',
                     'The round ends when a player plays their last tile: they score the pips left in all the other hands. If nobody can play, the round is blocked and the player with the fewest pips scores everyone else\'s pips; a tie scores nothing.',
                     'The first player to reach 100 points wins.',
+                ])],
+                'min_players' => 2,
+                'max_players' => 4,
+            ],
+            [
+                'slug' => 'ludo',
+                'name' => ['en' => 'Ludo', 'ru' => 'Лудо', 'hy' => 'Լուդո'],
+                'description' => ['en' => 'Race your four tokens round the board and home. Roll a six to start, and send rivals back to their yard.', 'ru' => 'Проведите четыре фишки по кругу домой. Шестёрка выводит фишку, а соперников можно отправить обратно.', 'hy' => 'Անցկացրեք չորս խաղաքարերը շրջանով և տուն։ Վեցը հանում է խաղաքարը, իսկ մրցակիցներին կարելի է հետ ուղարկել։'],
+                'rules' => ['en' => implode("\n\n", [
+                    'Two to four players each have four tokens in their yard. With two players, they take opposite colours.',
+                    'On your turn roll the die and move one token that many squares. A token leaves the yard only on a six, onto your start square. A six gives you another roll, but a third six in a row ends your turn.',
+                    'Tokens travel once round the track, then up your home column to the centre, which takes the exact roll. If no token can move, the turn passes.',
+                    'Landing on an opponent\'s token sends it back to its yard, except on the safe squares: the four start squares and the four stars. Your own tokens can share a square.',
+                    'The first player to bring all four tokens home wins.',
                 ])],
                 'min_players' => 2,
                 'max_players' => 4,

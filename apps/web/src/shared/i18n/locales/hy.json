@@ -867,5 +867,27 @@
     "wonOut": "{{name}}-ը դրեց բոլոր քարերը՝ +{{points}}",
     "wonBlocked": "Փակված է — ամենաքիչ միավորը {{name}}-ինն է՝ +{{points}}",
     "blockedTie": "Փակված է, ոչ-ոքի — ոչ ոք միավոր չի ստանում"
+  },
+  "ludo": {
+    "you": "Դուք",
+    "seat": "Տեղ {{seat}}",
+    "players": "Խաղացողներ",
+    "board": "Լուդոյի դաշտ",
+    "colour": {
+      "red": "կարմիր",
+      "green": "կանաչ",
+      "yellow": "դեղին",
+      "blue": "կապույտ"
+    },
+    "token": "{{colour}} խաղաքար {{n}}",
+    "moveToken": "Շարժել՝ {{token}}",
+    "roll": "Գցել զառը",
+    "rollPrompt": "Ձեր քայլն է՝ գցեք զառը",
+    "movePrompt": "Ընկավ {{dice}}՝ ընտրեք խաղաքար",
+    "waitingFor": "Սպասում ենք {{name}}-ին…",
+    "noRoll": "Զառը դեռ չի գցվել",
+    "rolled": "Ընկավ {{dice}}",
+    "home_one": "{{count}}/4 տանը",
+    "home_other": "{{count}}/4 տանը"
   }
 }

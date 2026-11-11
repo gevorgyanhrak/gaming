@@ -867,5 +867,27 @@
     "wonOut": "{{name}} went out: +{{points}}",
     "wonBlocked": "Blocked — {{name}} has the fewest pips: +{{points}}",
     "blockedTie": "Blocked with a tie — nobody scores"
+  },
+  "ludo": {
+    "you": "You",
+    "seat": "Seat {{seat}}",
+    "players": "Players",
+    "board": "Ludo board",
+    "colour": {
+      "red": "red",
+      "green": "green",
+      "yellow": "yellow",
+      "blue": "blue"
+    },
+    "token": "{{colour}} token {{n}}",
+    "moveToken": "Move {{token}}",
+    "roll": "Roll the die",
+    "rollPrompt": "Your turn: roll the die",
+    "movePrompt": "You rolled {{dice}}: pick a token",
+    "waitingFor": "Waiting for {{name}}…",
+    "noRoll": "Not rolled yet",
+    "rolled": "Rolled {{dice}}",
+    "home_one": "{{count}}/4 home",
+    "home_other": "{{count}}/4 home"
   }
 }

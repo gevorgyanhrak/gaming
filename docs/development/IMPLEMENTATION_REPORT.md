@@ -2,6 +2,24 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## New games 4/11 · Ludo (2–4 players) — 2026-11-11 · DONE (owner: "go" on the standard rules)
+
+- Engine `app/Games/Ludo/Engine/LudoEngine.php`: four tokens, two players take opposite colours; roll (server die,
+  recorded) then move {token, to} from the listed moves; a 6 to leave the yard, a 6 rolls again, the third 6 ends the
+  turn; 52-square track, home column, exact roll home; captures except on the 8 safe squares (starts and stars); a
+  roll without a move passes; all four home wins; departures; timeouts roll / make the first move. Stake game. Bot
+  `LudoBot`: easy random, medium capture > leave yard > lead token, hard also home, safe squares, avoids danger.
+- Web: `games/ludo/LudoBoard.tsx` — 15×15 SVG board (yards, track, start squares, stars, home columns, centre)
+  turned so your yard is bottom left; tokens slide (CSS transform transition, off with reduced motion), stacked tokens
+  offset, movable tokens pulse and their landing square is marked; die with a tumble (`animate-dice-roll`); players
+  with colour, level, bot and tokens home. Geometry is drawing only; moves come from the server.
+
+**Tests run:** `make lint-api` ✓ · `make test-api` → **487 passed** (new `Unit/Games/LudoEngineTest` 17,
+`Feature/Games/LudoTableTest` 1, Ludo in `PlayThroughTest`) · web typecheck ✓ lint ✓ format ✓ · `npm test` → 33 files,
+**184 passed** (new `LudoBoard.test.tsx` 3) · build ✓. Live 1440×900 and 390×844, 4 players, 12 moves each.
+
+**Known issues:** no extra roll for a capture or for reaching home (not in the agreed rules).
+
 ## New games 3/11 · Domino (Block, 2–4 players) — 2026-11-11 · DONE (owner: "Block domino")
 
 - Engine `app/Games/Domino/Engine/DominoEngine.php`: double-six set, 7 tiles each, no drawing; first round led by the

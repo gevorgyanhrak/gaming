@@ -107,6 +107,13 @@ class GameModeSeeder extends Seeder
                 'min_players' => 2, 'max_players' => 4,
                 'config' => ['target' => 100, 'turn_seconds' => 30, 'round_pause_ms' => 4000, 'table_wait_seconds' => 20],
             ]],
+            'ludo' => [[
+                'slug' => 'classic',
+                'name' => ['en' => 'Classic ludo', 'ru' => 'Классическое лудо', 'hy' => 'Դասական լուդո'],
+                'description' => ['en' => '2 to 4 players, four tokens each.', 'ru' => 'От 2 до 4 игроков, по четыре фишки.', 'hy' => '2-ից 4 խաղացող, չորսական խաղաքար։'],
+                'min_players' => 2, 'max_players' => 4,
+                'config' => ['turn_seconds' => 20, 'table_wait_seconds' => 20],
+            ]],
         ];
     }
 }

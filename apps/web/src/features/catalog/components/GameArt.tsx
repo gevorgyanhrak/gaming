@@ -167,6 +167,28 @@ const scenes: Record<string, (id: string) => ReactNode> = {
       ))}
     </>
   ),
+  ludo: (id) => (
+    <>
+      <Backdrop id={id} from="#1d3f8a" to="#060c1f" glow="#7aa6ff" />
+      {[
+        ['#d8443c', 70, 70],
+        ['#2f9a52', 250, 70],
+        ['#e8b923', 250, 130],
+        ['#2f6fd6', 70, 130],
+      ].map(([colour, x, y]) => (
+        <g key={String(colour)}>
+          <ellipse cx={Number(x)} cy={Number(y) + 16} rx="16" ry="5" fill="rgb(0 0 0 / 0.35)" />
+          <path
+            d={`M${Number(x) - 12} ${Number(y) + 14} Q${x} ${Number(y) - 30} ${Number(x) + 12} ${Number(y) + 14} Z`}
+            fill={String(colour)}
+          />
+          <circle cx={Number(x)} cy={Number(y) - 10} r="8" fill={String(colour)} />
+        </g>
+      ))}
+      <Die x={135} y={72} angle={-12} pips={5} />
+      <Die x={180} y={84} angle={10} pips={3} />
+    </>
+  ),
 }
 
 /** The scene for a game, or the fallback when there is none for this slug. */
@@ -279,6 +301,14 @@ const icons: Record<string, ReactNode> = {
       <circle cx="12" cy="7" r="1.2" fill="currentColor" />
       <circle cx="10" cy="15.5" r="1" fill="currentColor" />
       <circle cx="14" cy="17.5" r="1" fill="currentColor" />
+    </g>
+  ),
+  ludo: (
+    <g fill="none" stroke="currentColor" strokeWidth="1.8">
+      <rect x="3.5" y="3.5" width="17" height="17" rx="2.5" />
+      <path d="M12 3.5v17M3.5 12h17" />
+      <circle cx="7.5" cy="7.5" r="1.6" fill="currentColor" />
+      <circle cx="16.5" cy="16.5" r="1.6" fill="currentColor" />
     </g>
   ),
 }
