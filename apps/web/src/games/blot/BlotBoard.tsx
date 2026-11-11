@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCountdown } from '@/features/play/useCountdown'
 import { useMediaQuery } from '@/shared/lib/useMediaQuery'
@@ -185,6 +185,7 @@ export default function BlotBoard({
   return (
     <div className="space-y-4 text-white">
       <div className="poker-stage relative rounded-3xl p-2 min-[641px]:p-6">
+        <DeclarationToast view={view} name={name} levels={levels} />
         {/* Match score, deal, contract and tricks, above the table. */}
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs min-[641px]:text-sm">
           <dl className="flex flex-wrap items-center gap-2" aria-label={t('blot.score')}>
@@ -352,13 +353,32 @@ export default function BlotBoard({
                     </span>
                   ) : null}
                   {view.phase === 'playing' && declared.length > 0 ? (
-                    <span className="flex flex-wrap justify-center gap-1">
+                    // Beside the nameplate for the seats at the top and bottom edge, so the cards never
+                    // reach into the trick in the middle; under it at the side seats.
+                    <span
+                      className={`flex flex-col items-center gap-1 ${
+                        where === 0 || where === 2 ? 'absolute top-0 left-full ml-2' : ''
+                      }`}
+                    >
                       {declared.map((d, i) => (
                         <span
                           key={i}
-                          className="rounded-full bg-gold px-1.5 py-0.5 text-[0.65rem] font-extrabold text-black"
+                          className="flex items-center gap-1 rounded-lg bg-black/60 p-1"
+                          aria-label={t('blot.declaredWith', {
+                            what: `${t(`blot.declaration.${d.kind}`)} ${d.points}`,
+                            cards: d.cards.map(labels.card).join(', '),
+                          })}
                         >
-                          {t(`blot.declaration.${d.kind}`)} {d.points}
+                          <span className="rounded-full bg-gold px-1.5 py-0.5 text-[0.65rem] font-extrabold text-black">
+                            {t(`blot.declaration.${d.kind}`)} {d.points}
+                          </span>
+                          <span className="flex" aria-hidden="true">
+                            {d.cards.map((card, j) => (
+                              <span key={card} className={j > 0 ? '-ml-5' : ''}>
+                                <PlayingCard card={card} label={labels.card(card)} size="xs" />
+                              </span>
+                            ))}
+                          </span>
                         </span>
                       ))}
                     </span>
@@ -375,10 +395,10 @@ export default function BlotBoard({
         </div>
 
         {/* Your combinations, to announce before your first card. */}
-        {declares.length > 0 || view.my_declarations.some((d) => d.declared) ? (
+        {declares.length > 0 ? (
           <section
             aria-label={t('blot.yourDeclarations')}
-            className="relative z-30 mx-auto mt-2 flex max-w-xl flex-wrap items-center justify-center gap-2 rounded-2xl border border-gold/40 bg-black/55 px-3 py-2"
+            className="relative z-30 mx-auto mt-2 mb-10 flex max-w-xl flex-wrap items-center justify-center gap-2 rounded-2xl border border-gold/40 bg-black/55 px-3 py-2 min-[641px]:mb-14"
           >
             <span className="text-xs font-semibold text-gold-light">
               {t('blot.yourDeclarations')}
@@ -567,6 +587,92 @@ export default function BlotBoard({
       </div>
     )
   }
+}
+
+/**
+ * Announces a declaration to the whole table as it is made: the player, what they declared and the very
+ * cards (from the server), turning over one after another. Each stays a few seconds (or until closed);
+ * several queue up. Declarations already made when the page opened aren't announced again — they stay
+ * visible at the players' seats.
+ */
+function DeclarationToast({
+  view,
+  name,
+  levels,
+}: {
+  view: BlotView
+  name: (seat: number) => string
+  levels: Partial<Record<number, number>>
+}) {
+  const { t } = useTranslation()
+  const labels = useCardLabel()
+  const announced = view.declared.flatMap((list, seat) =>
+    list.map((d, i) => ({ key: `${view.hand_no}:${seat}:${i}`, seat, ...d })),
+  )
+  const [seen, setSeen] = useState(() => new Set(announced.map((a) => a.key)))
+  const current = announced.find((a) => !seen.has(a.key))
+  const done = (key: string) => setSeen((s) => new Set(s).add(key))
+  const currentKey = current?.key
+  useEffect(() => {
+    if (!currentKey) return
+    const timer = window.setTimeout(() => setSeen((s) => new Set(s).add(currentKey)), 3500)
+    return () => window.clearTimeout(timer)
+  }, [currentKey])
+  if (!current) return null
+
+  const what = `${t(`blot.declaration.${current.kind}`)} ${current.points}`
+  // A one-line banner across the top of the table frame (over the score row): it never covers the trick
+  // or anyone's cards.
+  return (
+    <div
+      role="status"
+      aria-label={t('blot.declaredBy', {
+        name: name(current.seat),
+        what,
+        cards: current.cards.map(labels.card).join(', '),
+      })}
+      className="absolute inset-x-2 top-1 z-40 mx-auto flex max-w-xl items-center gap-2 rounded-2xl border border-gold bg-[#1c120d]/95 px-2 py-1.5 shadow-[0_10px_30px_rgb(0_0_0/0.6),0_0_0_3px_rgb(214_171_78/0.25)] motion-safe:animate-rise min-[641px]:top-2 min-[641px]:gap-3 min-[641px]:px-3"
+    >
+      <span className="relative flex size-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-b from-[#4a342b] to-[#1c120c] font-bold uppercase shadow-[inset_0_0_0_2px_rgb(214_171_78/0.6)]">
+        {name(current.seat).slice(0, 1)}
+        {levels[current.seat] !== undefined ? (
+          <LevelBadge
+            level={levels[current.seat] ?? 1}
+            size="sm"
+            className="absolute -top-2 -left-2"
+          />
+        ) : null}
+      </span>
+      <span className="min-w-0 shrink">
+        <span className="block truncate text-xs font-semibold text-white/80">
+          {name(current.seat)}
+        </span>
+        <span className="text-gold-gradient block text-base leading-tight font-extrabold tracking-wide whitespace-nowrap uppercase min-[641px]:text-lg">
+          {t(`blot.declaration.${current.kind}`)}
+          <span className="ml-1.5 text-sm text-gold-light">+{current.points}</span>
+        </span>
+      </span>
+      <span className="ml-auto flex shrink-0" aria-hidden="true">
+        {current.cards.map((card, i) => (
+          <span
+            key={card}
+            className={`${i > 0 ? '-ml-3 min-[641px]:ml-1' : ''} motion-safe:animate-card-flip`}
+            style={{ animationDelay: `${150 + i * 140}ms` }}
+          >
+            <PlayingCard card={card} label={labels.card(card)} size="xs" />
+          </span>
+        ))}
+      </span>
+      <button
+        type="button"
+        onClick={() => done(current.key)}
+        aria-label={t('blot.closeAnnouncement')}
+        className="size-8 shrink-0 rounded-full border border-white/20 text-white/70 hover:text-white"
+      >
+        ×
+      </button>
+    </div>
+  )
 }
 
 /**

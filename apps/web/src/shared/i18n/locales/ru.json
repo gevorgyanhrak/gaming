@@ -920,7 +920,10 @@
     "matchTotal": "Счёт партии",
     "dealNumber": "Раздача {{n}}",
     "matchOver": "Партия окончена.",
-    "matchGoesOn": "Партия продолжается: до {{target}}."
+    "matchGoesOn": "Партия продолжается: до {{target}}.",
+    "declaredBy": "{{name}} объявляет {{what}}: {{cards}}",
+    "declaredWith": "{{what}}: {{cards}}",
+    "closeAnnouncement": "Закрыть объявление"
   },
   "domino": {
     "you": "Вы",

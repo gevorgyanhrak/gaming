@@ -187,4 +187,58 @@ describe('BlotBoard', () => {
     expect(within(result).getByText('The match goes on: first to 301.')).toBeInTheDocument()
     expect(within(result).getByText('You: Terz 20')).toBeInTheDocument()
   })
+
+  it('announces a new declaration to the table with its exact cards', async () => {
+    const legal = [{ type: 'play', card: 'AH' }]
+    const props = { onAction: vi.fn(), pending: false, players }
+    const { rerender } = render(
+      <BlotBoard
+        state={roomStateFixture({ seat: 0, view: view() as never, legal_actions: legal })}
+        {...props}
+      />,
+    )
+    expect(screen.queryByRole('status', { name: /declared/ })).not.toBeInTheDocument()
+
+    const declared = [
+      [],
+      [{ kind: 'terz' as const, points: 20, cards: ['7C', '8C', '9C'] }],
+      [],
+      [],
+    ]
+    rerender(
+      <BlotBoard
+        state={roomStateFixture({
+          seat: 0,
+          view: view({ declared }) as never,
+          legal_actions: legal,
+        })}
+        {...props}
+      />,
+    )
+    const toast = screen.getByRole('status', {
+      name: 'Aram declared Terz 20: 7 of clubs, 8 of clubs, 9 of clubs',
+    })
+    expect(within(toast).getByText('Aram')).toBeInTheDocument()
+    // The cards themselves (read out by the announcement's label, so hidden from screen readers here).
+    expect(
+      [...toast.querySelectorAll('[role="img"]')].map((c) => c.getAttribute('aria-label')),
+    ).toEqual(['7 of clubs', '8 of clubs', '9 of clubs'])
+    await userEvent.click(within(toast).getByRole('button', { name: 'Close the announcement' }))
+    expect(screen.queryByRole('status', { name: /declared/ })).not.toBeInTheDocument()
+    // The cards stay at the player's seat.
+    expect(screen.getByLabelText('Terz 20: 7 of clubs, 8 of clubs, 9 of clubs')).toBeInTheDocument()
+  })
+
+  it("doesn't announce again what was declared before the page opened", () => {
+    const declared = [
+      [],
+      [],
+      [{ kind: 'hundred' as const, points: 100, cards: ['8D', '9D', 'TD', 'JD', 'QD'] }],
+      [],
+    ]
+    renderBoard(view({ declared }), [])
+
+    expect(screen.queryByRole('status', { name: /declared/ })).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/^100 100: 8 of diamonds/)).toBeInTheDocument()
+  })
 })

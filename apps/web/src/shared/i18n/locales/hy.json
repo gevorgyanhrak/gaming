@@ -862,7 +862,10 @@
     "matchTotal": "Խաղի հաշիվը",
     "dealNumber": "Բաժանում {{n}}",
     "matchOver": "Խաղն ավարտվեց։",
-    "matchGoesOn": "Խաղը շարունակվում է՝ մինչև {{target}}։"
+    "matchGoesOn": "Խաղը շարունակվում է՝ մինչև {{target}}։",
+    "declaredBy": "{{name}}-ը հայտարարում է {{what}}՝ {{cards}}",
+    "declaredWith": "{{what}}՝ {{cards}}",
+    "closeAnnouncement": "Փակել հայտարարությունը"
   },
   "domino": {
     "you": "Դուք",

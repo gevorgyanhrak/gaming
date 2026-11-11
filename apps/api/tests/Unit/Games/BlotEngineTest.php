@@ -319,7 +319,7 @@ it('lets a player declare only their own combinations, once each, before their f
         ->and(blotTypes($state))->toContain('declare');   // seat 2 still may
 });
 
-it('announces declarations at once and shows their cards after the first trick', function () {
+it('shows a declaration\'s exact cards to every player as soon as it is announced, and no other card', function () {
     $engine = new BlotEngine;
     $state = blotContract([
         ['7S', '8S', '9S', 'AH', 'KD', 'QC', 'TC', '7C'],
@@ -327,14 +327,23 @@ it('announces declarations at once and shows their cards after the first trick',
         ['JH', '9H', 'TH', 'KH', 'QH', 'AD', 'TD', 'JC'],
         ['8H', '7H', 'JS', 'QD', 'AC', 'KC', '9C', '8C'],
     ], 'H');
-    $state = blotAct($state, 'declare', ['index' => 0]);
+    $transition = $engine->apply($state, 0, new Action('declare', ['index' => 0]), new SecureRandom);
+    $state = $transition->state;
 
-    expect($engine->viewFor($state, 1)['declared'][0])->toBe([['kind' => 'terz', 'points' => 20, 'cards' => []]])
-        ->and($engine->viewFor($state, 0)['declared'][0][0]['cards'])->toBe(['7S', '8S', '9S'])
-        ->and($engine->viewFor($state, 1))->not->toHaveKeys(['hands', 'available']);
-
-    $state['declarations_shown'] = true;
-    expect($engine->viewFor($state, 1)['declared'][0][0]['cards'])->toBe(['7S', '8S', '9S']);
+    expect($transition->events[0])->toBe(['type' => 'declare', 'seat' => 0, 'kind' => 'terz', 'points' => 20, 'cards' => ['7S', '8S', '9S']]);
+    foreach ([0, 1, 2, 3, null] as $seat) {
+        $view = $engine->viewFor($state, $seat);
+        expect($view['declared'][0])->toBe([['kind' => 'terz', 'points' => 20, 'cards' => ['7S', '8S', '9S']]])
+            ->and($view)->not->toHaveKeys(['hands', 'available']);
+        if ($seat !== 0) {
+            // Nothing else from seat 0's hand.
+            foreach (['AH', 'KD', 'QC', 'TC', '7C'] as $card) {
+                expect(json_encode($view))->not->toContain("\"{$card}\"");
+            }
+        }
+    }
+    // Seat 1 hasn't declared its 50: nobody but seat 1 sees those cards.
+    expect(json_encode($engine->viewFor($state, 2)))->not->toContain('"KS"');
 });
 
 it('keeps blot secret until both its cards are played', function () {

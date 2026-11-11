@@ -32,8 +32,9 @@ Order: trump J 9 A 10 K Q 8 7; others A 10 K Q J 9 8 7. 152 card points + 10 for
 - The highest trump wins the trick, otherwise the highest card of the led suit; the winner leads.
 
 ## Declarations
-- Announced by the player before playing their first card (the server lists only combinations the player holds);
-  shown to everyone after the first trick. Undeclared combinations don't count.
+- Announced by the player before playing their first card (the server lists only combinations the player holds).
+  **Owner's rule:** the cards forming it are shown to all four players the moment it is announced (reblot.am shows them
+  before the second trick) — only those cards. Undeclared combinations don't count.
 - Sequences in one suit (order 7 8 9 10 J Q K A): 3 = **terz** 20, 4 = **50**, 5 or more = **100** (one per run).
 - Four of a kind — trump game: J 200, 9 140, A 110, 10/K/Q 100; no-trump: A 190, J/10/K/Q 100; 8s, 7s (and 9s in
   no-trump) nothing.

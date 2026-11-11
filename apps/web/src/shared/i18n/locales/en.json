@@ -862,7 +862,10 @@
     "matchTotal": "Match total",
     "dealNumber": "Deal {{n}}",
     "matchOver": "The match is over.",
-    "matchGoesOn": "The match goes on: first to {{target}}."
+    "matchGoesOn": "The match goes on: first to {{target}}.",
+    "declaredBy": "{{name}} declared {{what}}: {{cards}}",
+    "declaredWith": "{{what}}: {{cards}}",
+    "closeAnnouncement": "Close the announcement"
   },
   "domino": {
     "you": "You",

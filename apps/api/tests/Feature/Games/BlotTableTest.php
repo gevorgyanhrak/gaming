@@ -4,6 +4,7 @@ use App\Enums\BotDifficulty;
 use App\Enums\ParticipantResult;
 use App\Enums\RoomStatus;
 use App\Gameplay\Actions\GameActionService;
+use App\Gameplay\Broadcasting\RoomUpdated;
 use App\Gameplay\Lifecycle\ResumeRoundJob;
 use App\Gameplay\Rooms\RoomState;
 use App\Gameplay\Rooms\RoomStates;
@@ -17,6 +18,7 @@ use App\Models\User;
 use App\Platform\Fishka\FishkaWallets;
 use Database\Seeders\GameModeSeeder;
 use Database\Seeders\GameSeeder;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
@@ -193,4 +195,90 @@ it('ignores scores a client sends', function () {
     blotMove($room, ['type' => 'pass', 'scores' => '300,0'])->assertUnprocessable();
 
     expect(app(RoomStates::class)->current($room->refresh()->load('game'))->state['scores'])->toBe([0, 0]);
+});
+
+it('shows every announced declaration with its exact cards to all four players, live and after a reconnect', function () {
+    Event::fake([RoomUpdated::class]);
+    [$room, $users] = blotTable();
+    $states = app(RoomStates::class);
+    $current = $states->current($room);
+    $first = $current->seatsToAct[0];
+    $order = array_map(fn (int $i) => ($first + $i) % 4, range(0, 3));
+    // In play order: a terz, a 50, a 100, and a player who holds a terz but doesn't announce it.
+    $hands = [
+        ['7H', '8H', '9H', 'AD', 'KD', 'QC', 'TC', '7C'],
+        ['JS', 'QS', 'KS', 'AS', 'AH', '9C', '8C', '7D'],
+        ['8D', '9D', 'TD', 'JD', 'QD', 'KH', '7S', 'JH'],
+        ['8S', '9S', 'TS', 'TH', 'QH', 'JC', 'KC', 'AC'],
+    ];
+    $live = $current->state;
+    foreach ($order as $i => $seat) {
+        $live['hands'][$seat] = $hands[$i];
+    }
+    $live['contract'] = ['seat' => $first, 'team' => $first % 2, 'value' => 8, 'suit' => 'C', 'kaput' => false, 'doubled' => 0];
+    $live['phase'] = 'playing';
+    $live['leader'] = $first;
+    $live['available'] = array_map(fn (array $hand) => BlotCards::declarations($hand, 'C'), $live['hands']);
+    app(RoomStateStore::class)->put($room, new RoomState($current->version, $live, [$first], $current->deadline, $current->clock));
+
+    $expected = [
+        $order[0] => ['kind' => 'terz', 'points' => 20, 'cards' => ['7H', '8H', '9H']],
+        $order[1] => ['kind' => 'fifty', 'points' => 50, 'cards' => ['JS', 'QS', 'KS', 'AS']],
+        $order[2] => ['kind' => 'hundred', 'points' => 100, 'cards' => ['8D', '9D', 'TD', 'JD', 'QD']],
+    ];
+    foreach (array_slice($order, 0, 3) as $seat) {
+        blotMove($room, ['type' => 'declare', 'index' => 0])->assertOk();
+        // Every player is sent the announcement with exactly these cards at once.
+        foreach ($users as $user) {
+            Event::assertDispatched(RoomUpdated::class, fn (RoomUpdated $e) => $e->userId === $user->id
+                && collect($e->payload['events'])->contains(fn (array $ev) => $ev['type'] === 'declare' && $ev['seat'] === $seat && $ev['cards'] === $expected[$seat]['cards'])
+                && $e->payload['view']['declared'][$seat] === [$expected[$seat]]);
+        }
+        $card = $states->engine($room)->playable($states->current($room->refresh()->load(['game', 'participants']))->state, $seat)[0];
+        blotMove($room, ['type' => 'play', 'card' => $card])->assertOk();
+    }
+
+    // A player who reconnects asks for the state again: all four get the same declarations, and nothing else
+    // of anyone's hand (the fourth player's unannounced terz included).
+    $declaredCards = array_merge(...array_column($expected, 'cards'));
+    $hiddenCards = array_diff(array_merge(...$hands), $declaredCards);
+    $views = array_map(fn (User $u) => $this->actingAs($u)->getJson("/api/v1/rooms/{$room->public_id}/state")->json('data.view'), $users);
+    $room->refresh()->load(['game', 'participants']);
+    foreach ($views as $i => $view) {
+        foreach ($expected as $seat => $declaration) {
+            expect($view['declared'][$seat])->toBe([$declaration]);
+        }
+        expect($view['declared'][$order[3]])->toBe([]);
+        $mine = $room->participants->firstWhere('user_id', $users[$i]->id)->seat;
+        $own = $states->current($room)->state['hands'][$mine];
+        $public = json_encode([$view['declared'], $view['trick'], $view['last_trick']]);
+        foreach (array_diff($hiddenCards, $own, array_column($view['trick'], 'card')) as $card) {
+            expect($public)->not->toContain("\"{$card}\"");
+        }
+        expect($view)->not->toHaveKeys(['hands', 'available']);
+    }
+    expect($views[1]['declared'])->toBe($views[0]['declared'])
+        ->and($views[2]['declared'])->toBe($views[0]['declared'])
+        ->and($views[3]['declared'])->toBe($views[0]['declared']);
+});
+
+it('refuses a declaration the hand does not hold, and shows nothing for it', function () {
+    [$room, $users] = blotTable();
+    $states = app(RoomStates::class);
+    $current = $states->current($room);
+    $seat = $current->seatsToAct[0];
+    $live = $current->state;
+    $live['hands'][$seat] = ['7H', '8H', 'TH', 'AD', 'KD', 'QC', 'TC', '7C'];
+    $live['contract'] = ['seat' => $seat, 'team' => $seat % 2, 'value' => 8, 'suit' => 'C', 'kaput' => false, 'doubled' => 0];
+    $live['phase'] = 'playing';
+    $live['leader'] = $seat;
+    $live['available'][$seat] = BlotCards::declarations($live['hands'][$seat], 'C');
+    app(RoomStateStore::class)->put($room, new RoomState($current->version, $live, [$seat], $current->deadline, $current->clock));
+
+    expect($live['available'][$seat])->toBe([]);
+    blotMove($room, ['type' => 'declare', 'index' => 0])->assertUnprocessable();
+    blotMove($room, ['type' => 'declare', 'kind' => 'terz', 'cards' => '7H,8H,9H'])->assertUnprocessable();
+
+    $view = $this->actingAs($users[0])->getJson("/api/v1/rooms/{$room->public_id}/state")->json('data.view');
+    expect($view['declared'][$seat])->toBe([]);
 });

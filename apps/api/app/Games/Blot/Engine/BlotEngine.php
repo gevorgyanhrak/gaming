@@ -24,7 +24,7 @@ use App\Gameplay\Random\RandomSource;
  * - bidding: bid {value 8–24, suit S|H|D|C|N (no-trump)} (described as a range), kaput {suit}, pass, contra;
  * - answer: recontra, pass;
  * - playing: play {card}; before their first card a player may also declare {index} each combination the
- *   server lists for their hand.
+ *   server lists for their hand; its cards are shown to the whole table at once.
  *
  * State: dealer, hand_no, phase, hands (hidden), bids, contract {seat, team, value (25 = kaput), suit
  * (null = no-trump), kaput, doubled 0|1|2}, passes, to_act, leader, trick, last_trick, tricks (count per
@@ -155,7 +155,8 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
             $state['declared_index'][$seat][] = $i;
             $declaration = $state['available'][$seat][$i];
             $state['declared'][$seat][] = $declaration;
-            $events[0] = ['type' => 'declare', 'seat' => $seat, 'kind' => $declaration['kind'], 'points' => $declaration['points']];
+            // Announced and shown at once to the whole table: exactly the cards that form it (owner's rule).
+            $events[0] = ['type' => 'declare', 'seat' => $seat, 'kind' => $declaration['kind'], 'points' => $declaration['points'], 'cards' => $declaration['cards']];
 
             return new Transition($state, $events);
         }
@@ -239,14 +240,10 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
             $state['available'][$seat],
             array_keys($state['available'][$seat]),
         );
-        // Announced declarations: what and how much at once; the cards once the first trick is over.
+        // Announced declarations, with the cards that form them, for everyone (and only those cards).
         $view['declared'] = array_map(
-            fn (array $list, int $s) => array_map(
-                fn (array $d) => ['kind' => $d['kind'], 'points' => $d['points'], 'cards' => $state['declarations_shown'] || $s === $seat ? $d['cards'] : []],
-                $list,
-            ),
+            fn (array $list) => array_map(fn (array $d) => ['kind' => $d['kind'], 'points' => $d['points'], 'cards' => $d['cards']], $list),
             $state['declared'],
-            array_keys($state['declared']),
         );
 
         return $view;

@@ -2,6 +2,23 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## Blot: declared cards shown to the whole table — 2026-11-11 · DONE (owner request)
+
+- Server: a declaration's exact cards (from the server's own list for the hand) go to all four players the moment it is
+  announced — in the view (`declared`, for every seat) and in the broadcast `declare` event; nothing else of the hand.
+  Invalid declarations are refused as before. Spec updated (owner's rule; reblot.am shows them at the second trick).
+- Web: a one-line announcement banner across the top of the table frame (avatar, level, name, the declaration, its cards
+  turning over one by one; 3.5 s each, queued, closable) that covers neither the trick nor cards; the declared cards stay
+  beside or under the player's nameplate for the deal (clear of the trick); history after a reconnect comes from the
+  view; "Your combinations" shows only while you can still declare and no longer overlaps your hand.
+- Tests: unit (cards to every seat at once, the event carries them, nothing else revealed); API with four players (terz,
+  50, 100 announced in turn → every player was pushed the same cards and sees them; no other card of any hand leaks,
+  including an unannounced terz; a fresh state request returns the history; an invalid declaration is refused and shows
+  nothing); board (a new declaration is announced with its cards; older ones aren't re-announced).
+  `make test-api` → **561 passed**, `npm test` → **194 passed**, lint/types/format/build ✓.
+- Live with four browsers (local accounts player2–player5, two new): terz, 50 and 100 announced in turn — all four screens
+  showed the same cards; a reopened page showed all three at the seats.
+
 ## Blot audit and rebuild to Armenian Bazar Blot rules — 2026-11-11 · DONE (owner request)
 
 **Rules:** researched and written down in `docs/games/blot-rules.md` (sources: reblot.am — the most complete, used where
