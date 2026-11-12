@@ -882,12 +882,10 @@ export default function BlotBoard({
                 </button>
               ) : null}
             </div>
-            {/* Why the number stops (the bazar's top is 24) and what a kaput is. */}
-            {isKaput || (bidRange && bidValue >= bidRange.max) ? (
+            {/* What a kaput is, and that only another kaput goes over one. */}
+            {isKaput ? (
               <p className="text-center text-xs leading-snug text-muted">
-                {kaputOnly || !isKaput
-                  ? t('blot.bidCap', { max: bidRange?.max ?? view.contract?.value ?? 0 })
-                  : t('blot.kaputNote')}
+                {kaputOnly ? t('blot.kaputOverKaput') : t('blot.kaputNote')}
               </p>
             ) : null}
           </>

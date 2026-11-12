@@ -239,7 +239,7 @@ it('opens the bidding left of the dealer with bids from 8, kaput and pass', func
     expect(array_map('count', $state['hands']))->toBe([8, 8, 8, 8])
         ->and(array_unique(array_merge(...$state['hands'])))->toHaveCount(32)
         ->and((new BlotEngine)->seatsToAct($state))->toBe([$first])
-        ->and((new BlotEngine)->legalActions($state, $first)[0]->toArray())->toBe(['type' => 'bid', 'max' => 24, 'min' => 8])
+        ->and((new BlotEngine)->legalActions($state, $first)[0]->toArray())->toBe(['type' => 'bid', 'max' => BlotEngine::MAX_BID, 'min' => 8])
         ->and(blotTypes($state, $first))->toBe(['bid', 'kaput', 'kaput', 'kaput', 'kaput', 'kaput', 'pass']);
 });
 
@@ -247,7 +247,7 @@ it('takes only higher bids with a suit or no-trump, from anyone including a part
     $engine = new BlotEngine;
     $state = blot();
     expect($engine->isLegal($state, 0, new Action('bid', ['value' => 7, 'suit' => 'S'])))->toBeFalse()
-        ->and($engine->isLegal($state, 0, new Action('bid', ['value' => 25, 'suit' => 'S'])))->toBeFalse()
+        ->and($engine->isLegal($state, 0, new Action('bid', ['value' => 100, 'suit' => 'S'])))->toBeFalse()
         ->and($engine->isLegal($state, 0, new Action('bid', ['value' => 9, 'suit' => 'X'])))->toBeFalse()
         ->and($engine->isLegal($state, 0, new Action('bid', ['value' => '9', 'suit' => 'S'])))->toBeFalse()
         ->and($engine->isLegal($state, 0, new Action('bid', ['value' => 9, 'suit' => 'N'])))->toBeTrue();
@@ -259,31 +259,30 @@ it('takes only higher bids with a suit or no-trump, from anyone including a part
     expect($state['contract'])->toMatchArray(['seat' => 2, 'team' => 0, 'value' => 11]);
 });
 
-it('stops number bids at 24 but still takes a kaput over them — two separate rules', function () {
+it('takes number bids above 24, and a kaput over any number', function () {
     $engine = new BlotEngine;
-    $state = blotAct(blot(), 'bid', ['value' => 24, 'suit' => 'H']);   // seat 0 bids the top number
+    $state = blotAct(blot(), 'bid', ['value' => 24, 'suit' => 'H']);
+    expect($engine->isLegal($state, 1, new Action('bid', ['value' => 25, 'suit' => 'S'])))->toBeTrue();
 
-    // Nobody may go above 24 with a number, not even with a big combination in hand: 25 is not a bid.
-    foreach ([1, 2, 3] as $seat) {
-        expect($engine->isLegal($state, $seat, new Action('bid', ['value' => 25, 'suit' => 'H'])))->toBeFalse()
-            ->and($engine->isLegal($state, $seat, new Action('bid', ['value' => 30, 'suit' => 'S'])))->toBeFalse();
-    }
-    expect(blotTypes($state, 1))->toBe(['kaput', 'kaput', 'kaput', 'kaput', 'kaput', 'pass', 'contra']);
+    $state = blotAct($state, 'bid', ['value' => 30, 'suit' => 'S']);   // seat 1 goes on to 30
+    expect($state['contract'])->toMatchArray(['seat' => 1, 'value' => 30, 'kaput' => false])
+        ->and($engine->isLegal($state, 2, new Action('bid', ['value' => 30, 'suit' => 'H'])))->toBeFalse()
+        ->and(blotTypes($state, 2))->toBe(['bid', 'kaput', 'kaput', 'kaput', 'kaput', 'kaput', 'pass', 'contra']);
 
-    // The partner (seat 2) may still bid kaput over the 24: accepted as its own contract.
-    $partner = blotAct(blotAct($state, 'pass'), 'kaput', ['suit' => 'H']);
-    expect($partner['contract'])->toMatchArray(['seat' => 2, 'team' => 0, 'value' => 25, 'kaput' => true, 'suit' => 'H']);
-
-    // So may an opponent, in any suit or Boy.
-    $opponent = blotAct($state, 'kaput', ['suit' => 'N']);
-    expect($opponent['contract'])->toMatchArray(['seat' => 1, 'team' => 1, 'value' => 25, 'kaput' => true, 'suit' => null]);
+    // Kaput is its own bid, not a number, and still beats the 30.
+    $state = blotAct($state, 'kaput', ['suit' => 'H']);
+    expect($state['contract'])->toMatchArray(['seat' => 2, 'team' => 0, 'value' => BlotEngine::KAPUT, 'kaput' => true, 'suit' => 'H']);
 });
 
-it('lets nobody bid after kaput except with a contra', function () {
+it('takes after a kaput only another kaput, a pass or a contra', function () {
     $state = blotAct(blot(), 'kaput', ['suit' => 'D']);
 
     expect($state['contract'])->toMatchArray(['value' => 25, 'kaput' => true, 'suit' => 'D'])
-        ->and(blotTypes($state))->toBe(['pass', 'contra']);
+        ->and(blotTypes($state))->toBe(['kaput', 'kaput', 'kaput', 'kaput', 'kaput', 'pass', 'contra'])
+        ->and(fn () => blotAct($state, 'bid', ['value' => 26, 'suit' => 'S']))->toThrow(IllegalAction::class);
+
+    $state = blotAct($state, 'kaput', ['suit' => 'N']);   // seat 1 over it
+    expect($state['contract'])->toMatchArray(['seat' => 1, 'team' => 1, 'kaput' => true, 'suit' => null]);
 });
 
 it('ends the bidding with a contra, leaving the contract pair recontra or pass', function () {

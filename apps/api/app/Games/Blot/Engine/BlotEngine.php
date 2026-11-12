@@ -22,7 +22,8 @@ use App\Gameplay\Random\RandomSource;
  * Phases: dealing (a pause while the table watches the deal, `deal_ms`) → bidding → answer (after Quansh: each player of the contract pair in turn may say Sur — ×4 — or
  * pass) → playing → over (a pause showing the deal's result) → the next deal. A kaput contract stops as
  * soon as the defenders take a trick ("kaput_failed"). Actions:
- * - bidding: bid {value 8–24, suit S|H|D|C|N (no-trump)} (described as a range), kaput {suit}, pass, contra;
+ * - bidding: bid {value from 8 up, suit S|H|D|C|N (no-trump)} (described as a range), kaput {suit} (over any number,
+ *   and over a kaput), pass, contra;
  * - answer: recontra, pass;
  * - playing: play {card}; before their first card a player may also declare {index} each combination the
  *   server lists for their hand; its cards are shown to the whole table at once.
@@ -39,7 +40,11 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
 {
     public const MIN_BID = 8;
 
-    public const MAX_BID = 24;
+    /**
+     * Number bids have no ceiling in the rules (owner, 2026-11-12): a bid is only checked against what the pair
+     * makes. This bound just keeps the range finite; no deal can make a bid near it.
+     */
+    public const MAX_BID = 99;
 
     public const KAPUT = 25;
 
@@ -90,14 +95,15 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
         }
         if ($state['phase'] === 'bidding') {
             $actions = [];
+            // Numbers go up from the last bid; kaput beats any number, and after a kaput only another kaput.
             if ($contract === null || ! $contract['kaput']) {
                 $lowest = ($contract['value'] ?? self::MIN_BID - 1) + 1;
                 if ($lowest <= self::MAX_BID) {
                     $actions[] = new Action('bid', ['max' => self::MAX_BID, 'min' => $lowest]);
                 }
-                foreach (self::BID_SUITS as $suit) {
-                    $actions[] = new Action('kaput', ['suit' => $suit]);
-                }
+            }
+            foreach (self::BID_SUITS as $suit) {
+                $actions[] = new Action('kaput', ['suit' => $suit]);
             }
             $actions[] = new Action('pass');
             if ($contract !== null && $contract['team'] !== $seat % 2) {

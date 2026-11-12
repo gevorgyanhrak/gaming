@@ -26,10 +26,10 @@ offer to play a bot (chosen by the player before the game). Dead "Bot" pill code
 (Armenian, player1, 1440×900 and 390×844): cards fly to each seat, hand fills face up, header "Dealing", bazar opens
 ≈3.1 s after the deal starts with 8 cards in hand.
 
-**Follow-up — the 24 limit and kaput (owner's rule, same day):** the engine already capped number bids at 24
-(`MAX_BID`) and kept kaput a separate action that stays legal after a 24; now pinned by a unit test (no 25/30 number
-bid from anyone; partner's and opponent's kaput over 24 accepted) and a board test. The bazar panel shows Kaput as a
-red seal (not a number) and explains "Number bids go up to 24; above that only Kaput" / what a kaput is (en, ru, hy).
+**Follow-up — bids above 24 (owner, same day, replacing the "24 limit"):** number bids have no ceiling (`MAX_BID` 99 only
+keeps the range finite); kaput beats any number and after a kaput only another kaput, pass or Quansh. Unit tests:
+24 → 25 → 30 → kaput; kaput over kaput; number after kaput refused. Board test: 26 sent as a number; over a kaput only
+kaput, with the caption "Over a Kaput only another Kaput".
 
 ## Blot: kaput stop, Sur by either partner, new table, dealing and turn animation — 2026-11-12 · DONE except the "24" rule
 
