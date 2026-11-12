@@ -17,6 +17,7 @@ use App\Gameplay\Engine\Transition;
 use App\Gameplay\Exceptions\IllegalAction;
 use App\Gameplay\Exceptions\RoomNotActive;
 use App\Gameplay\Exceptions\VersionConflict;
+use App\Gameplay\Lifecycle\AiTakeover;
 use App\Gameplay\Lifecycle\GameFinisher;
 use App\Gameplay\Lifecycle\GameScheduler;
 use App\Gameplay\Lifecycle\TimeControl;
@@ -48,6 +49,7 @@ class GameActionService
         private readonly GameScheduler $scheduler,
         private readonly RoomEvents $events,
         private readonly RoomStakes $stakes,
+        private readonly AiTakeover $takeover,
     ) {}
 
     /**
@@ -74,13 +76,23 @@ class GameActionService
                     throw new RoomNotActive(__('platform.play.not_in_progress'));
                 }
 
-                return $this->othersPlayOn($room, $actor)
-                    ? $this->depart($room, $current, $actor, $clientActionId)
-                    : $this->end($room, $current, $actor, GameMove::RESIGN, $clientActionId);
+                return match (true) {
+                    $this->takeover->takesLeaversSeat($room, $actor) => $this->leaveToAi($room, $current, $actor),
+                    $this->othersPlayOn($room, $actor) => $this->depart($room, $current, $actor, $clientActionId),
+                    default => $this->end($room, $current, $actor, GameMove::RESIGN, $clientActionId),
+                };
             }
 
+            // Someone who left plays no more: AI has their seat (AiTakeover).
+            if (! $actor->is_active) {
+                throw new RoomNotActive(__('platform.play.not_in_progress'));
+            }
             if (! in_array($actor->seat, $current->seatsToAct, true)) {
                 throw new IllegalAction(__('platform.play.not_your_turn'));
+            }
+            // A move from a player AI stood in for: they are back, the seat is theirs again.
+            if ($actor->ai_controlled && $actor->user_id !== null && ($clientActionId === null || ! str_starts_with($clientActionId, GameMove::AUTO_PREFIX))) {
+                $actor->forceFill(['ai_controlled' => false])->save();
             }
 
             $time = TimeControl::for($room);
@@ -232,6 +244,21 @@ class GameActionService
             // A game played for chips goes on without them: their chips go back to their wallet.
             $this->stakes->cashOut($room, $leaver, $transition->state);
         });
+    }
+
+    /**
+     * Leaving a table of 3+ that plays on: the leaver loses, and AI plays their seat to the end, so the
+     * others' game carries on unchanged (AiTakeover). Nothing changes in the game itself.
+     */
+    private function leaveToAi(GameRoom $room, RoomState $current, GameParticipant $leaver): ActionResult
+    {
+        DB::transaction(function () use ($room, $leaver) {
+            $this->finisher->finishParticipant($leaver, $room->game_id, ParticipantResult::Loss);
+            $leaver->forceFill(['ai_controlled' => true])->save();
+        });
+        DB::afterCommit(fn () => $this->takeover->playNow($room));
+
+        return new ActionResult($current->version);
     }
 
     /**

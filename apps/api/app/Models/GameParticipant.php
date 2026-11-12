@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $bot_profile_id
  * @property BotDifficulty|null $bot_difficulty
  * @property bool $is_active
+ * @property bool $ai_controlled AI plays this person's seat (they are away, or left a table that plays on).
  * @property ParticipantResult|null $result
  * @property int|null $score
  * @property int $stake Fishkas paid for the seat (entry fee or poker buy-in).
@@ -25,7 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read User|null $user
  * @property-read BotProfile|null $bot
  */
-#[Fillable(['seat', 'user_id', 'bot_profile_id', 'bot_difficulty', 'is_active'])]
+#[Fillable(['seat', 'user_id', 'bot_profile_id', 'bot_difficulty', 'is_active', 'ai_controlled'])]
 class GameParticipant extends Model
 {
     /**
@@ -37,6 +38,7 @@ class GameParticipant extends Model
             'seat' => 'integer',
             'bot_difficulty' => BotDifficulty::class,
             'is_active' => 'boolean',
+            'ai_controlled' => 'boolean',
             'result' => ParticipantResult::class,
             'score' => 'integer',
         ];
@@ -69,5 +71,11 @@ class GameParticipant extends Model
     public function isBot(): bool
     {
         return $this->bot_profile_id !== null;
+    }
+
+    /** Whether AI makes this seat's moves: an AI player, or a person's seat AI plays for them now. */
+    public function playedByAi(): bool
+    {
+        return $this->isBot() || $this->ai_controlled;
     }
 }

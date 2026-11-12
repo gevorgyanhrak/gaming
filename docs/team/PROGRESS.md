@@ -15,7 +15,7 @@ choice, matchmaking humans first then AI fills the seats, AI never marked, AI ho
 tables of 3+ (they can come back; Leave = loss; 1-v-1: the one who stays wins). Shared services, each game keeps its bot.
 - [x] 1. AI wording (en/ru/hy), highest level via `Gameplay/Bots/AiPlayers`, no difficulty picker, Bot pills removed from all boards — this commit.
 - [x] 2. Matchmaking: people first, then `Matchmaker::fillWithAi` seats everyone waiting + AI in an ordinary matchmaking room (no offer, no countdown; admin: fill or keep waiting) — this commit.
-- [ ] 3. AI takeover of a disconnected player's seat (3+ seats), back on return.
+- [x] 3. AI takeover (`Gameplay/Lifecycle/AiTakeover`, ADR 0021): away → AI holds the seat, back on return; Leave → loss, AI finishes the seat (not chip tables) — this commit.
 
 **New games (owner, 2026-11-11)** — brief in the owner's message: add Blackjack, Domino, Ludo, 8-ball pool, Rummy, Hearts,
 Spades, Battleship, Connect Four, Solitaire, and Blot (the owner thought it existed; it didn't — "blot also"), one at a
@@ -62,6 +62,7 @@ Later (older backlog):
 
 ## Done (recent)
 
+- 2026-11-12 · AI platform-wide (ADR 0021): Play against AI at its strongest, people-first matchmaking with AI filling seats, AI standing in for away/leaving players — 2be2a17, 450be1c + this commit.
 - 2026-11-12 · Blot bots: strategic Quansh (sampled deals played out with the real rules; 4 skills on 3 difficulties) — this commit.
 - 2026-11-12 · Blot: number bids above 24, up to 80, Kaput over any number and over a Kaput (owner's answers) — this commit; cfe5fe6 had capped at 24.
 - 2026-11-12 · Blot: the deal is shown card by card from the deck (server `dealing` phase); no "Bot" marks at tables, bots have Armenian names — this commit.

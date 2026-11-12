@@ -67,7 +67,7 @@ it('never ends games when the platform turns it off', function () {
     expect($room->fresh()->status)->toBe(RoomStatus::Active);
 });
 
-it('takes a leaver out of a bigger table and lets the others play on', function () {
+it('lets AI hold an away player’s seat at a bigger table; leaving still takes them out with their chips', function () {
     $this->seed([GameSeeder::class, GameModeSeeder::class]);
     $mode = Game::query()->where('slug', 'poker')->sole()->modes()->sole();
     $players = User::factory()->count(3)->create();
@@ -82,7 +82,15 @@ it('takes a leaver out of a bigger table and lets the others play on', function 
     $room->refresh()->load(['game', 'participants']);
     $leaver = $room->participants->firstWhere('user_id', $players->first()->id);
     expect($room->status)->toBe(RoomStatus::Active)
-        ->and($leaver->result)->toBe(ParticipantResult::Abandoned)
+        ->and($leaver->ai_controlled)->toBeTrue()
+        ->and($leaver->result)->toBeNull()
+        ->and(app(RoomStates::class)->current($room)->state['out'][$leaver->seat])->toBeFalse();
+
+    // Pressing Leave at a table played for chips cashes out as before.
+    $this->actingAs($players->first())->postJson("/api/v1/rooms/{$room->public_id}/leave")->assertOk();
+    $room->refresh()->load(['game', 'participants']);
+    $leaver = $room->participants->firstWhere('user_id', $players->first()->id);
+    expect($leaver->result)->toBe(ParticipantResult::Loss)
         ->and(app(RoomStates::class)->current($room)->state['out'][$leaver->seat])->toBeTrue();
 
     $live = app(RoomStates::class)->current($room)->state;

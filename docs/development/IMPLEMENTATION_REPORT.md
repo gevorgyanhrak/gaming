@@ -2,6 +2,26 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## AI platform-wide (owner's "Global changes") — 2026-11-12 · DONE
+
+1. **Play against AI** (2be2a17): `Gameplay/Bots/AiPlayers` — highest difficulty the game has bots for; difficulty
+   picker and `bot_difficulty` removed (API, lobby, Play again); "bot" → "AI" in en/ru/hy ("Խաղալ AI-ի դեմ"); the
+   leftover Bot pills in 7 boards removed (TD-005).
+2. **People first, AI fills** (450be1c): `Matchmaker::fillWithAi` after the game's AI timeout seats everyone waiting
+   (oldest first) + AI in a `matchmaking` room; offer/countdown/`accept-bot` gone; `offer` games migrated to `auto`;
+   admin: "Fill the empty seats with AI" / "Keep waiting for people".
+3. **AI stands in** (this commit, ADR 0021): `Gameplay/Lifecycle/AiTakeover`, `game_participants.ai_controlled`.
+   Away at 3+ seats with another person → AI holds the seat (presence sweep), back on the next report or move;
+   Leave → Loss, AI plays the seat on (Blot's partner no longer loses; chip tables keep cash-out); 2-player: the one
+   who stays wins. Leavers get no legal actions and can't move. AI moves for a person's seat are `auto:` (no XP).
+
+**Tests:** `tests/Feature/Gameplay/AiTakeoverTest.php` (5), matchmaking (people first, fill in a matchmaking room,
+off, bigger tables), rooms (highest level, old level ignored), Presence/Blot updated to the new rules.
+`make test-api` 589 passed; `make lint-api` OK; web 199 tests, typecheck, lint, format, build OK.
+
+**Not done:** each game's own AI strategy is unchanged here (Blot's Quansh is the newest); no live multi-browser
+check of a takeover yet.
+
 ## Blot bots: strategic Quansh — 2026-11-12 · DONE
 
 **What:** `app/Games/Blot/Bot/QuanshAdvisor.php` decides Quansh from the bot's seat view only (its cards, the bazar,

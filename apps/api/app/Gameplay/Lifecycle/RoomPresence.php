@@ -12,13 +12,15 @@ use Illuminate\Support\Facades\Cache;
 
 /**
  * Whether players are still at their game. The game page reports every few seconds; a player who
- * hasn't been seen for the admin-set `matchmaking.abandon_after_seconds` (0 = never) has left, and
- * loses (or, at a bigger table, is taken out while the others play on).
+ * hasn't been seen for the admin-set `matchmaking.abandon_after_seconds` (0 = never) is away: at a table
+ * of 3+ where another person plays, AI holds their seat until they are back (AiTakeover); otherwise they
+ * have left, and lose (or, at a bigger table, are taken out while the others play on).
  */
 class RoomPresence
 {
     public function __construct(
         private readonly GameActionService $actions,
+        private readonly AiTakeover $takeover,
         private readonly Settings $settings,
     ) {}
 
@@ -51,14 +53,14 @@ class RoomPresence
         $rooms = GameRoom::query()->where('status', RoomStatus::Active)->with(['game', 'participants'])->get();
         foreach ($rooms as $room) {
             foreach ($room->participants as $participant) {
-                if ($participant->user_id === null || ! $participant->is_active) {
+                if ($participant->user_id === null || ! $participant->is_active || $participant->ai_controlled) {
                     continue;
                 }
                 $last = $this->store()->get($this->key($room, $participant));
                 if (! is_numeric($last)) {
                     // Unknown (e.g. the store was flushed): count from now rather than punish.
                     $this->seen($room, $participant);
-                } elseif ((int) $last < $cutoff) {
+                } elseif ((int) $last < $cutoff && ! $this->takeover->standIn($room, $participant)) {
                     $this->actions->abandon($room, $participant);
                 }
             }

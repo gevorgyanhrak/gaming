@@ -7,6 +7,7 @@ use App\Enums\RoomType;
 use App\Gameplay\Actions\GameActionService;
 use App\Gameplay\Bots\AiPlayers;
 use App\Gameplay\Engine\Action;
+use App\Gameplay\Lifecycle\AiTakeover;
 use App\Gameplay\Lifecycle\RoomPresence;
 use App\Gameplay\Rooms\PlayGroups;
 use App\Gameplay\Rooms\PlayRules;
@@ -126,9 +127,9 @@ class RoomController extends Controller
 
     /**
      * "Still here": the game page calls this every few seconds. Players who stop calling for longer than
-     * the platform allows lose the game (see RoomPresence).
+     * the platform allows are away: AI holds their seat at tables of 3+, otherwise they lose (RoomPresence).
      */
-    public function presence(Request $request, GameRoom $room, RoomPresence $presence): JsonResponse
+    public function presence(Request $request, GameRoom $room, RoomPresence $presence, AiTakeover $takeover): JsonResponse
     {
         /** @var User $user */
         $user = $request->user();
@@ -136,6 +137,8 @@ class RoomController extends Controller
 
         if ($participant !== null && $participant->is_active && $room->isActive()) {
             $presence->seen($room, $participant);
+            // Back at the table: a seat AI held while they were away is theirs again.
+            $takeover->handBack($room, $participant);
         }
 
         return response()->json(null, 204);

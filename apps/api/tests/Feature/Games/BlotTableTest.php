@@ -15,7 +15,6 @@ use App\Models\Game;
 use App\Models\GameMode;
 use App\Models\GameRoom;
 use App\Models\User;
-use App\Platform\Fishka\FishkaWallets;
 use Database\Seeders\GameModeSeeder;
 use Database\Seeders\GameSeeder;
 use Illuminate\Support\Facades\Event;
@@ -76,23 +75,20 @@ it('takes bids with a value and a suit through the API', function () {
     expect(app(RoomStates::class)->current($room->refresh())->state['contract'])->toMatchArray(['value' => 9, 'suit' => 'S']);
 });
 
-it('makes the partner of a player who leaves lose too, and pays the other team', function () {
+it('lets a player leave without ending the game: they lose, AI plays their seat and their partner plays on', function () {
     [$room, $users] = blotTable();
-    $wallets = app(FishkaWallets::class);
     $leaver = $room->participants->firstWhere('seat', 1);
-    $before = $wallets->wallet($users[0])->balance;
 
     $this->actingAs(User::query()->find($leaver->user_id))->postJson("/api/v1/rooms/{$room->public_id}/leave")->assertOk();
 
     $room->refresh()->load('participants');
     $result = fn (int $seat) => $room->participants->firstWhere('seat', $seat)->result;
-    expect($room->status)->toBe(RoomStatus::Finished)
+    expect($room->status)->toBe(RoomStatus::Active)
         ->and($result(1))->toBe(ParticipantResult::Loss)
-        ->and($result(3))->toBe(ParticipantResult::Loss)
-        ->and($result(0))->toBe(ParticipantResult::Win)
-        ->and($result(2))->toBe(ParticipantResult::Win)
-        // The pot (4 × 500) goes to the two winners.
-        ->and($wallets->wallet(User::query()->find($room->participants->firstWhere('seat', 0)->user_id))->balance)->toBe($before + 1000);
+        ->and($room->participants->firstWhere('seat', 1)->ai_controlled)->toBeTrue()
+        // Their partner's game isn't decided by it.
+        ->and($result(3))->toBeNull()
+        ->and($result(0))->toBeNull();
 });
 
 it('seats three bots at a bot table', function () {

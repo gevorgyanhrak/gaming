@@ -8,7 +8,8 @@ use App\Gameplay\Rooms\RoomStates;
 use App\Models\GameRoom;
 
 /**
- * After a room changes: schedule the turn timeout and any bot turns for the new version, or the end
+ * After a room changes: schedule the turn timeout and any AI turns (AI players, and people's seats AI
+ * plays for them: AiTakeover) for the new version, or the end
  * of a pause between rounds. Every job carries the version it was scheduled for and does nothing if
  * the room has moved on since. Call after the transaction commits.
  */
@@ -41,7 +42,7 @@ class GameScheduler
 
         $delay = config('gameplay.bot_delay_ms');
         foreach ($room->participants as $participant) {
-            if ($participant->isBot() && in_array($participant->seat, $state->seatsToAct, true)) {
+            if ($participant->playedByAi() && in_array($participant->seat, $state->seatsToAct, true)) {
                 BotTurnJob::dispatch($room->id, $state->version, $participant->seat)
                     ->onQueue(config('gameplay.queue'))
                     ->delay(now()->addMilliseconds(random_int($delay['min'], $delay['max'])));

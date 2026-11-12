@@ -20,7 +20,8 @@ class RoomPresenter
     {
         $engine = $this->states->engine($room);
         $seat = $viewer?->seat;
-        $canAct = $seat !== null && in_array($seat, $state->seatsToAct, true);
+        // Not after leaving: AI plays the seat to the end then (AiTakeover).
+        $canAct = $seat !== null && $viewer->is_active && in_array($seat, $state->seatsToAct, true);
 
         return [
             'room' => $room->public_id,

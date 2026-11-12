@@ -168,6 +168,12 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   (`features/play/turnCaption.ts`). Invite links: `/join/:code` (`JoinPage`); `withNext` keeps the
   destination through login/register/verify. Translated server data refetches on language change
   (`useRefreshOnLanguageChange` + `translatedQuery`).
+- AI platform-wide (ADR 0021): `Gameplay/Bots/AiPlayers` seats AI at the game's highest level (no difficulty
+  choice, no `bot_difficulty` in the API); `Matchmaker::fillWithAi` seats waiting people + AI after the game's AI
+  timeout in an ordinary matchmaking room (no offer); nothing marks AI in a room. `Gameplay/Lifecycle/AiTakeover` +
+  `game_participants.ai_controlled`: at 3+ seats with another person, away → AI holds the seat until presence/move,
+  Leave → Loss and AI finishes the seat (chip tables keep cash-out); 2-player games never. `playedByAi()` drives
+  `GameScheduler`/`BotTurnJob`; held seats' moves use `auto:ai{version}` ids (no XP).
 - Bots: `BotSelector::pickMany` never seats the same bot twice while the game has enough bots (borrows
   other levels; difficulty is per seat); admin Bots list warns about shortages. A chess-clock flag-fall
   is a `loss`; per-turn timer timeouts and leaving are `abandoned` ("Timed out").
