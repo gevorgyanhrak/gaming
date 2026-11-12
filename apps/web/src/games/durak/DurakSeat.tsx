@@ -17,8 +17,6 @@ interface SeatProps {
   acting: boolean
   /** Share of the turn left, for the timer ring of the acting player. */
   share: number | null
-  /** "Bot" when a bot plays this seat. */
-  bot: string | null
   level: number | undefined
   frame: string | null | undefined
   label: string
@@ -54,7 +52,6 @@ export function CompactSeat({
   role,
   acting,
   share,
-  bot,
   level,
   frame,
   label,
@@ -74,11 +71,6 @@ export function CompactSeat({
       </span>
       <span className="relative mt-1" data-seat-anchor={seat}>
         <Avatar name={name} acting={acting} share={share} size="sm" level={level} frame={frame} />
-        {bot ? (
-          <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 rounded-full bg-black/75 px-1 text-[0.55rem] leading-tight font-semibold tracking-wide text-white/85 uppercase">
-            {bot}
-          </span>
-        ) : null}
       </span>
       <span className="mt-1 max-w-full truncate text-[0.72rem] font-medium text-white/85">
         {name}
@@ -106,7 +98,6 @@ export function PanelSeat({
   role,
   acting,
   share,
-  bot,
   level,
   frame,
   label,
@@ -133,11 +124,6 @@ export function PanelSeat({
       ) : null}
       <span className="absolute top-1.5 right-2 left-11 flex items-center gap-1.5 text-sm text-white/80">
         <span className="truncate">{name}</span>
-        {bot ? (
-          <span className="shrink-0 rounded-full bg-black/60 px-1.5 py-px text-[0.65rem] font-semibold tracking-wide text-white/85 uppercase">
-            {bot}
-          </span>
-        ) : null}
       </span>
       <span className="mt-2 flex items-center gap-2">
         <span className="flex min-h-16" aria-hidden="true">

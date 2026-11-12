@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Enums\BotDifficulty;
 use App\Gameplay\Matchmaking\Matchmaker;
 use App\Gameplay\Matchmaking\Ticket;
 use App\Http\Controllers\Controller;
@@ -68,11 +67,10 @@ class MatchmakingController extends Controller
 
     public function acceptBot(Request $request, Matchmaker $matchmaker): JsonResponse
     {
-        $request->validate(['bot_difficulty' => ['sometimes', Rule::enum(BotDifficulty::class)]]);
         /** @var User $user */
         $user = $request->user();
 
-        $room = $matchmaker->acceptBot($user, BotDifficulty::tryFrom($request->string('bot_difficulty')->toString()) ?? BotDifficulty::Medium);
+        $room = $matchmaker->acceptBot($user);
 
         if ($room === null) {
             throw ValidationException::withMessages(['ticket' => __('platform.play.no_bot_offer')]);

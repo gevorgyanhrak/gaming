@@ -21,7 +21,6 @@ export interface Matchmaking {
 }
 export type GameStat = Schemas['GameStatResource']
 export type GameAction = { type: string } & Record<string, unknown>
-export type BotDifficulty = 'easy' | 'medium' | 'hard'
 
 export const matchmakingKey = ['matchmaking'] as const
 /** Games the player is currently in (GET /me/rooms). */
@@ -52,18 +51,13 @@ export interface TableTerms {
 }
 
 /** `players`: everyone at the table, you included (1: alone against the dealer). */
-export const createBotRoom = (
-  gameModeId: number,
-  difficulty: BotDifficulty,
-  players = 2,
-  terms: TableTerms = {},
-) =>
+/** A table against AI (always at its strongest; no level to choose). */
+export const createBotRoom = (gameModeId: number, players = 2, terms: TableTerms = {}) =>
   apiRequest<RoomResponse>('/api/v1/rooms', {
     method: 'POST',
     body: {
       game_mode_id: gameModeId,
       type: 'bot',
-      bot_difficulty: difficulty,
       ...(players !== 2 ? { opponents: players - 1 } : {}),
       ...terms,
     },
@@ -126,11 +120,10 @@ export const matchmakingHeartbeat = () =>
 
 export const cancelMatchmaking = () => apiRequest<void>('/api/v1/matchmaking', { method: 'DELETE' })
 
-export const acceptBotGame = (difficulty: BotDifficulty = 'medium') =>
-  apiRequest<{ data: Matchmaking }>('/api/v1/matchmaking/accept-bot', {
-    method: 'POST',
-    body: { bot_difficulty: difficulty },
-  }).then(unwrap)
+export const acceptBotGame = () =>
+  apiRequest<{ data: Matchmaking }>('/api/v1/matchmaking/accept-bot', { method: 'POST' }).then(
+    unwrap,
+  )
 
 export const fetchMyRooms = (signal?: AbortSignal) =>
   apiRequest<{ data: Room[] }>('/api/v1/me/rooms', { signal }).then(unwrap)

@@ -67,7 +67,7 @@ describe('Playing a game', () => {
     expect(calls).toBe(2)
   }, 10_000)
 
-  it('starts a bot game at the chosen level', async () => {
+  it('starts a game against AI, with no level to choose', async () => {
     serveGame()
     let body: unknown
     server.use(
@@ -79,12 +79,13 @@ describe('Playing a game', () => {
     )
     const { router } = renderRoute('/games/tictactoe')
 
-    await userEvent.click(await screen.findByRole('radio', { name: 'Hard' }))
+    expect(await screen.findByText('AI plays at its strongest.')).toBeInTheDocument()
+    expect(screen.queryByRole('radio', { name: 'Hard' })).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Start game' }))
 
     await screen.findByText('Your turn')
     expect(router.state.location.pathname).toBe('/rooms/room-9')
-    expect(body).toEqual({ game_mode_id: 7, type: 'bot', bot_difficulty: 'hard' })
+    expect(body).toEqual({ game_mode_id: 7, type: 'bot' })
   })
 
   it('lets you choose the table size for games with more than two players', async () => {
@@ -181,7 +182,7 @@ describe('Playing a game', () => {
     const { router } = renderRoute('/games/tictactoe')
 
     expect(await screen.findByText(/No one is available right now/)).toBeInTheDocument()
-    await userEvent.click(screen.getAllByRole('button', { name: 'Play against a bot' })[0]!)
+    await userEvent.click(screen.getAllByRole('button', { name: 'Play against AI' })[0]!)
 
     await screen.findByText('Your turn')
     expect(router.state.location.pathname).toBe('/rooms/room-9')

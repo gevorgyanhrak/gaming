@@ -76,7 +76,6 @@ export default function DurakBoard({
   onAction,
   pending,
   players = {},
-  bots = {},
   levels = {},
   frames = {},
 }: BoardProps) {
@@ -200,7 +199,6 @@ export default function DurakBoard({
     const acting = !finished && state.seats_to_act.includes(other)
     const count = view.hand_counts[other] ?? 0
     const role = roleOf(other)
-    const bot = bots[other] ? t('room.bot') : null
     return {
       key: other,
       seat: other,
@@ -209,10 +207,9 @@ export default function DurakBoard({
       role,
       acting,
       share: acting ? turnShare : null,
-      bot,
       level: levels[other],
       frame: frames[other],
-      label: [t('durak.opponentCards', { name: nameOf(other), count }), bot, role?.text]
+      label: [t('durak.opponentCards', { name: nameOf(other), count }), role?.text]
         .filter(Boolean)
         .join(', '),
     }

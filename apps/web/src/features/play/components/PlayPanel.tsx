@@ -25,7 +25,6 @@ import {
   joinRoom,
   matchmakingKey,
   startMatchmaking,
-  type BotDifficulty,
 } from '../api'
 import { FishkaIcon } from '@/features/wallet/components/FishkaIcon'
 import { useWallet } from '@/features/wallet/hooks'
@@ -48,7 +47,6 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
   const modes = game.modes ?? []
   const Preview = modePreviews[game.slug]
   const [modeSlug, setModeSlug] = useState(modes[0]?.slug ?? '')
-  const [difficulty, setDifficulty] = useState<BotDifficulty>('medium')
   const [code, setCode] = useState('')
   const id = useId()
   const mode = modes.find((m) => m.slug === modeSlug)
@@ -101,8 +99,7 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
   })
   const bot = useMutation({
     // A mode with one table size (blot: four) seats that many.
-    mutationFn: (id: number) =>
-      createBotRoom(id, difficulty, tableSize ?? mode?.min_players, terms),
+    mutationFn: (id: number) => createBotRoom(id, tableSize ?? mode?.min_players, terms),
     onSuccess: toRoom,
   })
   // A private table is for friends: at least two seats.
@@ -313,20 +310,7 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
             run: () => modeId !== undefined && bot.mutate(modeId),
           }}
         >
-          {alone ? (
-            <p className="text-sm text-muted">{t('play.aloneHint')}</p>
-          ) : (
-            <Segmented
-              fill
-              label={t('play.botDifficulty')}
-              value={difficulty}
-              options={(['easy', 'medium', 'hard'] as const).map((d) => ({
-                value: d,
-                label: t(`play.difficulty.${d}`),
-              }))}
-              onChange={setDifficulty}
-            />
-          )}
+          <p className="text-sm text-muted">{alone ? t('play.aloneHint') : t('play.aiHint')}</p>
         </ModeCard>
 
         <ModeCard

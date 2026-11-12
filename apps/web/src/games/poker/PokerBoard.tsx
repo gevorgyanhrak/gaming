@@ -46,7 +46,6 @@ export default function PokerBoard({
   onAction,
   pending,
   players = {},
-  bots = {},
   levels = {},
   frames = {},
 }: BoardProps) {
@@ -210,9 +209,7 @@ export default function PokerBoard({
                   key={seat}
                   aria-current={acting ? 'step' : undefined}
                   data-poker-me={seat === me ? '' : undefined}
-                  aria-label={`${name(seat)}, ${t('poker.chips', { count: stack })}${
-                    seat !== me && bots[seat] ? `, ${t('room.bot')}` : ''
-                  }`}
+                  aria-label={`${name(seat)}, ${t('poker.chips', { count: stack })}`}
                 >
                   <div
                     className={`absolute z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center transition-opacity ${
@@ -311,11 +308,6 @@ export default function PokerBoard({
                       <span className="block text-xs font-bold text-gold tabular-nums">
                         {stack.toLocaleString(i18n.language)}
                       </span>
-                      {seat !== me && bots[seat] ? (
-                        <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-1.5 py-0.5 text-[0.65rem] leading-none font-semibold tracking-wide text-white/85 uppercase">
-                          {t('room.bot')}
-                        </span>
-                      ) : null}
                       {status ? (
                         <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-black/80 px-2 py-0.5 text-[0.65rem] font-semibold whitespace-nowrap uppercase">
                           {status}

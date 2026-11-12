@@ -12,11 +12,6 @@ export interface BoardProps {
   pending: boolean
   /** Display names by seat, for boards that show the players (poker). */
   players?: Partial<Record<number, string>>
-  /**
-   * Not passed at the table any more: bots appear as ordinary players there (owner, 2026-11-12). Boards
-   * still accept it until their old "Bot" pills are removed (TECHNICAL_DEBT).
-   */
-  bots?: Partial<Record<number, boolean>>
   /** Levels by seat, for boards that show the players' avatars. */
   levels?: Partial<Record<number, number>>
   /** Avatar frames by seat, for boards that draw their own avatars. */

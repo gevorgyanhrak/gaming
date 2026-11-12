@@ -95,7 +95,6 @@ export default function LudoBoard({
   onAction,
   pending,
   players = {},
-  bots = {},
   levels = {},
 }: BoardProps) {
   const { t } = useTranslation()
@@ -325,14 +324,7 @@ export default function LudoBoard({
                   className="size-4 shrink-0 rounded-full border border-black/40"
                   style={{ background: COLOURS[colour] }}
                 />
-                <span className="min-w-0 flex-1 truncate text-sm font-semibold">
-                  {name(seat)}
-                  {bots[seat] && seat !== me ? (
-                    <span className="ml-1.5 rounded-full bg-black/50 px-1.5 py-0.5 text-[0.6rem] font-semibold uppercase">
-                      {t('room.bot')}
-                    </span>
-                  ) : null}
-                </span>
+                <span className="min-w-0 flex-1 truncate text-sm font-semibold">{name(seat)}</span>
                 {levels[seat] !== undefined ? <LevelBadge level={levels[seat]} size="sm" /> : null}
                 <span className="text-xs text-gold-light tabular-nums">
                   {t('ludo.home', { count: home })}

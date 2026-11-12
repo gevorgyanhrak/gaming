@@ -21,7 +21,7 @@
   },
   "landing": {
     "title": "Pull up a chair.\nYour game is waiting.",
-    "subtitle": "Play people online or practice against bots, free, any time.",
+    "subtitle": "Play people online or practice against AI, free, any time.",
     "cta": "Browse games",
     "gamesHeading": "Games",
     "eyebrow": "Free to play · no real money",
@@ -33,8 +33,8 @@
         "text": "Get matched with another player in seconds."
       },
       "bots": {
-        "title": "Practice against bots",
-        "text": "Easy, medium or hard, any time of day."
+        "title": "Practice against AI",
+        "text": "AI at its strongest, any time of day."
       },
       "friends": {
         "title": "Invite your friends",
@@ -225,20 +225,14 @@
     "loginToPlay": "Log in to play",
     "findOpponent": "Find an opponent",
     "playWithFriend": "Play with a friend",
-    "botDifficulty": "Bot level",
-    "playBot": "Play against a bot",
-    "difficulty": {
-      "easy": "Easy",
-      "medium": "Medium",
-      "hard": "Hard"
-    },
+    "playBot": "Play against AI",
     "inviteCode": "Invite code",
     "join": "Join",
     "searching": "Looking for an opponent…",
-    "botOffer": "No one is available right now. Play against a bot instead?",
-    "botIn_one": "A bot game will be offered in {{count}} second.",
-    "botIn_other": "A bot game will be offered in {{count}} seconds.",
-    "acceptBot": "Play against a bot",
+    "botOffer": "No one is available right now. Play against AI instead?",
+    "botIn_one": "A game against AI will be offered in {{count}} second.",
+    "botIn_other": "A game against AI will be offered in {{count}} seconds.",
+    "acceptBot": "Play against AI",
     "cancelSearch": "Cancel",
     "players": "Table size",
     "playersCount_one": "{{count}} player",
@@ -246,7 +240,7 @@
     "tableWaiting_one": "{{count}} player is waiting; the table starts soon.",
     "tableWaiting_other": "{{count}} players are waiting; the table starts soon.",
     "findOpponentHint": "Get matched with another player.",
-    "botHint": "Level: {{level}}",
+    "botHint": "Against AI",
     "friendHint": "Open a private table and share the code.",
     "joinTitle": "Got an invite code?",
     "startBot": "Start game",
@@ -267,13 +261,13 @@
     "tableBlinds": "Blinds {{small}}/{{big}}",
     "whatToPlay": "What shall we play?",
     "playAlone": "Play against the dealer",
-    "aloneHint": "Just you and the dealer. Pick more players to share the table with bots.",
+    "aloneHint": "Just you and the dealer. Pick more players to share the table with AI.",
     "blackjackBuyIn": "You bring your whole balance to the table: {{amount}} Fishkas. Bets from {{min}}.",
-    "tableMinBet": "Bets from {{big}}"
+    "tableMinBet": "Bets from {{big}}",
+    "aiHint": "AI plays at its strongest."
   },
   "room": {
     "players": "Players",
-    "bot": "Bot",
     "you": "you",
     "youSeat": "You",
     "toMove": "To move",

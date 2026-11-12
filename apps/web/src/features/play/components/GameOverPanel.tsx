@@ -12,7 +12,6 @@ import {
   createBotRoom,
   matchmakingKey,
   startMatchmaking,
-  type BotDifficulty,
   type ParticipantResult,
   type Room,
 } from '../api'
@@ -51,14 +50,13 @@ export function GameOverPanel({
   const wide = useMediaQuery('(min-width: 1024px)')
 
   const aborted = room.status === 'aborted'
-  const level = room.participants.find((p) => p.is_bot)?.bot_difficulty as BotDifficulty | undefined
   const again = useMutation({
     mutationFn: async () => {
       // Same table terms: group and bet (the server checks them again).
       const terms = { group: room.group?.slug, ...(room.stake > 0 ? { bet: room.stake } : {}) }
       if (room.type === 'bot')
         return {
-          room: (await createBotRoom(room.mode.id, level ?? 'medium', room.seats, terms)).id,
+          room: (await createBotRoom(room.mode.id, room.seats, terms)).id,
         }
       return startMatchmaking(room.mode.id, room.group?.slug)
     },
@@ -101,9 +99,7 @@ export function GameOverPanel({
   const lobby = `/games/${room.game.slug}`
   const settings = [
     room.mode.name,
-    room.type === 'bot'
-      ? t('play.botHint', { level: t(`play.difficulty.${level ?? 'medium'}`) })
-      : t('play.findOpponent'),
+    room.type === 'bot' ? t('play.botHint') : t('play.findOpponent'),
     room.seats > 2 ? t('play.playersCount', { count: room.seats }) : null,
   ]
     .filter(Boolean)

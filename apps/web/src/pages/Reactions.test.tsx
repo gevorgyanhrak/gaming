@@ -23,7 +23,6 @@ const room = roomFixture({
       name: 'Bob',
       username: 'bob',
       is_bot: false,
-      bot_difficulty: null,
     },
   ],
 })

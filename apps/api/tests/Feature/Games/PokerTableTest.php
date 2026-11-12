@@ -86,7 +86,7 @@ it('seats as many bots as asked for', function () {
         ->assertUnprocessable()->assertJsonValidationErrors('opponents');
 });
 
-it('seats different bots, borrowing from other levels before repeating one', function () {
+it('seats different AI players at the highest level, borrowing from other levels before repeating one', function () {
     $mode = pokerMode();
     $bot = fn (string $name, BotDifficulty $difficulty) => BotProfile::factory()->create(['name' => $name])
         ->gameProfiles()->create(['game_id' => $mode->game->id, 'difficulty' => $difficulty]);
@@ -97,16 +97,16 @@ it('seats different bots, borrowing from other levels before repeating one', fun
     }
 
     $room = $this->actingAs(User::factory()->create())
-        ->postJson('/api/v1/rooms', ['game_mode_id' => $mode->id, 'type' => 'bot', 'bot_difficulty' => 'easy', 'opponents' => 5])
+        ->postJson('/api/v1/rooms', ['game_mode_id' => $mode->id, 'type' => 'bot', 'opponents' => 5])
         ->assertCreated()->json('data');
 
     $names = collect($room['participants'])->where('is_bot', true)->pluck('name');
     expect($names)->toHaveCount(5)
         ->and($names->unique())->toHaveCount(5)
-        ->and($names)->toContain('Alex', 'David');
-    // Borrowed bots still play at the table's level.
+        ->and($names)->toContain('Aram', 'Nina', 'Levon');
+    // Every AI seat plays at the game's highest level, borrowed bots included.
     expect(GameRoom::query()->where('public_id', $room['id'])->sole()->participants()->whereNotNull('bot_profile_id')->pluck('bot_difficulty')->unique()->values()->all())
-        ->toBe([BotDifficulty::Easy]);
+        ->toBe([BotDifficulty::Hard]);
 });
 
 it('repeats a bot only when the game has fewer bots than seats, and tells the admin', function () {

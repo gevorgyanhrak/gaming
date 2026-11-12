@@ -39,12 +39,6 @@ class RoomResource extends JsonResource
             'participants' => $this->participants->map(fn (GameParticipant $p) => [
                 'seat' => $p->seat,
                 'is_bot' => $p->isBot(),
-                /**
-                 * The level a bot plays at; null for people.
-                 *
-                 * @var 'easy'|'medium'|'hard'|null
-                 */
-                'bot_difficulty' => $p->bot_difficulty?->value,
                 'name' => $p->isBot() ? $p->bot?->name : ($p->user?->profile->display_name ?? $p->user?->username),
                 /** @var string|null */
                 'username' => $p->user?->username,

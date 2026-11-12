@@ -229,12 +229,12 @@ describe('Room', () => {
       'href',
       '/games/tictactoe',
     )
-    expect(screen.getByText('Same settings: Classic · Level: Easy')).toBeInTheDocument()
+    expect(screen.getByText('Same settings: Classic · Against AI')).toBeInTheDocument()
 
     // The same game again: same mode, table size and bot level.
     await userEvent.click(screen.getByRole('button', { name: 'Play again' }))
     await waitFor(() => expect(router.state.location.pathname).toBe('/rooms/room-2'))
-    expect(body).toMatchObject({ game_mode_id: 1, type: 'bot', bot_difficulty: 'easy' })
+    expect(body).toEqual({ game_mode_id: 1, type: 'bot' })
   })
 
   it('says the player left when their game ended for leaving the page', async () => {

@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1\Rooms;
 
-use App\Enums\BotDifficulty;
 use App\Enums\RoomStatus;
 use App\Enums\RoomType;
 use App\Gameplay\Actions\GameActionService;
-use App\Gameplay\Bots\BotSelector;
+use App\Gameplay\Bots\AiPlayers;
 use App\Gameplay\Engine\Action;
 use App\Gameplay\Lifecycle\RoomPresence;
 use App\Gameplay\Rooms\PlayGroups;
@@ -19,7 +18,6 @@ use App\Gameplay\Rooms\TableTerms;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Rooms\CreateRoomRequest;
 use App\Http\Resources\RoomResource;
-use App\Models\BotProfile;
 use App\Models\GameMode;
 use App\Models\GameRoom;
 use App\Models\User;
@@ -35,9 +33,9 @@ class RoomController extends Controller
     private const INVITE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
     /**
-     * Start a game against a bot, or open a private room to share by invite code.
+     * Start a game against AI (always at its highest level), or open a private room to share by invite code.
      */
-    public function store(CreateRoomRequest $request, PlayRules $rules, RoomService $rooms, BotSelector $bots, PlayGroups $groups): JsonResponse
+    public function store(CreateRoomRequest $request, PlayRules $rules, RoomService $rooms, AiPlayers $ai, PlayGroups $groups): JsonResponse
     {
         /** @var User $user */
         $user = $request->user();
@@ -46,20 +44,17 @@ class RoomController extends Controller
         $terms = $groups->terms($mode, $request->filled('group') ? $request->string('group')->toString() : null, $request->filled('bet') ? $request->integer('bet') : null, $type);
 
         // One start at a time per player: a double click can't open (and pay for) two games.
-        $room = $rules->exclusively($user, function () use ($rules, $rooms, $bots, $user, $mode, $type, $request, $terms) {
+        $room = $rules->exclusively($user, function () use ($rules, $rooms, $ai, $user, $mode, $type, $request, $terms) {
             $rules->ensureCanStart($user, $mode, $type, $terms);
 
             if ($type === 'bot') {
                 $opponents = $request->integer('opponents', 1);
                 $this->ensurePlayers($mode, 1 + $opponents, 'opponents');
-                $difficulty = BotDifficulty::tryFrom($request->string('bot_difficulty')->toString()) ?? BotDifficulty::Medium;
-
                 try {
-                    $picked = $opponents === 0 ? [] : $bots->pickMany($mode->game, $difficulty, $opponents);
+                    $players = [$user, ...$ai->seats($mode->game, $opponents)];
                 } catch (InvalidArgumentException) {
-                    throw ValidationException::withMessages(['bot_difficulty' => __('platform.play.no_bot')]);
+                    throw ValidationException::withMessages(['opponents' => __('platform.play.no_bot')]);
                 }
-                $players = [$user, ...array_map(fn (BotProfile $bot) => ['bot' => $bot, 'difficulty' => $difficulty], $picked)];
 
                 $room = $rooms->createStarted($mode, RoomType::Bot, $players, $user, $terms);
             } else {

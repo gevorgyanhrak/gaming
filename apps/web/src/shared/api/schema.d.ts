@@ -523,7 +523,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Start a game against a bot, or open a private room to share by invite code */
+        /** Start a game against AI (always at its highest level), or open a private room to share by invite code */
         post: operations["v1.rooms.store"];
         delete?: never;
         options?: never;
@@ -804,11 +804,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /**
-         * BotDifficulty
-         * @enum {string}
-         */
-        BotDifficulty: "easy" | "medium" | "hard";
         /** ChangeContactRequest */
         ChangeContactRequest: {
             channel: components["schemas"]["ContactChannel"];
@@ -838,8 +833,7 @@ export interface components {
              * @enum {string}
              */
             type: "bot" | "private";
-            bot_difficulty?: components["schemas"]["BotDifficulty"] | null;
-            /** @description Tables for more than two (poker): bots to play against, or seats in a private room. */
+            /** @description AI opponents (always at their highest level; 0 alone against a dealer), or seats in a private room. */
             opponents?: number | null;
             seats?: number | null;
             /** @description The play group (default: the lowest) and, for stake games, the bet within its range. */
@@ -1007,11 +1001,6 @@ export interface components {
             participants: {
                 seat: number;
                 is_bot: boolean;
-                /**
-                 * @description The level a bot plays at; null for people.
-                 * @enum {string|null}
-                 */
-                bot_difficulty: "easy" | "medium" | "hard" | null;
                 name: string | null;
                 username: string | null;
                 avatar_url: string | null;
@@ -1953,13 +1942,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": {
-                    bot_difficulty?: components["schemas"]["BotDifficulty"];
-                };
-            };
-        };
+        requestBody?: never;
         responses: {
             201: {
                 headers: {
@@ -1979,7 +1962,6 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
-            422: components["responses"]["ValidationException"];
         };
     };
     "v1.me.show": {

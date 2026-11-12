@@ -125,7 +125,6 @@ export default function PoolBoard({
   onAction,
   pending,
   players = {},
-  bots = {},
   levels = {},
 }: BoardProps) {
   const { t } = useTranslation()
@@ -222,7 +221,6 @@ export default function PoolBoard({
             balls={balls}
             acting={view.to_act === seat && !animating}
             level={levels[seat]}
-            bot={seat !== me && !!bots[seat]}
             seconds={view.to_act === seat ? secondsLeft : null}
           />
         ))}
@@ -512,7 +510,6 @@ function PlayerPlate({
   balls,
   acting,
   level,
-  bot,
   seconds,
 }: {
   name: string
@@ -520,7 +517,6 @@ function PlayerPlate({
   balls: (Point | null)[]
   acting: boolean
   level?: number
-  bot: boolean
   seconds: number | null
 }) {
   const { t } = useTranslation()
@@ -537,14 +533,7 @@ function PlayerPlate({
     >
       {level !== undefined ? <LevelBadge level={level} size="sm" /> : null}
       <div className="min-w-0">
-        <p className="truncate text-sm font-semibold">
-          {name}
-          {bot ? (
-            <span className="ml-1.5 rounded-full bg-black/50 px-1.5 py-0.5 text-[0.6rem] uppercase">
-              {t('room.bot')}
-            </span>
-          ) : null}
-        </p>
+        <p className="truncate text-sm font-semibold">{name}</p>
         <p className="flex items-center gap-1 text-xs text-white/70">
           {group === null ? (
             t('pool.openTable')

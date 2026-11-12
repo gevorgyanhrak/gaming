@@ -153,13 +153,11 @@ it('lets a player leave with their chips, and that loses the game', function () 
         ->and($wallet)->toBeLessThanOrEqual($balance + 2);
 });
 
-it('asks for a difficulty only when bots sit down, and refuses a private table for one', function () {
+it('refuses too many AI players and a private table for one', function () {
     $mode = blackjackMode();
     $user = User::factory()->create();
 
-    $this->actingAs($user)->postJson('/api/v1/rooms', ['game_mode_id' => $mode->id, 'type' => 'bot', 'opponents' => 1])
-        ->assertUnprocessable()->assertJsonValidationErrors('bot_difficulty');
-    $this->actingAs($user)->postJson('/api/v1/rooms', ['game_mode_id' => $mode->id, 'type' => 'bot', 'opponents' => 5, 'bot_difficulty' => 'easy'])
+    $this->actingAs($user)->postJson('/api/v1/rooms', ['game_mode_id' => $mode->id, 'type' => 'bot', 'opponents' => 5])
         ->assertUnprocessable()->assertJsonValidationErrors('opponents');
     $this->actingAs($user)->postJson('/api/v1/rooms', ['game_mode_id' => $mode->id, 'type' => 'private', 'seats' => 1])
         ->assertUnprocessable()->assertJsonValidationErrors('seats');

@@ -27,7 +27,7 @@ function createRoom(GameMode $mode, array $data = []): TestResponse
     return test()->postJson('/api/v1/rooms', ['game_mode_id' => $mode->id, 'type' => 'bot', 'bot_difficulty' => 'easy', ...$data]);
 }
 
-it('starts a game against a bot', function () {
+it('starts a game against AI', function () {
     $mode = ticTacToe();
     botFor($mode);
     $this->actingAs(User::factory()->create(['username' => 'alice']));
@@ -41,8 +41,8 @@ it('starts a game against a bot', function () {
         ->assertJsonPath('data.participants.1.name', 'Aram')
         // What "Play again" needs to start the same kind of game.
         ->assertJsonPath('data.mode.id', $mode->id)
-        ->assertJsonPath('data.participants.0.bot_difficulty', null)
-        ->assertJsonPath('data.participants.1.bot_difficulty', 'easy')
+        // AI's level is the game's highest and never part of the room.
+        ->assertJsonMissingPath('data.participants.1.bot_difficulty')
         ->json('data.id');
 
     $state = $this->getJson("/api/v1/rooms/{$id}/state")->assertOk()->json('data');
@@ -56,7 +56,7 @@ it('starts a game against a bot', function () {
     }
 });
 
-it('refuses unavailable games, disabled bots and missing difficulties', function (Closure $setup, array $data, string $field) {
+it('refuses unavailable games, disabled AI and games without AI players', function (Closure $setup, array $data, string $field) {
     $mode = ticTacToe();
     botFor($mode);
     $setup($mode);
@@ -67,7 +67,7 @@ it('refuses unavailable games, disabled bots and missing difficulties', function
     'game not playable' => [fn (GameMode $m) => $m->game->update(['is_enabled' => false]), [], 'game_mode_id'],
     'mode disabled' => [fn (GameMode $m) => $m->update(['is_enabled' => false]), [], 'game_mode_id'],
     'bots disabled' => [fn (GameMode $m) => $m->game->update(['bots_enabled' => false]), [], 'game_mode_id'],
-    'no bot at difficulty' => [fn () => null, ['bot_difficulty' => 'hard'], 'bot_difficulty'],
+    'no AI player' => [fn (GameMode $m) => BotProfile::query()->update(['is_enabled' => false]), [], 'opponents'],
     'private rooms disabled' => [fn (GameMode $m) => $m->update(['private_rooms_enabled' => false]), ['type' => 'private'], 'game_mode_id'],
 ]);
 
@@ -198,4 +198,17 @@ it('lists the rooms a player is currently in', function () {
     $this->postJson("/api/v1/rooms/{$finished}/leave");
 
     $this->getJson('/api/v1/me/rooms')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $active);
+});
+
+it('seats AI at the highest level the game has, with no level to choose', function () {
+    $mode = ticTacToe();
+    botFor($mode, BotDifficulty::Easy);
+    BotProfile::factory()->create(['name' => 'Davit'])->gameProfiles()->create(['game_id' => $mode->game_id, 'difficulty' => BotDifficulty::Medium]);
+    $this->actingAs(User::factory()->create());
+
+    // A level sent by an old client is ignored.
+    $id = createRoom($mode, ['bot_difficulty' => 'easy'])->assertCreated()->assertJsonPath('data.participants.1.name', 'Davit')->json('data.id');
+
+    expect(GameRoom::query()->where('public_id', $id)->sole()->participants()->whereNotNull('bot_profile_id')->value('bot_difficulty'))
+        ->toBe(BotDifficulty::Medium);
 });

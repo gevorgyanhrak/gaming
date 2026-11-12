@@ -2,17 +2,15 @@
 
 namespace App\Gameplay\Matchmaking;
 
-use App\Enums\BotDifficulty;
 use App\Enums\BotFallbackMode;
 use App\Enums\PlayGroupKind;
 use App\Enums\RoomType;
-use App\Gameplay\Bots\BotSelector;
+use App\Gameplay\Bots\AiPlayers;
 use App\Gameplay\Rooms\PlayGroups;
 use App\Gameplay\Rooms\PlayRules;
 use App\Gameplay\Rooms\RoomService;
 use App\Gameplay\Rooms\RoomStakes;
 use App\Gameplay\Rooms\TableTerms;
-use App\Models\BotProfile;
 use App\Models\GameMode;
 use App\Models\GameRoom;
 use App\Models\PlayGroup;
@@ -24,6 +22,7 @@ use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use LogicException;
 use Throwable;
 
@@ -50,7 +49,7 @@ class Matchmaker
     public function __construct(
         private readonly RoomService $rooms,
         private readonly PlayRules $rules,
-        private readonly BotSelector $bots,
+        private readonly AiPlayers $ai,
         private readonly Settings $settings,
         private readonly RoomStakes $stakes,
         private readonly PlayGroups $groups,
@@ -167,12 +166,12 @@ class Matchmaker
     /**
      * Accept the offered bot game. Fails if the ticket was matched with a person in the meantime.
      */
-    public function acceptBot(User $user, BotDifficulty $difficulty): ?GameRoom
+    public function acceptBot(User $user): ?GameRoom
     {
-        return $this->rules->exclusively($user, fn () => $this->startBotGame($user, $difficulty));
+        return $this->rules->exclusively($user, fn () => $this->startBotGame($user));
     }
 
-    private function startBotGame(User $user, BotDifficulty $difficulty): ?GameRoom
+    private function startBotGame(User $user): ?GameRoom
     {
         $pool = $this->poolOf($user->id);
         [$mode, $terms] = ($pool === null ? null : $this->poolTerms($pool)) ?? [null, null];
@@ -181,7 +180,7 @@ class Matchmaker
             return null;
         }
 
-        $room = $this->withQueue($pool, function (array $queue) use ($user, $mode, $difficulty, $terms) {
+        $room = $this->withQueue($pool, function (array $queue) use ($user, $mode, $terms) {
             $ticket = $queue[$user->id] ?? null;
 
             if ($ticket === null || ! $ticket->botOffered) {
@@ -190,7 +189,7 @@ class Matchmaker
 
             unset($queue[$user->id]);
 
-            return [$queue, $this->botRoom($mode, $user, $difficulty, $terms)];
+            return [$queue, $this->botRoom($mode, $user, $terms)];
         });
 
         if ($room !== null) {
@@ -234,7 +233,7 @@ class Matchmaker
                     if ($mode->game->bot_fallback_mode === BotFallbackMode::Auto) {
                         $user = User::query()->find($userId);
                         try {
-                            $room = $user === null ? null : $this->botRoom($mode, $user, BotDifficulty::Medium, $terms);
+                            $room = $user === null ? null : $this->botRoom($mode, $user, $terms);
                         } catch (InsufficientFishkas) {
                             $room = null;
                         }
@@ -314,21 +313,17 @@ class Matchmaker
         return (int) ($mode->config['table_wait_seconds'] ?? self::TABLE_WAIT_SECONDS);
     }
 
-    private function botRoom(GameMode $mode, User $user, BotDifficulty $difficulty, ?TableTerms $terms = null): ?GameRoom
+    private function botRoom(GameMode $mode, User $user, ?TableTerms $terms = null): ?GameRoom
     {
         $seats = $mode->max_players > 2 ? max($mode->min_players, min(self::BOT_TABLE_SIZE, $mode->max_players)) : $mode->min_players;
 
         try {
-            $bots = $this->bots->pickMany($mode->game, $difficulty, $seats - 1);
-        } catch (Throwable) {
-            $available = $this->bots->difficulties($mode->game);
-            if ($available === []) {
-                return null;
-            }
-            $bots = $this->bots->pickMany($mode->game, $difficulty = $available[0], $seats - 1);
+            $ai = $this->ai->seats($mode->game, $seats - 1);
+        } catch (InvalidArgumentException) {
+            return null;
         }
 
-        return $this->rooms->createStarted($mode, RoomType::Bot, [$user, ...array_map(fn (BotProfile $bot) => ['bot' => $bot, 'difficulty' => $difficulty], $bots)], $user, $terms);
+        return $this->rooms->createStarted($mode, RoomType::Bot, [$user, ...$ai], $user, $terms);
     }
 
     private function botAt(GameMode $mode, int $now): ?int

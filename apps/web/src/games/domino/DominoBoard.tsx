@@ -38,7 +38,6 @@ export default function DominoBoard({
   onAction,
   pending,
   players = {},
-  bots = {},
   levels = {},
 }: BoardProps) {
   const { t, i18n } = useTranslation()
@@ -106,8 +105,6 @@ export default function DominoBoard({
                 acting={view.to_act === seat}
                 share={view.to_act === seat ? turnShare : null}
                 level={levels[seat]}
-                bot={!!bots[seat]}
-                botLabel={t('room.bot')}
                 gone={view.out[seat] ?? false}
               />
             </li>
@@ -167,8 +164,6 @@ export default function DominoBoard({
               acting={view.to_act === me}
               share={view.to_act === me ? turnShare : null}
               level={levels[me]}
-              bot={false}
-              botLabel=""
               gone={false}
               mine
             />
@@ -373,8 +368,6 @@ function Plate({
   acting,
   share,
   level,
-  bot,
-  botLabel,
   gone,
   mine = false,
 }: {
@@ -385,8 +378,6 @@ function Plate({
   acting: boolean
   share: number | null
   level?: number
-  bot: boolean
-  botLabel: string
   gone: boolean
   mine?: boolean
 }) {
@@ -415,11 +406,6 @@ function Plate({
       </span>
       {level !== undefined ? (
         <LevelBadge level={level} size="sm" className="absolute -top-2 -left-2" />
-      ) : null}
-      {bot ? (
-        <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-black/70 px-1.5 py-0.5 text-[0.6rem] leading-none font-semibold tracking-wide text-white/85 uppercase">
-          {botLabel}
-        </span>
       ) : null}
     </span>
   )

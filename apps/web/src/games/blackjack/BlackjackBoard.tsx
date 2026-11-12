@@ -57,7 +57,6 @@ export default function BlackjackBoard({
   onAction,
   pending,
   players = {},
-  bots = {},
   levels = {},
 }: BoardProps) {
   const { t, i18n } = useTranslation()
@@ -214,9 +213,7 @@ export default function BlackjackBoard({
                   key={seat}
                   aria-current={acting ? 'step' : undefined}
                   data-blackjack-me={seat === me ? '' : undefined}
-                  aria-label={`${name(seat)}, ${t('blackjack.chips', { count: stack })}${
-                    seat !== me && bots[seat] ? `, ${t('room.bot')}` : ''
-                  }`}
+                  aria-label={`${name(seat)}, ${t('blackjack.chips', { count: stack })}`}
                   className={`absolute flex w-[18%] -translate-x-1/2 -translate-y-full flex-col items-center gap-1 min-[901px]:w-[17%] ${
                     view.out[seat] ? 'opacity-45' : ''
                   }`}
@@ -250,8 +247,6 @@ export default function BlackjackBoard({
                       acting={acting}
                       share={acting ? turnShare : null}
                       level={levels[seat]}
-                      bot={seat !== me && !!bots[seat]}
-                      botLabel={t('room.bot')}
                       mine={seat === me}
                     />
                     {pendingBet > 0 || hands.length > 0 ? (
@@ -503,8 +498,6 @@ function SeatPlate({
   acting,
   share,
   level,
-  bot,
-  botLabel,
   mine,
 }: {
   name: string
@@ -512,8 +505,6 @@ function SeatPlate({
   acting: boolean
   share: number | null
   level?: number
-  bot: boolean
-  botLabel: string
   mine: boolean
 }) {
   const ring =
@@ -539,11 +530,6 @@ function SeatPlate({
       </span>
       {level !== undefined ? (
         <LevelBadge level={level} size="sm" className="absolute -top-2 -left-2" />
-      ) : null}
-      {bot ? (
-        <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-black/70 px-1.5 py-0.5 text-[0.6rem] leading-none font-semibold tracking-wide text-white/85 uppercase">
-          {botLabel}
-        </span>
       ) : null}
     </span>
   )

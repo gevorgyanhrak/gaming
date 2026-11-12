@@ -65,7 +65,6 @@ describe('BlackjackBoard', () => {
         onAction={onAction}
         pending={false}
         players={players}
-        bots={{ 1: true }}
       />,
     )
 

@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Rooms;
 
-use App\Enums\BotDifficulty;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -17,9 +16,7 @@ class CreateRoomRequest extends FormRequest
             'game_mode_id' => ['required', 'integer', Rule::exists('game_modes', 'id')],
             // Matchmaking rooms are created by the matchmaker, not by players.
             'type' => ['required', Rule::in(['bot', 'private'])],
-            // Not needed alone at a table against the dealer (opponents: 0, modes for one player).
-            'bot_difficulty' => ['exclude_unless:type,bot', 'required_unless:opponents,0', 'nullable', Rule::enum(BotDifficulty::class)],
-            // Tables for more than two (poker): bots to play against, or seats in a private room.
+            // AI opponents (always at their highest level; 0 alone against a dealer), or seats in a private room.
             'opponents' => ['exclude_unless:type,bot', 'nullable', 'integer', 'min:0', 'max:9'],
             'seats' => ['exclude_unless:type,private', 'nullable', 'integer', 'min:2', 'max:10'],
             // The play group (default: the lowest) and, for stake games, the bet within its range.

@@ -59,7 +59,6 @@ export default function RummyBoard({
   onAction,
   pending,
   players = {},
-  bots = {},
   levels = {},
 }: BoardProps) {
   const { t, i18n } = useTranslation()
@@ -152,11 +151,6 @@ export default function RummyBoard({
               <span className="max-w-24 truncate text-xs font-semibold min-[641px]:text-sm">
                 {name(seat)}
               </span>
-              {bots[seat] ? (
-                <span className="rounded-full bg-black/60 px-1.5 py-0.5 text-[0.6rem] uppercase">
-                  {t('room.bot')}
-                </span>
-              ) : null}
               <span
                 className="flex"
                 aria-label={t('rummy.cards', { count: view.hand_sizes[seat] ?? 0 })}
