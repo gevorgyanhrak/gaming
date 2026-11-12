@@ -88,7 +88,26 @@ final class CardMemory
             }
         }
         $this->known = $known;
+
+        // Blot is called by itself as its holder plays the first of the trump king and queen: whoever played
+        // one of them without it being their blot doesn't hold the other (research: the Belot engine).
+        $missing = [[], [], [], []];
+        if ($this->trump !== null) {
+            foreach ($tricks as $trick) {
+                foreach ($trick['cards'] as $play) {
+                    $card = (string) $play['card'];
+                    $who = (int) $play['seat'];
+                    if ($who !== $this->seat && ($card === 'K'.$this->trump || $card === 'Q'.$this->trump) && $holder !== $who) {
+                        $missing[$who][] = $card === 'K'.$this->trump ? 'Q'.$this->trump : 'K'.$this->trump;
+                    }
+                }
+            }
+        }
+        $this->missing = $missing;
     }
+
+    /** @var array<int, list<string>> cards a seat is known not to hold (beyond voids and the trump cap) */
+    public readonly array $missing;
 
     /**
      * Cards nobody has shown or played that this seat doesn't hold: the ones the other hands share.
@@ -117,7 +136,7 @@ final class CardMemory
                 return $who === $seat;
             }
         }
-        if (isset($this->voids[$seat][$card[1]])) {
+        if (isset($this->voids[$seat][$card[1]]) || in_array($card, $this->missing[$seat], true)) {
             return false;
         }
 

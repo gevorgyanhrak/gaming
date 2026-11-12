@@ -57,7 +57,8 @@
     "rules": "Rules",
     "notPlayable": "This game isn't available to play yet. Check back soon.",
     "notFound": "We couldn't find that game.",
-    "modes": "Modes"
+    "modes": "Modes",
+    "maintenance": "This game is under maintenance. Please come back soon."
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",

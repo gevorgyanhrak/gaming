@@ -32,7 +32,11 @@ class PlayRules
     public function ensureCanStart(User $user, GameMode $mode, string $kind, ?TableTerms $terms = null): void
     {
         $game = $mode->game;
-        $playable = $game->is_enabled && $game->is_visible && $mode->is_enabled && $this->registry->has($game->slug);
+        $playable = $game->is_enabled && $game->is_visible && $game->archived_at === null && $mode->is_enabled && $this->registry->has($game->slug);
+        // Game Management: a game in maintenance takes no new games (games under way go on).
+        if ($playable && $game->maintenance) {
+            throw ValidationException::withMessages(['game_mode_id' => $game->maintenance_message ?: __('platform.play.maintenance')]);
+        }
 
         $allowed = $playable && match ($kind) {
             'bot' => $game->bots_enabled && $mode->bots_allowed,

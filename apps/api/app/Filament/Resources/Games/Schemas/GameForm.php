@@ -30,6 +30,7 @@ class GameForm
                         Translatable::input('name', 'Name', maxLength: 60),
                         Translatable::textarea('description', 'Description', rows: 3),
                         Translatable::textarea('rules', 'Rules', rows: 10, helperText: 'Paragraphs are separated by a blank line.'),
+                        Translatable::textarea('maintenance_message', 'Maintenance message', required: false, rows: 2, helperText: 'Shown to players while the game is in maintenance. Empty: a standard message.'),
                     ]),
                 Section::make('Availability')
                     ->columnSpan(1)
@@ -41,6 +42,8 @@ class GameForm
                             ->preload()
                             ->placeholder('No category'),
                         Toggle::make('is_visible')->label('Shown in the catalog'),
+                        Toggle::make('maintenance')->label('Maintenance mode')
+                            ->helperText('Shown with the message below; no new games. Games under way go on.'),
                         // A game can only be played once its engine is registered (app/Games/*).
                         Toggle::make('is_enabled')->label('Playable')
                             ->disabled(fn (?Game $record) => $record === null || ! app(GameRegistry::class)->has($record->slug))

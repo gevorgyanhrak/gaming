@@ -38,6 +38,8 @@ export function gameFixture(overrides: Partial<GameDetail> = {}): GameDetail {
     min_players: 2,
     max_players: 2,
     is_playable: false,
+    maintenance: false,
+    maintenance_message: null,
     rules: 'First paragraph.\n\nSecond paragraph.',
     modes: [],
     groups: [],

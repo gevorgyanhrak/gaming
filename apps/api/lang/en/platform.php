@@ -69,6 +69,7 @@ return [
         'group_unavailable' => 'This group is not available for this game.',
         'bet_range' => 'Choose a bet from :min to :max Fishkas.',
         'group_balance' => 'You need at least :needed Fishkas to play in this group.',
+        'maintenance' => 'This game is under maintenance. Please come back soon.',
         'unavailable' => 'This game mode is not available right now.',
         'too_many_games' => 'Finish one of your current games first.',
         'verification_required' => 'Verify your :channel to play.',

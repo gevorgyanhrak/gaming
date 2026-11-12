@@ -14,13 +14,18 @@ use Illuminate\Console\Command;
  */
 class BlotArenaCommand extends Command
 {
-    protected $signature = 'blot:arena {deals=100 : duplicate deals (each played twice)} {--seed=1} {--a=pro : pro|classic} {--b=classic : pro|classic} {--level=hard : easy|medium|hard}';
+    protected $signature = 'blot:arena {deals=100 : duplicate deals (each played twice)} {--seed=1} {--a=pro : pro|pro0|classic} {--b=classic : pro|pro0|classic} {--level=hard : easy|medium|hard}';
 
     protected $description = 'Play blot strategies against each other on duplicate deals and report the results';
 
     public function handle(BlotArena $arena): int
     {
-        $pick = fn (string $name) => $name === 'classic' ? new ClassicBlotBot : new BlotBot;
+        // pro: the AI as it plays; pro0: without the research techniques (exact endgame, merged cards); classic: the old bot.
+        $pick = fn (string $name) => match ($name) {
+            'classic' => new ClassicBlotBot,
+            'pro0' => new BlotBot(research: false),
+            default => new BlotBot,
+        };
         $deals = (int) $this->argument('deals');
         $bar = $this->output->createProgressBar($deals);
         $stats = $arena->run(

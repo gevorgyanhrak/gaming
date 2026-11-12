@@ -48,13 +48,19 @@ export function GamePage() {
           <article>
             <title>{game.data.name}</title>
 
-            {game.data.is_playable ? (
+            {game.data.is_playable && !game.data.maintenance ? (
               <PlayPanel game={game.data} hero={<GameHero game={game.data} />} />
             ) : (
               <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:items-start">
                 <GameHero game={game.data} />
-                <p className="club-panel rounded-panel px-5 py-4 text-muted motion-safe:animate-rise">
-                  {t('game.notPlayable')}
+                <p
+                  className="club-panel rounded-panel px-5 py-4 text-muted motion-safe:animate-rise"
+                  role={game.data.maintenance ? 'status' : undefined}
+                >
+                  {/* Game Management: a game in maintenance says why, in the admin's words. */}
+                  {game.data.maintenance
+                    ? (game.data.maintenance_message ?? t('game.maintenance'))
+                    : t('game.notPlayable')}
                 </p>
               </div>
             )}

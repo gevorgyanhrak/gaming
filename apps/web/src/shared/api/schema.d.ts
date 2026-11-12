@@ -857,6 +857,9 @@ export interface components {
             min_players: number;
             max_players: number;
             is_playable: boolean;
+            /** @description In maintenance (Game Management): shown, but no new games; the message says why. */
+            maintenance: boolean;
+            maintenance_message: string | null;
             /** @description Paragraphs separated by blank lines. */
             rules: string;
             modes?: components["schemas"]["GameModeResource"][];
@@ -888,6 +891,9 @@ export interface components {
             min_players: number;
             max_players: number;
             is_playable: boolean;
+            /** @description In maintenance (Game Management): shown, but no new games; the message says why. */
+            maintenance: boolean;
+            maintenance_message: string | null;
         };
         /** GameStatResource */
         GameStatResource: {

@@ -25,6 +25,12 @@ use App\Games\Blot\Engine\BlotCards;
 final class BlotBot implements ActsOutOfTurn, BotStrategy, PacesThinking
 {
     /**
+     * @param  bool  $research  the techniques adopted from docs/research/blot-ai (exact endgame, merged
+     *                          candidates); off only to measure them in the arena
+     */
+    public function __construct(private readonly bool $research = true) {}
+
+    /**
      * @param  array<string, mixed>  $view
      */
     public function chooseAction(array $view, array $legalActions, BotDifficulty $difficulty, RandomSource $random): Action
@@ -58,7 +64,7 @@ final class BlotBot implements ActsOutOfTurn, BotStrategy, PacesThinking
             array_values(array_filter($legalActions, fn (Action $a) => $a->type === 'play')),
         );
 
-        return new Action('play', ['card' => (new CardSearch($this))->choose($view, $plays, $cards, $random)]);
+        return new Action('play', ['card' => (new CardSearch($this, exact: $this->research, merge: $this->research))->choose($view, $plays, $cards, $random)]);
     }
 
     /**

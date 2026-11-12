@@ -103,7 +103,11 @@ function QuickSeat({ slug, name, onClose }: { slug: string; name: string; onClos
   const game = useGame(slug)
   return (
     <Modal onClose={onClose} label={name} size="xl" sheetOnPhone className="p-4 sm:p-5">
-      {game.data ? (
+      {game.data?.maintenance ? (
+        <p className="text-muted" role="status">
+          {game.data.maintenance_message}
+        </p>
+      ) : game.data ? (
         <PlayPanel game={game.data} hero={null} />
       ) : (
         <Skeleton className="h-64 w-full rounded-card" />

@@ -176,6 +176,10 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   `game_participants.ai_controlled`: at 3+ seats with another person, away → AI holds the seat until presence/move,
   Leave → Loss and AI finishes the seat (chip tables keep cash-out); 2-player games never. `playedByAi()` drives
   `GameScheduler`/`BotTurnJob`; held seats' moves use `auto:ai{version}` ids (no XP).
+- Game Management (owner 2026-11-12): `Platform/Games/GameAdministration` (enable, disable = hidden + no new games,
+  maintenance + translatable message, end games under way = aborted + refunds, archive = `archived_at`, purge = the
+  game's rooms/moves/seats/stats/modes/AI profiles; audited); `Game::status()`, `visible()` excludes archived;
+  `PlayRules::ensureCanStart` refuses maintenance; `GameResource` has `maintenance`/`maintenance_message`.
 - Bots: `BotSelector::pickMany` never seats the same bot twice while the game has enough bots (borrows
   other levels; difficulty is per seat); admin Bots list warns about shortages. A chess-clock flag-fall
   is a `loss`; per-turn timer timeouts and leaving are `abandoned` ("Timed out").

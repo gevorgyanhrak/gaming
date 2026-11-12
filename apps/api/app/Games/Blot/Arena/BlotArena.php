@@ -18,14 +18,16 @@ final class BlotArena
 {
     /**
      * @param  callable(int): RandomSource  $randomFor  a repeatable random source per seed
-     * @return array<string, array<string, float|int>> stats per side ('a', 'b')
+     * @return array<string, array<string, float|int|string>> stats per side ('a', 'b')
      */
     public function run(BotStrategy $a, BotStrategy $b, int $deals, int $seed, callable $randomFor, BotDifficulty $difficulty = BotDifficulty::Hard, ?callable $progress = null): array
     {
         $engine = new BlotEngine;
         $stats = ['a' => $this->blank(), 'b' => $this->blank()];
 
+        $pairs = [];
         for ($d = 0; $d < $deals; $d++) {
+            $before = $stats['a']['sai'];
             $start = $engine->initialState(new GameSetup(4, ['target' => 10000]), $randomFor($seed + $d));
             foreach ([0, 1] as $aTeam) {
                 $strategies = [];
@@ -36,10 +38,19 @@ final class BlotArena
                 $thinking = $randomFor(($seed + $d) * 131 + $aTeam);
                 $this->play($engine, $start, $strategies, $aTeam, $deal, $thinking, $difficulty, $stats);
             }
+            // A's sai over the deal played both ways: one paired result.
+            $pairs[] = $stats['a']['sai'] - $before;
             if ($progress !== null) {
                 $progress($d + 1);
             }
         }
+        // 95% interval of A's sai per deal, from the paired results (each pair is two deals).
+        $n = count($pairs);
+        $mean = $n > 0 ? array_sum($pairs) / $n : 0.0;
+        $sd = $n > 1 ? sqrt(array_sum(array_map(fn (float|int $x) => ($x - $mean) ** 2, $pairs)) / ($n - 1)) : 0.0;
+        $half = $n > 0 ? 1.96 * $sd / sqrt($n) / 2 : 0.0;
+        $stats['a']['sai_per_deal_ci95'] = sprintf('%+.2f ± %.2f', $mean / 2, $half);
+        $stats['b']['sai_per_deal_ci95'] = sprintf('%+.2f ± %.2f', -$mean / 2, $half);
         foreach (['a', 'b'] as $side) {
             $stats[$side]['sai_per_deal'] = round($stats[$side]['sai'] / max(1, $stats[$side]['deals']), 2);
             $stats[$side]['ms_per_decision'] = round($stats[$side]['ms'] / max(1, $stats[$side]['decisions']), 1);

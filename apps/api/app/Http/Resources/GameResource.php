@@ -34,6 +34,10 @@ class GameResource extends JsonResource
             'min_players' => $this->min_players,
             'max_players' => $this->max_players,
             'is_playable' => $this->is_enabled,
+            /** In maintenance (Game Management): shown, but no new games; the message says why. */
+            'maintenance' => $this->maintenance,
+            /** @var string|null */
+            'maintenance_message' => $this->maintenance ? ($this->maintenance_message ?: __('platform.play.maintenance')) : null,
         ];
     }
 
