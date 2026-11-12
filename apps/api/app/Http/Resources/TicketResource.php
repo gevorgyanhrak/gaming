@@ -17,11 +17,10 @@ class TicketResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'status' => $this->resource->botOffered ? 'bot_offered' : 'queued',
+            /** @var 'queued' */
+            'status' => 'queued',
             'game_mode_id' => $this->resource->modeId,
             'joined_at' => now()->setTimestamp($this->resource->joinedAt)->toIso8601String(),
-            /** @var string|null */
-            'bot_offer_at' => $this->resource->botAt === null ? null : now()->setTimestamp($this->resource->botAt)->toIso8601String(),
         ];
     }
 }

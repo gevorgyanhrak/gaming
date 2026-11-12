@@ -77,53 +77,59 @@ it('keeps one ticket per player and lets them leave the queue', function () {
     expect(GameRoom::query()->count())->toBe(0);
 });
 
-it('offers a bot game after the timeout and starts it when accepted', function () {
+it('fills the empty seat with AI after the timeout, in an ordinary matchmaking room', function (string $fallback) {
     $mode = ticTacToe();
     withBots($mode);
-    $mode->game->update(['bot_fallback_timeout_seconds' => 20]);
+    $mode->game->update(['bot_fallback_mode' => $fallback, 'bot_fallback_timeout_seconds' => 20]);
     $alice = User::factory()->create();
-    $this->actingAs($alice)->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id]);
+    $this->actingAs($alice)->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id])
+        // Nothing tells the player when, or whether, AI will sit down.
+        ->assertJsonMissingPath('data.ticket.bot_offer_at')
+        ->assertJsonPath('data.ticket.status', 'queued');
 
     app(Matchmaker::class)->sweep();
-    $this->postJson('/api/v1/matchmaking/accept-bot')->assertUnprocessable();
+    expect(GameRoom::query()->count())->toBe(0);
 
     $this->travel(21)->seconds();
     $this->postJson('/api/v1/matchmaking/heartbeat');
     app(Matchmaker::class)->sweep();
 
-    Event::assertDispatched(MatchmakingEvent::class, fn ($e) => $e->userId === $alice->id && $e->name === 'bot_offered');
-    $this->getJson('/api/v1/matchmaking')->assertJsonPath('data.ticket.status', 'bot_offered');
+    $room = GameRoom::query()->sole();
+    expect($room->type)->toBe(RoomType::Matchmaking)
+        ->and($room->has_bot)->toBeTrue()
+        ->and($room->participants()->where('user_id', $alice->id)->exists())->toBeTrue()
+        ->and($room->participants()->whereNotNull('bot_profile_id')->value('bot_difficulty'))->toBe(BotDifficulty::Medium);
+    Event::assertDispatched(MatchmakingEvent::class, fn ($e) => $e->userId === $alice->id && $e->name === 'matched');
+    Event::assertNotDispatched(MatchmakingEvent::class, fn ($e) => $e->name === 'bot_offered');
+    $this->postJson('/api/v1/matchmaking/accept-bot')->assertNotFound();
+})->with(['auto', 'offer']);
 
-    $room = $this->postJson('/api/v1/matchmaking/accept-bot', ['bot_difficulty' => 'medium'])->assertCreated()->json('data.room');
-    expect(GameRoom::query()->where('public_id', $room)->sole()->has_bot)->toBeTrue();
-});
-
-it('starts a bot game automatically when the game is set to', function () {
+it('puts people together first: AI never takes a seat a person is waiting for', function () {
     $mode = ticTacToe();
     withBots($mode);
-    $mode->game->update(['bot_fallback_mode' => 'auto', 'bot_fallback_timeout_seconds' => 10]);
+    $mode->game->update(['bot_fallback_timeout_seconds' => 20]);
     $alice = User::factory()->create();
+    $bob = User::factory()->create();
     $this->actingAs($alice)->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id]);
+    $this->travel(15)->seconds();
+    $this->actingAs($bob)->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id]);
 
-    $this->travel(11)->seconds();
-    $this->postJson('/api/v1/matchmaking/heartbeat');
-    app(Matchmaker::class)->sweep();
-
-    expect(GameRoom::query()->where('type', RoomType::Bot)->sole()->participants()->where('user_id', $alice->id)->exists())->toBeTrue();
-    Event::assertDispatched(MatchmakingEvent::class, fn ($e) => $e->userId === $alice->id && $e->name === 'matched');
+    $room = GameRoom::query()->sole();
+    expect($room->has_bot)->toBeFalse()
+        ->and($room->participants()->pluck('user_id')->sort()->values()->all())->toBe([$alice->id, $bob->id]);
 });
 
-it('never offers bots when bots are off for the game', function () {
+it('never fills seats with AI when the game keeps waiting for people', function () {
     $mode = ticTacToe();
     withBots($mode);
     $mode->game->update(['bot_fallback_mode' => 'off', 'bot_fallback_timeout_seconds' => 10]);
-    $this->actingAs(User::factory()->create())->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id])
-        ->assertJsonPath('data.ticket.bot_offer_at', null);
+    $this->actingAs(User::factory()->create())->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id]);
 
     $this->travel(11)->seconds();
     $this->postJson('/api/v1/matchmaking/heartbeat');
     app(Matchmaker::class)->sweep();
 
+    expect(GameRoom::query()->count())->toBe(0);
     Event::assertNotDispatched(MatchmakingEvent::class);
 });
 
@@ -223,18 +229,21 @@ it('never starts a bigger table with a single player', function () {
     expect(GameRoom::query()->count())->toBe(0);
 });
 
-it('falls back to a table of bots for bigger tables', function () {
+it('seats everyone waiting at a bigger table and fills the rest with AI', function () {
     $mode = pokerQueue();
     withBots($mode);
-    $mode->game->update(['bot_fallback_timeout_seconds' => 25]);
-    $this->actingAs(User::factory()->create())->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id]);
+    $mode->game->update(['bot_fallback_timeout_seconds' => 10]);
+    $alice = User::factory()->create();
+    $this->actingAs($alice)->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id]);
 
-    $this->travel(26)->seconds();
+    $this->travel(11)->seconds();
     $this->postJson('/api/v1/matchmaking/heartbeat');
     app(Matchmaker::class)->sweep();
-    $room = $this->postJson('/api/v1/matchmaking/accept-bot')->assertCreated()->json('data.room');
 
-    expect(GameRoom::query()->where('public_id', $room)->sole()->participants()->count())->toBe(Matchmaker::BOT_TABLE_SIZE);
+    $room = GameRoom::query()->sole();
+    expect($room->type)->toBe(RoomType::Matchmaking)
+        ->and($room->participants()->count())->toBe(Matchmaker::BOT_TABLE_SIZE)
+        ->and($room->participants()->whereNotNull('user_id')->pluck('user_id')->all())->toBe([$alice->id]);
 });
 
 it('finds the player’s ticket in their group’s queue, and only matches within a group', function () {

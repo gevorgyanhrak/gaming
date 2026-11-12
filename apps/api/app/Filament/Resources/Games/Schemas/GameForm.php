@@ -61,19 +61,18 @@ class GameForm
                             ->image()->acceptedFileTypes(self::IMAGE_TYPES)->maxSize(2048)
                             ->disk('public')->directory('games')->visibility('public'),
                     ]),
-                Section::make('Bots')
+                Section::make('AI players')
                     ->columnSpan(1)
-                    ->description('Takes effect when matchmaking launches.')
+                    ->description('AI always plays at the highest level the game has bots for. Players never see who is AI.')
                     ->schema([
-                        Toggle::make('bots_enabled')->label('Bot opponents available'),
-                        Select::make('bot_fallback_mode')->label('When no opponent is found')
+                        Toggle::make('bots_enabled')->label('AI players available'),
+                        Select::make('bot_fallback_mode')->label('When not enough people are found')
                             ->required()
                             ->options([
-                                BotFallbackMode::Offer->value => 'Offer a bot game',
-                                BotFallbackMode::Auto->value => 'Start a bot game automatically',
-                                BotFallbackMode::Off->value => 'Keep waiting for a person',
+                                BotFallbackMode::Auto->value => 'Fill the empty seats with AI',
+                                BotFallbackMode::Off->value => 'Keep waiting for people',
                             ]),
-                        TextInput::make('bot_fallback_timeout_seconds')->label('Bot fallback after (seconds)')
+                        TextInput::make('bot_fallback_timeout_seconds')->label('AI fills the seats after (seconds)')
                             ->numeric()->integer()->minValue(5)->maxValue(600)
                             ->placeholder('Platform default')
                             ->helperText('Leave empty to use the default from Settings.'),

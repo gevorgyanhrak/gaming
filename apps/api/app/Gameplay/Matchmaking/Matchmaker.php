@@ -27,13 +27,13 @@ use LogicException;
 use Throwable;
 
 /**
- * Pairs waiting players per game mode, and falls back to bots when nobody is found in time.
+ * Pairs waiting players per game mode; people first, then AI fills the empty seats (fillWithAi).
  *
  * Queues live in the game store; every change to a mode's queue happens under that mode's lock, so a
  * ticket can be matched only once (e.g. a human match and a bot acceptance can't both win).
  * Two-player modes pair the two oldest tickets. Modes for bigger tables (poker) start a full table at
  * once, or sit down everyone waiting (at least min_players) once the oldest ticket has waited the mode's
- * `table_wait_seconds`; the bot fallback seats a table of TABLE_SIZE with bots.
+ * `table_wait_seconds`. After the game's AI timeout, AI fills a table of BOT_TABLE_SIZE (two-player modes: one).
  */
 class Matchmaker
 {
@@ -43,7 +43,7 @@ class Matchmaker
     /** How long a bigger table waits for more players when the mode doesn't say. */
     public const TABLE_WAIT_SECONDS = 20;
 
-    /** Seats at a bot-fallback table in modes for more than two players (as offered in the UI). */
+    /** Seats at a table AI fills, in modes for more than two players. */
     public const BOT_TABLE_SIZE = 4;
 
     public function __construct(
@@ -95,7 +95,7 @@ class Matchmaker
         $this->leave($user);
 
         $now = now()->getTimestamp();
-        $ticket = new Ticket($user->id, $mode->id, $now, $this->botAt($mode, $now), false, $now, $terms->group->id);
+        $ticket = new Ticket($user->id, $mode->id, $now, $this->botAt($mode, $now), $now, $terms->group->id);
 
         $room = $this->withQueue($ticket->pool(), function (array $queue) use ($ticket, $mode, $terms) {
             $queue[$ticket->userId] = $ticket;
@@ -164,43 +164,7 @@ class Matchmaker
     }
 
     /**
-     * Accept the offered bot game. Fails if the ticket was matched with a person in the meantime.
-     */
-    public function acceptBot(User $user): ?GameRoom
-    {
-        return $this->rules->exclusively($user, fn () => $this->startBotGame($user));
-    }
-
-    private function startBotGame(User $user): ?GameRoom
-    {
-        $pool = $this->poolOf($user->id);
-        [$mode, $terms] = ($pool === null ? null : $this->poolTerms($pool)) ?? [null, null];
-
-        if ($mode === null) {
-            return null;
-        }
-
-        $room = $this->withQueue($pool, function (array $queue) use ($user, $mode, $terms) {
-            $ticket = $queue[$user->id] ?? null;
-
-            if ($ticket === null || ! $ticket->botOffered) {
-                return [$queue, null];
-            }
-
-            unset($queue[$user->id]);
-
-            return [$queue, $this->botRoom($mode, $user, $terms)];
-        });
-
-        if ($room !== null) {
-            $this->store()->forget($this->userKey($user->id));
-        }
-
-        return $room;
-    }
-
-    /**
-     * Drop abandoned tickets, form rooms, and offer or start bot games when the timeout has passed.
+     * Drop abandoned tickets, form rooms of people, then fill tables with AI for those who waited long enough.
      * Run every few seconds by the scheduler.
      */
     public function sweep(): void
@@ -225,32 +189,55 @@ class Matchmaker
 
                 [$queue] = $this->match($mode, $queue, $terms);
 
-                foreach ($queue as $userId => $ticket) {
-                    if ($ticket->botAt === null || $ticket->botAt > $now || $ticket->botOffered) {
-                        continue;
-                    }
-
-                    if ($mode->game->bot_fallback_mode === BotFallbackMode::Auto) {
-                        $user = User::query()->find($userId);
-                        try {
-                            $room = $user === null ? null : $this->botRoom($mode, $user, $terms);
-                        } catch (InsufficientFishkas) {
-                            $room = null;
-                        }
-                        unset($queue[$userId]);
-                        $this->store()->forget($this->userKey($userId));
-                        if ($room !== null) {
-                            $this->notifyMatched($room);
-                        }
-                    } else {
-                        $queue[$userId] = $ticket->with(botOffered: true);
-                        $this->notify($userId, 'bot_offered', ['mode_id' => $mode->id]);
-                    }
-                }
-
-                return [$queue, null];
+                return [$this->fillWithAi($mode, $queue, $terms, $now), null];
             });
         }
+    }
+
+    /**
+     * People first: once the oldest waiting player has waited the game's AI timeout and no table of people
+     * formed, everyone waiting (oldest first, up to a table) sits down and AI fills the empty seats. The
+     * room is an ordinary matchmaking room; nothing marks the AI players.
+     *
+     * @param  array<int, Ticket>  $queue
+     * @return array<int, Ticket>
+     */
+    private function fillWithAi(GameMode $mode, array $queue, ?TableTerms $terms, int $now): array
+    {
+        uasort($queue, fn (Ticket $a, Ticket $b) => $a->joinedAt <=> $b->joinedAt);
+        $size = $mode->max_players > 2 ? max($mode->min_players, min(self::BOT_TABLE_SIZE, $mode->max_players)) : $mode->min_players;
+
+        while ($queue !== []) {
+            $oldest = reset($queue);
+            if ($oldest->botAt === null || $oldest->botAt > $now) {
+                break;
+            }
+            $tickets = array_slice($queue, 0, $size, true);
+            $players = User::query()->whereIn('id', array_keys($tickets))->get()
+                ->filter(fn (User $u) => $this->stakes->canAfford($u, $mode, $terms))
+                ->sortBy(fn (User $u) => $tickets[$u->id]->joinedAt)->values()->all();
+            try {
+                $ai = $this->ai->seats($mode->game, $size - count($players));
+            } catch (InvalidArgumentException) {
+                break;   // No AI plays the game now: they keep waiting for people.
+            }
+            foreach (array_keys($tickets) as $userId) {
+                unset($queue[$userId]);
+                $this->store()->forget($this->userKey($userId));
+            }
+            if ($players === []) {
+                continue;
+            }
+
+            try {
+                $room = $this->rooms->createStarted($mode, RoomType::Matchmaking, [...$players, ...$ai], terms: $terms);
+            } catch (InsufficientFishkas) {
+                continue;
+            }
+            $this->notifyMatched($room);
+        }
+
+        return $queue;
     }
 
     /**
@@ -311,19 +298,6 @@ class Matchmaker
         }
 
         return (int) ($mode->config['table_wait_seconds'] ?? self::TABLE_WAIT_SECONDS);
-    }
-
-    private function botRoom(GameMode $mode, User $user, ?TableTerms $terms = null): ?GameRoom
-    {
-        $seats = $mode->max_players > 2 ? max($mode->min_players, min(self::BOT_TABLE_SIZE, $mode->max_players)) : $mode->min_players;
-
-        try {
-            $ai = $this->ai->seats($mode->game, $seats - 1);
-        } catch (InvalidArgumentException) {
-            return null;
-        }
-
-        return $this->rooms->createStarted($mode, RoomType::Bot, [$user, ...$ai], $user, $terms);
     }
 
     private function botAt(GameMode $mode, int $now): ?int

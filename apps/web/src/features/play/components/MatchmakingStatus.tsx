@@ -3,26 +3,17 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { useCurrentUser } from '@/features/auth/hooks'
-import { useMessage } from '@/features/auth/forms'
 import { useUserChannel } from '@/shared/realtime/useUserChannel'
-import { Alert } from '@/shared/ui/Alert'
 import { Button } from '@/shared/ui/Button'
-import {
-  acceptBotGame,
-  cancelMatchmaking,
-  fetchMatchmaking,
-  matchmakingHeartbeat,
-  matchmakingKey,
-} from '../api'
-import { useCountdown } from '../useCountdown'
+import { cancelMatchmaking, fetchMatchmaking, matchmakingHeartbeat, matchmakingKey } from '../api'
 
 /**
- * While searching: elapsed state, cancel, and the bot offer. Goes to the room once matched (event,
- * or the polled status as a fallback). Sends a heartbeat so abandoned searches are dropped.
+ * While searching: who's waiting and cancel. Goes to the room once matched (event, or the polled status as a
+ * fallback). Sends a heartbeat so abandoned searches are dropped. When people can't be found in time the
+ * server fills the seats with AI; nothing here tells the player so.
  */
 export function MatchmakingStatus() {
   const { t } = useTranslation()
-  const message = useMessage()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { data: user } = useCurrentUser()
@@ -34,7 +25,6 @@ export function MatchmakingStatus() {
   })
   const ticket = status.data?.ticket ?? null
   const room = status.data?.room ?? null
-  const botIn = useCountdown(ticket?.status === 'queued' ? ticket.bot_offer_at : null, null)
 
   useEffect(() => {
     if (room) void navigate(`/rooms/${room}`)
@@ -48,19 +38,11 @@ export function MatchmakingStatus() {
 
   useUserChannel(user?.id, {
     'matchmaking.matched': (payload: { room: string }) => void navigate(`/rooms/${payload.room}`),
-    'matchmaking.bot_offered': () =>
-      void queryClient.invalidateQueries({ queryKey: matchmakingKey }),
   })
 
   const cancel = useMutation({
     mutationFn: cancelMatchmaking,
     onSuccess: () => queryClient.setQueryData(matchmakingKey, { ticket: null, room: null }),
-  })
-  const accept = useMutation({
-    mutationFn: () => acceptBotGame(),
-    onSuccess: (result) => {
-      if (result.room) void navigate(`/rooms/${result.room}`)
-    },
   })
 
   if (!ticket) return null
@@ -71,18 +53,7 @@ export function MatchmakingStatus() {
       {(status.data?.waiting ?? 0) > 1 ? (
         <p className="text-sm">{t('play.tableWaiting', { count: status.data?.waiting ?? 0 })}</p>
       ) : null}
-      {ticket.status === 'bot_offered' ? (
-        <p className="text-sm">{t('play.botOffer')}</p>
-      ) : botIn !== null && botIn > 0 ? (
-        <p className="text-sm text-muted">{t('play.botIn', { count: botIn })}</p>
-      ) : null}
-      {accept.error ? <Alert tone="danger">{message(accept.error.message)}</Alert> : null}
       <div className="flex flex-wrap gap-2">
-        {ticket.status === 'bot_offered' ? (
-          <Button onClick={() => accept.mutate()} loading={accept.isPending}>
-            {t('play.acceptBot')}
-          </Button>
-        ) : null}
         <Button variant="secondary" onClick={() => cancel.mutate()} loading={cancel.isPending}>
           {t('play.cancelSearch')}
         </Button>

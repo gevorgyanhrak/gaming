@@ -12,11 +12,10 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 
 /**
  * Find an opponent. Responses carry either the waiting ticket or the room once matched; the
- * "matchmaking.matched" / "matchmaking.bot_offered" events arrive on the player's channel too.
+ * "matchmaking.matched" events arrive on the player's channel too.
  */
 class MatchmakingController extends Controller
 {
@@ -63,20 +62,6 @@ class MatchmakingController extends Controller
         $matchmaker->leave($user);
 
         return response()->json(null, 204);
-    }
-
-    public function acceptBot(Request $request, Matchmaker $matchmaker): JsonResponse
-    {
-        /** @var User $user */
-        $user = $request->user();
-
-        $room = $matchmaker->acceptBot($user);
-
-        if ($room === null) {
-            throw ValidationException::withMessages(['ticket' => __('platform.play.no_bot_offer')]);
-        }
-
-        return $this->respond($matchmaker, null, $room->public_id, 201);
     }
 
     private function respond(Matchmaker $matchmaker, ?Ticket $ticket, ?string $room, int $status = 200): JsonResponse

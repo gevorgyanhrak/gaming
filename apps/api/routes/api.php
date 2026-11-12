@@ -103,7 +103,6 @@ Route::prefix('v1')->name('v1.')->group(function () {
                 Route::delete('/', [MatchmakingController::class, 'destroy'])->name('destroy');
                 Route::middleware('verified-contact')->group(function () {
                     Route::post('/', [MatchmakingController::class, 'store'])->name('store');
-                    Route::post('accept-bot', [MatchmakingController::class, 'acceptBot'])->name('accept-bot');
                 });
             });
 

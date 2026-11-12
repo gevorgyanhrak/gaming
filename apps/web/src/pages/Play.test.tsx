@@ -132,7 +132,6 @@ describe('Playing a game', () => {
         status: 'queued',
         game_mode_id: 7,
         joined_at: '2026-10-27T10:00:00+00:00',
-        bot_offer_at: null,
       },
       room: null,
       waiting: 3,
@@ -154,36 +153,46 @@ describe('Playing a game', () => {
     expect(router.state.location.pathname).toBe('/rooms/room-9')
   })
 
-  it('offers a bot game when no opponent is found', async () => {
+  it('keeps searching quietly, then goes to the table the server filled', async () => {
     serveGame()
-    let accepted = false
+    let filled = false
     server.use(
       signedInAs(userFixture({ id: 1 })),
+      http.post('*/api/v1/matchmaking', () =>
+        HttpResponse.json(
+          {
+            data: {
+              ticket: { status: 'queued', game_mode_id: 7, joined_at: '2026-10-27T10:00:00+00:00' },
+              room: null,
+            },
+          },
+          { status: 201 },
+        ),
+      ),
       http.get('*/api/v1/matchmaking', () =>
         HttpResponse.json({
-          data: accepted
+          data: filled
             ? { ticket: null, room: 'room-9' }
             : {
                 ticket: {
-                  status: 'bot_offered',
+                  status: 'queued',
                   game_mode_id: 7,
                   joined_at: '2026-10-27T10:00:00+00:00',
-                  bot_offer_at: null,
                 },
                 room: null,
               },
         }),
       ),
-      http.post('*/api/v1/matchmaking/accept-bot', () => {
-        accepted = true
-        return HttpResponse.json({ data: { ticket: null, room: 'room-9' } }, { status: 201 })
-      }),
     )
     const { router } = renderRoute('/games/tictactoe')
 
-    expect(await screen.findByText(/No one is available right now/)).toBeInTheDocument()
-    await userEvent.click(screen.getAllByRole('button', { name: 'Play against AI' })[0]!)
+    await userEvent.click(await screen.findByRole('button', { name: 'Find an opponent' }))
+    const search = (await screen.findByText('Looking for an opponent…')).closest('[role="status"]')
+    // No offer, countdown or hint that AI may sit down.
+    expect(search).not.toHaveTextContent(/AI/)
 
+    filled = true
+    emit('user.1', 'matchmaking.matched', { room: 'room-9' })
     await screen.findByText('Your turn')
     expect(router.state.location.pathname).toBe('/rooms/room-9')
   })

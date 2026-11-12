@@ -305,22 +305,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/matchmaking/accept-bot": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["v1.matchmaking.accept-bot"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/v1/me": {
         parameters: {
             query?: never;
@@ -1054,11 +1038,10 @@ export interface components {
         };
         /** TicketResource */
         TicketResource: {
-            /** @enum {string} */
-            status: "bot_offered" | "queued";
+            /** @constant */
+            status: "queued";
             game_mode_id: number;
             joined_at: string;
-            bot_offer_at: string | null;
         };
         /** UpdateAvatarRequest */
         UpdateAvatarRequest: {
@@ -1916,35 +1899,6 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        data: {
-                            ticket: {
-                                [key: string]: unknown;
-                            } | null;
-                            /** @description Players in the same queue, the searching player included (null when not searching). */
-                            waiting: number | null;
-                            room: string | null;
-                        };
-                    };
-                };
-            };
-            401: components["responses"]["AuthenticationException"];
-        };
-    };
-    "v1.matchmaking.accept-bot": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            201: {
                 headers: {
                     [name: string]: unknown;
                 };

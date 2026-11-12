@@ -14,7 +14,7 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 choice, matchmaking humans first then AI fills the seats, AI never marked, AI holds a disconnected player's seat at
 tables of 3+ (they can come back; Leave = loss; 1-v-1: the one who stays wins). Shared services, each game keeps its bot.
 - [x] 1. AI wording (en/ru/hy), highest level via `Gameplay/Bots/AiPlayers`, no difficulty picker, Bot pills removed from all boards — this commit.
-- [ ] 2. Matchmaking: humans first, AI fills the missing seats (no "play a bot?" offer).
+- [x] 2. Matchmaking: people first, then `Matchmaker::fillWithAi` seats everyone waiting + AI in an ordinary matchmaking room (no offer, no countdown; admin: fill or keep waiting) — this commit.
 - [ ] 3. AI takeover of a disconnected player's seat (3+ seats), back on return.
 
 **New games (owner, 2026-11-11)** — brief in the owner's message: add Blackjack, Domino, Ludo, 8-ball pool, Rummy, Hearts,

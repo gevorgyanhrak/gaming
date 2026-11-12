@@ -23,13 +23,13 @@ it('edits a game in every language and audits the change', function () {
 
     Livewire::test(EditGame::class, ['record' => $game->getRouteKey()])
         ->assertSchemaStateSet(['name.en' => 'Chess'])
-        ->fillForm(['name' => ['en' => 'Chess', 'ru' => 'Шахматы', 'hy' => ''], 'bot_fallback_mode' => 'auto', 'bot_fallback_timeout_seconds' => 20])
+        ->fillForm(['name' => ['en' => 'Chess', 'ru' => 'Шахматы', 'hy' => ''], 'bot_fallback_mode' => 'off', 'bot_fallback_timeout_seconds' => 20])
         ->call('save')
         ->assertHasNoFormErrors();
 
     $game->refresh();
     expect($game->getTranslations('name'))->toBe(['en' => 'Chess', 'ru' => 'Шахматы'])
-        ->and($game->bot_fallback_mode->value)->toBe('auto')
+        ->and($game->bot_fallback_mode->value)->toBe('off')
         ->and($game->bot_fallback_timeout_seconds)->toBe(20);
 
     $log = AuditLog::query()->where('action', 'game.updated')->sole();

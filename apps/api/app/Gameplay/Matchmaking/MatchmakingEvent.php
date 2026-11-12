@@ -8,7 +8,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /**
- * "matchmaking.matched" (with the room id) or "matchmaking.bot_offered", on the player's channel.
+ * "matchmaking.matched" (with the room id), on the player's channel.
  */
 class MatchmakingEvent implements ShouldBroadcastNow
 {

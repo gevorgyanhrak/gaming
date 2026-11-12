@@ -10,10 +10,9 @@ export type RoomState = NonNullable<ApiResponse<'v1.rooms.state'>['data']>
 /** Matchmaking status. Declared here: the ticket's shape isn't inferable from the API docs. */
 export interface Matchmaking {
   ticket: {
-    status: 'queued' | 'bot_offered'
+    status: 'queued'
     game_mode_id: number
     joined_at: string
-    bot_offer_at: string | null
   } | null
   room: string | null
   /** Players in the same queue, you included (bigger tables wait for several). */
@@ -119,11 +118,6 @@ export const matchmakingHeartbeat = () =>
   )
 
 export const cancelMatchmaking = () => apiRequest<void>('/api/v1/matchmaking', { method: 'DELETE' })
-
-export const acceptBotGame = () =>
-  apiRequest<{ data: Matchmaking }>('/api/v1/matchmaking/accept-bot', { method: 'POST' }).then(
-    unwrap,
-  )
 
 export const fetchMyRooms = (signal?: AbortSignal) =>
   apiRequest<{ data: Room[] }>('/api/v1/me/rooms', { signal }).then(unwrap)
