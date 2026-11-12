@@ -8,6 +8,7 @@ use App\Models\GameRoom;
 use App\Platform\Levels\Levels;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @mixin GameRoom
@@ -31,6 +32,13 @@ class RoomResource extends JsonResource
             'status' => $this->status->value,
             /** @var string|null */
             'invite_code' => $isParticipant && $this->status === RoomStatus::Waiting ? $this->invite_code : null,
+            /**
+             * What this game brought you once your part in it is over: Fishkas (net: bet or fee and winnings)
+             * and XP. Null while you still play, and for others.
+             *
+             * @var array{fishkas: int, xp: int}|null
+             */
+            'my_rewards' => $this->rewardsFor($viewer?->id),
             'seats' => $this->seats,
             /** The play group the table belongs to (null for tables from before groups). */
             'group' => $this->group === null ? null : new PlayGroupResource($this->group),
@@ -60,6 +68,24 @@ class RoomResource extends JsonResource
             'started_at' => $this->started_at?->toIso8601String(),
             /** @var string|null */
             'finished_at' => $this->finished_at?->toIso8601String(),
+        ];
+    }
+
+    /**
+     * @return array{fishkas: int, xp: int}|null
+     */
+    private function rewardsFor(?int $userId): ?array
+    {
+        $seat = $userId === null ? null : $this->participants->firstWhere('user_id', $userId);
+        if ($seat === null || ($seat->is_active && $this->status === RoomStatus::Active)) {
+            return null;
+        }
+
+        return [
+            'fishkas' => (int) DB::table('fishka_transactions')->where('user_id', $userId)
+                ->where('reference_type', 'game_room')->where('reference_id', $this->public_id)->sum('amount'),
+            'xp' => (int) DB::table('xp_transactions')->where('user_id', $userId)
+                ->where('reference_type', 'game_room')->where('reference_id', $this->public_id)->sum('amount'),
         ];
     }
 }

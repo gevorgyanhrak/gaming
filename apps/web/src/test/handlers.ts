@@ -172,6 +172,7 @@ export function roomFixture(overrides: Partial<Room> = {}): Room {
     status: 'active',
     group: null,
     stake: 0,
+    my_rewards: null,
     invite_code: null,
     seats: 2,
     participants: [

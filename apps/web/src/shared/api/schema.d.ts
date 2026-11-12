@@ -984,6 +984,14 @@ export interface components {
             /** @enum {string} */
             status: "waiting" | "active" | "finished" | "aborted";
             invite_code: string | null;
+            /**
+             * @description What this game brought you once your part in it is over: Fishkas (net: bet or fee and winnings)
+             *     and XP. Null while you still play, and for others.
+             */
+            my_rewards: {
+                fishkas: number;
+                xp: number;
+            } | null;
             seats: number;
             group: components["schemas"]["PlayGroupResource"] | null;
             /** @description What each player bets (stake games; 0 for poker). */

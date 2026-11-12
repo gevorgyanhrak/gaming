@@ -354,7 +354,9 @@
     "codeCopied": "Код скопирован",
     "copyFallback": "Скопируйте ссылку",
     "shareText": "Садись за мой стол: {{game}}.",
-    "nextRound": "Следующий раунд"
+    "nextRound": "Следующий раунд",
+    "rewardFishkas": "Фишки",
+    "rewardXp": "опыта"
   },
   "history": {
     "title": "История игр",

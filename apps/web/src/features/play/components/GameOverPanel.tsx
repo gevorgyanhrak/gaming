@@ -6,7 +6,9 @@ import { useMessage } from '@/features/auth/forms'
 import { useMediaQuery } from '@/shared/lib/useMediaQuery'
 import { Alert } from '@/shared/ui/Alert'
 import { Button, ButtonLink } from '@/shared/ui/Button'
-import { CloseIcon, TrophyIcon } from '@/shared/ui/icons'
+import { CloseIcon, StarIcon } from '@/shared/ui/icons'
+import { FishkaIcon } from '@/features/wallet/components/FishkaIcon'
+import { ResultTrophy } from './ResultTrophy'
 import { Modal } from '@/shared/ui/Modal'
 import {
   createBotRoom,
@@ -40,7 +42,7 @@ export function GameOverPanel({
   /** …because they lost all their chips (poker), not because they walked away. */
   outOfChips?: boolean
 }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const message = useMessage()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -50,6 +52,15 @@ export function GameOverPanel({
   const wide = useMediaQuery('(min-width: 1024px)')
 
   const aborted = room.status === 'aborted'
+  const rewards = room.my_rewards ?? null
+  const trophy: 'win' | 'loss' | 'neutral' =
+    aborted || (!result && !leftTable)
+      ? 'neutral'
+      : result === 'win' && !leftTable
+        ? 'win'
+        : result === 'draw'
+          ? 'neutral'
+          : 'loss'
   const again = useMutation({
     mutationFn: async () => {
       // Same table terms: group and bet (the server checks them again).
@@ -153,11 +164,7 @@ export function GameOverPanel({
       >
         <CloseIcon className="size-5" />
       </button>
-      {result === 'win' && !leftTable ? (
-        <span className="club-medal mx-auto mb-3 flex size-12 items-center justify-center rounded-full text-black">
-          <TrophyIcon className="size-6" />
-        </span>
-      ) : null}
+      <ResultTrophy outcome={trophy} />
       {aborted ? null : (
         <p className="text-xs font-semibold tracking-wider text-muted uppercase">
           {t('room.over')}
@@ -167,7 +174,9 @@ export function GameOverPanel({
         id="game-over-title"
         ref={heading}
         tabIndex={-1}
-        className={`mt-1 text-2xl font-extrabold outline-none sm:text-3xl ${result === 'win' && !leftTable ? 'text-gold-gradient' : ''}`}
+        className={`mt-2 text-2xl font-extrabold tracking-wide uppercase outline-none sm:text-4xl ${
+          trophy === 'win' ? 'text-gold-gradient' : trophy === 'loss' ? 'text-[#e8867a]' : ''
+        }`}
       >
         {title}
       </h2>
@@ -177,7 +186,30 @@ export function GameOverPanel({
         <p className="mt-1 text-sm text-muted">{t(reason)}</p>
       ) : null}
       {leftTable ? <p className="mt-1 text-sm text-muted">{t('room.playsOn')}</p> : null}
-      {result || leftTable ? <GameResult roomId={room.id} /> : null}
+      {rewards ? (
+        // What the game brought: Fishkas (net) and XP, side by side.
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="flex items-center justify-center gap-3 rounded-2xl border border-gold/25 bg-black/25 px-3 py-3">
+            <FishkaIcon className="size-9 shrink-0" />
+            <span className="text-left">
+              <span className="block text-2xl font-extrabold tabular-nums">
+                {rewards.fishkas > 0 ? '+' : ''}
+                {rewards.fishkas.toLocaleString(i18n.language)}
+              </span>
+              <span className="text-sm text-muted">{t('room.rewardFishkas')}</span>
+            </span>
+          </div>
+          <div className="flex items-center justify-center gap-3 rounded-2xl border border-gold/25 bg-black/25 px-3 py-3">
+            <StarIcon className="size-9 shrink-0 text-gold" />
+            <span className="text-left">
+              <span className="block text-2xl font-extrabold tabular-nums">+{rewards.xp}</span>
+              <span className="text-sm text-muted">{t('room.rewardXp')}</span>
+            </span>
+          </div>
+        </div>
+      ) : result || leftTable ? (
+        <GameResult roomId={room.id} />
+      ) : null}
 
       {searching ? (
         <div className="mt-5 text-left">

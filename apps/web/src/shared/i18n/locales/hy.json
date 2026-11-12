@@ -344,7 +344,9 @@
     "codeCopied": "Կոդը պատճենվեց",
     "copyFallback": "Պատճենեք այս հղումը",
     "shareText": "Միացիր իմ սեղանին՝ {{game}}։",
-    "nextRound": "Հաջորդ խաղափուլը"
+    "nextRound": "Հաջորդ խաղափուլը",
+    "rewardFishkas": "Ֆիշկաներ",
+    "rewardXp": "միավոր"
   },
   "history": {
     "title": "Խաղերի պատմություն",

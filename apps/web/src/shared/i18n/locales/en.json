@@ -344,7 +344,9 @@
     "codeCopied": "Code copied",
     "copyFallback": "Copy this link",
     "shareText": "Join my {{game}} table.",
-    "nextRound": "Next round"
+    "nextRound": "Next round",
+    "rewardFishkas": "Fishkas",
+    "rewardXp": "XP"
   },
   "history": {
     "title": "Game history",
