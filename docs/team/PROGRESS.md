@@ -16,7 +16,8 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 - [x] Matchmaking for all games: 10 s countdown, AI fills empty seats at 7 s, people first — this commit (reserved tables, MatchmakingTick; settings 7/10).
 - [x] Admin Game Management: enable/disable/maintenance per game, end games under way, delete (archive or purge), audited — this commit (`Platform/Games/GameAdministration`).
 - [x] Game-over panel (trophy, Fishkas won, +XP, New game / Exit) for every game — this commit (`ResultTrophy`, room `my_rewards`).
-- [ ] Blot home with modes (win / bet / target per mode).
+- [x] Blot home with modes (win / bet / target per mode) — this commit (modes Quick 101 / Standard 151 / Bazar 301, trait `modeCards`).
+- [x] Blot AI research (3 agents, docs/research/blot-ai) and adopted techniques — e0fc1fe.
 - [ ] Next-gift timer + lucky wheel (free Fishkas). No VIP, shop or buying (owner).
 
 **AI platform-wide (owner, 2026-11-12)** — "Play against AI" everywhere, AI always at the highest level, no difficulty

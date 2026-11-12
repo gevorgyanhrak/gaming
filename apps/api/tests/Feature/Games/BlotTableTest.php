@@ -25,7 +25,7 @@ function blotMode(): GameMode
 {
     test()->seed([GameSeeder::class, GameModeSeeder::class]);
 
-    return Game::query()->where('slug', 'blot')->sole()->modes()->sole();
+    return Game::query()->where('slug', 'blot')->sole()->modes()->where('slug', 'bazar')->sole();
 }
 
 /** A private table of four people (beginner group: a 500 bet each). */

@@ -265,7 +265,10 @@
     "tableReady": "Table ready — players found",
     "startsIn_one": "The game starts in {{count}} second",
     "startsIn_other": "The game starts in {{count}} seconds",
-    "tablePlayers": "Players at the table"
+    "tablePlayers": "Players at the table",
+    "stakeWin": "Win",
+    "stakeBet": "Bet",
+    "stakeTarget": "To"
   },
   "room": {
     "players": "Players",

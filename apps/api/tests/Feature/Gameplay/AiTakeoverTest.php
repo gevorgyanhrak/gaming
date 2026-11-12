@@ -34,7 +34,7 @@ beforeEach(function () {
 function takeoverTable(int $people = 2): array
 {
     test()->seed([GameSeeder::class, GameModeSeeder::class]);
-    $mode = Game::query()->where('slug', 'blot')->sole()->modes()->sole();
+    $mode = Game::query()->where('slug', 'blot')->sole()->modes()->where('slug', 'bazar')->sole();
     foreach (['Armen', 'Davit', 'Ani'] as $name) {
         BotProfile::factory()->create(['name' => $name])->gameProfiles()->create(['game_id' => $mode->game_id, 'difficulty' => BotDifficulty::Hard]);
     }

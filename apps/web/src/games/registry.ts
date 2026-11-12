@@ -65,6 +65,8 @@ export interface GameTraits {
   tableTerms?: ParseKeys
   /** A stake game played at its group's minimum bet: the lobby offers no bet to choose (owner: Blot). */
   fixedBet?: boolean
+  /** Modes shown as cards with what a win brings, the bet and the target score: a win's net for a bet. */
+  modeCards?: (bet: number, seats: number) => number
 }
 
 const pieces = (view: View) =>
@@ -114,6 +116,8 @@ export const traits: Partial<Record<string, GameTraits>> = {
   // Partnerships (seats 0 and 2 against 1 and 3): a hand "won" is one your team scored more in.
   blot: {
     fixedBet: true,
+    // Two winners share the pot of four bets: each wins their bet back and one more.
+    modeCards: (bet) => bet,
     seatsOnBoard: true,
     material: 'cards',
     roundWon: (a, b, seat) => {

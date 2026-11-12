@@ -115,6 +115,7 @@ describe('Admin-managed platform settings in the app', () => {
                 description: '5 minutes each.',
                 min_players: 2,
                 max_players: 2,
+                target: null,
               },
             ],
           }),

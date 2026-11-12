@@ -60,6 +60,7 @@ function serve(slug: string, groups: PlayGroup[], balance: number) {
         description: null,
         min_players: 2,
         max_players: 2,
+        target: null,
       },
     ],
     groups,

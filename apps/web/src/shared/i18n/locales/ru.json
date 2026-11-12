@@ -273,7 +273,10 @@
     "startsIn_few": "Игра начнётся через {{count}} секунды",
     "startsIn_many": "Игра начнётся через {{count}} секунд",
     "startsIn_other": "Игра начнётся через {{count}} секунды",
-    "tablePlayers": "Игроки за столом"
+    "tablePlayers": "Игроки за столом",
+    "stakeWin": "Выигрыш",
+    "stakeBet": "Ставка",
+    "stakeTarget": "До"
   },
   "room": {
     "players": "Игроки",

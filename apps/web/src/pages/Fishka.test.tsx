@@ -19,7 +19,15 @@ const checkers = gameFixture({
   name: 'Tic-tac-toe',
   is_playable: true,
   modes: [
-    { id: 7, slug: 'classic', name: 'Classic', description: null, min_players: 2, max_players: 2 },
+    {
+      id: 7,
+      slug: 'classic',
+      name: 'Classic',
+      description: null,
+      min_players: 2,
+      max_players: 2,
+      target: null,
+    },
   ],
 })
 

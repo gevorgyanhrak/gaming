@@ -24,6 +24,8 @@ class GameModeResource extends JsonResource
             'description' => $this->description,
             'min_players' => $this->min_players,
             'max_players' => $this->max_players,
+            /** @var int|null The score a match is played to, for games that say (Blot: 101, 151, 301). */
+            'target' => isset($this->config['target']) ? (int) $this->config['target'] : null,
         ];
     }
 }

@@ -15,7 +15,9 @@ import {
   ChevronIcon,
   FriendsIcon,
   PlayIcon,
+  TargetIcon,
   TicketIcon,
+  TrophyIcon,
 } from '@/shared/ui/icons'
 import { Segmented } from '@/shared/ui/Segmented'
 import { Skeleton } from '@/shared/ui/Skeleton'
@@ -46,6 +48,7 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
   const { data: user } = useCurrentUser()
   const modes = game.modes ?? []
   const Preview = modePreviews[game.slug]
+  const traits = traitsOf(game.slug)
   const [modeSlug, setModeSlug] = useState(modes[0]?.slug ?? '')
   const [code, setCode] = useState('')
   const id = useId()
@@ -183,6 +186,39 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
                   ))}
                 </div>
               </fieldset>
+            ) : modes.length > 1 && traits.modeCards ? (
+              // Modes by what is at stake and how long the match runs (Blot: to 101, 151, 301).
+              <fieldset className="w-full">
+                <legend className="mb-2 text-center text-sm font-semibold text-gold-light">
+                  {t('play.whatToPlay')}
+                </legend>
+                <div className="grid gap-2.5">
+                  {modes.map((m) => (
+                    <label
+                      key={m.slug}
+                      className="club-panel flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-transparent px-4 py-3 transition hover:border-gold/40 has-checked:border-gold has-checked:shadow-[0_0_0_3px_rgb(214_171_78/0.25)] has-focus-visible:outline-2 has-focus-visible:outline-accent-text"
+                    >
+                      <input
+                        type="radio"
+                        name="mode"
+                        value={m.slug}
+                        checked={modeSlug === m.slug}
+                        onChange={() => setModeSlug(m.slug)}
+                        className="sr-only"
+                      />
+                      <span className="min-w-0 flex-1 text-lg font-extrabold text-gold-light">
+                        {m.name}
+                      </span>
+                      <ModeStakes
+                        win={bet === undefined ? null : traits.modeCards!(bet, m.min_players)}
+                        bet={bet ?? null}
+                        target={m.target}
+                        format={format}
+                      />
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
             ) : modes.length > 1 ? (
               <Segmented
                 label={t('play.mode')}
@@ -282,6 +318,18 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
         ) : null}
 
         <MatchmakingStatus />
+
+        {traits.modeCards && mode ? (
+          <div className="flex justify-center">
+            <ModeStakes
+              big
+              win={bet === undefined ? null : traits.modeCards(bet, mode.min_players)}
+              bet={bet ?? null}
+              target={mode.target}
+              format={format}
+            />
+          </div>
+        ) : null}
 
         {/* The big green button: a game against another person. */}
         <button
@@ -408,5 +456,45 @@ function ModeCard({
         </div>
       ) : null}
     </section>
+  )
+}
+
+/** What a mode puts at stake: a win (net), the bet, and the score the match is played to. */
+function ModeStakes({
+  win,
+  bet,
+  target,
+  format,
+  big = false,
+}: {
+  win: number | null
+  bet: number | null
+  target: number | null
+  format: (n: number) => string
+  big?: boolean
+}) {
+  const { t } = useTranslation()
+  const value = big ? 'text-2xl sm:text-3xl' : 'text-base'
+  const cell = (label: string, icon: ReactNode, text: string) => (
+    <span className="flex flex-col items-center">
+      <span className="text-[0.7rem] text-muted">{label}</span>
+      <span className={`flex items-center gap-1 font-extrabold tabular-nums ${value}`}>
+        {icon}
+        {text}
+      </span>
+    </span>
+  )
+  return (
+    <span className={`flex items-end ${big ? 'gap-8' : 'gap-4'}`}>
+      {win !== null
+        ? cell(t('play.stakeWin'), <TrophyIcon className="size-4 text-gold" />, `+${format(win)}`)
+        : null}
+      {bet !== null
+        ? cell(t('play.stakeBet'), <FishkaIcon className="size-4" />, format(bet))
+        : null}
+      {target !== null
+        ? cell(t('play.stakeTarget'), <TargetIcon className="size-4 text-gold" />, String(target))
+        : null}
+    </span>
   )
 }

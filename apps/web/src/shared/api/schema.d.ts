@@ -874,6 +874,8 @@ export interface components {
             description: string | null;
             min_players: number;
             max_players: number;
+            /** @description The score a match is played to, for games that say (Blot: 101, 151, 301). */
+            target: number | null;
         };
         /** GameResource */
         GameResource: {

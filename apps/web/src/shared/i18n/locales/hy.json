@@ -265,7 +265,10 @@
     "tableReady": "Սեղանը պատրաստ է՝ խաղացողները գտնվեցին",
     "startsIn_one": "Խաղը կսկսվի {{count}} վայրկյանից",
     "startsIn_other": "Խաղը կսկսվի {{count}} վայրկյանից",
-    "tablePlayers": "Սեղանի խաղացողները"
+    "tablePlayers": "Սեղանի խաղացողները",
+    "stakeWin": "Շահում",
+    "stakeBet": "Խաղադրույք",
+    "stakeTarget": "Մինչև"
   },
   "room": {
     "players": "Խաղացողներ",
