@@ -30,6 +30,11 @@ Choices where the sources disagree or are silent are marked **(choice)**.
 - A bid is a number 8–24 (× 10 card points the pair promises) with a trump suit or **no-trump**. Each bid is at least 1
   higher than the last; suits don't rank. Partners may raise each other. A player who passed may bid again later.
 - **Kaput** (25): the pair will take all 8 tricks. It outbids any number; after it nobody bids again **(choice)**.
+- **The 24 limit and kaput are separate rules (owner, 2026-11-12).** A number bid — the pair's card points plus the
+  combinations it counts on — never goes above 24, whatever the hand holds. Kaput is its own bid (`kaput {suit}`), not
+  a number: it stays open after a 24 to every player still in the bazar (partner or opponent), and a "bid 25" is
+  refused. The bazar still ends after three passes following the last bid, so whoever bid 24 speaks again only if
+  someone keeps the bazar open. The panel shows a kaput as a red "Kaput" seal and says why the numbers stop at 24.
 - **Contra (Քուանշ)** — an opponent of the pair holding the contract; it ends the bidding. Then **either player of the
   contract pair** may say **recontra (Սուր)**, in turn: the first of them after the Quansh, and if they pass, their
   partner ("ответить реконтрой может один из игроков пары" — playelephant/gambler rules). Sur ×4 (Boy ×5).

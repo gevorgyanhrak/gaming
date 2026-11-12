@@ -849,11 +849,17 @@ export default function BlotBoard({
               >
                 −
               </button>
-              <span
-                className="flex-1 text-center text-2xl font-extrabold text-gold-light tabular-nums"
-                aria-live="polite"
-              >
-                {isKaput ? t('blot.kaputShort') : bidValue}
+              <span className="flex-1 text-center" aria-live="polite">
+                {isKaput ? (
+                  // Kaput is its own bid, not a number: drawn as a red seal.
+                  <span className="inline-block rounded-lg border border-[#ff9c8a]/60 bg-[#7a1f1f] px-3 py-0.5 text-lg font-extrabold tracking-wide text-[#ffd9cf] uppercase">
+                    {t('blot.kaputShort')}
+                  </span>
+                ) : (
+                  <span className="text-2xl font-extrabold text-gold-light tabular-nums">
+                    {bidValue}
+                  </span>
+                )}
               </span>
               <button
                 type="button"
@@ -876,6 +882,14 @@ export default function BlotBoard({
                 </button>
               ) : null}
             </div>
+            {/* Why the number stops (the bazar's top is 24) and what a kaput is. */}
+            {isKaput || (bidRange && bidValue >= bidRange.max) ? (
+              <p className="text-center text-xs leading-snug text-muted">
+                {kaputOnly || !isKaput
+                  ? t('blot.bidCap', { max: bidRange?.max ?? view.contract?.value ?? 0 })
+                  : t('blot.kaputNote')}
+              </p>
+            ) : null}
           </>
         ) : null}
         <div className="grid grid-cols-2 gap-2">

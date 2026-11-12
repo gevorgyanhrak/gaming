@@ -259,6 +259,26 @@ it('takes only higher bids with a suit or no-trump, from anyone including a part
     expect($state['contract'])->toMatchArray(['seat' => 2, 'team' => 0, 'value' => 11]);
 });
 
+it('stops number bids at 24 but still takes a kaput over them — two separate rules', function () {
+    $engine = new BlotEngine;
+    $state = blotAct(blot(), 'bid', ['value' => 24, 'suit' => 'H']);   // seat 0 bids the top number
+
+    // Nobody may go above 24 with a number, not even with a big combination in hand: 25 is not a bid.
+    foreach ([1, 2, 3] as $seat) {
+        expect($engine->isLegal($state, $seat, new Action('bid', ['value' => 25, 'suit' => 'H'])))->toBeFalse()
+            ->and($engine->isLegal($state, $seat, new Action('bid', ['value' => 30, 'suit' => 'S'])))->toBeFalse();
+    }
+    expect(blotTypes($state, 1))->toBe(['kaput', 'kaput', 'kaput', 'kaput', 'kaput', 'pass', 'contra']);
+
+    // The partner (seat 2) may still bid kaput over the 24: accepted as its own contract.
+    $partner = blotAct(blotAct($state, 'pass'), 'kaput', ['suit' => 'H']);
+    expect($partner['contract'])->toMatchArray(['seat' => 2, 'team' => 0, 'value' => 25, 'kaput' => true, 'suit' => 'H']);
+
+    // So may an opponent, in any suit or Boy.
+    $opponent = blotAct($state, 'kaput', ['suit' => 'N']);
+    expect($opponent['contract'])->toMatchArray(['seat' => 1, 'team' => 1, 'value' => 25, 'kaput' => true, 'suit' => null]);
+});
+
 it('lets nobody bid after kaput except with a contra', function () {
     $state = blotAct(blot(), 'kaput', ['suit' => 'D']);
 

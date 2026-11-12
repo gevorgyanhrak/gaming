@@ -26,7 +26,10 @@ offer to play a bot (chosen by the player before the game). Dead "Bot" pill code
 (Armenian, player1, 1440×900 and 390×844): cards fly to each seat, hand fills face up, header "Dealing", bazar opens
 ≈3.1 s after the deal starts with 8 cards in hand.
 
-**Open:** the "24-point announcement cutoff" still waits for the owner's explanation.
+**Follow-up — the 24 limit and kaput (owner's rule, same day):** the engine already capped number bids at 24
+(`MAX_BID`) and kept kaput a separate action that stays legal after a 24; now pinned by a unit test (no 25/30 number
+bid from anyone; partner's and opponent's kaput over 24 accepted) and a board test. The bazar panel shows Kaput as a
+red seal (not a number) and explains "Number bids go up to 24; above that only Kaput" / what a kaput is (en, ru, hy).
 
 ## Blot: kaput stop, Sur by either partner, new table, dealing and turn animation — 2026-11-12 · DONE except the "24" rule
 

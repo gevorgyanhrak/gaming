@@ -121,11 +121,37 @@ describe('BlotBoard', () => {
 
     await userEvent.click(screen.getByRole('radio', { name: 'hearts' }))
     await userEvent.click(screen.getByRole('button', { name: 'Bid kaput…' }))
+    expect(screen.getByText(/^Kaput: your pair takes all 8 tricks/)).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Bid kaput in hearts' }))
     expect(onAction).toHaveBeenLastCalledWith({ type: 'kaput', suit: 'H' })
 
     await userEvent.click(screen.getByRole('button', { name: 'Quansh' }))
     expect(onAction).toHaveBeenLastCalledWith({ type: 'contra' })
+  })
+
+  it('offers only Kaput over a 24, marked as its own bid, and sends it as kaput', async () => {
+    const onAction = vi.fn()
+    renderBoard(
+      view({
+        phase: 'bidding',
+        contract: contract({ seat: 0, team: 0, value: 24, suit: 'H' }),
+        trump: null,
+        bids: [{ seat: 0, type: 'bid', value: 24, suit: 'H' }],
+        log: [{ type: 'bid', seat: 0, value: 24, suit: 'H' }],
+        to_act: 2,
+        seat: 2,
+      }),
+      [...['S', 'H', 'D', 'C', 'N'].map((suit) => ({ type: 'kaput', suit })), { type: 'pass' }],
+      onAction,
+    )
+
+    // No number to raise: the panel says why and shows Kaput, not a number.
+    expect(screen.getByText('Number bids go up to 24; above that only Kaput.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Higher bid' })).toBeDisabled()
+    expect(screen.queryByRole('button', { name: /^Bid \d+ in/ })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('radio', { name: 'diamonds' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Bid kaput in diamonds' }))
+    expect(onAction).toHaveBeenLastCalledWith({ type: 'kaput', suit: 'D' })
   })
 
   it('answers a contra with recontra or pass', async () => {

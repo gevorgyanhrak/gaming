@@ -897,6 +897,8 @@
     "thinking": "{{name}} is thinking",
     "surPrompt": "Quansh! Answer with Sur?",
     "kaputButton": "KP",
+    "bidCap": "Number bids go up to {{max}}; above that only Kaput.",
+    "kaputNote": "Kaput: your pair takes all 8 tricks. A bid of its own, not a number.",
     "bidAction": "Bid",
     "pickSuit": "Pick a suit or Boy",
     "kaputFailed": "Kaput failed",
