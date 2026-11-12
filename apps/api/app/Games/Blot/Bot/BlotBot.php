@@ -10,8 +10,9 @@ use App\Games\Blot\Engine\BlotCards;
 use App\Games\Blot\Engine\BlotEngine;
 
 /**
- * Bids on the strength of its best trump suit or no-trump (with a share for its partner), says contra
- * holding the top trumps, declares every combination it holds, and plays the trick: lets its partner's
+ * Bids on the strength of its best trump suit or no-trump (with a share for its partner), says Quansh when
+ * QuanshAdvisor judges the opponents' contract to fail (by skill: Easy = Beginner, Medium = Advanced,
+ * Hard = Expert), declares every combination it holds, and plays the trick: lets its partner's
  * winning trick through and loads it with points, takes a trick it can win with its cheapest winning card,
  * otherwise throws its least valuable card. Easy plays a random card and rarely bids; hard also leads
  * trumps as the bidder, bids a little more boldly and recontras a contra it can beat.
@@ -110,12 +111,9 @@ final class BlotBot implements BotStrategy
         $contract = $view['contract'];
         $seat = (int) $view['seat'];
 
-        if (isset($legal['contra']) && $contract !== null && $contract['suit'] !== null && $difficulty !== BotDifficulty::Easy) {
-            $trump = $contract['suit'];
-            $top = count(array_intersect(['J'.$trump, '9'.$trump, 'A'.$trump], $view['hand']));
-            if ($top >= 3 || ($top >= 2 && $contract['value'] >= 12)) {
-                return $legal['contra'];
-            }
+        // Quansh when the opponents' contract is judged to fail, by this bot's skill (QuanshAdvisor).
+        if (isset($legal['contra']) && (new QuanshAdvisor($this))->shouldQuansh($view, QuanshSkill::of($difficulty), $random)) {
+            return $legal['contra'];
         }
 
         // Don't outbid a partner without a clearly better hand.
@@ -130,10 +128,12 @@ final class BlotBot implements BotStrategy
     }
 
     /**
-     * @param  array<string, mixed>  $view
+     * The card to play (also used by QuanshAdvisor to play sampled deals out).
+     *
+     * @param  array<string, mixed>  $view  At least trump, seat, trick and contract.
      * @param  list<string>  $cards  Playable cards.
      */
-    private function card(array $view, array $cards, BotDifficulty $difficulty): string
+    public function card(array $view, array $cards, BotDifficulty $difficulty = BotDifficulty::Hard): string
     {
         $trump = $view['trump'];
         $seat = (int) $view['seat'];

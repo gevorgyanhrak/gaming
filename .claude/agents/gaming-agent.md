@@ -289,7 +289,10 @@ is not done or not verified, and how to check it manually. Keep it concise.
   puts bazar controls, trick and hand result in the middle of the felt so a 900 px tall window needs no scrolling.
   Each deal starts in a server `dealing` phase (`deal_ms`, `PausesBetweenRounds`: nobody acts, no clock) while the board
   flies 32 cards from the deck to measured seat targets (`data-deal-target`); the bazar opens on `resume`. A trait's
-  `nextRound` may be a function of the view (Blot names the dealing pause).
+  `nextRound` may be a function of the view (Blot names the dealing pause). Bids 8–80; kaput over any number and
+  over a kaput. Quansh by `Bot/QuanshAdvisor` (seat view only; sampled deals played out by `BlotEngine`); skills
+  `QuanshSkill` Beginner/Intermediate/Advanced/Expert, Easy→Beginner, Medium→Advanced, Hard→Expert (owner);
+  analysis `tests/Fixtures/Blot/QuanshLab`.
   Domino: Block, 2–4 seats; the engine auto-passes players without a move (no pass action); moves are
   `{type:'play', tile:'a-b', end}`; board `games/domino` (SVG `Tile`, end slots when a tile fits both ends).
   Ludo: `roll` is an action (the engine rolls, recorded), then `{type:'move', token, to}`; board geometry

@@ -41,6 +41,9 @@ The platform owns turns, timers (`turn_seconds` in mode config), bots, persisten
 `RoomController::store` (`type` bot|private; `opponents` 0 = solo when the mode's `min_players` is 1),
 `RoomService` (seats, start), `Matchmaker` (fills to `max_players`, or seats whoever waited `table_wait_seconds`),
 `BotSelector::pickMany`, `BotTurnJob` → `GameActionService` (the only write path). Results/stats/XP: `GameFinisher`.
+Smarter bot decisions without peeking (Blot's `QuanshAdvisor`): sample the unseen cards so they fit the public
+history (rejection sampling, the bidder's hand drawn leaning to their bid), play each sample out with the game's own
+engine both ways, compare the expected score. Measure with a fixed-seed lab in `tests/Fixtures` (`SeededRandom`).
 
 ## UI rules
 Boards render `state.view` and call `onAction(one of state.legal_actions)` — never rules in TS.

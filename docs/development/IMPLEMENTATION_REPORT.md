@@ -2,6 +2,37 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## Blot bots: strategic Quansh — 2026-11-12 · DONE
+
+**What:** `app/Games/Blot/Bot/QuanshAdvisor.php` decides Quansh from the bot's seat view only (its cards, the bazar,
+scores; partners' and opponents' cards are inferred, never seen). Advanced/Expert sample the 24 unseen cards so the deal
+fits every bid (Expert: every pass too) — rejection sampling, the contract holder's hand drawn leaning to trumps/aces by
+the height of the bid — and play each sample out with `BlotEngine` (declarations, blot, kaput stop, scoring, match-ending
+deals) with and without Quansh. Quansh when the expected gain ≥ 1.5 sai (Advanced 3) and the contract fails ≥ 50%
+(Advanced 60%). Expert also lets a strong pair answer Sur and counts the match target. Intermediate weighs its own
+defence + its partner's likely share against the bid (a kaput: a sure trick is enough); Beginner judges like
+Intermediate but overlooks a third. `QuanshSkill::of`: Easy→Beginner, Medium→Advanced, Hard→Expert (owner's choice; the
+platform keeps 3 difficulties). No random Quansh: randomness only in sampling and Beginner's oversights. ≈100 ms per
+Expert decision, only when Quansh is legal.
+
+**Analysis** (`tests/Fixtures/Blot/QuanshLab`, 300 random deals, the opener overbidding 2–6 in 40%; obvious = a
+400-sample careful judgement says fail ≥ 65% and gain ≥ 4 sai, and the contract really failed; wrong = Quansh on a
+made contract; sai = what the Quanshes won on the real cards):
+
+| skill | missed obvious | Quansh calls | wrong | sai per call |
+|---|---|---|---|---|
+| Beginner | 4/15 (27%) | 50 | 26% | 2.7 |
+| Intermediate | 1/16 (6%) | 71 | 25% | 2.9 |
+| Advanced | 1/16 (6%) | 18 | 6% | 13.0 |
+| Expert | 0/16 (0%) | 20 | 10% | 11.0 |
+
+Before (old rule: 3 of J/9/A in trump; never in Boy or against a kaput; Easy never) Expert missed 35% under a
+stricter-to-see definition. Tests: `tests/Unit/Games/BlotQuanshTest.php` (7: mapping, seat view only, top-trump hand
+always, junk never, kaput spoiled/likely, through `BlotBot`, the lab on 40 fixed-seed deals). `make test-api` 582 passed,
+`make lint-api` OK.
+
+**Not changed:** Sur (the answer to a Quansh) keeps the old rule; play and bidding unchanged.
+
 ## Blot: dealing shown card by card; no "Bot" marks at tables — 2026-11-12 · DONE
 
 **Dealing:** new server phase `dealing` at the start of every deal (`BlotEngine::deal`; `pauseMs` = `deal_ms` 3400;
