@@ -78,9 +78,12 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
   const betMax = group
     ? Math.max(group.min_bet, Math.min(group.max_bet ?? group.min_bet, balance ?? group.min_bet))
     : 0
+  const fixedBet = traitsOf(game.slug).fixedBet === true
   const bet =
     group && !chips
-      ? Math.min(betMax, Math.max(group.min_bet, betChoice ?? group.min_bet))
+      ? fixedBet
+        ? group.min_bet
+        : Math.min(betMax, Math.max(group.min_bet, betChoice ?? group.min_bet))
       : undefined
   const terms = group ? { group: group.slug, ...(bet ? { bet } : {}) } : {}
   const format = (n: number) => n.toLocaleString(i18n.language)
@@ -219,7 +222,7 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
                   big: format(group.min_bet),
                 })}
               </p>
-            ) : bet !== undefined ? (
+            ) : bet !== undefined && !fixedBet ? (
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <label htmlFor={`${id}-bet`} className="text-sm font-semibold">

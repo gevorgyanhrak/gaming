@@ -63,6 +63,8 @@ export interface GameTraits {
   buyIn?: ParseKeys
   /** What a chip table's badge says it plays for (small, big: the group's minimum bet and half of it). */
   tableTerms?: ParseKeys
+  /** A stake game played at its group's minimum bet: the lobby offers no bet to choose (owner: Blot). */
+  fixedBet?: boolean
 }
 
 const pieces = (view: View) =>
@@ -111,6 +113,7 @@ export const traits: Partial<Record<string, GameTraits>> = {
   },
   // Partnerships (seats 0 and 2 against 1 and 3): a hand "won" is one your team scored more in.
   blot: {
+    fixedBet: true,
     seatsOnBoard: true,
     material: 'cards',
     roundWon: (a, b, seat) => {

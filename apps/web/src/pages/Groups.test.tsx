@@ -101,6 +101,27 @@ describe('Play groups in the lobby', () => {
     expect(body).toMatchObject({ type: 'bot', group: 'experienced', bet: 30000 })
   })
 
+  it('offers no bet to choose in Blot: it plays at the group’s minimum bet', async () => {
+    serve('blot', stakeGroups, 30000)
+    let body: unknown
+    server.use(
+      http.post('*/api/v1/rooms', async ({ request }) => {
+        body = await request.json()
+        return HttpResponse.json({ data: roomFixture({ id: 'room-9' }) }, { status: 201 })
+      }),
+    )
+    renderRoute('/games/blot')
+
+    const picker = await screen.findByRole('group', { name: 'Group' })
+    await userEvent.click(within(picker).getByRole('radio', { name: /Experienced/ }))
+    expect(screen.queryByText('Your bet')).not.toBeInTheDocument()
+    expect(screen.queryByRole('slider')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Max' })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Start game' }))
+
+    expect(body).toMatchObject({ type: 'bot', group: 'experienced', bet: 10000 })
+  })
+
   it('tells poker players they bring their whole balance, with the group’s blinds', async () => {
     serve('poker', pokerGroups, 5000)
     renderRoute('/games/poker')
