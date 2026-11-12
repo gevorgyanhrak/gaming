@@ -2,6 +2,23 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## Professional Blot AI — 2026-11-12 · DONE
+
+Design and rule comparison: `docs/games/blot-ai.md`. New in `app/Games/Blot/Bot`: `CardMemory` (played cards,
+known cards, voids, trump caps from the public trick `history` now kept by the engine), `DealSampler` (constrained
+deals + bazar likelihood), `Simulator` (plays samples out with the real engine), `CardSearch` (Monte Carlo over every
+legal card to the end of the deal), `BidPlanner` (every trump/Boy/number/kaput priced with `BlotEngine::score`, now a
+public pure function the engine uses too; kaput only when ≥ 90% of samples sweep), `QuanshAdvisor::shouldSur`,
+`ClassicBlotBot` (the old bot: Easy and the baseline). `PacesThinking` (shared contract) gives human pacing; the
+scheduler uses it. `blot:arena` (`app/Games/Blot/Arena`) plays duplicate deals.
+
+**Arena, 300 duplicate deals (600 deals), seed 1000, pro vs classic:** +6.45 sai per deal; contracts made 257/354
+(73%) vs 139/246 (57%); Quansh right 26/32 vs 17/30; Sur right 10/16 vs 3/4; kaput: 0 bids after the guard (before
+it: 1 made of 11). ~48 ms per decision. Tests: `tests/Unit/Games/BlotProBotTest.php` (16 scenarios), suite 605 passed.
+
+**Weak spots:** the look-ahead plays every seat by simple rules (defence in samples is weaker than real), so it is
+still optimistic on high contracts; partner signalling isn't modelled beyond the bazar; Sur right only 63%.
+
 ## AI platform-wide (owner's "Global changes") — 2026-11-12 · DONE
 
 1. **Play against AI** (2be2a17): `Gameplay/Bots/AiPlayers` — highest difficulty the game has bots for; difficulty

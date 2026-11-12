@@ -377,6 +377,8 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
             'leader' => $first,
             'trick' => [],
             'last_trick' => null,
+            // Every finished trick of this deal, in order (public: everyone saw them played).
+            'history' => [],
             'tricks' => [0, 0],
             'points' => [0, 0],
             'available' => [[], [], [], []],
@@ -453,6 +455,7 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
         $state['points'][$winner % 2] += $points;
         $state['tricks'][$winner % 2]++;
         $state['last_trick'] = ['cards' => $state['trick'], 'winner' => $winner, 'points' => $points];
+        $state['history'][] = ['cards' => $state['trick'], 'winner' => $winner];
         $state['trick'] = [];
         $state['declarations_shown'] = true;
         $state['to_act'] = $winner;
@@ -468,6 +471,49 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
         }
 
         return $last ? $this->finishHand($state, $events) : $state;
+    }
+
+    /**
+     * The deal's score in sai for a contract, from what each pair took (docs/games/blot-rules.md, "Scoring a
+     * deal"). Pure, so the AI weighs outcomes exactly as the table scores them.
+     *
+     * @param  array<string, mixed>  $contract  team, value, suit (null: Boy), kaput, doubled
+     * @param  array<int, int|float>  $points  card points per pair (last trick included)
+     * @param  array<int, int|float>  $tricks
+     * @param  array<int, int|float>  $declPoints  counted declarations per pair
+     * @param  array<int, int|float>  $belotePoints
+     * @return array{0: array{0: int, 1: int}, 1: bool, 2: bool, 3: bool, 4: int, 5: array{0: int, 1: int}, 6: array{0: int, 1: int}}
+     *                                                                                                                                [scored, made, all tricks, no tricks, bid sai, card sai, declaration sai]
+     */
+    public static function score(array $contract, array $points, array $tricks, array $declPoints, array $belotePoints, bool $stoppedEarly = false): array
+    {
+        $bidders = (int) $contract['team'];
+        $defenders = 1 - $bidders;
+        $trump = $contract['suit'];
+        $allTricks = $tricks[$bidders] === 8;
+        // Taking no trick only counts when the deal was played out (not a kaput stopped at its first lost trick).
+        $noTricks = ! $stoppedEarly && $tricks[$bidders] === 0;
+        $made = $contract['kaput']
+            ? $allTricks
+            : $points[$bidders] + $declPoints[$bidders] + $belotePoints[$bidders] >= $contract['value'] * 10;
+        $multiplier = ($trump === null ? [2, 3, 5] : [1, 2, 4])[$contract['doubled']];
+        $bid = $contract['value'] * $multiplier;
+        $declSai = [intdiv($declPoints[0], 10), intdiv($declPoints[1], 10)];
+        $cardSai = [BlotCards::sai($points[0]), BlotCards::sai($points[1])];
+
+        $scored = [0, 0];
+        if ($made && $contract['doubled'] === 0) {
+            $scored[$bidders] = $bid + ($allTricks ? 25 : 16 - $cardSai[$defenders]) + $declSai[$bidders];
+            $scored[$defenders] = ($allTricks ? 0 : $cardSai[$defenders]) + $declSai[$defenders];
+        } elseif ($made) {
+            $scored[$bidders] = $bid + ($allTricks ? 25 : 16) + $declSai[0] + $declSai[1];
+        } else {
+            $scored[$defenders] = $bid + ($noTricks ? 25 : 16) + $declSai[0] + $declSai[1];
+        }
+        $scored[0] += intdiv($belotePoints[0], 10);
+        $scored[1] += intdiv($belotePoints[1], 10);
+
+        return [$scored, $made, $allTricks, $noTricks, $bid, $cardSai, $declSai];
     }
 
     /**
@@ -508,28 +554,7 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
             $belotePoints[$state['belote'] % 2] = 20;
         }
 
-        $allTricks = $state['tricks'][$bidders] === 8;
-        // Taking no trick only counts when the deal was played out (not a kaput stopped at its first lost trick).
-        $noTricks = ! $stoppedEarly && $state['tricks'][$bidders] === 0;
-        $made = $contract['kaput']
-            ? $allTricks
-            : $state['points'][$bidders] + $declPoints[$bidders] + $belotePoints[$bidders] >= $contract['value'] * 10;
-        $multiplier = ($trump === null ? [2, 3, 5] : [1, 2, 4])[$contract['doubled']];
-        $bid = $contract['value'] * $multiplier;
-        $declSai = [intdiv($declPoints[0], 10), intdiv($declPoints[1], 10)];
-        $cardSai = [BlotCards::sai($state['points'][0]), BlotCards::sai($state['points'][1])];
-
-        $scored = [0, 0];
-        if ($made && $contract['doubled'] === 0) {
-            $scored[$bidders] = $bid + ($allTricks ? 25 : 16 - $cardSai[$defenders]) + $declSai[$bidders];
-            $scored[$defenders] = ($allTricks ? 0 : $cardSai[$defenders]) + $declSai[$defenders];
-        } elseif ($made) {
-            $scored[$bidders] = $bid + ($allTricks ? 25 : 16) + $declSai[0] + $declSai[1];
-        } else {
-            $scored[$defenders] = $bid + ($noTricks ? 25 : 16) + $declSai[0] + $declSai[1];
-        }
-        $scored[0] += intdiv($belotePoints[0], 10);
-        $scored[1] += intdiv($belotePoints[1], 10);
+        [$scored, $made, $allTricks, $noTricks, $bid, $cardSai, $declSai] = self::score($contract, $state['points'], $state['tricks'], $declPoints, $belotePoints, $stoppedEarly);
         $state['scores'][0] += $scored[0];
         $state['scores'][1] += $scored[1];
 

@@ -348,4 +348,42 @@ final class QuanshAdvisor
 
         return $state;
     }
+
+    /**
+     * Sur (recontra) after the opponents' Quansh: deals that fit the bazar, the Quansh included (it is said
+     * holding defence), played out with and without Sur. Sur when it gains on average and the contract is
+     * made in most deals: a doubled loss hurts twice as much.
+     *
+     * @param  array<string, mixed>  $view  the bot's seat view in the answer phase
+     */
+    public function shouldSur(array $view, int $samples, RandomSource $random): bool
+    {
+        $judged = $this->judgeSur($view, $samples, $random);
+
+        return $judged['gain'] >= 1.5 && $judged['made'] >= 0.6;
+    }
+
+    /**
+     * @param  array<string, mixed>  $view
+     * @return array{made: float, gain: float}
+     */
+    public function judgeSur(array $view, int $samples, RandomSource $random): array
+    {
+        $sampler = new DealSampler($this->bot);
+        $simulator = new Simulator($this->bot);
+        $memory = new CardMemory($view);
+        $seat = $memory->seat;
+        $team = $seat % 2;
+        $made = 0;
+        $gain = 0.0;
+        for ($n = 0; $n < $samples; $n++) {
+            $state = $simulator->state($view, $sampler->sample($memory, $view, $random));
+            $pass = $simulator->finish($simulator->act($state, $seat, new Action('pass'), $random), $random);
+            $sur = $simulator->finish($simulator->act($state, $seat, new Action('recontra'), $random), $random);
+            $made += $pass['last_hand']['made'] ? 1 : 0;
+            $gain += $simulator->value($sur, $team) - $simulator->value($pass, $team);
+        }
+
+        return ['made' => $made / $samples, 'gain' => $gain / $samples];
+    }
 }

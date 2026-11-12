@@ -10,6 +10,15 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
+**Owner queue (2026-11-12, in this order; owner tests himself — implement only, keep lint/types/CI green):**
+- [x] Professional Blot AI (look-ahead, card memory, bazar/Quansh/Sur, thinking time, arena) — this commit.
+- [ ] Quansh at any time during the bazar (out of turn), AI too.
+- [ ] Matchmaking for all games: 10 s countdown, AI fills empty seats at 7 s, people first.
+- [ ] Admin Game Management: enable/disable/maintenance per game, delete (archive or purge), configuration, audit.
+- [ ] Game-over panel (trophy, Fishkas won, +XP, New game / Exit) for every game.
+- [ ] Blot home with modes (win / bet / target per mode).
+- [ ] Next-gift timer + lucky wheel (free Fishkas). No VIP, shop or buying (owner).
+
 **AI platform-wide (owner, 2026-11-12)** — "Play against AI" everywhere, AI always at the highest level, no difficulty
 choice, matchmaking humans first then AI fills the seats, AI never marked, AI holds a disconnected player's seat at
 tables of 3+ (they can come back; Leave = loss; 1-v-1: the one who stays wins). Shared services, each game keeps its bot.
