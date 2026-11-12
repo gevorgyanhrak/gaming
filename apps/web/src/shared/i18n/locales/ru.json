@@ -855,7 +855,7 @@
     "seat": "Место {{seat}}",
     "seats": "Игроки",
     "us": "Мы",
-    "them": "Они",
+    "them": "Вы",
     "score": "Счёт",
     "target": "до",
     "contract": "Заказ",
@@ -938,7 +938,8 @@
       "lastTrick": "{{name}} взял последнюю взятку ({{points}}, с +10)",
       "made": "Заказ сыгран",
       "failed": "Заказ не сыгран",
-      "scored": "мы +{{us}} · они +{{them}}"
+      "scored": "мы +{{us}} · они +{{them}}",
+      "kaputFailed": "{{name}} взял взятку — раздача окончена"
     },
     "trump": "Козырь",
     "reverseKaput": "Тарс капут",
@@ -953,7 +954,15 @@
     "showEvents_one": "{{count}} событие",
     "showEvents_few": "{{count}} события",
     "showEvents_many": "{{count}} событий",
-    "showEvents_other": "{{count}} события"
+    "showEvents_other": "{{count}} события",
+    "dealing": "Раздача",
+    "thinking": "{{name}} думает",
+    "surPrompt": "Куанш! Ответить Сюр?",
+    "kaputButton": "КП",
+    "bidAction": "Заказ",
+    "pickSuit": "Выберите масть или Бой",
+    "kaputFailed": "Капут не вышел",
+    "highestBid": "Высший заказ"
   },
   "domino": {
     "you": "Вы",

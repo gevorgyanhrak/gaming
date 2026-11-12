@@ -168,6 +168,10 @@
   --animate-card-in: card-in 260ms ease-out both;
   --animate-dice-roll: dice-roll 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-card-flip: card-flip 460ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-deal-fly: deal-fly 420ms cubic-bezier(0.3, 0.7, 0.3, 1) both;
+  --animate-card-from: card-from 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-thinking: thinking 1100ms ease-in-out infinite;
+  --animate-turn-glow: turn-glow 1800ms ease-in-out infinite;
   --animate-rise: rise 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-turn-pop: turn-pop 360ms var(--ease-pop) both;
 
@@ -241,6 +245,59 @@
     to {
       opacity: 0;
       transform: translateY(-10px);
+    }
+  }
+
+  /* A dealt card travelling from the deck to a player (--tx, --ty: where to). */
+  @keyframes deal-fly {
+    from {
+      opacity: 1;
+      transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translate(var(--tx), var(--ty)) rotate(18deg) scale(0.7);
+    }
+  }
+
+  /* A played card arriving on the trick from its player's side (--fx, --fy: where from). */
+  @keyframes card-from {
+    from {
+      opacity: 0.2;
+      transform: translate(var(--fx), var(--fy)) scale(0.85);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* The three dots of a player who is deciding. */
+  @keyframes thinking {
+    0%,
+    80%,
+    100% {
+      opacity: 0.25;
+      transform: translateY(0);
+    }
+    40% {
+      opacity: 1;
+      transform: translateY(-3px);
+    }
+  }
+
+  /* A soft glow round the player whose turn it is. */
+  @keyframes turn-glow {
+    0%,
+    100% {
+      box-shadow:
+        0 0 0 0 rgb(60 207 110 / 0.45),
+        0 8px 20px rgb(0 0 0 / 0.55);
+    }
+    50% {
+      box-shadow:
+        0 0 0 8px rgb(60 207 110 / 0),
+        0 8px 20px rgb(0 0 0 / 0.55);
     }
   }
 

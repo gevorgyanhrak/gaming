@@ -880,7 +880,8 @@
       "lastTrick": "{{name}} took the last trick ({{points}}, with +10)",
       "made": "Contract made",
       "failed": "Contract failed",
-      "scored": "us +{{us}} · them +{{them}}"
+      "scored": "us +{{us}} · them +{{them}}",
+      "kaputFailed": "{{name}} took a trick — the deal is over"
     },
     "trump": "Koz (trump)",
     "reverseKaput": "Tars kaput",
@@ -891,7 +892,15 @@
     "openedBy": "Bazar opened by {{name}}",
     "lastEvent": "Last:",
     "showEvents_one": "{{count}} event",
-    "showEvents_other": "{{count}} events"
+    "showEvents_other": "{{count}} events",
+    "dealing": "Dealing",
+    "thinking": "{{name}} is thinking",
+    "surPrompt": "Quansh! Answer with Sur?",
+    "kaputButton": "KP",
+    "bidAction": "Bid",
+    "pickSuit": "Pick a suit or Boy",
+    "kaputFailed": "Kaput failed",
+    "highestBid": "Highest bid"
   },
   "domino": {
     "you": "You",

@@ -43,8 +43,12 @@ function blotContract(array $hands, string $suit = 'H', int|string $value = 8, i
         return blotAct(blotAct(blotAct($state, 'pass'), 'pass'), 'pass');
     }
     $state = blotAct($state, 'contra');
+    if ($doubled === 2) {
+        return blotAct($state, 'recontra');
+    }
 
-    return blotAct($state, $doubled === 2 ? 'recontra' : 'pass');
+    // Quansh only: both players of the contract pair pass (no Sur).
+    return blotAct(blotAct($state, 'pass'), 'pass');
 }
 
 const HANDS = [
@@ -244,6 +248,28 @@ it('ends the bidding with a contra, leaving the contract pair recontra or pass',
         ->and($state['contract']['doubled'])->toBe(1)
         ->and($state['to_act'])->toBe(2)
         ->and(blotTypes($state))->toBe(['recontra', 'pass']);
+});
+
+it('lets either player of the contract pair say Sur, in turn, and only them', function () {
+    $engine = new BlotEngine;
+    $state = blotAct(blotAct(blot(), 'bid', ['value' => 8, 'suit' => 'S']), 'contra');   // seat 0 bids, seat 1 Quansh
+    expect($state['to_act'])->toBe(2)
+        // Opponents can't say Sur, and nobody can bid any more.
+        ->and($engine->legalActions($state, 1))->toBe([])
+        ->and($engine->isLegal($state, 3, new Action('recontra')))->toBeFalse()
+        ->and($engine->isLegal($state, 2, new Action('bid', ['value' => 9, 'suit' => 'S'])))->toBeFalse();
+
+    // The partner passes: the bidder (seat 0) may still say Sur.
+    $state = blotAct($state, 'pass');
+    expect($state['phase'])->toBe('answer')->and($state['to_act'])->toBe(0)->and(blotTypes($state))->toBe(['recontra', 'pass']);
+    $sur = blotAct($state, 'recontra');
+    expect($sur['phase'])->toBe('playing')->and($sur['contract']['doubled'])->toBe(2)
+        // Sur can't be said twice.
+        ->and(blotTypes($sur))->not->toContain('recontra');
+
+    // Both pass: the contract is played with Quansh (×2).
+    $both = blotAct($state, 'pass');
+    expect($both['phase'])->toBe('playing')->and($both['contract']['doubled'])->toBe(1);
 });
 
 it('plays a contra\'d and a recontra\'d contract', function () {
@@ -512,6 +538,50 @@ it('scores a kaput contract: all eight tricks, or the defenders take 25 + 16', f
     $failed = blotContract(HANDS, 'S', 'kaput');
     $failed = blotLastTrick($failed, ['8D', 'AD', '7D', 'QD'], [138, 0], [7, 0]);
     expect($failed['last_hand'])->toMatchArray(['made' => false, 'scored' => [0, 25 + 16]]);
+});
+
+it('stops a kaput as soon as the defenders take a trick — Kaput didn\'t happen', function () {
+    $engine = new BlotEngine;
+    $state = blotContract(HANDS, 'N', 'kaput');   // Boy kaput by seat 0
+    $state['hands'] = [['AS', 'KS'], ['7S', 'AH'], ['8S', 'KH'], ['TS', 'QH']];
+    $state['tricks'] = [6, 0];
+    $state['points'] = [120, 0];
+    $state['played_first'] = [true, true, true, true];
+    $state = blotAct(blotAct(blotAct($state, 'play', ['card' => 'KS']), 'play', ['card' => '7S']), 'play', ['card' => '8S']);
+    $state = blotAct($state, 'play', ['card' => 'TS']);   // seat 3 (a defender) takes the trick with the 10
+
+    expect($state['phase'])->toBe('over')
+        ->and(array_column($state['log'], 'type'))->toContain('kaput_failed')
+        // Kaput 25 × 2 (Boy) + 16 to the defenders; the deal's last trick was never played.
+        ->and($state['last_hand'])->toMatchArray(['made' => false, 'stopped_early' => true, 'scored' => [0, 25 * 2 + 16]])
+        ->and($engine->outcome($state))->toBeNull()
+        ->and($engine->pauseMs($state))->toBe(6000);
+    $next = $engine->resume($state, new SecureRandom)->state;
+    expect($next['hand_no'])->toBe(2)->and($next['phase'])->toBe('bidding');
+});
+
+it('doesn\'t call it Tars kaput when a kaput is lost on the very first trick', function () {
+    $state = blotContract(HANDS, 'S', 'kaput');
+    $state['hands'] = [['7D', '7C'], ['AD', '8C'], ['8D', '9C'], ['9D', 'TC']];
+    $state['belote'] = null;
+    $state['played_first'] = [true, true, true, true];
+    foreach (range(1, 4) as $_) {
+        $state = blotAct($state, 'play', ['card' => $state['hands'][$state['to_act']][0]]);
+    }
+
+    expect($state['last_hand'])->toMatchArray(['made' => false, 'stopped_early' => true, 'scored' => [0, 25 + 16]])
+        ->and($state['result'])->toBeNull();
+});
+
+it('plays a kaput on while the bidders keep taking every trick', function () {
+    $state = blotContract(HANDS, 'S', 'kaput');
+    $state['hands'] = [['AD', 'AC'], ['8D', '8C'], ['9D', '9C'], ['7D', '7C']];
+    $state['played_first'] = [true, true, true, true];
+    foreach (range(1, 4) as $_) {
+        $state = blotAct($state, 'play', ['card' => $state['hands'][$state['to_act']][0]]);
+    }
+
+    expect($state['phase'])->toBe('playing')->and($state['tricks'])->toBe([1, 0]);
 });
 
 it('ends the match when the bidders take no trick, against them', function () {

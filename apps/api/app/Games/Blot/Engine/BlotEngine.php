@@ -19,8 +19,9 @@ use App\Gameplay\Random\RandomSource;
  * to `target` (301). The rules, with their sources and the choices made where sources differ, are in
  * docs/games/blot-rules.md; this class follows that document.
  *
- * Phases: bidding → answer (after a contra: the contract pair may recontra or pass) → playing → over (a
- * pause showing the deal's result) → the next deal. Actions:
+ * Phases: bidding → answer (after Quansh: each player of the contract pair in turn may say Sur — ×4 — or
+ * pass) → playing → over (a pause showing the deal's result) → the next deal. A kaput contract stops as
+ * soon as the defenders take a trick ("kaput_failed"). Actions:
  * - bidding: bid {value 8–24, suit S|H|D|C|N (no-trump)} (described as a range), kaput {suit}, pass, contra;
  * - answer: recontra, pass;
  * - playing: play {card}; before their first card a player may also declare {index} each combination the
@@ -186,9 +187,10 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
                 $state['passes'] = 0;
                 break;
             case 'contra':
-                // Contra ends the bidding; the contract pair may answer with recontra.
+                // Quansh ends the bidding; either player of the contract pair may answer with Sur, in turn.
                 $state['contract']['doubled'] = 1;
                 $state['phase'] = 'answer';
+                $state['answers'] = 0;
                 break;
             case 'recontra':
                 $state['contract']['doubled'] = 2;
@@ -196,6 +198,14 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
                 return new Transition($this->startPlay($state), $events);
             case 'pass':
                 if ($state['phase'] === 'answer') {
+                    // The first of the pair passed: their partner (across the table) may still say Sur.
+                    if (($state['answers'] ?? 0) === 0) {
+                        $state['answers'] = 1;
+                        $state['to_act'] = ($seat + 2) % 4;
+
+                        return new Transition($state, $events);
+                    }
+
                     return new Transition($this->startPlay($state), $events);
                 }
                 $state['passes']++;
@@ -435,6 +445,14 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
         $events[] = ['type' => 'trick', 'winner' => $winner, 'points' => $points];
         $state['log'][] = ['type' => 'trick', 'seat' => $winner, 'points' => $points, 'last' => $last];
 
+        // A kaput contract is lost with the first trick the defenders take: the deal stops there.
+        if (! $last && $state['contract']['kaput'] && $winner % 2 !== $state['contract']['team']) {
+            $events[] = ['type' => 'kaput_failed', 'seat' => $winner];
+            $state['log'][] = ['type' => 'kaput_failed', 'seat' => $winner];
+
+            return $this->finishHand($state, $events, stoppedEarly: true);
+        }
+
         return $last ? $this->finishHand($state, $events) : $state;
     }
 
@@ -446,7 +464,7 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
      * @param  list<array<string, mixed>>  $events
      * @return array<string, mixed>
      */
-    private function finishHand(array $state, array &$events): array
+    private function finishHand(array $state, array &$events, bool $stoppedEarly = false): array
     {
         $contract = $state['contract'];
         $bidders = $contract['team'];
@@ -477,7 +495,8 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
         }
 
         $allTricks = $state['tricks'][$bidders] === 8;
-        $noTricks = $state['tricks'][$bidders] === 0;
+        // Taking no trick only counts when the deal was played out (not a kaput stopped at its first lost trick).
+        $noTricks = ! $stoppedEarly && $state['tricks'][$bidders] === 0;
         $made = $contract['kaput']
             ? $allTricks
             : $state['points'][$bidders] + $declPoints[$bidders] + $belotePoints[$bidders] >= $contract['value'] * 10;
@@ -520,6 +539,7 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
             'scored' => $scored,
             'totals' => $state['scores'],
             'kaput' => $allTricks || $state['tricks'][$defenders] === 8,
+            'stopped_early' => $stoppedEarly,
         ];
         $events[] = ['type' => 'hand_over', 'made' => $made, 'scored' => $scored];
         $state['log'][] = ['type' => 'hand_over', 'made' => $made, 'scored' => $scored, 'kaput' => $allTricks, 'reverse_kaput' => $noTricks];

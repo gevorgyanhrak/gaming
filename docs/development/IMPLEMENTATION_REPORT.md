@@ -2,6 +2,30 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## Blot: kaput stop, Sur by either partner, new table, dealing and turn animation — 2026-11-12 · DONE except the "24" rule
+
+**Rules researched** (reblot.am, terz.am, belote.club, hatsit.org, playelephant/gambler): recontra may be answered by
+either player of the doubled pair; a kaput contract (25) needs all 8 tricks. No source mentions an announcement cutoff
+at 24 — not implemented, asked the owner.
+
+**Found and fixed:** (1) after Quansh only the next player of the contract pair could say Sur — if they passed, the
+bidder never could; now each player of the pair in turn, then play (Sur ×4/×5 was already scored right, re-tested);
+(2) a kaput contract played on after the defenders took a trick; it now stops there with "Կապուտը չեղավ" (log
+`kaput_failed`), scored as a failed kaput, and isn't mistaken for Tars kaput when lost on the first trick.
+
+**Web (owner's mockups):** the Blot table rebuilt — oval wood-rimmed felt, round avatars (initial, level badge, turn ring
+with time, gold nameplate and time bar for the player to act), speech bubbles with each bazar call (♥ 12, Լավ ա), "thinking"
+dots on the player to act, a fanned hand along the bottom (playable cards stand up), Մենք | Դուք scoreboard with the deal's
+facts, the bazar panel (suits + Բոյ, − value + ԿՊ, Լավ ա / Քայլ), Քուանշ as its own button, Sur/Լավ ա after a Quansh.
+Dealing animated (visual only): 3-2-3 packets fly from the deck to each player starting left of the dealer, your hand
+fills in as dealt, opponents' backs grow, a card sound per packet (with sound on), off under reduced motion; played cards
+fly in from their player's side. Not copied: VIP, buying coins, the other site's logo.
+
+**Tests:** unit +4 (Sur by either partner and only them, once; kaput stop; first-trick loss isn't Tars kaput; kaput goes on
+while every trick is won); board +2 (dealing packet by packet; Kaput failed announced) and updated bazar/terms tests.
+`make test-api` → **570 passed**, `npm test` → **198 passed**, lint/types/format/build ✓. Live in Armenian at 1440×900 and
+390×844 (bazar, dealing, thinking dots, banners, trick).
+
 ## Blot: Armenian terminology, table announcements, game information — 2026-11-11 · DONE (owner request)
 
 **Analysis first:** terms mapped to their meaning in play (`docs/games/blot-rules.md` → Terms). Found: Blot was scored but

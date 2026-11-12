@@ -28,8 +28,9 @@ Choices where the sources disagree or are silent are marked **(choice)**.
 - A bid is a number 8–24 (× 10 card points the pair promises) with a trump suit or **no-trump**. Each bid is at least 1
   higher than the last; suits don't rank. Partners may raise each other. A player who passed may bid again later.
 - **Kaput** (25): the pair will take all 8 tricks. It outbids any number; after it nobody bids again **(choice)**.
-- **Contra** — an opponent of the pair holding the contract; it ends the bidding. Then the contract pair may say
-  **recontra** or pass.
+- **Contra (Քուանշ)** — an opponent of the pair holding the contract; it ends the bidding. Then **either player of the
+  contract pair** may say **recontra (Սուր)**, in turn: the first of them after the Quansh, and if they pass, their
+  partner ("ответить реконтрой может один из игроков пары" — playelephant/gambler rules). Sur ×4 (Boy ×5).
 - The bidding ends after three passes following the last bid (or after contra/recontra is answered). Four passes and
   no bid: redeal, the deal moves on.
 
@@ -66,6 +67,9 @@ Order: trump J 9 A 10 K Q 8 7; others A 10 K Q J 9 8 7. 152 card points + 10 for
 - Card sai = card points (with the last trick) ÷ 10, a fraction of more than one half rounding up (15 → 1, 16 → 2).
   Declarations count their value ÷ 10 (terz 2, 50 → 5, …). The whole deal is worth **16** (25 when one pair takes all tricks).
 - The contract is made when the bidders' card points + their counted declarations + blot ≥ bid × 10 (kaput: all 8 tricks).
+- **A kaput contract stops at the first trick the defenders take** ("Կապուտը չեղավ"): the result can no longer change,
+  so the deal is scored there as a failed kaput and the next deal starts. This is not Tars kaput (that needs a full deal
+  in which the bidders take nothing).
 - Multiplier m: trump game 1 (contra 2, recontra 4); no-trump 2 (contra 3, recontra 5).
 - **Made, no contra:** bidders = bid × m + (16 − defenders' card sai) + their declarations; defenders = their card sai +
   their declarations. Taking every trick: base 25 and the defenders get no card sai.

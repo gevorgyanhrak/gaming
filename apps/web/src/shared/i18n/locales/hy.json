@@ -801,7 +801,7 @@
     "seat": "Տեղ {{seat}}",
     "seats": "Խաղացողներ",
     "us": "Մենք",
-    "them": "Նրանք",
+    "them": "Դուք",
     "score": "Հաշիվ",
     "target": "մինչև",
     "contract": "Պատվեր",
@@ -819,7 +819,7 @@
     "call": {
       "bid": "Ասել",
       "kaput": "Կապուտ",
-      "pass": "Պաս",
+      "pass": "Լավ ա",
       "contra": "Քուանշ",
       "recontra": "Սուր"
     },
@@ -880,7 +880,8 @@
       "lastTrick": "{{name}}-ը վերցրեց վերջին ձեռքը ({{points}}, +10-ով)",
       "made": "Պատվերը կատարված է",
       "failed": "Պատվերը չկատարվեց",
-      "scored": "մենք +{{us}} · նրանք +{{them}}"
+      "scored": "մենք +{{us}} · նրանք +{{them}}",
+      "kaputFailed": "{{name}}-ը վերցրեց ձեռք․ բաժանումն ավարտվեց"
     },
     "trump": "Կոզր",
     "reverseKaput": "Թարս կապուտ",
@@ -891,7 +892,15 @@
     "openedBy": "Բազարը բացեց՝ {{name}}",
     "lastEvent": "Վերջինը՝",
     "showEvents_one": "{{count}} իրադարձություն",
-    "showEvents_other": "{{count}} իրադարձություն"
+    "showEvents_other": "{{count}} իրադարձություն",
+    "dealing": "Բաժանում են",
+    "thinking": "{{name}}-ը մտածում է",
+    "surPrompt": "Քուանշ ասացին․ պատասխանե՞լ Սուր-ով",
+    "kaputButton": "ԿՊ",
+    "bidAction": "Քայլ",
+    "pickSuit": "Ընտրեք գույնը կամ Բոյ",
+    "kaputFailed": "Կապուտը չեղավ",
+    "highestBid": "Բազարում"
   },
   "domino": {
     "you": "Դուք",

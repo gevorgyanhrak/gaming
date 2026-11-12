@@ -1,8 +1,18 @@
-import { render, screen, within } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { act, render as baseRender, screen, within } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { roomStateFixture } from '@/test/handlers'
 import BlotBoard, { type BlotView } from './BlotBoard'
+
+// The board reads the player's sound setting, so it needs a query client.
+const render = (ui: ReactNode) =>
+  baseRender(ui, {
+    wrapper: ({ children }) => (
+      <QueryClientProvider client={new QueryClient()}>{children}</QueryClientProvider>
+    ),
+  })
 
 const contract = (extra: Partial<NonNullable<BlotView['contract']>> = {}) => ({
   seat: 1,
@@ -73,7 +83,7 @@ describe('BlotBoard', () => {
     expect(onAction).toHaveBeenCalledWith({ type: 'play', card: 'JH' })
     const score = screen.getByLabelText('Score')
     expect(within(score).getByText('22')).toBeInTheDocument()
-    expect(within(score).getByText('301')).toBeInTheDocument()
+    expect(screen.getByText(/to 301/)).toBeInTheDocument()
     expect(screen.getByText(/Tricks: us 0 · them 0\s+· 8 left/)).toBeInTheDocument()
     expect(screen.getByText('Koz (trump)')).toBeInTheDocument()
     expect(screen.getByText('×1')).toBeInTheDocument()
@@ -87,6 +97,7 @@ describe('BlotBoard', () => {
         contract: contract({ seat: 3, suit: 'S' }),
         trump: null,
         bids: [{ seat: 3, type: 'bid', value: 9, suit: 'S' }],
+        log: [{ type: 'bid', seat: 3, value: 9, suit: 'S' }],
       }),
       [
         { type: 'bid', min: 10, max: 24 },
@@ -97,10 +108,18 @@ describe('BlotBoard', () => {
       onAction,
     )
 
+    // Their call shows in a speech bubble at their seat.
+    expect(
+      within(screen.getByRole('listitem', { name: /Levon/ })).getByText('9'),
+    ).toBeInTheDocument()
+    // No suit picked yet: nothing to bid.
+    expect(screen.getByRole('button', { name: 'Pick a suit or Boy' })).toBeDisabled()
+    await userEvent.click(screen.getByRole('radio', { name: 'Boy (no trump)' }))
     await userEvent.click(screen.getByRole('button', { name: 'Higher bid' }))
     await userEvent.click(screen.getByRole('button', { name: 'Bid 11 in Boy (no trump)' }))
     expect(onAction).toHaveBeenLastCalledWith({ type: 'bid', value: 11, suit: 'N' })
 
+    await userEvent.click(screen.getByRole('radio', { name: 'hearts' }))
     await userEvent.click(screen.getByRole('button', { name: 'Bid kaput…' }))
     await userEvent.click(screen.getByRole('button', { name: 'Bid kaput in hearts' }))
     expect(onAction).toHaveBeenLastCalledWith({ type: 'kaput', suit: 'H' })
@@ -139,7 +158,8 @@ describe('BlotBoard', () => {
     )
 
     const panel = screen.getByRole('region', { name: 'Your combinations' })
-    expect(within(panel).getByText('✓ Poltinnik +50')).toBeInTheDocument()
+    // Only what can still be declared (the 50 already was).
+    expect(within(panel).queryByText(/Poltinnik/)).not.toBeInTheDocument()
     expect(screen.getByText('Declare your combinations, then play a card')).toBeInTheDocument()
     await userEvent.click(within(panel).getByRole('button', { name: /Declare Terz \+20/ }))
     expect(onAction).toHaveBeenCalledWith({ type: 'declare', index: 0 })
@@ -317,5 +337,52 @@ describe('BlotBoard', () => {
         .getAllByRole('cell')
         .map((c) => c.textContent),
     ).toEqual(['0', '28'])
+  })
+
+  it('deals a new deal packet by packet before the bazar opens', () => {
+    vi.useFakeTimers()
+    try {
+      renderBoard(view({ phase: 'bidding', contract: null, trump: null, tricks: [0, 0] }), [
+        { type: 'bid', min: 8, max: 24 },
+        { type: 'pass' },
+      ])
+      // Dealing: the deck is on the table, your hand fills in, the bazar waits.
+      expect(screen.getByRole('status', { name: 'Dealing' })).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Pass' })).not.toBeInTheDocument()
+      const hand = () =>
+        within(screen.getByRole('region', { name: 'Your cards' })).queryAllByRole('button').length
+      expect(hand()).toBe(0)
+      void act(() => vi.advanceTimersByTime(190 * 4))
+      expect(hand()).toBe(3)
+      void act(() => vi.advanceTimersByTime(190 * 8))
+      expect(hand()).toBe(8)
+      expect(screen.queryByRole('status', { name: 'Dealing' })).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Pass' })).toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('announces when a kaput can no longer be made', () => {
+    const props = { onAction: vi.fn(), pending: false, players }
+    const { rerender } = render(
+      <BlotBoard
+        state={roomStateFixture({ seat: 0, view: view() as never, legal_actions: [] })}
+        {...props}
+      />,
+    )
+    rerender(
+      <BlotBoard
+        state={roomStateFixture({
+          seat: 0,
+          view: view({ log: [{ type: 'kaput_failed', seat: 1 }] }) as never,
+          legal_actions: [],
+        })}
+        {...props}
+      />,
+    )
+    expect(
+      screen.getByRole('status', { name: /Kaput failed · Aram took a trick/ }),
+    ).toBeInTheDocument()
   })
 })
