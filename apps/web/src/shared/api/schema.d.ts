@@ -579,7 +579,7 @@ export interface paths {
         put?: never;
         /**
          * "Still here": the game page calls this every few seconds. Players who stop calling for longer than
-         *     the platform allows lose the game (see RoomPresence)
+         *     the platform allows are away: AI holds their seat at tables of 3+, otherwise they lose (RoomPresence)
          */
         post: operations["v1.rooms.presence"];
         delete?: never;
@@ -1824,6 +1824,14 @@ export interface operations {
                             } | null;
                             /** @description Players in the same queue, the searching player included (null when not searching). */
                             waiting: number | null;
+                            /** @description When the game starts: the countdown's end (null: waiting for people only). */
+                            starts_at: string | null;
+                            /** @description The players at the table being prepared (everyone looks the same), or null while searching. */
+                            table: {
+                                name: string;
+                                avatar_url: string | null;
+                                level: number;
+                            }[] | null;
                             room: string | null;
                         };
                     };
@@ -1861,6 +1869,14 @@ export interface operations {
                             } | null;
                             /** @description Players in the same queue, the searching player included (null when not searching). */
                             waiting: number | null;
+                            /** @description When the game starts: the countdown's end (null: waiting for people only). */
+                            starts_at: string | null;
+                            /** @description The players at the table being prepared (everyone looks the same), or null while searching. */
+                            table: {
+                                name: string;
+                                avatar_url: string | null;
+                                level: number;
+                            }[] | null;
                             room: string | null;
                         };
                     };
@@ -1910,6 +1926,14 @@ export interface operations {
                             } | null;
                             /** @description Players in the same queue, the searching player included (null when not searching). */
                             waiting: number | null;
+                            /** @description When the game starts: the countdown's end (null: waiting for people only). */
+                            starts_at: string | null;
+                            /** @description The players at the table being prepared (everyone looks the same), or null while searching. */
+                            table: {
+                                name: string;
+                                avatar_url: string | null;
+                                level: number;
+                            }[] | null;
                             room: string | null;
                         };
                     };

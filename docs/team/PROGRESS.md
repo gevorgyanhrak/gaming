@@ -13,7 +13,7 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 **Owner queue (2026-11-12, in this order; owner tests himself — implement only, keep lint/types/CI green):**
 - [x] Professional Blot AI (look-ahead, card memory, bazar/Quansh/Sur, thinking time, arena) — this commit.
 - [x] Quansh at any time during the bazar (out of turn), AI too — this commit (`HasOutOfTurnActions`, `ActsOutOfTurn`).
-- [ ] Matchmaking for all games: 10 s countdown, AI fills empty seats at 7 s, people first.
+- [x] Matchmaking for all games: 10 s countdown, AI fills empty seats at 7 s, people first — this commit (reserved tables, MatchmakingTick; settings 7/10).
 - [ ] Admin Game Management: enable/disable/maintenance per game, delete (archive or purge), configuration, audit.
 - [ ] Game-over panel (trophy, Fishkas won, +XP, New game / Exit) for every game.
 - [ ] Blot home with modes (win / bet / target per mode).

@@ -16,6 +16,8 @@ final readonly class Ticket
         public int $heartbeatAt,
         /** The play group (null for tickets from before groups). */
         public ?int $groupId = null,
+        /** The table reserved for this player (AI fills its other seats; it starts at its time), or null. */
+        public ?string $table = null,
     ) {}
 
     /** The queue this ticket waits in: one per mode and group. */
@@ -41,11 +43,12 @@ final readonly class Ticket
             (int) $data['userId'], (int) $data['modeId'], (int) $data['joinedAt'],
             $data['botAt'] === null ? null : (int) $data['botAt'], (int) $data['heartbeatAt'],
             isset($data['groupId']) ? (int) $data['groupId'] : null,
+            isset($data['table']) ? (string) $data['table'] : null,
         );
     }
 
-    public function with(?int $heartbeatAt = null): self
+    public function with(?int $heartbeatAt = null, ?string $table = null): self
     {
-        return new self($this->userId, $this->modeId, $this->joinedAt, $this->botAt, $heartbeatAt ?? $this->heartbeatAt, $this->groupId);
+        return new self($this->userId, $this->modeId, $this->joinedAt, $this->botAt, $heartbeatAt ?? $this->heartbeatAt, $this->groupId, $table ?? $this->table);
     }
 }

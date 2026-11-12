@@ -45,7 +45,9 @@ final class SettingsCatalog
             new SettingDefinition('access.phone_allowed_countries', SettingType::StringList, config('platform.phone.allowed_countries'), rules: ['array'], elementRules: ['string', Rule::in(PhoneNumberUtil::getInstance()->getSupportedRegions())]),
 
             // Matchmaking (read by the gameplay infrastructure from Phase 5)
-            new SettingDefinition('matchmaking.default_bot_timeout_seconds', SettingType::Integer, 30, rules: ['required', 'integer', 'min:5', 'max:600']),
+            // AI fills a matchmaking table after this long; the game starts at start_seconds (owner: 7 and 10).
+            new SettingDefinition('matchmaking.default_bot_timeout_seconds', SettingType::Integer, 7, rules: ['required', 'integer', 'min:3', 'max:600']),
+            new SettingDefinition('matchmaking.start_seconds', SettingType::Integer, 10, rules: ['required', 'integer', 'min:3', 'max:600']),
             new SettingDefinition('matchmaking.abandon_after_seconds', SettingType::Integer, 15, public: true, rules: ['required', 'integer', 'min:0', 'max:600']),
             new SettingDefinition('matchmaking.max_concurrent_games', SettingType::Integer, 1, rules: ['required', 'integer', 'min:1', 'max:10']),
             new SettingDefinition('reactions.enabled', SettingType::Boolean, true, public: true, rules: ['boolean']),

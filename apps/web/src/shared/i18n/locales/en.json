@@ -260,7 +260,11 @@
     "aloneHint": "Just you and the dealer. Pick more players to share the table with AI.",
     "blackjackBuyIn": "You bring your whole balance to the table: {{amount}} Fishkas. Bets from {{min}}.",
     "tableMinBet": "Bets from {{big}}",
-    "aiHint": "AI plays at its strongest."
+    "aiHint": "AI plays at its strongest.",
+    "tableReady": "Table ready — players found",
+    "startsIn_one": "The game starts in {{count}} second",
+    "startsIn_other": "The game starts in {{count}} seconds",
+    "tablePlayers": "Players at the table"
   },
   "room": {
     "players": "Players",

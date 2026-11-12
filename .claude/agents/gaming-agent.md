@@ -169,8 +169,10 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   destination through login/register/verify. Translated server data refetches on language change
   (`useRefreshOnLanguageChange` + `translatedQuery`).
 - AI platform-wide (ADR 0021): `Gameplay/Bots/AiPlayers` seats AI at the game's highest level (no difficulty
-  choice, no `bot_difficulty` in the API); `Matchmaker::fillWithAi` seats waiting people + AI after the game's AI
-  timeout in an ordinary matchmaking room (no offer); nothing marks AI in a room. `Gameplay/Lifecycle/AiTakeover` +
+  choice, no `bot_difficulty` in the API); `Matchmaker` (countdown, owner 2026-11-12): people match at once; at
+  `matchmaking.default_bot_timeout_seconds` (7) a table is *reserved* (`mm:table:*`, tickets get `table`) with AI in the
+  free seats, a person arriving before it starts takes an AI seat, it starts at `matchmaking.start_seconds` (10);
+  `MatchmakingTick` jobs keep the times, the sweep is a net; the API gives `starts_at` + `table` (no AI marks); nothing marks AI in a room. `Gameplay/Lifecycle/AiTakeover` +
   `game_participants.ai_controlled`: at 3+ seats with another person, away → AI holds the seat until presence/move,
   Leave → Loss and AI finishes the seat (chip tables keep cash-out); 2-player games never. `playedByAi()` drives
   `GameScheduler`/`BotTurnJob`; held seats' moves use `auto:ai{version}` ids (no XP).

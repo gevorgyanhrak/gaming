@@ -17,6 +17,10 @@ export interface Matchmaking {
   room: string | null
   /** Players in the same queue, you included (bigger tables wait for several). */
   waiting?: number | null
+  /** When the game starts: the countdown's end (null: waiting for people only). */
+  starts_at?: string | null
+  /** The table being prepared (people and AI alike), once it is formed. */
+  table?: { name: string; avatar_url: string | null; level: number }[] | null
 }
 export type GameStat = Schemas['GameStatResource']
 export type GameAction = { type: string } & Record<string, unknown>

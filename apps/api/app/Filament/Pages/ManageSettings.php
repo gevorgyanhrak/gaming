@@ -102,9 +102,12 @@ class ManageSettings extends Page
                         ->helperText('Empty allows every country. Limiting this reduces SMS cost and fraud.'),
                 ]),
                 Section::make('Matchmaking and play')->columns(2)->schema([
-                    TextInput::make('matchmaking.default_bot_timeout_seconds')->label('Offer a bot after (seconds)')
-                        ->numeric()->integer()->required()->minValue(5)->maxValue(600)
-                        ->helperText('Default for games without their own timeout.'),
+                    TextInput::make('matchmaking.default_bot_timeout_seconds')->label('AI fills empty seats after (seconds)')
+                        ->numeric()->integer()->required()->minValue(3)->maxValue(600)
+                        ->helperText('Default for games without their own time. People always get seats first.'),
+                    TextInput::make('matchmaking.start_seconds')->label('Matchmaking countdown (seconds)')
+                        ->numeric()->integer()->required()->minValue(3)->maxValue(600)
+                        ->helperText('The game starts when it ends (a full table of people starts at once).'),
                     TextInput::make('matchmaking.abandon_after_seconds')->label('A player who leaves the game loses after (seconds)')
                         ->numeric()->integer()->required()->minValue(0)->maxValue(600)
                         ->helperText('Away from the game page this long ends the game for them. 0 turns it off.'),

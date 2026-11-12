@@ -71,6 +71,14 @@ class MatchmakingController extends Controller
             'ticket' => $ticket === null ? null : new TicketResource($ticket),
             /** Players in the same queue, the searching player included (null when not searching). */
             'waiting' => $ticket === null ? null : $matchmaker->waiting($ticket),
+            /** @var string|null When the game starts: the countdown's end (null: waiting for people only). */
+            'starts_at' => ($at = $ticket === null ? null : $matchmaker->startsAt($ticket)) === null ? null : now()->setTimestamp($at)->toIso8601String(),
+            /**
+             * The players at the table being prepared (everyone looks the same), or null while searching.
+             *
+             * @var list<array{name: string, avatar_url: string|null, level: int}>|null
+             */
+            'table' => $ticket === null ? null : $matchmaker->tablePlayers($ticket),
             /** @var string|null */
             'room' => $room,
         ]], $status);
