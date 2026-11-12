@@ -140,7 +140,7 @@ describe('BlotBoard', () => {
         log: [{ type: 'bid', seat: 1, value: 24, suit: 'H' }],
       }),
       [
-        { type: 'bid', min: 25, max: 99 },
+        { type: 'bid', min: 25, max: 80 },
         ...['S', 'H', 'D', 'C', 'N'].map((suit) => ({ type: 'kaput', suit })),
         { type: 'pass' },
         { type: 'contra' },

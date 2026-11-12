@@ -40,11 +40,8 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
 {
     public const MIN_BID = 8;
 
-    /**
-     * Number bids have no ceiling in the rules (owner, 2026-11-12): a bid is only checked against what the pair
-     * makes. This bound just keeps the range finite; no deal can make a bid near it.
-     */
-    public const MAX_BID = 99;
+    /** The highest number bid (owner, 2026-11-12); a kaput still goes over it. */
+    public const MAX_BID = 80;
 
     public const KAPUT = 25;
 

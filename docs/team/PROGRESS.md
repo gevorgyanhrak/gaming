@@ -55,7 +55,7 @@ Later (older backlog):
 
 ## Done (recent)
 
-- 2026-11-12 · Blot: number bids above 24 (no ceiling), Kaput over any number and over a Kaput (owner's answers) — this commit; cfe5fe6 had capped at 24.
+- 2026-11-12 · Blot: number bids above 24, up to 80, Kaput over any number and over a Kaput (owner's answers) — this commit; cfe5fe6 had capped at 24.
 - 2026-11-12 · Blot: the deal is shown card by card from the deck (server `dealing` phase); no "Bot" marks at tables, bots have Armenian names — this commit.
 - 2026-11-12 · Blot: kaput stops at the first lost trick, Sur by either partner, table rebuilt to the owner's mockups, dealing and turn animation — this commit.
 - 2026-11-11 · Blot: Armenian terms, table announcements (Blot/Reblot, Quansh/Sur, kaput, chakhel), deal log, trump/multiplier/tricks chips — this commit.

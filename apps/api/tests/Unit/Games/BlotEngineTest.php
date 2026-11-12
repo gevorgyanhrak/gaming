@@ -247,7 +247,8 @@ it('takes only higher bids with a suit or no-trump, from anyone including a part
     $engine = new BlotEngine;
     $state = blot();
     expect($engine->isLegal($state, 0, new Action('bid', ['value' => 7, 'suit' => 'S'])))->toBeFalse()
-        ->and($engine->isLegal($state, 0, new Action('bid', ['value' => 100, 'suit' => 'S'])))->toBeFalse()
+        ->and($engine->isLegal($state, 0, new Action('bid', ['value' => 81, 'suit' => 'S'])))->toBeFalse()
+        ->and($engine->isLegal($state, 0, new Action('bid', ['value' => 80, 'suit' => 'S'])))->toBeTrue()
         ->and($engine->isLegal($state, 0, new Action('bid', ['value' => 9, 'suit' => 'X'])))->toBeFalse()
         ->and($engine->isLegal($state, 0, new Action('bid', ['value' => '9', 'suit' => 'S'])))->toBeFalse()
         ->and($engine->isLegal($state, 0, new Action('bid', ['value' => 9, 'suit' => 'N'])))->toBeTrue();
@@ -272,6 +273,12 @@ it('takes number bids above 24, and a kaput over any number', function () {
     // Kaput is its own bid, not a number, and still beats the 30.
     $state = blotAct($state, 'kaput', ['suit' => 'H']);
     expect($state['contract'])->toMatchArray(['seat' => 2, 'team' => 0, 'value' => BlotEngine::KAPUT, 'kaput' => true, 'suit' => 'H']);
+});
+
+it('offers only kaput over an 80, the top number', function () {
+    $state = blotAct(blot(), 'bid', ['value' => 80, 'suit' => 'C']);
+
+    expect(blotTypes($state))->toBe(['kaput', 'kaput', 'kaput', 'kaput', 'kaput', 'pass', 'contra']);
 });
 
 it('takes after a kaput only another kaput, a pass or a contra', function () {

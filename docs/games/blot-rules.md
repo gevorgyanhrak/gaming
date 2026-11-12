@@ -27,7 +27,7 @@ Choices where the sources disagree or are silent are marked **(choice)**.
   acts, no turn clock) while every client animates the deal — 3, 2, 3 cards to each player from the dealer's left.
 
 ## Bazar (bidding)
-- A bid is a number from 8 up, with no ceiling (owner, 2026-11-12; × 10 the points the pair promises) with a trump suit or **no-trump**. Each bid is at least 1
+- A bid is a number from 8 to 80 (owner, 2026-11-12; × 10 the points the pair promises) with a trump suit or **no-trump**. Each bid is at least 1
   higher than the last; suits don't rank. Partners may raise each other. A player who passed may bid again later.
 - **Kaput** (25): the pair will take all 8 tricks. A bid of its own, not a number: it outbids any number, and after a
   kaput only another kaput (any player, any suit or Boy), a pass or Quansh (owner, 2026-11-12; terz.am). It still scores 25.

@@ -26,8 +26,7 @@ offer to play a bot (chosen by the player before the game). Dead "Bot" pill code
 (Armenian, player1, 1440×900 and 390×844): cards fly to each seat, hand fills face up, header "Dealing", bazar opens
 ≈3.1 s after the deal starts with 8 cards in hand.
 
-**Follow-up — bids above 24 (owner, same day, replacing the "24 limit"):** number bids have no ceiling (`MAX_BID` 99 only
-keeps the range finite); kaput beats any number and after a kaput only another kaput, pass or Quansh. Unit tests:
+**Follow-up — bids above 24 (owner, same day, replacing the "24 limit"):** number bids go up to 80 (`MAX_BID`, owner); kaput beats any number and after a kaput only another kaput, pass or Quansh. Unit tests:
 24 → 25 → 30 → kaput; kaput over kaput; number after kaput refused. Board test: 26 sent as a number; over a kaput only
 kaput, with the caption "Over a Kaput only another Kaput".
 
