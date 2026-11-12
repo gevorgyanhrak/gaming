@@ -11,6 +11,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -122,6 +123,13 @@ class ManageSettings extends Page
                         TextInput::make('fishka.registration_bonus')->label('Welcome bonus')
                             ->numeric()->integer()->required()->minValue(0)->maxValue(1000000)
                             ->helperText('Given once, when the account is created.'),
+                        TextInput::make('fishka.gift_amount')->label('Free gift (Fishkas)')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(1000000)
+                            ->helperText('Collected once in every period below.'),
+                        TextInput::make('fishka.gift_interval_hours')->label('Free gift every (hours)')
+                            ->numeric()->integer()->required()->minValue(1)->maxValue(168),
+                        TagsInput::make('fishka.wheel_prizes')->label('Lucky wheel prizes (amount:weight)')
+                            ->helperText('One spin a day. E.g. 50:30 is 50 Fishkas with weight 30; a higher weight comes up more often.'),
                         TextInput::make('fishka.daily_bonus')->label('Daily bonus, day 1')
                             ->numeric()->integer()->required()->minValue(0)->maxValue(1000000)
                             ->helperText('Collected once a day. Days in a row raise it (days 2–5 below); a missed day starts again at day 1; day 5 repeats.'),

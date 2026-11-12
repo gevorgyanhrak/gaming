@@ -83,6 +83,7 @@ return [
         'out_of_date' => 'The game has moved on. Refresh and try again.',
     ],
     'fishka' => [
+        'wheel_spun' => 'You have already spun the wheel today. Come back tomorrow!',
         'insufficient' => 'You need :needed Fishkas to play this game.',
         'bonus_not_needed' => 'You still have enough Fishkas to play.',
         'bonus_cooldown' => 'The free Fishka bonus is not available yet.',

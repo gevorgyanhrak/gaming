@@ -604,7 +604,9 @@
       "insufficient_balance_bonus": "Free Fishka bonus",
       "level_reward": "Level reward",
       "game_stake": "Game bet",
-      "game_payout": "Game winnings"
+      "game_payout": "Game winnings",
+      "free_gift": "Free gift",
+      "wheel_prize": "Lucky wheel"
     },
     "ok": "OK",
     "balanceLabelTable": "Your Fishkas: {{amount}}, {{table}} of them at a table. Open your wallet",
@@ -1013,5 +1015,17 @@
     "stockOut": "The stock ran out — nobody scores",
     "points_one": "{{count}} point",
     "points_other": "{{count}} points"
+  },
+  "gifts": {
+    "heading": "Free gifts",
+    "next": "Next gift",
+    "ready": "Ready to collect!",
+    "wheel": "Lucky wheel",
+    "wheelReady": "One free spin today",
+    "wheelTomorrow": "Next spin tomorrow",
+    "spin": "Spin",
+    "collect": "Collect {{amount}} Fishkas",
+    "won": "You won {{amount}} Fishkas!",
+    "done": "Great"
   }
 }

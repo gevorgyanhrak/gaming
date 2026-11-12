@@ -6,6 +6,7 @@ import { GameGrid } from '@/features/catalog/components/GameGrid'
 import { useGames, type GameSummary } from '@/features/catalog/queries'
 import { fetchMyStats, myStatsKey } from '@/features/play/api'
 import { DailyBonusCard } from '@/features/wallet/components/DailyBonusCard'
+import { FreeGifts } from '@/features/gifts/FreeGifts'
 import { DashboardGames } from '@/features/play/components/DashboardGames'
 import { LevelCard } from '@/features/levels/components/LevelCard'
 import { Avatar } from '@/shared/ui/Avatar'
@@ -62,6 +63,7 @@ export function DashboardPage() {
           <DailyBonusCard className="club-panel-glass" />
           <TryNext />
         </div>
+        <FreeGifts className="club-panel-glass" />
         <section className="club-panel-glass rounded-panel p-5 sm:p-6">
           <h2 className="mb-5 text-2xl font-bold text-fg">{t('dashboard.gamesHeading')}</h2>
           <GameGrid />

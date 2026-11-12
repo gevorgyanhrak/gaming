@@ -652,7 +652,9 @@
       "insufficient_balance_bonus": "Бесплатный бонус",
       "level_reward": "Награда за уровень",
       "game_stake": "Ставка в игре",
-      "game_payout": "Выигрыш в игре"
+      "game_payout": "Выигрыш в игре",
+      "free_gift": "Бесплатный подарок",
+      "wheel_prize": "Колесо удачи"
     },
     "ok": "Понятно",
     "balanceLabelTable": "Ваши фишки: {{amount}}, из них {{table}} за столом. Открыть кошелёк",
@@ -1091,5 +1093,17 @@
     "points_few": "{{count}} очка",
     "points_many": "{{count}} очков",
     "points_other": "{{count}} очка"
+  },
+  "gifts": {
+    "heading": "Бесплатные подарки",
+    "next": "Следующий подарок",
+    "ready": "Можно забрать!",
+    "wheel": "Колесо удачи",
+    "wheelReady": "Одно бесплатное вращение сегодня",
+    "wheelTomorrow": "Следующее вращение завтра",
+    "spin": "Крутить",
+    "collect": "Забрать {{amount}} фишек",
+    "won": "Вы выиграли {{amount}} фишек!",
+    "done": "Отлично"
   }
 }

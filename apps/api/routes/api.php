@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\V1\MatchmakingController;
 use App\Http\Controllers\Api\V1\Me\AvatarController;
 use App\Http\Controllers\Api\V1\Me\ContactController;
 use App\Http\Controllers\Api\V1\Me\DailyBonusController;
+use App\Http\Controllers\Api\V1\Me\FreeGiftsController;
 use App\Http\Controllers\Api\V1\Me\HistoryController;
 use App\Http\Controllers\Api\V1\Me\LevelController;
 use App\Http\Controllers\Api\V1\Me\MeController;
@@ -88,6 +89,9 @@ Route::prefix('v1')->name('v1.')->group(function () {
                 Route::post('wallet/refill', [WalletController::class, 'refill'])->middleware('throttle:verification')->name('wallet.refill');
                 Route::get('daily-bonus', [DailyBonusController::class, 'show'])->name('daily-bonus.show');
                 Route::post('daily-bonus', [DailyBonusController::class, 'store'])->name('daily-bonus.store');
+                Route::get('gifts', [FreeGiftsController::class, 'show'])->name('gifts.show');
+                Route::post('gifts/claim', [FreeGiftsController::class, 'claim'])->name('gifts.claim');
+                Route::post('gifts/spin', [FreeGiftsController::class, 'spin'])->name('gifts.spin');
                 Route::get('level', [LevelController::class, 'show'])->name('level.show');
                 Route::post('level-ups/claim', [LevelController::class, 'claim'])->name('level-ups.claim');
             });

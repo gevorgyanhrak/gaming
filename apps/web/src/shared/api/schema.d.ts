@@ -137,6 +137,56 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me/gifts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1.me.gifts.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/gifts/claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Collect the gift: `collected` is what was added (0 if it was already taken) */
+        post: operations["v1.me.gifts.claim"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/gifts/spin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Spin today's wheel: where it stops (`index` into `wheel.prizes`) and the Fishkas won */
+        post: operations["v1.me.gifts.spin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/games": {
         parameters: {
             query?: never;
@@ -828,7 +878,7 @@ export interface components {
         FishkaTransactionResource: {
             id: number;
             /** @enum {string} */
-            type: "registration_bonus" | "daily_login_bonus" | "game_entry_fee" | "game_entry_refund" | "game_stake" | "game_payout" | "poker_bet" | "poker_winning" | "admin_credit" | "admin_debit" | "insufficient_balance_bonus" | "level_reward";
+            type: "registration_bonus" | "daily_login_bonus" | "game_entry_fee" | "game_entry_refund" | "game_stake" | "game_payout" | "poker_bet" | "poker_winning" | "admin_credit" | "admin_debit" | "insufficient_balance_bonus" | "level_reward" | "free_gift" | "wheel_prize";
             amount: number;
             balance_after: number;
             description: string | null;
@@ -1523,6 +1573,111 @@ export interface operations {
                             }[];
                             /** @description The Fishkas this request added (0 for a repeat). */
                             collected: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.me.gifts.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            gift: {
+                                amount: number;
+                                available: boolean;
+                                next_at: string;
+                            };
+                            wheel: {
+                                available: boolean;
+                                next_at: string;
+                                /** @description The wheel's slices, in order. */
+                                prizes: number[];
+                            };
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.me.gifts.claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            collected: number;
+                            gift: {
+                                amount: number;
+                                available: boolean;
+                                next_at: string;
+                            };
+                            wheel: {
+                                available: boolean;
+                                next_at: string;
+                                /** @description The wheel's slices, in order. */
+                                prizes: number[];
+                            };
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.me.gifts.spin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            index: number;
+                            amount: number;
+                            gift: {
+                                amount: number;
+                                available: boolean;
+                                next_at: string;
+                            };
+                            wheel: {
+                                available: boolean;
+                                next_at: string;
+                                /** @description The wheel's slices, in order. */
+                                prizes: number[];
+                            };
                         };
                     };
                 };

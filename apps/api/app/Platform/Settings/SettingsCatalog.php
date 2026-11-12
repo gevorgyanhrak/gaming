@@ -55,6 +55,10 @@ final class SettingsCatalog
             // Fishkas (free play currency; never bought or cashed out)
             new SettingDefinition('fishka.registration_bonus', SettingType::Integer, 5000, rules: ['required', 'integer', 'min:0', 'max:1000000']),
             new SettingDefinition('fishka.daily_bonus', SettingType::Integer, 1000, rules: ['required', 'integer', 'min:0', 'max:1000000']),
+            // Free gifts (FreeGifts): one every few hours, and a lucky wheel spun once a day ("amount:weight").
+            new SettingDefinition('fishka.gift_amount', SettingType::Integer, 120, rules: ['required', 'integer', 'min:0', 'max:1000000']),
+            new SettingDefinition('fishka.gift_interval_hours', SettingType::Integer, 4, rules: ['required', 'integer', 'min:1', 'max:168']),
+            new SettingDefinition('fishka.wheel_prizes', SettingType::StringList, ['50:30', '100:25', '150:18', '200:12', '300:8', '500:5', '1000:2'], rules: ['array', 'min:2', 'max:12'], elementRules: ['string', 'regex:/^\d{1,7}:\d{1,4}$/']),
             // The daily bonus grows with a streak of days in a row (day 1 is fishka.daily_bonus).
             new SettingDefinition('fishka.daily_bonus_day_2', SettingType::Integer, 1500, rules: ['required', 'integer', 'min:0', 'max:1000000']),
             new SettingDefinition('fishka.daily_bonus_day_3', SettingType::Integer, 2000, rules: ['required', 'integer', 'min:0', 'max:1000000']),

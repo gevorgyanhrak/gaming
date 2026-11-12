@@ -203,6 +203,10 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   is its own button). Motion comes from views only (`useBoutMotion`: cards fly in from the player,
   finished bouts slide to the discard or the taker; off under reduced motion). On a finished table only
   the loser's "durak" bubble shows.
+- Free gifts (owner 2026-11-12): `Platform/Fishka/FreeGifts` — a gift per `fishka.gift_interval_hours` slot
+  (`fishka.gift_amount`, key `gift:{user}:{slot}`) and one wheel spin a day (`fishka.wheel_prizes` "amount:weight", key
+  `wheel:{user}:{day}`), ledger types `free_gift`/`wheel_prize`; API `/me/gifts`, `/me/gifts/claim`, `/me/gifts/spin`;
+  web `features/gifts/FreeGifts` on the dashboard. Game-over panel: `ResultTrophy` + room `my_rewards` {fishkas, xp}.
 - Wallet UI: `features/wallet` (`useWallet` query `['me','wallet']`, `useWalletSync` for `wallet.updated`,
   `FishkaBalance` header pill, `OutOfFishkasDialog` opened by the QueryClient's MutationCache on any
   422 `insufficient_fishkas`, `/wallet` page). `ApiError.code` carries server error codes. Tests render

@@ -18,7 +18,7 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 - [x] Game-over panel (trophy, Fishkas won, +XP, New game / Exit) for every game — this commit (`ResultTrophy`, room `my_rewards`).
 - [x] Blot home with modes (win / bet / target per mode) — this commit (modes Quick 101 / Standard 151 / Bazar 301, trait `modeCards`).
 - [x] Blot AI research (3 agents, docs/research/blot-ai) and adopted techniques — e0fc1fe.
-- [ ] Next-gift timer + lucky wheel (free Fishkas). No VIP, shop or buying (owner).
+- [x] Next-gift timer + lucky wheel (free Fishkas) — this commit (`Platform/Fishka/FreeGifts`, /me/gifts). No VIP, shop or buying (owner).
 
 **AI platform-wide (owner, 2026-11-12)** — "Play against AI" everywhere, AI always at the highest level, no difficulty
 choice, matchmaking humans first then AI fills the seats, AI never marked, AI holds a disconnected player's seat at

@@ -604,7 +604,9 @@
       "insufficient_balance_bonus": "Անվճար բոնուս",
       "level_reward": "Մակարդակի պարգև",
       "game_stake": "Խաղադրույք",
-      "game_payout": "Խաղի շահում"
+      "game_payout": "Խաղի շահում",
+      "free_gift": "Անվճար նվեր",
+      "wheel_prize": "Բախտի անիվ"
     },
     "ok": "Լավ",
     "balanceLabelTable": "Ձեր ֆիշկաները՝ {{amount}}, որից {{table}}-ը սեղանի մոտ։ Բացել դրամապանակը",
@@ -1013,5 +1015,17 @@
     "stockOut": "Կապուկը վերջացավ — ոչ ոք միավոր չի ստանում",
     "points_one": "{{count}} միավոր",
     "points_other": "{{count}} միավոր"
+  },
+  "gifts": {
+    "heading": "Անվճար նվերներ",
+    "next": "Հաջորդ նվերը",
+    "ready": "Կարող եք վերցնել։",
+    "wheel": "Բախտի անիվ",
+    "wheelReady": "Այսօր մեկ անվճար պտույտ",
+    "wheelTomorrow": "Հաջորդ պտույտը՝ վաղը",
+    "spin": "Պտտել",
+    "collect": "Վերցնել {{amount}} ֆիշկա",
+    "won": "Դուք շահեցիք {{amount}} ֆիշկա։",
+    "done": "Լավ"
   }
 }

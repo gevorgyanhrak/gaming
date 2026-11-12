@@ -25,4 +25,8 @@ enum FishkaTransactionType: string
     case InsufficientBalanceBonus = 'insufficient_balance_bonus';
     /** A level's reward, collected from the level-up popup (ADR 0018). */
     case LevelReward = 'level_reward';
+    /** The free gift collected every few hours (FreeGifts). */
+    case FreeGift = 'free_gift';
+    /** The lucky wheel's prize, one spin a day (FreeGifts). */
+    case WheelPrize = 'wheel_prize';
 }
