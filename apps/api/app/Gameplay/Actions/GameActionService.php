@@ -6,6 +6,7 @@ use App\Enums\ParticipantResult;
 use App\Gameplay\Contracts\DecidesTimeouts;
 use App\Gameplay\Contracts\HandlesDepartures;
 use App\Gameplay\Contracts\HandlesTimeouts;
+use App\Gameplay\Contracts\HasOutOfTurnActions;
 use App\Gameplay\Contracts\PausesBetweenRounds;
 use App\Gameplay\Contracts\PlaysForChips;
 use App\Gameplay\Contracts\PlaysInTeams;
@@ -87,8 +88,16 @@ class GameActionService
             if (! $actor->is_active) {
                 throw new RoomNotActive(__('platform.play.not_in_progress'));
             }
+            $engine = $this->states->engine($room);
             if (! in_array($actor->seat, $current->seatsToAct, true)) {
-                throw new IllegalAction(__('platform.play.not_your_turn'));
+                // Some actions belong to no turn (Blot's Quansh): the engine says which, and when.
+                $outOfTurn = $engine instanceof HasOutOfTurnActions
+                    && collect($engine->outOfTurnActions($current->state, $actor->seat))->contains(fn (Action $a) => $a->equals($action));
+                if (! $outOfTurn) {
+                    throw new IllegalAction(__('platform.play.not_your_turn'));
+                }
+
+                return $this->play($room, $current, $actor, $action, $clientActionId);
             }
             // A move from a player AI stood in for: they are back, the seat is theirs again.
             if ($actor->ai_controlled && $actor->user_id !== null && ($clientActionId === null || ! str_starts_with($clientActionId, GameMove::AUTO_PREFIX))) {
@@ -102,7 +111,6 @@ class GameActionService
                 return $this->end($room, $current, $actor, GameMove::TIMEOUT, $clientActionId);
             }
 
-            $engine = $this->states->engine($room);
             $legal = $engine instanceof ValidatesActions
                 ? $engine->isLegal($current->state, $actor->seat, $action)
                 : collect($engine->legalActions($current->state, $actor->seat))->contains(fn (Action $a) => $a->equals($action));

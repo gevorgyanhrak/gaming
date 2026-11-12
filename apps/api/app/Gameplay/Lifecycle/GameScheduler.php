@@ -3,6 +3,8 @@
 namespace App\Gameplay\Lifecycle;
 
 use App\Gameplay\Bots\BotTurnJob;
+use App\Gameplay\Contracts\ActsOutOfTurn;
+use App\Gameplay\Contracts\HasOutOfTurnActions;
 use App\Gameplay\Contracts\PacesThinking;
 use App\Gameplay\GameRegistry;
 use App\Gameplay\Random\SecureRandom;
@@ -46,11 +48,22 @@ class GameScheduler
                 ->delay(now()->setTimestamp($state->deadline)->addSecond());
         }
 
+        $engine = $this->states->engine($room);
+        $bot = $this->registry->get($room->game->slug)->bot();
         foreach ($room->participants as $participant) {
-            if ($participant->playedByAi() && in_array($participant->seat, $state->seatsToAct, true)) {
+            if (! $participant->playedByAi()) {
+                continue;
+            }
+            if (in_array($participant->seat, $state->seatsToAct, true)) {
                 BotTurnJob::dispatch($room->id, $state->version, $participant->seat)
                     ->onQueue(config('gameplay.queue'))
                     ->delay(now()->addMilliseconds($this->thinking($room, $state, $participant->seat)));
+            } elseif ($engine instanceof HasOutOfTurnActions && $bot instanceof ActsOutOfTurn
+                && $engine->outOfTurnActions($state->state, $participant->seat) !== []) {
+                // AI may also act out of turn (Blot's Quansh), after a moment's thought.
+                BotTurnJob::dispatch($room->id, $state->version, $participant->seat, outOfTurn: true)
+                    ->onQueue(config('gameplay.queue'))
+                    ->delay(now()->addMilliseconds(random_int(1500, 3500)));
             }
         }
     }

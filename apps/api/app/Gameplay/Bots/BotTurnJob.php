@@ -4,6 +4,8 @@ namespace App\Gameplay\Bots;
 
 use App\Enums\BotDifficulty;
 use App\Gameplay\Actions\GameActionService;
+use App\Gameplay\Contracts\ActsOutOfTurn;
+use App\Gameplay\Contracts\HasOutOfTurnActions;
 use App\Gameplay\Exceptions\RoomNotActive;
 use App\Gameplay\Exceptions\VersionConflict;
 use App\Gameplay\GameRegistry;
@@ -35,6 +37,8 @@ class BotTurnJob implements ShouldQueue
         public readonly int $roomId,
         public readonly int $version,
         public readonly int $seat,
+        /** Not the seat's turn: only an action the engine allows out of turn, if the bot wants it. */
+        public readonly bool $outOfTurn = false,
     ) {}
 
     public function handle(RoomStates $states, GameRegistry $registry, GameActionService $actions, AiPlayers $ai): void
@@ -48,18 +52,24 @@ class BotTurnJob implements ShouldQueue
 
         $state = $states->current($room);
         $engine = $states->engine($room);
-        $legal = $engine->legalActions($state->state, $this->seat);
+        $strategy = $registry->get($room->game->slug)->bot();
+        $difficulty = $bot->bot_difficulty ?? $ai->difficulty($room->game) ?? BotDifficulty::Hard;
 
-        if ($legal === []) {
-            return;
+        if ($this->outOfTurn) {
+            $offered = $engine instanceof HasOutOfTurnActions ? $engine->outOfTurnActions($state->state, $this->seat) : [];
+            $action = $offered !== [] && $strategy instanceof ActsOutOfTurn
+                ? $strategy->chooseOutOfTurn($engine->viewFor($state->state, $this->seat), $offered, $difficulty, new SecureRandom)
+                : null;
+            if ($action === null) {
+                return;
+            }
+        } else {
+            $legal = $engine->legalActions($state->state, $this->seat);
+            if ($legal === []) {
+                return;
+            }
+            $action = $strategy->chooseAction($engine->viewFor($state->state, $this->seat), $legal, $difficulty, new SecureRandom);
         }
-
-        $action = $registry->get($room->game->slug)->bot()->chooseAction(
-            $engine->viewFor($state->state, $this->seat),
-            $legal,
-            $bot->bot_difficulty ?? $ai->difficulty($room->game) ?? BotDifficulty::Hard,
-            new SecureRandom,
-        );
 
         try {
             $actions->submit($room, $bot, $action, expectedVersion: $this->version, clientActionId: $bot->isBot() ? null : GameMove::AUTO_PREFIX."ai{$this->version}");

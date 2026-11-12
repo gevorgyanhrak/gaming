@@ -192,7 +192,10 @@ export default function BlotBoard({
   const contract = view.contract
   const hand = sortHand(view.hand, view.trump)
   const result = view.phase === 'over' || state.result ? view.last_hand : null
-  const bidding = (view.phase === 'bidding' || view.phase === 'answer') && actions.length > 0
+  // The bazar panel is for your turn; out of turn only Quansh can be legal (its own button).
+  const myTurn = state.seat !== null && state.seats_to_act.includes(state.seat)
+  const bidding =
+    (view.phase === 'bidding' || view.phase === 'answer') && myTurn && actions.length > 0
   const teamName = (team: number) => (team === myTeam ? t('blot.us') : t('blot.them'))
   const multiplier = (c: Contract) => (c.suit === null ? [2, 3, 5] : [1, 2, 4])[c.doubled] ?? 1
   const tricksLeft = 8 - (view.tricks[0] ?? 0) - (view.tricks[1] ?? 0)

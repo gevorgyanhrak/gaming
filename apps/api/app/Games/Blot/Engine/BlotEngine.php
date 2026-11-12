@@ -4,6 +4,7 @@ namespace App\Games\Blot\Engine;
 
 use App\Gameplay\Contracts\GameEngine;
 use App\Gameplay\Contracts\HandlesTimeouts;
+use App\Gameplay\Contracts\HasOutOfTurnActions;
 use App\Gameplay\Contracts\PausesBetweenRounds;
 use App\Gameplay\Contracts\PlaysInTeams;
 use App\Gameplay\Contracts\ValidatesActions;
@@ -36,7 +37,7 @@ use App\Gameplay\Random\RandomSource;
  * chakhel — trumping a trick of another suit — tricks, the deal's end), scores (sai per team), target,
  * last_hand, pause_ms, result {team, reason}.
  */
-final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRounds, PlaysInTeams, ValidatesActions
+final class BlotEngine implements GameEngine, HandlesTimeouts, HasOutOfTurnActions, PausesBetweenRounds, PlaysInTeams, ValidatesActions
 {
     public const MIN_BID = 8;
 
@@ -126,10 +127,31 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
     }
 
     /**
+     * Quansh at any moment of the bazar (owner, 2026-11-12): a player of the pair against the contract may say
+     * it while someone else is to speak, as at a real table. Once said, the bazar ends (answer phase), so it
+     * can't be said twice.
+     *
+     * @param  array<string, mixed>  $state
+     */
+    public function outOfTurnActions(array $state, int $seat): array
+    {
+        $contract = $state['contract'];
+        if ($state['result'] !== null || $state['phase'] !== 'bidding' || $contract === null || $contract['doubled'] !== 0
+            || $contract['team'] === $seat % 2 || $state['to_act'] === $seat) {
+            return [];
+        }
+
+        return [new Action('contra')];
+    }
+
+    /**
      * @param  array<string, mixed>  $state
      */
     public function isLegal(array $state, int $seat, Action $action): bool
     {
+        if ($action->type === 'contra' && $state['to_act'] !== $seat) {
+            return collect($this->outOfTurnActions($state, $seat))->contains(fn (Action $legal) => $legal->equals($action));
+        }
         if ($action->type !== 'bid') {
             return collect($this->legalActions($state, $seat))->contains(fn (Action $legal) => $legal->equals($action));
         }

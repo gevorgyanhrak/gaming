@@ -3,6 +3,7 @@
 namespace App\Games\Blot\Bot;
 
 use App\Enums\BotDifficulty;
+use App\Gameplay\Contracts\ActsOutOfTurn;
 use App\Gameplay\Contracts\BotStrategy;
 use App\Gameplay\Contracts\PacesThinking;
 use App\Gameplay\Engine\Action;
@@ -21,7 +22,7 @@ use App\Games\Blot\Engine\BlotCards;
  * Easy plays as the old rule-based bot (ClassicBlotBot). Its quick card rules (card()) are also how every
  * seat plays inside the look-ahead.
  */
-final class BlotBot implements BotStrategy, PacesThinking
+final class BlotBot implements ActsOutOfTurn, BotStrategy, PacesThinking
 {
     /**
      * @param  array<string, mixed>  $view
@@ -58,6 +59,22 @@ final class BlotBot implements BotStrategy, PacesThinking
         );
 
         return new Action('play', ['card' => (new CardSearch($this))->choose($view, $plays, $cards, $random)]);
+    }
+
+    /**
+     * Quansh out of turn, as a person would the moment a contract looks wrong (QuanshAdvisor); otherwise wait.
+     *
+     * @param  array<string, mixed>  $view
+     */
+    public function chooseOutOfTurn(array $view, array $actions, BotDifficulty $difficulty, RandomSource $random): ?Action
+    {
+        foreach ($actions as $action) {
+            if ($action->type === 'contra' && (new QuanshAdvisor($this))->shouldQuansh($view, QuanshSkill::of($difficulty), $random)) {
+                return $action;
+            }
+        }
+
+        return null;
     }
 
     /**

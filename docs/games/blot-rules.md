@@ -31,7 +31,8 @@ Choices where the sources disagree or are silent are marked **(choice)**.
   higher than the last; suits don't rank. Partners may raise each other. A player who passed may bid again later.
 - **Kaput** (25): the pair will take all 8 tricks. A bid of its own, not a number: it outbids any number, and after a
   kaput only another kaput (any player, any suit or Boy), a pass or Quansh (owner, 2026-11-12; terz.am). It still scores 25.
-- **Contra (Քուանշ)** — an opponent of the pair holding the contract; it ends the bidding. Then **either player of the
+- **Contra (Քուանշ)** — an opponent of the pair holding the contract, **at any moment of the bazar, not only on their
+  turn** (owner, 2026-11-12; all three references place Quansh in the bazar, none during play); it ends the bidding. Then **either player of the
   contract pair** may say **recontra (Սուր)**, in turn: the first of them after the Quansh, and if they pass, their
   partner ("ответить реконтрой может один из игроков пары" — playelephant/gambler rules). Sur ×4 (Boy ×5).
 - The bidding ends after three passes following the last bid (or after contra/recontra is answered). Four passes and

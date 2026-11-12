@@ -2,6 +2,7 @@
 
 namespace App\Gameplay\Rooms;
 
+use App\Gameplay\Contracts\HasOutOfTurnActions;
 use App\Gameplay\Lifecycle\TimeControl;
 use App\Models\GameParticipant;
 use App\Models\GameRoom;
@@ -39,9 +40,12 @@ class RoomPresenter
             // Chess clocks: milliseconds left per seat at server_time (null with per-turn timers).
             'clocks' => $room->isActive() ? TimeControl::remaining($state->clock, $state->seatsToAct, now()->getTimestampMs()) : null,
             'view' => $engine->viewFor($state->state, $seat),
-            'legal_actions' => $canAct
-                ? array_map(fn ($action) => $action->toArray(), $engine->legalActions($state->state, $seat))
-                : [],
+            'legal_actions' => array_map(fn ($action) => $action->toArray(), match (true) {
+                $canAct => $engine->legalActions($state->state, $seat),
+                // Actions that belong to no turn (Blot's Quansh), while the seat still plays.
+                $seat !== null && $viewer->is_active && $room->isActive() && $engine instanceof HasOutOfTurnActions => $engine->outOfTurnActions($state->state, $seat),
+                default => [],
+            }),
             'result' => $room->isActive() ? null : [
                 'end_reason' => $room->end_reason,
                 'seats' => $room->participants->mapWithKeys(fn (GameParticipant $p) => [$p->seat => $p->result?->value])->all(),
