@@ -39,7 +39,7 @@ export function RoomReactions({ room, mySeat }: { room: Room; mySeat: number | n
   )
   const recipients = room.participants
     .filter((p) => p.seat !== mySeat)
-    .map((p) => ({ seat: p.seat, name: p.name ?? '?', bot: p.is_bot }))
+    .map((p) => ({ seat: p.seat, name: p.name ?? '?' }))
   const quickTo = recipients.length === 1 ? (recipients[0]?.seat ?? null) : null
 
   const deliver = (kind: ReactionKind, value: string, toSeat: number | null) => {

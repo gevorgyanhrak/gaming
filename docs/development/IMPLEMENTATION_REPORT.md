@@ -2,6 +2,32 @@
 
 One section per task or batch, newest first. Paths under `apps/web/src`.
 
+## Blot: dealing shown card by card; no "Bot" marks at tables — 2026-11-12 · DONE
+
+**Dealing:** new server phase `dealing` at the start of every deal (`BlotEngine::deal`; `pauseMs` = `deal_ms` 3400;
+`seatsToAct` empty, so bots wait and no turn clock runs; `resume` opens the bazar with a `dealt` event). The board shows a
+closed deck in the middle and flies the 32 cards one at a time (85 ms apart, 480 ms flights with spin) in 3-2-3 order from
+the dealer's left to the measured positions of the seats and your hand; your cards land face up (flip), opponents' backs
+grow, a soft card sound per packet; reduced motion skips the flights. The header says "Dealing" in that pause (trait
+`nextRound` may now be a function of the view).
+
+**Bot labels:** RoomPage no longer passes `bots` to boards; `PlayerList` badge, reaction recipient label and Blot's seat
+markers removed. Bots renamed to Armenian names (migration `2026_11_12_100000_armenian_bot_names`, renames only seeded
+names still unchanged and free; `BotSeeder`). Kept on purpose: the lobby's "play against a bot" mode and matchmaking's
+offer to play a bot (chosen by the player before the game). Dead "Bot" pill code in 7 boards → TECHNICAL_DEBT TD-005.
+
+**Files:** `app/Games/Blot/Engine/BlotEngine.php`, `database/migrations/2026_11_12_100000_armenian_bot_names.php`,
+`database/seeders/BotSeeder.php`, tests `Unit/Games/BlotEngineTest`, `Feature/Games/BlotTableTest`,
+`Feature/Admin/GameAdminTest`; web `games/blot/BlotBoard(.test).tsx`, `games/registry.ts`, `pages/RoomPage(.test).tsx`,
+`features/play/components/PlayerList.tsx`, `features/reactions/components/{ReactionPicker,RoomReactions}.tsx`,
+`styles/index.css`.
+
+**Checks:** `make lint-api` OK; `make test-api` 573 passed; web typecheck, lint, format, 198 tests, build OK. Live
+(Armenian, player1, 1440×900 and 390×844): cards fly to each seat, hand fills face up, header "Dealing", bazar opens
+≈3.1 s after the deal starts with 8 cards in hand.
+
+**Open:** the "24-point announcement cutoff" still waits for the owner's explanation.
+
 ## Blot: kaput stop, Sur by either partner, new table, dealing and turn animation — 2026-11-12 · DONE except the "24" rule
 
 **Rules researched** (reblot.am, terz.am, belote.club, hatsit.org, playelephant/gambler): recontra may be answered by

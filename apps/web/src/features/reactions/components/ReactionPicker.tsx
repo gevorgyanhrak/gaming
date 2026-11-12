@@ -7,7 +7,7 @@ import type { ReactionCatalog, ReactionKind } from '../api'
 import { emojiCategoryName, messageCategoryName, messageText } from '../labels'
 import { recentEmojis, rememberEmoji } from '../prefs'
 
-export type Recipient = { seat: number; name: string; bot: boolean }
+export type Recipient = { seat: number; name: string }
 
 /**
  * The emoji and quick-message picker: who it's for (one player or everyone), then an emoji (by
@@ -124,7 +124,7 @@ export function ReactionPicker({
             {t('reactions.sendTo')}
           </legend>
           <div className="flex gap-1.5 overflow-x-auto pb-1">
-            {[{ seat: null, name: t('reactions.everyone'), bot: false }, ...recipients].map((r) => (
+            {[{ seat: null, name: t('reactions.everyone') }, ...recipients].map((r) => (
               <button
                 key={r.seat ?? 'all'}
                 type="button"
@@ -137,7 +137,6 @@ export function ReactionPicker({
                 }`}
               >
                 {r.name}
-                {r.bot ? <span className="ml-1 text-xs opacity-70">· {t('room.bot')}</span> : null}
               </button>
             ))}
           </div>

@@ -168,7 +168,7 @@
   --animate-card-in: card-in 260ms ease-out both;
   --animate-dice-roll: dice-roll 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-card-flip: card-flip 460ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-  --animate-deal-fly: deal-fly 420ms cubic-bezier(0.3, 0.7, 0.3, 1) both;
+  --animate-deal-fly: deal-fly 480ms cubic-bezier(0.25, 0.75, 0.35, 1) both;
   --animate-card-from: card-from 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-thinking: thinking 1100ms ease-in-out infinite;
   --animate-turn-glow: turn-glow 1800ms ease-in-out infinite;
@@ -249,14 +249,21 @@
   }
 
   /* A dealt card travelling from the deck to a player (--tx, --ty: where to). */
+  /* One dealt card: off the deck, spinning through the air, settling where its player sits
+     (--tx, --ty: how far; --spin: turns in flight; --land: its angle on arrival). */
   @keyframes deal-fly {
     from {
+      transform: translate(-50%, -50%) rotate(0deg) scale(0.9);
+    }
+    85% {
       opacity: 1;
-      transform: translate(0, 0) rotate(0deg) scale(1);
+      transform: translate(calc(var(--tx) - 50%), calc(var(--ty) - 50%))
+        rotate(calc(var(--spin) + var(--land))) scale(1);
     }
     to {
       opacity: 0;
-      transform: translate(var(--tx), var(--ty)) rotate(18deg) scale(0.7);
+      transform: translate(calc(var(--tx) - 50%), calc(var(--ty) - 50%))
+        rotate(calc(var(--spin) + var(--land))) scale(0.95);
     }
   }
 

@@ -56,7 +56,8 @@ describe('Room', () => {
     renderRoute('/rooms/room-1')
 
     expect(await screen.findByText('Your turn')).toBeInTheDocument()
-    expect(screen.getByText('Bot')).toBeInTheDocument()
+    // Bots look like any other player: no "Bot" label at the table.
+    expect(screen.queryByText('Bot')).not.toBeInTheDocument()
     await userEvent.click(await screen.findByRole('button', { name: 'play 0' }))
 
     expect(await screen.findByText('version 1')).toBeInTheDocument()

@@ -153,7 +153,8 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
 - Game traits (`games/registry.ts` `traitsOf(slug)`: `seatsOnBoard`, `material`, `capture`, `roundWon`
   (poker hand won → `handWin` sound), `nextRound` (header caption while nobody acts in a pause)) let the room
   page and sounds avoid slug checks. Durak/Poker (`seatsOnBoard`) hide `PlayerList` while active and show
-  "Bot" pills at seats (`BoardProps.bots`).
+  no "Bot" marks anywhere at a table (owner, 2026-11-12: RoomPage no longer passes `BoardProps.bots`; bots carry Armenian
+  names); the lobby's "play against a bot" mode and the matchmaking bot offer stay.
 - Sounds: `features/play/sounds.ts` synthesizes them with Web Audio (no files); `useGameSounds` picks
   at most one per new state version via the pure `soundFor` (result > your turn when hidden or > 2
   seats > capture > move) plus a low-time warning at 10 s; honours `preferences.sound`. The room tab
@@ -286,6 +287,9 @@ is not done or not verified, and how to check it manually. Keep it concise.
   ad-hoc view fields; terms per the spec's Terms table), 4 seats, partnerships via `PlaysInTeams`
   (a leaver's partner loses too); bids are `{type:'bid', value, suit}` from a `{min,max}` range; board `games/blot`
   puts bazar controls, trick and hand result in the middle of the felt so a 900 px tall window needs no scrolling.
+  Each deal starts in a server `dealing` phase (`deal_ms`, `PausesBetweenRounds`: nobody acts, no clock) while the board
+  flies 32 cards from the deck to measured seat targets (`data-deal-target`); the bazar opens on `resume`. A trait's
+  `nextRound` may be a function of the view (Blot names the dealing pause).
   Domino: Block, 2–4 seats; the engine auto-passes players without a move (no pass action); moves are
   `{type:'play', tile:'a-b', end}`; board `games/domino` (SVG `Tile`, end slots when a tile fits both ends).
   Ludo: `roll` is an action (the engine rolls, recorded), then `{type:'move', token, to}`; board geometry

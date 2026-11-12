@@ -16,6 +16,8 @@ use App\Games\Blot\Engine\BlotEngine;
 function blot(array $options = []): array
 {
     $state = (new BlotEngine)->initialState(new GameSetup(4, $options), new SecureRandom);
+    // The deal is shown first; the bazar opens when it ends.
+    $state = (new BlotEngine)->resume($state, new SecureRandom)->state;
     $state['dealer'] = 3;
     $state['to_act'] = 0;
     $state['leader'] = 0;
@@ -202,8 +204,36 @@ it('lets any card follow when the suit is missing in no-trump', function () {
 
 // ── Bazar ─────────────────────────────────────────────────────────────────────────────────────────
 
+it('shows the deal before the bazar opens: nobody may act and no clock runs', function () {
+    $engine = new BlotEngine;
+    $state = $engine->initialState(new GameSetup(4), new SecureRandom);
+
+    expect($state['phase'])->toBe('dealing')
+        ->and($engine->seatsToAct($state))->toBe([])
+        ->and($engine->legalActions($state, ($state['dealer'] + 1) % 4))->toBe([])
+        ->and($engine->pauseMs($state))->toBe(3400)
+        ->and($engine->viewFor($state, 0))->not->toHaveKey('deal_ms');
+
+    $state = $engine->resume($state, new SecureRandom)->state;
+    expect($state['phase'])->toBe('bidding')->and($engine->seatsToAct($state))->toBe([($state['dealer'] + 1) % 4]);
+});
+
+it('deals again, shown first, after four passes and after a deal is over', function () {
+    $engine = new BlotEngine;
+    $state = blot();
+    for ($i = 0; $i < 4; $i++) {
+        $state = blotAct($state, 'pass');
+    }
+    expect($state['phase'])->toBe('dealing');
+
+    $over = blotLastTrick(blotContract(HANDS, 'S', 10), ['AD', '8D', '7D', 'QD'], [100, 38], [5, 2]);
+    $next = $engine->resume($over, new SecureRandom)->state;
+    expect($next['phase'])->toBe('dealing')->and($next['hand_no'])->toBe(2);
+});
+
 it('opens the bidding left of the dealer with bids from 8, kaput and pass', function () {
     $state = (new BlotEngine)->initialState(new GameSetup(4), new SecureRandom);
+    $state = (new BlotEngine)->resume($state, new SecureRandom)->state;
     $first = ($state['dealer'] + 1) % 4;
 
     expect(array_map('count', $state['hands']))->toBe([8, 8, 8, 8])
@@ -289,7 +319,7 @@ it('redeals with the next dealer when everyone passes, and plays after three pas
     for ($i = 0; $i < 4; $i++) {
         $state = blotAct($state, 'pass');
     }
-    expect($state['dealer'])->toBe(0)->and($state['hand_no'])->toBe(2)->and($state['to_act'])->toBe(1)->and($state['phase'])->toBe('bidding');
+    expect($state['dealer'])->toBe(0)->and($state['hand_no'])->toBe(2)->and($state['to_act'])->toBe(1)->and($state['phase'])->toBe('dealing');
 
     $state = blotContract(HANDS, 'H');
     expect($state['phase'])->toBe('playing')->and($state['to_act'])->toBe(0)->and($state['belote'])->toBe(0);
@@ -557,7 +587,7 @@ it('stops a kaput as soon as the defenders take a trick — Kaput didn\'t happen
         ->and($engine->outcome($state))->toBeNull()
         ->and($engine->pauseMs($state))->toBe(6000);
     $next = $engine->resume($state, new SecureRandom)->state;
-    expect($next['hand_no'])->toBe(2)->and($next['phase'])->toBe('bidding');
+    expect($next['hand_no'])->toBe(2)->and($next['phase'])->toBe('dealing');
 });
 
 it('doesn\'t call it Tars kaput when a kaput is lost on the very first trick', function () {
@@ -622,7 +652,7 @@ it('adds the deals up and starts the next one with the next dealer', function ()
     expect($next['scores'])->toBe([22, 4])
         ->and($next['hand_no'])->toBe(2)
         ->and($next['dealer'])->toBe(0)
-        ->and($next['phase'])->toBe('bidding')
+        ->and($next['phase'])->toBe('dealing')
         ->and($next['contract'])->toBeNull()
         ->and($next['declared'])->toBe([[], [], [], []]);
 });

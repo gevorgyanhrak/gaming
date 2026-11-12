@@ -82,8 +82,6 @@ export function PlayerList({
                   {t(resultLabel[player.result as ParticipantResult])}
                 </span>
               </Badge>
-            ) : player.is_bot ? (
-              <Badge>{t('room.bot')}</Badge>
             ) : player.seat === mySeat ? (
               <span>{t('room.youSeat')}</span>
             ) : null}

@@ -1,5 +1,6 @@
 import { Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { ParseKeys } from 'i18next'
 import { Link, useParams } from 'react-router'
 import { useMessage } from '@/features/auth/forms'
 import { useCurrentUser } from '@/features/auth/hooks'
@@ -17,7 +18,7 @@ import { useCountdown } from '@/features/play/useCountdown'
 import { useGameSounds } from '@/features/play/useGameSounds'
 import { usePresence } from '@/features/play/usePresence'
 import { useRoom } from '@/features/play/useRoom'
-import { boards, traitsOf } from '@/games/registry'
+import { boards, traitsOf, type GameTraits, type View } from '@/games/registry'
 import { isApiError } from '@/shared/api/errors'
 import { useMediaQuery } from '@/shared/lib/useMediaQuery'
 import { Alert } from '@/shared/ui/Alert'
@@ -145,7 +146,7 @@ export function RoomPage() {
             ? t('room.yourTurn')
             : view.seats_to_act.length === 0
               ? // A pause between rounds (poker hands); the time left is when the next starts.
-                t(traitsOf(data.game.slug).nextRound ?? 'room.nextRound')
+                t(pauseCaption(traitsOf(data.game.slug).nextRound, view.view))
               : (waitingCaption(view, playerNames, t) ?? t('room.theirTurn'))}
         </p>
         {secondsLeft !== null && !clocks ? (
@@ -207,7 +208,6 @@ export function RoomPage() {
                   onAction={(action) => act.mutate(action)}
                   pending={act.isPending}
                   players={playerNames}
-                  bots={Object.fromEntries(data.participants.map((p) => [p.seat, p.is_bot]))}
                   levels={Object.fromEntries(data.participants.map((p) => [p.seat, p.level]))}
                   frames={Object.fromEntries(data.participants.map((p) => [p.seat, p.frame]))}
                 />
@@ -260,4 +260,10 @@ export function RoomPage() {
       </Container>
     </>
   )
+}
+
+/** The header's caption for a pause nobody acts in (a game may name it by its view). */
+function pauseCaption(caption: GameTraits['nextRound'], view: View): ParseKeys {
+  if (typeof caption === 'function') return caption(view)
+  return caption ?? 'room.nextRound'
 }

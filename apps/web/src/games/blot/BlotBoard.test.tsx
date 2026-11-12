@@ -339,23 +339,37 @@ describe('BlotBoard', () => {
     ).toEqual(['0', '28'])
   })
 
-  it('deals a new deal packet by packet before the bazar opens', () => {
+  it('deals card by card from the deck while the server holds the deal, then opens the bazar', () => {
     vi.useFakeTimers()
     try {
-      renderBoard(view({ phase: 'bidding', contract: null, trump: null, tricks: [0, 0] }), [
-        { type: 'bid', min: 8, max: 24 },
-        { type: 'pass' },
-      ])
-      // Dealing: the deck is on the table, your hand fills in, the bazar waits.
+      const dealt = view({ phase: 'dealing', contract: null, trump: null, tricks: [0, 0] })
+      const { rerender } = renderBoard(dealt, [])
+      // The closed deck is in the middle; nothing in hand yet, nothing to press.
       expect(screen.getByRole('status', { name: 'Dealing' })).toBeInTheDocument()
-      expect(screen.queryByRole('button', { name: 'Pass' })).not.toBeInTheDocument()
       const hand = () =>
         within(screen.getByRole('region', { name: 'Your cards' })).queryAllByRole('button').length
       expect(hand()).toBe(0)
-      void act(() => vi.advanceTimersByTime(190 * 4))
+      // The dealer is seat 3, so you (seat 0) get the first three; they land after their flight.
+      void act(() => vi.advanceTimersByTime(300))
+      expect(hand()).toBe(0)
+      void act(() => vi.advanceTimersByTime(500))
       expect(hand()).toBe(3)
-      void act(() => vi.advanceTimersByTime(190 * 8))
+      void act(() => vi.advanceTimersByTime(3000))
       expect(hand()).toBe(8)
+      expect(screen.queryByRole('button', { name: 'Pass' })).not.toBeInTheDocument()
+      // The server ends the deal: the bazar opens.
+      rerender(
+        <BlotBoard
+          state={roomStateFixture({
+            seat: 0,
+            view: { ...dealt, phase: 'bidding' },
+            legal_actions: [{ type: 'bid', min: 8, max: 24 }, { type: 'pass' }],
+          })}
+          onAction={vi.fn()}
+          pending={false}
+          players={players}
+        />,
+      )
       expect(screen.queryByRole('status', { name: 'Dealing' })).not.toBeInTheDocument()
       expect(screen.getByRole('button', { name: 'Pass' })).toBeInTheDocument()
     } finally {

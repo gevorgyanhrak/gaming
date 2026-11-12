@@ -12,7 +12,10 @@ export interface BoardProps {
   pending: boolean
   /** Display names by seat, for boards that show the players (poker). */
   players?: Partial<Record<number, string>>
-  /** Seats played by bots, for boards that show the players. */
+  /**
+   * Not passed at the table any more: bots appear as ordinary players there (owner, 2026-11-12). Boards
+   * still accept it until their old "Bot" pills are removed (TECHNICAL_DEBT).
+   */
   bots?: Partial<Record<number, boolean>>
   /** Levels by seat, for boards that show the players' avatars. */
   levels?: Partial<Record<number, number>>
@@ -47,7 +50,7 @@ export const modePreviews: Partial<
   nardi: lazy(() => import('./nardi/NardiModePreview')),
 }
 
-type View = Record<string, unknown>
+export type View = Record<string, unknown>
 
 /** What the room page and the sounds need to know about a game, without loading its board. */
 export interface GameTraits {
@@ -59,8 +62,8 @@ export interface GameTraits {
   capture?: (prev: View, next: View) => boolean
   /** Whether the step finished a round inside the game (a poker hand) that `seat` won. */
   roundWon?: (prev: View, next: View, seat: number) => boolean
-  /** What the header calls the pause before the next round (a translation key). */
-  nextRound?: ParseKeys
+  /** What the header calls a pause nobody acts in: before the next round, or (by the view) a deal being shown. */
+  nextRound?: ParseKeys | ((view: View) => ParseKeys)
   /** What the lobby says about the buy-in of a game played for chips (amount, min, small, big). */
   buyIn?: ParseKeys
   /** What a chip table's badge says it plays for (small, big: the group's minimum bet and half of it). */
@@ -124,7 +127,9 @@ export const traits: Partial<Record<string, GameTraits>> = {
         (after.scored[seat % 2] ?? 0) > (after.scored[1 - (seat % 2)] ?? 0)
       )
     },
-    nextRound: 'blot.nextHand',
+    // The server's "dealing" pause shows the deal; the one after a deal waits for the next.
+    nextRound: (view) =>
+      (view as { phase?: string }).phase === 'dealing' ? 'blot.dealing' : 'blot.nextHand',
   },
   domino: {
     seatsOnBoard: true,

@@ -39,7 +39,11 @@ function blotTable(): array
         test()->actingAs($user)->postJson('/api/v1/rooms/join', ['invite_code' => $room['invite_code']])->assertOk();
     }
 
-    return [GameRoom::query()->where('public_id', $room['id'])->sole()->load(['game', 'participants']), $users->all()];
+    $room = GameRoom::query()->where('public_id', $room['id'])->sole()->load(['game', 'participants']);
+    // The table watches the deal first; then the bazar opens.
+    (new ResumeRoundJob($room->id, app(RoomStates::class)->current($room)->version))->handle(app(GameActionService::class));
+
+    return [$room->refresh()->load(['game', 'participants']), $users->all()];
 }
 
 beforeEach(fn () => Queue::fake());
@@ -155,7 +159,7 @@ it('plays a whole deal on the server, shows every player the same score, and doe
     // The pause ends and the next deal starts with the scores carried over.
     (new ResumeRoundJob($room->id, $states->current($room)->version))->handle(app(GameActionService::class));
     $next = $states->current($room->refresh()->load(['game', 'participants']))->state;
-    expect($next['hand_no'])->toBe(2)->and($next['scores'])->toBe($live['scores'])->and($next['phase'])->toBe('bidding');
+    expect($next['hand_no'])->toBe(2)->and($next['scores'])->toBe($live['scores'])->and($next['phase'])->toBe('dealing');
 });
 
 it('accepts only declarations the server finds in the hand, once, and a repeated request only once', function () {

@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { playSound } from '@/features/play/sounds'
 import { useTranslation } from 'react-i18next'
@@ -26,7 +26,7 @@ export interface BlotView {
   seat: number | null
   dealer: number
   hand_no: number
-  phase: 'bidding' | 'answer' | 'playing' | 'over'
+  phase: 'dealing' | 'bidding' | 'answer' | 'playing' | 'over'
   hand: string[]
   hand_sizes: number[]
   bids: {
@@ -131,7 +131,6 @@ export default function BlotBoard({
   onAction,
   pending,
   players = {},
-  bots = {},
   levels = {},
 }: BoardProps) {
   const { t, i18n } = useTranslation()
@@ -279,47 +278,72 @@ export default function BlotBoard({
       : text
   }
 
-  // ── Dealing (visual only): the server has already dealt; the table shows it card by card. ──────────
-  // Three, two, three to each player, starting left of the dealer — a round of 12 small packets.
+  // ── Dealing ─────────────────────────────────────────────────────────────────────────────────────
+  // The server holds the table in its "dealing" phase while everyone watches the deal: one card at a
+  // time from the deck in the middle, three, two and three to each player starting left of the dealer,
+  // each flying to where that player sits. Your cards turn up in your hand as they land. Visual only:
+  // the cards themselves are already the server's.
   const reduced =
     typeof window !== 'undefined' &&
     !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-  const freshDeal = view.phase === 'bidding' && view.log.length === 0
-  const [shownDeal, setShownDeal] = useState(() => (freshDeal && !reduced ? 0 : view.hand_no))
-  const dealing = freshDeal && shownDeal !== view.hand_no
-  // How far the deal on screen has got, for this deal number (a new deal starts from nothing).
-  const [progress, setProgress] = useState({ hand: view.hand_no, k: 0 })
-  const step = progress.hand === view.hand_no ? progress.k : 0
+  const dealing = view.phase === 'dealing' && !reduced
+  const order = dealOrder(view.dealer)
+  const [clock, setClock] = useState({ hand: view.hand_no, ms: -1 })
+  const elapsed = clock.hand === view.hand_no ? clock.ms : -1
   const { data: user } = useCurrentUser()
   const soundOn = Boolean(user?.profile.preferences.sound)
+  const tableRef = useRef<HTMLDivElement>(null)
+  // Where each player's cards fly to, from the deck (px), measured on the table as it is on screen.
+  const [targets, setTargets] = useState<Point[]>([])
   useEffect(() => {
     if (!dealing) return
     const hand = view.hand_no
-    let k = 0
-    const timer = window.setInterval(() => {
-      k += 1
-      if (soundOn) playSound('move', 'cards')
-      if (k >= PACKETS.length) {
-        window.clearInterval(timer)
-        setShownDeal(hand)
-      }
-      setProgress({ hand, k })
-    }, 190)
-    return () => window.clearInterval(timer)
-  }, [dealing, view.hand_no, soundOn])
-  // How many cards each seat holds so far in the deal on screen.
-  const dealtTo = (seat: number) => {
-    if (!dealing) return view.hand_sizes[seat] ?? 0
-    let n = 0
-    for (let k = 0; k < step; k++) {
-      if ((view.dealer + 1 + k) % 4 === seat) n += PACKETS[k] ?? 0
+    const table = tableRef.current
+    if (table) {
+      const d = table.querySelector('[data-deal-deck]')?.getBoundingClientRect()
+      const deck = d ? { x: d.left + d.width / 2, y: d.top + d.height / 2 } : { x: 0, y: 0 }
+      setTargets(
+        [0, 1, 2, 3].map((where) => {
+          const el = table.querySelector(`[data-deal-target="${where}"]`)
+          const r = el?.getBoundingClientRect()
+          return r
+            ? { x: r.left + r.width / 2 - deck.x, y: r.top + r.height / 2 - deck.y }
+            : { x: 0, y: 0 }
+        }),
+      )
     }
-    return n
-  }
-  const packet =
-    dealing && step < PACKETS.length
-      ? { seat: (view.dealer + 1 + step) % 4, cards: PACKETS[step] ?? 0 }
-      : null
+    const start = performance.now()
+    let sounded = -1
+    const timer = window.setInterval(() => {
+      const ms = performance.now() - start
+      const launched = Math.min(DEAL_CARDS, Math.floor(ms / LAUNCH_EVERY) + 1)
+      // A soft flick at the start of each packet.
+      for (let c = sounded + 1; c < launched; c++) {
+        if (soundOn && (c === 0 || order[c] !== order[c - 1])) playSound('move', 'cards')
+        sounded = c
+      }
+      setClock({ hand, ms })
+      if (ms > DEAL_CARDS * LAUNCH_EVERY + FLIGHT_MS) window.clearInterval(timer)
+    }, 40)
+    return () => window.clearInterval(timer)
+    // order follows the dealer, which only changes with a new deal (hand_no).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dealing, view.hand_no, soundOn, narrow])
+  const launched =
+    !dealing || elapsed < 0 ? 0 : Math.min(DEAL_CARDS, Math.floor(elapsed / LAUNCH_EVERY) + 1)
+  const landed =
+    !dealing || elapsed < FLIGHT_MS
+      ? 0
+      : Math.min(DEAL_CARDS, Math.floor((elapsed - FLIGHT_MS) / LAUNCH_EVERY) + 1)
+  // How many cards a seat holds on screen so far.
+  const dealtTo = (seat: number) =>
+    dealing ? order.slice(0, landed).filter((s) => s === seat).length : (view.hand_sizes[seat] ?? 0)
+  const flying = dealing
+    ? Array.from({ length: launched - landed }, (_, i) => landed + i).map((c) => ({
+        c,
+        seat: order[c] ?? 0,
+      }))
+    : []
   const shownHand = dealing ? sortHand(view.hand.slice(0, dealtTo(me)), view.trump) : hand
 
   // The call each player made last in the bazar, for their speech bubble.
@@ -363,7 +387,10 @@ export default function BlotBoard({
       <div className="relative overflow-hidden rounded-3xl border border-gold/25 bg-[radial-gradient(ellipse_at_50%_35%,#3a2418_0%,#24150d_55%,#140b06_100%)] shadow-[inset_0_0_80px_rgb(0_0_0/0.55)]">
         <TableAnnouncement view={view} name={name} levels={levels} describe={describe} />
 
-        <div className="relative mx-auto aspect-[10/16] w-full max-w-[min(30rem,calc((100dvh-9rem)*0.625))] min-[641px]:aspect-[16/10] min-[641px]:max-w-[min(72rem,calc((100dvh-10rem)*1.6))]">
+        <div
+          ref={tableRef}
+          className="relative mx-auto aspect-[10/16] w-full max-w-[min(30rem,calc((100dvh-9rem)*0.625))] min-[641px]:aspect-[16/10] min-[641px]:max-w-[min(72rem,calc((100dvh-10rem)*1.6))]"
+        >
           {/* The oval table: a wood rim round green felt. */}
           <div
             aria-hidden="true"
@@ -379,11 +406,47 @@ export default function BlotBoard({
           {/* The middle of the felt: the deck while dealing, the bazar, the trick, or the deal's result. */}
           <div className="absolute inset-x-[16%] top-[19%] bottom-[34%] flex items-center justify-center min-[641px]:inset-x-[22%] min-[641px]:top-[24%] min-[641px]:bottom-[22%]">
             {dealing ? (
-              <div className="relative" aria-label={t('blot.dealing')} role="status">
-                {[0, 1, 2].map((i) => (
-                  <CardBack key={i} size="sm" className="absolute -top-1 left-0" />
-                ))}
-                <CardBack size="sm" className="relative" />
+              <div
+                className="relative size-16"
+                aria-label={t('blot.dealing')}
+                role="status"
+                data-deal-deck
+              >
+                {/* The deck: a closed stack, lower as the cards leave it. */}
+                {Array.from(
+                  { length: Math.max(1, Math.ceil((DEAL_CARDS - launched) / 4)) },
+                  (_, i) => (
+                    <span
+                      key={i}
+                      className="absolute left-1/2 -translate-x-1/2"
+                      style={{ top: `${-i * 1.5}px`, zIndex: i }}
+                    >
+                      <CardBack size="sm" />
+                    </span>
+                  ),
+                )}
+                {/* Cards in the air, from the deck to the players; each lands where its player sits. */}
+                {flying.map(({ c, seat }) => {
+                  const to = targets[place(seat)] ?? { x: 0, y: 0 }
+                  const spin = (c % 2 === 0 ? 1 : -1) * (300 + (c % 5) * 25)
+                  return (
+                    <span
+                      key={`${view.hand_no}-${c}`}
+                      aria-hidden="true"
+                      className="pointer-events-none absolute top-1/2 left-1/2 z-30 animate-deal-fly"
+                      style={
+                        {
+                          '--tx': `${to.x}px`,
+                          '--ty': `${to.y}px`,
+                          '--spin': `${spin}deg`,
+                          '--land': `${(place(seat) % 2 === 1 ? 90 : 0) + (c % 3) * 4 - 4}deg`,
+                        } as CSSProperties
+                      }
+                    >
+                      <CardBack size="sm" />
+                    </span>
+                  )
+                })}
               </div>
             ) : result ? (
               <HandSummary
@@ -431,34 +494,6 @@ export default function BlotBoard({
             )}
           </div>
 
-          {/* A packet of cards on its way from the deck to a player. */}
-          {packet ? (
-            <span
-              key={step}
-              aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 left-1/2 z-30 -translate-x-1/2 -translate-y-1/2"
-            >
-              {Array.from({ length: packet.cards }, (_, i) => (
-                <span
-                  key={i}
-                  className="absolute animate-deal-fly"
-                  style={
-                    {
-                      '--tx': ['0px', '-42vw', '0px', '42vw'][place(packet.seat)],
-                      '--ty': narrow
-                        ? ['44vh', '-6vh', '-40vh', '-6vh'][place(packet.seat)]
-                        : ['36vh', '-4vh', '-36vh', '-4vh'][place(packet.seat)],
-                      animationDelay: `${i * 40}ms`,
-                      left: `${i * 4}px`,
-                    } as CSSProperties
-                  }
-                >
-                  <CardBack size="sm" />
-                </span>
-              ))}
-            </span>
-          ) : null}
-
           {/* The four players. */}
           <ul aria-label={t('blot.seats')}>
             {[0, 1, 2, 3].map((seat) => {
@@ -470,8 +505,9 @@ export default function BlotBoard({
                 <li
                   key={seat}
                   aria-current={acting ? 'step' : undefined}
-                  aria-label={`${name(seat)}, ${teamName(seat % 2)}${bots[seat] && seat !== me ? `, ${t('room.bot')}` : ''}`}
+                  aria-label={`${name(seat)}, ${teamName(seat % 2)}`}
                   className={`absolute z-20 flex flex-col items-center ${SEAT_POS[where]}`}
+                  data-deal-target={where === 0 ? undefined : where}
                 >
                   <span className="relative">
                     <Avatar
@@ -540,11 +576,6 @@ export default function BlotBoard({
                       </span>
                     ) : null}
                   </span>
-                  {seat !== me && bots[seat] ? (
-                    <span className="mt-1 rounded-full bg-black/60 px-1.5 py-0.5 text-[0.6rem] leading-none font-semibold tracking-wide text-white/80 uppercase">
-                      {t('room.bot')}
-                    </span>
-                  ) : null}
                   {/* Card backs (not for the partner on a phone: the facts column needs that room). */}
                   {seat !== me &&
                   (view.phase === 'playing' || dealing) &&
@@ -697,6 +728,7 @@ export default function BlotBoard({
           <section
             aria-label={t('blot.yourCards')}
             className="absolute inset-x-0 bottom-0 z-20 flex justify-center pb-1"
+            data-deal-target="0"
           >
             <div className="flex items-end">
               {shownHand.map((card, i) => {
@@ -716,7 +748,7 @@ export default function BlotBoard({
                         : view.phase === 'playing' && view.to_act === me
                           ? 'brightness-50'
                           : ''
-                    } ${dealing ? 'motion-safe:animate-card-in' : ''}`}
+                    } ${dealing ? 'motion-safe:animate-card-flip' : ''}`}
                     style={{
                       transform: `translateY(${offset * offset * (narrow ? 2.5 : 3) - (canPlay ? 10 : 0)}px) rotate(${offset * (narrow ? 4 : 3.5)}deg)`,
                     }}
@@ -888,8 +920,24 @@ export default function BlotBoard({
   }
 }
 
-/** Packets of the deal: three, two, three cards to each of the four players in turn. */
-const PACKETS = [3, 3, 3, 3, 2, 2, 2, 2, 3, 3, 3, 3]
+type Point = { x: number; y: number }
+
+/** The deal on screen: 32 cards, one every LAUNCH_EVERY ms, each FLIGHT_MS in the air (within the
+ * server's dealing pause, deal_ms 3400). */
+const DEAL_CARDS = 32
+const LAUNCH_EVERY = 85
+const FLIGHT_MS = 480
+
+/** Which seat each card goes to: three, two, three to each player in turn, starting left of the dealer. */
+function dealOrder(dealer: number): number[] {
+  const seats: number[] = []
+  for (const size of [3, 2, 3]) {
+    for (let i = 1; i <= 4; i++) {
+      for (let k = 0; k < size; k++) seats.push((dealer + i) % 4)
+    }
+  }
+  return seats
+}
 
 const panelButton =
   'min-h-11 rounded-xl border border-white/15 bg-linear-to-b from-[#5a3a28] to-[#3a2418] px-3 text-base font-bold text-white shadow-lg shadow-black/40 transition hover:brightness-110 active:translate-y-px disabled:opacity-50'

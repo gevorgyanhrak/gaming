@@ -23,6 +23,8 @@ Choices where the sources disagree or are silent are marked **(choice)**.
 ## Table and deal
 - 4 players, two partnerships sitting opposite (seats 0+2, 1+3). 32 cards (7–A), 8 each. Dealer rotates each deal;
   the player left of the dealer bids first and leads the first trick.
+- The deal is shown before the bazar: the server keeps the table in a `dealing` phase for `deal_ms` (3.4 s; nobody
+  acts, no turn clock) while every client animates the deal — 3, 2, 3 cards to each player from the dealer's left.
 
 ## Bazar (bidding)
 - A bid is a number 8–24 (× 10 card points the pair promises) with a trump suit or **no-trump**. Each bid is at least 1

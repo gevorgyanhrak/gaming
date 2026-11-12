@@ -19,7 +19,7 @@ use App\Gameplay\Random\RandomSource;
  * to `target` (301). The rules, with their sources and the choices made where sources differ, are in
  * docs/games/blot-rules.md; this class follows that document.
  *
- * Phases: bidding → answer (after Quansh: each player of the contract pair in turn may say Sur — ×4 — or
+ * Phases: dealing (a pause while the table watches the deal, `deal_ms`) → bidding → answer (after Quansh: each player of the contract pair in turn may say Sur — ×4 — or
  * pass) → playing → over (a pause showing the deal's result) → the next deal. A kaput contract stops as
  * soon as the defenders take a trick ("kaput_failed"). Actions:
  * - bidding: bid {value 8–24, suit S|H|D|C|N (no-trump)} (described as a range), kaput {suit}, pass, contra;
@@ -55,6 +55,7 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
             'target' => (int) ($setup->options['target'] ?? 301),
             'last_hand' => null,
             'pause_ms' => (int) ($setup->options['hand_pause_ms'] ?? 6000),
+            'deal_ms' => (int) ($setup->options['deal_ms'] ?? 3400),
             'result' => null,
         ];
 
@@ -71,7 +72,7 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
      */
     public function seatsToAct(array $state): array
     {
-        return $state['result'] === null && $state['to_act'] !== null ? [$state['to_act']] : [];
+        return $state['result'] === null && $state['to_act'] !== null && $state['phase'] !== 'dealing' ? [$state['to_act']] : [];
     }
 
     /**
@@ -241,7 +242,7 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
     public function viewFor(array $state, ?int $seat): array
     {
         $view = $state;
-        unset($view['hands'], $view['pause_ms'], $view['available'], $view['declared_index']);
+        unset($view['hands'], $view['pause_ms'], $view['deal_ms'], $view['available'], $view['declared_index']);
         $view['seat'] = $seat;
         $view['hand'] = $seat === null ? [] : $state['hands'][$seat];
         $view['hand_sizes'] = array_map('count', $state['hands']);
@@ -284,7 +285,12 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
      */
     public function pauseMs(array $state): ?int
     {
-        return $state['result'] === null && $state['phase'] === 'over' ? $state['pause_ms'] : null;
+        return match (true) {
+            $state['result'] !== null => null,
+            $state['phase'] === 'over' => $state['pause_ms'],
+            $state['phase'] === 'dealing' => $state['deal_ms'] ?? 3400,
+            default => null,
+        };
     }
 
     /**
@@ -294,6 +300,10 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
     {
         if ($this->pauseMs($state) === null) {
             throw new IllegalAction('There is no pause to end.');
+        }
+        // The cards are on the table: the bazar opens left of the dealer.
+        if ($state['phase'] === 'dealing') {
+            return new Transition([...$state, 'phase' => 'bidding'], [['type' => 'dealt', 'hand' => $state['hand_no']]]);
         }
         $state = $this->deal($state, $random, nextDealer: true);
 
@@ -354,7 +364,8 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, PausesBetweenRoun
         return [
             ...$state,
             'hand_no' => $state['hand_no'] + 1,
-            'phase' => 'bidding',
+            // The table watches the cards being dealt before the bazar opens: nobody acts, no clock runs.
+            'phase' => 'dealing',
             'hands' => array_map(fn (int $i) => array_slice($deck, $i * 8, 8), range(0, 3)),
             'bids' => [],
             'contract' => null,

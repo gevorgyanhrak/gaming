@@ -9,7 +9,8 @@ use App\Models\Game;
 use Illuminate\Database\Seeder;
 
 /**
- * Sample bot opponents. Names are examples; administrators rename, add or disable bots.
+ * Sample bot opponents, with Armenian names: at the table they look like any other player. Administrators
+ * rename, add or disable bots.
  * Idempotent and non-destructive.
  */
 class BotSeeder extends Seeder
@@ -17,21 +18,21 @@ class BotSeeder extends Seeder
     /** @var array<string, BotDifficulty> */
     /** Five per difficulty: enough for a full six-seat table without two bots sharing a name. */
     private const BOTS = [
-        'Alex' => BotDifficulty::Easy,
-        'David' => BotDifficulty::Easy,
-        'Anna' => BotDifficulty::Easy,
+        'Armen' => BotDifficulty::Easy,
+        'Davit' => BotDifficulty::Easy,
+        'Ani' => BotDifficulty::Easy,
         'Mariam' => BotDifficulty::Easy,
-        'Igor' => BotDifficulty::Easy,
-        'Michael' => BotDifficulty::Medium,
-        'Daniel' => BotDifficulty::Medium,
+        'Hayk' => BotDifficulty::Easy,
+        'Mikayel' => BotDifficulty::Medium,
+        'Narek' => BotDifficulty::Medium,
         'Aram' => BotDifficulty::Medium,
-        'Nina' => BotDifficulty::Medium,
-        'Sergey' => BotDifficulty::Medium,
-        'Robert' => BotDifficulty::Hard,
+        'Lilit' => BotDifficulty::Medium,
+        'Tigran' => BotDifficulty::Medium,
+        'Vardan' => BotDifficulty::Hard,
         'Levon' => BotDifficulty::Hard,
-        'Elena' => BotDifficulty::Hard,
+        'Anahit' => BotDifficulty::Hard,
         'Gor' => BotDifficulty::Hard,
-        'Viktor' => BotDifficulty::Hard,
+        'Sevak' => BotDifficulty::Hard,
     ];
 
     public function run(): void

@@ -122,15 +122,15 @@ it('seeds modes, bots and draft pages without overwriting admin changes', functi
     $this->seed([GameSeeder::class, GameModeSeeder::class, BotSeeder::class, ContentPageSeeder::class]);
 
     expect(GameMode::query()->count())->toBe(13)  // nardi long and short, chess blitz and rapid, checkers, durak, poker, blackjack, blot, domino, ludo, pool, rummy
-        ->and(BotProfile::query()->pluck('name')->sort()->values()->all())->toBe(['Alex', 'Anna', 'Aram', 'Daniel', 'David', 'Elena', 'Gor', 'Igor', 'Levon', 'Mariam', 'Michael', 'Nina', 'Robert', 'Sergey', 'Viktor'])
+        ->and(BotProfile::query()->pluck('name')->sort()->values()->all())->toBe(['Anahit', 'Ani', 'Aram', 'Armen', 'Davit', 'Gor', 'Hayk', 'Levon', 'Lilit', 'Mariam', 'Mikayel', 'Narek', 'Sevak', 'Tigran', 'Vardan'])
         ->and(BotProfile::query()->where('name', 'Levon')->sole()->gameProfiles()->count())->toBe(11);
 
-    BotProfile::query()->where('name', 'Alex')->update(['is_enabled' => false]);
+    BotProfile::query()->where('name', 'Armen')->update(['is_enabled' => false]);
     $this->seed([GameModeSeeder::class, BotSeeder::class, ContentPageSeeder::class]);
 
     expect(GameMode::query()->count())->toBe(13)  // nardi long and short, chess blitz and rapid, checkers, durak, poker, blackjack, blot, domino, ludo, pool, rummy
         ->and(BotProfile::query()->count())->toBe(15)
-        ->and(BotProfile::query()->where('name', 'Alex')->sole()->is_enabled)->toBeFalse();
+        ->and(BotProfile::query()->where('name', 'Armen')->sole()->is_enabled)->toBeFalse();
 });
 
 it('teaches the sample bots a game added after them, and keeps admins\' removals', function () {
@@ -146,4 +146,15 @@ it('teaches the sample bots a game added after them, and keeps admins\' removals
 
     expect(BotGameProfile::query()->where('game_id', $blackjack->id)->count())->toBe(15)
         ->and($levon->gameProfiles()->where('game_id', $poker->id)->exists())->toBeFalse();
+});
+
+it('gives the seeded bots Armenian names, keeping names admins chose', function () {
+    BotProfile::factory()->create(['name' => 'Alex']);
+    BotProfile::factory()->create(['name' => 'Sergey']);
+    BotProfile::factory()->create(['name' => 'Tigran']);    // an admin already took the name Sergey would get
+    BotProfile::factory()->create(['name' => 'Mr. Smith']);
+
+    (require database_path('migrations/2026_11_12_100000_armenian_bot_names.php'))->up();
+
+    expect(BotProfile::query()->orderBy('id')->pluck('name')->all())->toBe(['Armen', 'Sergey', 'Tigran', 'Mr. Smith']);
 });
