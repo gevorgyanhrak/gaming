@@ -5,6 +5,7 @@ use App\Gameplay\Engine\Action;
 use App\Gameplay\Engine\GameSetup;
 use App\Games\Blot\Bot\BlotBot;
 use App\Games\Blot\Bot\CardMemory;
+use App\Games\Blot\Bot\ClassicBlotBot;
 use App\Games\Blot\Bot\DealSampler;
 use App\Games\Blot\Bot\Simulator;
 use App\Games\Blot\Engine\BlotCards;
@@ -234,6 +235,41 @@ it('10 · knows the top trumps are gone: the ace is master now and nobody holds 
         $dealt = array_merge(...(new DealSampler)->deal($memory, $view, new SeededRandom($seed)));
         expect($dealt)->not->toContain('JH')->not->toContain('9H');
     }
+});
+
+it('16 · deals only what fits everything known, in every position of real deals (Hall\'s condition, no relaxing)', function () {
+    $engine = new BlotEngine;
+    $bot = new ClassicBlotBot;
+    $sampler = new DealSampler;
+    $checked = 0;
+    foreach (range(1, 6) as $game) {
+        $random = new SeededRandom($game * 17);
+        $state = $engine->resume($engine->initialState(new GameSetup(4), $random), $random)->state;
+        while ($state['last_hand'] === null) {
+            if ($state['phase'] === 'dealing') {
+                $state = $engine->resume($state, $random)->state;
+
+                continue;
+            }
+            $seat = (int) $state['to_act'];
+            $view = $engine->viewFor($state, $seat);
+            if ($state['phase'] === 'playing') {
+                $memory = new CardMemory($view);
+                foreach (range(1, 4) as $n) {
+                    $hands = $sampler->deal($memory, $view, new SeededRandom($checked * 7 + $n));
+                    foreach (range(0, 3) as $s) {
+                        expect($hands[$s])->toHaveCount((int) $view['hand_sizes'][$s]);
+                        foreach ($hands[$s] as $card) {
+                            expect($memory->mayHold($s, $card))->toBeTrue();
+                        }
+                    }
+                }
+                $checked++;
+            }
+            $state = $engine->apply($state, $seat, $bot->chooseAction($view, $engine->legalActions($state, $seat), BotDifficulty::Hard, $random), $random)->state;
+        }
+    }
+    expect($checked)->toBeGreaterThan(100);
 });
 
 it('11 · weighs combinations by their priority: the opponents\' 50 beats its terz, so only theirs count', function () {

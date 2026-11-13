@@ -15,8 +15,6 @@ final class DealSampler
 {
     private const FIT_TRIES = 12;
 
-    private const DEAL_TRIES = 30;
-
     public function __construct(private readonly BlotBot $bot = new BlotBot) {}
 
     /**
@@ -42,8 +40,11 @@ final class DealSampler
     }
 
     /**
-     * One deal of the unseen cards that respects what is known (constraints first; capacity only if they
-     * can't all be met, which happens only if someone broke the rules of play — they can't here).
+     * One deal of the unseen cards that respects everything known. Each card (most constrained first) goes
+     * to a seat that may hold it, weighted by the room left, but only where the cards still to come can all
+     * be placed afterwards — Hall's condition over the three other seats: for every group of seats, the cards
+     * only that group may hold must fit in its room. So a deal never fails and the constraints are never
+     * dropped (research next candidate 3); only an impossible view (a broken rule) falls back to capacity.
      *
      * @param  array<string, mixed>  $view
      * @return array<int, list<string>>
@@ -52,50 +53,90 @@ final class DealSampler
     {
         $seat = $memory->seat;
         $sizes = $view['hand_sizes'];
-        $base = [];
-        $room = [];
+        $hands = [];
+        $left = [];
         foreach (range(0, 3) as $s) {
-            $base[$s] = $s === $seat ? $memory->hand : $memory->known[$s];
-            $room[$s] = $s === $seat ? 0 : max(0, (int) $sizes[$s] - count($memory->known[$s]));
+            $hands[$s] = $s === $seat ? $memory->hand : $memory->known[$s];
+            $left[$s] = $s === $seat ? 0 : max(0, (int) $sizes[$s] - count($memory->known[$s]));
         }
-        $unseen = $memory->unseen();
+        $others = array_values(array_diff([0, 1, 2, 3], [$seat]));
 
-        for ($attempt = 0; $attempt <= self::DEAL_TRIES; $attempt++) {
-            $strict = $attempt < self::DEAL_TRIES;
-            $cards = $this->shuffle($unseen, $random);
-            // Most constrained cards first.
-            $options = [];
-            foreach ($cards as $card) {
-                $options[$card] = array_values(array_filter([0, 1, 2, 3], fn (int $s) => $s !== $seat && (! $strict || $memory->mayHold($s, $card))));
+        // Which seats may hold each card, as a bit mask over $others; and how many cards share each mask.
+        $cards = $this->shuffle($memory->unseen(), $random);
+        $masks = [];
+        $count = array_fill(0, 8, 0);
+        foreach ($cards as $card) {
+            $mask = 0;
+            foreach ($others as $bit => $s) {
+                $mask |= $memory->mayHold($s, $card) ? 1 << $bit : 0;
             }
-            usort($cards, fn (string $a, string $b) => count($options[$a]) <=> count($options[$b]));
+            $masks[$card] = $mask;
+            $count[$mask]++;
+        }
+        if (! $this->feasible($count, $left, $others)) {
+            $masks = array_fill_keys($cards, 7);   // impossible view: capacity only
+            $count = array_fill(0, 8, 0);
+            $count[7] = count($cards);
+        }
+        usort($cards, fn (string $a, string $b) => substr_count(decbin($masks[$a]), '1') <=> substr_count(decbin($masks[$b]), '1'));
 
-            $hands = $base;
-            $left = $room;
-            $ok = true;
-            foreach ($cards as $card) {
-                $open = array_values(array_filter($options[$card], fn (int $s) => $left[$s] > 0));
-                if ($open === []) {
-                    $ok = false;
+        foreach ($cards as $card) {
+            $count[$masks[$card]]--;
+            $open = [];
+            foreach ($others as $bit => $s) {
+                if (($masks[$card] >> $bit & 1) === 1 && $left[$s] > 0) {
+                    $left[$s]--;
+                    if ($this->feasible($count, $left, $others)) {
+                        $open[] = $s;
+                    }
+                    $left[$s]++;
+                }
+            }
+            if ($open === []) {
+                $open = array_values(array_filter($others, fn (int $s) => $left[$s] > 0));   // can't happen
+            }
+            // Weighted by the room left, so hands fill evenly.
+            $pick = $random->int(1, array_sum(array_map(fn (int $s) => $left[$s], $open)));
+            foreach ($open as $s) {
+                $pick -= $left[$s];
+                if ($pick <= 0) {
+                    $hands[$s][] = $card;
+                    $left[$s]--;
                     break;
                 }
-                // Weighted by the room left, so hands fill evenly.
-                $pick = $random->int(1, array_sum(array_map(fn (int $s) => $left[$s], $open)));
-                foreach ($open as $s) {
-                    $pick -= $left[$s];
-                    if ($pick <= 0) {
-                        $hands[$s][] = $card;
-                        $left[$s]--;
-                        break;
-                    }
-                }
-            }
-            if ($ok) {
-                return $hands;
             }
         }
 
-        return $base;   // unreachable in practice: the last attempt ignores the constraints
+        return $hands;
+    }
+
+    /**
+     * Hall's condition: for every group of the other seats, the cards that only those seats may hold fit in
+     * the room they have left.
+     *
+     * @param  array<int, int>  $count  cards still to place, by mask of the seats that may hold them
+     * @param  array<int, int>  $left
+     * @param  list<int>  $others
+     */
+    private function feasible(array $count, array $left, array $others): bool
+    {
+        for ($group = 1; $group < 8; $group++) {
+            $room = 0;
+            foreach ($others as $bit => $s) {
+                $room += ($group >> $bit & 1) === 1 ? $left[$s] : 0;
+            }
+            $need = 0;
+            for ($mask = 0; $mask < 8; $mask++) {
+                if (($mask & ~$group) === 0) {
+                    $need += $count[$mask];
+                }
+            }
+            if ($need > $room) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

@@ -29,7 +29,8 @@ plays whatever the engine allows. Where the references differ from the game or e
   hold (shown declarations, the other half of an announced blot), and what plays revealed under the rules of play:
   not following suit → none of it; not trumping when it had to → no trumps; not beating a trump when it had to →
   nothing higher (a cap on its trumps).
-- **DealSampler** — deals the unseen cards so every constraint holds (most constrained cards first), then keeps
+- **DealSampler** — deals the unseen cards so every constraint holds (most constrained cards first, each placed only
+  where the rest still fit — Hall's condition over the three hidden hands, so a constraint is never dropped), then keeps
   deals that fit the bazar more often (rejection sampling on how likely each bid, pass and Quansh was with that hand).
 - **Simulator** — plays a sampled deal to its end with the real engine (declarations, blot, kaput stop, scoring,
   match-ending deals), every seat using the quick card rules (`BlotBot::card`), and scores it for a pair.

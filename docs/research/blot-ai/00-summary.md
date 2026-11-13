@@ -29,12 +29,22 @@ write-up), [03 — CFR and OpenSpiel](03-cfr-and-openspiel.md) (Deep-CFR, OpenSp
 **Arena (150 duplicate deals, seed 5000, `--a=pro --b=pro0`):** +2.32 ± 2.93 sai per deal for the adopted techniques —
 positive, not yet significant. Earlier, pro vs the old rule bot: +6.45 sai per deal over 300 duplicate deals.
 
+## Tried next (2026-11-13; 400 duplicate deals each, seeds 7000/8000/9000/10000 × 100, four shards)
+
+| Candidate | Result (sai per deal, 95%) | Kept? |
+|---|---|---|
+| 1. Card-counting playout policy (masters, draw trumps with the master trump, load a partner's trick only when it is a master) | +0.32 ± 2.04, 15% slower; flipped two bazar scenarios towards no-trump | No — removed |
+| 4. Sequential halving at the root (same sample budget, weaker half dropped each round) | +0.28 ± 2.01, ~15% slower | No — removed |
+| 3. Sampler: Hall's condition over the three hidden hands while dealing; the old "drop the constraints after 30 tries" fallback is gone | correctness guarantee; the old fallback was not hit in tested positions; 0.056 vs 0.026 ms per deal (negligible) | Yes |
+
+Reading: card play is saturated at this sample count — better rollouts and smarter sample spending don't move the
+result measurably. The pro bot's lead over the rule bot came mostly from the bazar (contracts made 73% vs 57%), so the
+remaining lever is bidding.
+
 ## Next candidates (not done; ranked)
 
-1. Stronger playout policy inside samples (lead unbeatable cards, load a partner's trick only when safe, cheapest
-   safe win) — measure alone in the arena.
-2. Bid-value correction table learned offline from full-search play-outs (the only measured gain beyond search in
+1. Bid-value correction learned offline: record, in pro-vs-pro self-play, each priced contract's predicted make
+   chance and whether it was made; calibrate the planner with that table (the only measured gain beyond search in
    report 02: +5.5).
-3. Sampler: Hall's-condition check instead of the relaxation after 30 tries; reuse samples between tricks.
-4. Sequential halving at the root to spend samples on the top candidates.
-5. ISMCTS only after the above; tuning weights pro-vs-pro on fresh seeds.
+2. Reuse samples between tricks of a deal (speed, then spend the time on more samples).
+3. ISMCTS only after the above; tuning weights pro-vs-pro on fresh seeds.
