@@ -14,16 +14,17 @@ use Illuminate\Console\Command;
  */
 class BlotArenaCommand extends Command
 {
-    protected $signature = 'blot:arena {deals=100 : duplicate deals (each played twice)} {--seed=1} {--a=pro : pro|pro0|classic} {--b=classic : pro|pro0|classic} {--level=hard : easy|medium|hard}';
+    protected $signature = 'blot:arena {deals=100 : duplicate deals (each played twice)} {--seed=1} {--a=pro : pro|raw|pro0|classic} {--b=classic : pro|raw|pro0|classic} {--record= : append a self-play note per deal to this file (JSON lines)} {--level=hard : easy|medium|hard}';
 
     protected $description = 'Play blot strategies against each other on duplicate deals and report the results';
 
     public function handle(BlotArena $arena): int
     {
-        // pro: the AI as it plays; pro0: without the research techniques (exact endgame, merged cards); classic: the old bot.
+        // pro: the AI as it plays; raw: without what self-play taught (BidCalibration); pro0: without the research techniques (exact endgame, merged cards); classic: the old bot.
         $pick = fn (string $name) => match ($name) {
             'classic' => new ClassicBlotBot,
-            'pro0' => new BlotBot(research: false),
+            'raw' => new BlotBot(calibrated: false),
+            'pro0' => new BlotBot(research: false, calibrated: false),
             default => new BlotBot,
         };
         $deals = (int) $this->argument('deals');
@@ -55,6 +56,9 @@ class BlotArenaCommand extends Command
             },
             BotDifficulty::from((string) $this->option('level')),
             fn (int $done) => $bar->setProgress($done),
+            $this->option('record') ? function (array $note): void {
+                file_put_contents((string) $this->option('record'), json_encode($note)."\n", FILE_APPEND | LOCK_EX);
+            } : null,
         );
         $bar->finish();
         $this->newLine(2);

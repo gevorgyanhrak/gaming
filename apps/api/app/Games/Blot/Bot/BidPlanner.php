@@ -27,11 +27,17 @@ final class BidPlanner
     /** Numbers above the lowest legal one worth pricing. */
     private const SPAN = 14;
 
+    /** The raw chance (share of sampled deals) that the last chosen bid is made: self-play records it. */
+    public float $chance = 0.0;
+
     private readonly DealSampler $sampler;
 
     private readonly Simulator $simulator;
 
-    public function __construct(BlotBot $bot = new BlotBot)
+    /**
+     * @param  BidCalibration|null  $calibration  what self-play taught about its own chances (null: raw estimates)
+     */
+    public function __construct(BlotBot $bot = new BlotBot, private readonly ?BidCalibration $calibration = null)
     {
         $this->sampler = new DealSampler($bot);
         $this->simulator = new Simulator($bot);
@@ -45,6 +51,7 @@ final class BidPlanner
     public function choose(array $view, array $legal, array $actions, int $samples, RandomSource $random): Action
     {
         $plan = $this->plan($view, $legal, $actions, $samples, $random);
+        $this->chance = $plan['chance'];
 
         return $plan['best'] !== null && $plan['value'] >= $plan['pass'] + self::MARGIN ? $plan['best'] : $legal['pass'];
     }
@@ -55,7 +62,7 @@ final class BidPlanner
      * @param  array<string, mixed>  $view
      * @param  array<string, Action>  $legal
      * @param  list<Action>  $actions
-     * @return array{best: Action|null, value: float, pass: float, options: array<string, float>}
+     * @return array{best: Action|null, value: float, pass: float, chance: float, options: array<string, float>}
      */
     public function plan(array $view, array $legal, array $actions, int $samples, RandomSource $random): array
     {
@@ -83,6 +90,7 @@ final class BidPlanner
         $options = [];
         $best = null;
         $bestValue = -INF;
+        $bestChance = 0.0;
         foreach ($suits as $suit) {
             // One play-out per deal with this trump; then every price of it from what the pair took.
             $outcomes = [];
@@ -109,21 +117,32 @@ final class BidPlanner
                 }
             }
             foreach ($prices as [$action, $contract]) {
-                $total = 0.0;
+                $made = [];
+                $failed = [];
+                $ifFailed = 0.0;
                 foreach ($outcomes as $o) {
                     $stopped = $contract['kaput'] && $o['tricks'][$team] < 8;
-                    [$scored, , , $noTricks] = BlotEngine::score($contract, $o['points'], $o['tricks'], $o['decl'], $o['belote'], $stopped);
-                    $total += $scored[$team] - $scored[1 - $team] + ($noTricks ? -Simulator::MATCH : 0);
+                    [$scored, $ok, , $noTricks, $bid, , $declSai] = BlotEngine::score($contract, $o['points'], $o['tricks'], $o['decl'], $o['belote'], $stopped);
+                    $result = $scored[$team] - $scored[1 - $team] + ($noTricks ? -Simulator::MATCH : 0);
+                    $ok ? $made[] = $result : $failed[] = $result;
+                    // The same deal had the contract failed: the defenders take the bid, 16 and every declaration.
+                    $ifFailed += -($bid + 16 + $declSai[0] + $declSai[1]) + intdiv((int) $o['belote'][$team], 10) - intdiv((int) $o['belote'][1 - $team], 10);
                 }
-                $value = $total / $samples;
+                $chance = count($made) / max(1, count($outcomes));
+                $value = (array_sum($made) + array_sum($failed)) / $samples;
+                if ($this->calibration !== null && ! $contract['kaput'] && $made !== []) {
+                    // What self-play says this chance really is: move that much weight between making and failing.
+                    $failedMean = $failed !== [] ? array_sum($failed) / count($failed) : $ifFailed / count($outcomes);
+                    $value += ($this->calibration->chance($chance) - $chance) * (array_sum($made) / count($made) - $failedMean);
+                }
                 $options[$action->type.':'.$suit.':'.($action->payload['value'] ?? 'K')] = $value;
                 if ($value > $bestValue) {
-                    [$best, $bestValue] = [$action, $value];
+                    [$best, $bestValue, $bestChance] = [$action, $value, $chance];
                 }
             }
         }
 
-        return ['best' => $best, 'value' => $best === null ? -INF : $bestValue, 'pass' => $pass, 'options' => $options];
+        return ['best' => $best, 'value' => $best === null ? -INF : $bestValue, 'pass' => $pass, 'chance' => $bestChance, 'options' => $options];
     }
 
     /**

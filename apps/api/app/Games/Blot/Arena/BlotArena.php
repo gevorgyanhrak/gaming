@@ -6,6 +6,7 @@ use App\Enums\BotDifficulty;
 use App\Gameplay\Contracts\BotStrategy;
 use App\Gameplay\Engine\GameSetup;
 use App\Gameplay\Random\RandomSource;
+use App\Games\Blot\Bot\BlotBot;
 use App\Games\Blot\Engine\BlotEngine;
 
 /**
@@ -18,9 +19,11 @@ final class BlotArena
 {
     /**
      * @param  callable(int): RandomSource  $randomFor  a repeatable random source per seed
+     * @param  (callable(array<string, mixed>): void)|null  $record  receives a self-play note per deal: the raw
+     *                                                               chance the final contract's bidder gave it, and whether it was made
      * @return array<string, array<string, float|int|string>> stats per side ('a', 'b')
      */
-    public function run(BotStrategy $a, BotStrategy $b, int $deals, int $seed, callable $randomFor, BotDifficulty $difficulty = BotDifficulty::Hard, ?callable $progress = null): array
+    public function run(BotStrategy $a, BotStrategy $b, int $deals, int $seed, callable $randomFor, BotDifficulty $difficulty = BotDifficulty::Hard, ?callable $progress = null, ?callable $record = null): array
     {
         $engine = new BlotEngine;
         $stats = ['a' => $this->blank(), 'b' => $this->blank()];
@@ -36,7 +39,7 @@ final class BlotArena
                 }
                 $deal = $randomFor(($seed + $d) * 31 + 7);   // the same redeals in both runs
                 $thinking = $randomFor(($seed + $d) * 131 + $aTeam);
-                $this->play($engine, $start, $strategies, $aTeam, $deal, $thinking, $difficulty, $stats);
+                $this->play($engine, $start, $strategies, $aTeam, $deal, $thinking, $difficulty, $stats, $record);
             }
             // A's sai over the deal played both ways: one paired result.
             $pairs[] = $stats['a']['sai'] - $before;
@@ -64,8 +67,9 @@ final class BlotArena
      * @param  array<int, BotStrategy>  $strategies
      * @param  array<string, array<string, float|int>>  $stats
      */
-    private function play(BlotEngine $engine, array $state, array $strategies, int $aTeam, RandomSource $deal, RandomSource $thinking, BotDifficulty $difficulty, array &$stats): void
+    private function play(BlotEngine $engine, array $state, array $strategies, int $aTeam, RandomSource $deal, RandomSource $thinking, BotDifficulty $difficulty, array &$stats, ?callable $record): void
     {
+        $note = null;
         $side = fn (int $team) => $team === $aTeam ? 'a' : 'b';
         $steps = 0;
         while ($state['last_hand'] === null && $steps++ < 400) {
@@ -80,6 +84,11 @@ final class BlotArena
             $who = $side($seat % 2);
             $stats[$who]['ms'] += (microtime(true) - $t) * 1000;
             $stats[$who]['decisions']++;
+            if ($action->type === 'bid' || $action->type === 'kaput') {
+                // The last bid is the contract: keep what its bidder thought of it.
+                $chance = $strategies[$seat] instanceof BlotBot ? $strategies[$seat]->bidChance : null;
+                $note = $chance === null ? null : ['chance' => round($chance, 4), 'kaput' => $action->type === 'kaput', 'no_trump' => ($action->payload['suit'] ?? null) === 'N', 'value' => $action->payload['value'] ?? null];
+            }
             if ($action->type === 'contra') {
                 $stats[$who]['quansh']++;
             } elseif ($action->type === 'recontra') {
@@ -97,6 +106,9 @@ final class BlotArena
         foreach ([0, 1] as $team) {
             $stats[$side($team)]['deals']++;
             $stats[$side($team)]['sai'] += $last['scored'][$team] - $last['scored'][1 - $team];
+        }
+        if ($record !== null && $note !== null) {
+            $record([...$note, 'made' => (bool) $last['made'], 'doubled' => (int) $contract['doubled']]);
         }
         $stats[$bidders]['contracts']++;
         $stats[$bidders]['made'] += $last['made'] ? 1 : 0;

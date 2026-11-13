@@ -27,8 +27,12 @@ final class BlotBot implements ActsOutOfTurn, BotStrategy, PacesThinking
     /**
      * @param  bool  $research  the techniques adopted from docs/research/blot-ai (exact endgame, merged
      *                          candidates); off only to measure them in the arena
+     * @param  bool  $calibrated  bid with what self-play taught (BidCalibration); off for self-play itself
      */
-    public function __construct(private readonly bool $research = true) {}
+    public function __construct(private readonly bool $research = true, private readonly bool $calibrated = true) {}
+
+    /** The raw chance its last bid is made (null after any other action): what self-play records. */
+    public ?float $bidChance = null;
 
     /**
      * @param  array<string, mixed>  $view
@@ -38,6 +42,7 @@ final class BlotBot implements ActsOutOfTurn, BotStrategy, PacesThinking
         if ($difficulty === BotDifficulty::Easy) {
             return (new ClassicBlotBot($this))->chooseAction($view, $legalActions, $difficulty, $random);
         }
+        $this->bidChance = null;
         $legal = [];
         foreach ($legalActions as $action) {
             $legal[$action->type] = $action;
@@ -50,7 +55,11 @@ final class BlotBot implements ActsOutOfTurn, BotStrategy, PacesThinking
                 return $legal['contra'];
             }
 
-            return (new BidPlanner($this))->choose($view, $legal, $legalActions, $bids, $random);
+            $planner = new BidPlanner($this, $this->calibrated ? BidCalibration::load() : null);
+            $action = $planner->choose($view, $legal, $legalActions, $bids, $random);
+            $this->bidChance = $action->type === 'bid' || $action->type === 'kaput' ? $planner->chance : null;
+
+            return $action;
         }
         if ($view['phase'] === 'answer') {
             return (new QuanshAdvisor($this))->shouldSur($view, $sur, $random) ? $legal['recontra'] : $legal['pass'];

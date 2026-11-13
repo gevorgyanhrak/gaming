@@ -41,10 +41,30 @@ Reading: card play is saturated at this sample count — better rollouts and sma
 result measurably. The pro bot's lead over the rule bot came mostly from the bazar (contracts made 73% vs 57%), so the
 remaining lever is bidding.
 
+## Self-play learning of the bazar (2026-11-13)
+
+600 duplicate deals of the AI against itself (seeds 20000–23000 × 150) gave 1,200 notes: the chance the look-ahead
+gave each final contract and whether it was made. What it taught (`blot:calibrate`):
+
+| AI's chance | contracts | it said | really made |
+|---|---|---|---|
+| 0–20% | 35 | 10% | 26% |
+| 20–40% | 161 | 32% | 27% |
+| 40–60% | 360 | 50% | 52% |
+| 60–70% | 140 | 65% | 59% |
+| 70–80% | 160 | 74% | 66% |
+| 80–90% | 100 | 85% | 75% |
+| 90–100% | 244 | 97% | 95% |
+
+So the look-ahead is about right in the middle and 6–10 points too optimistic about solid-looking contracts.
+Bidding with the learned chances against the raw ones (400 fresh duplicate deals, seeds 30000–33000):
+**−0.28 ± 1.90 sai per deal** — no gain (contracts made 60% either way). The table is not shipped; the tools stay
+(`blot:arena --record`, `blot:calibrate`, `BidCalibration`, read only when `Bot/bid-calibration.json` exists).
+Likely why: a uniform correction also shifts what passing and the opponents' bids are worth, which it doesn't model.
+
 ## Next candidates (not done; ranked)
 
-1. Bid-value correction learned offline: record, in pro-vs-pro self-play, each priced contract's predicted make
-   chance and whether it was made; calibrate the planner with that table (the only measured gain beyond search in
-   report 02: +5.5).
+1. Learn the whole bid choice, not one probability: per hand features (trumps, top trumps, aces, declarations,
+   seat) → realised sai of each bid, from self-play, and compare with the look-ahead's price.
 2. Reuse samples between tricks of a deal (speed, then spend the time on more samples).
 3. ISMCTS only after the above; tuning weights pro-vs-pro on fresh seeds.

@@ -132,6 +132,7 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   `Avatar` takes `level`/`frame`. The level-up popup goes before the daily bonus (which waits on `useLevelUpOpen`) and
   never over a game (`features/play/gameInProgress`). Live checks that reload pages fast hit `throttle:account`
   (60/min per user; `/me` 429 leaves the app on skeletons): pace them.
+- Blot AI tuning: change one thing, measure with `blot:arena` (duplicate deals, paired 95% CI; run shards in parallel, ~10 s/deal) and keep it only if it wins (results in `docs/research/blot-ai/00-summary.md`). Bid learning: `blot:arena --a=raw --b=raw --record=storage/app/private/….jsonl` → `blot:calibrate files…` writes `Bot/bid-calibration.json` (`BidCalibration`, read by `BidPlanner`).
 - Nardi variants (TASK-046): one game `nardi`, two modes — `long` (Long nardi, listed first) and `classic`
   (Short nardi = backgammon: bar, hitting). The mode's `options.variant` goes into the state; states without
   it are Short. `NardiEngine::rules($state)` picks `NardiRules` (Short, uses `static::`) or `LongNardiRules`
@@ -180,6 +181,7 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   maintenance + translatable message, end games under way = aborted + refunds, archive = `archived_at`, purge = the
   game's rooms/moves/seats/stats/modes/AI profiles; audited); `Game::status()`, `visible()` excludes archived;
   `PlayRules::ensureCanStart` refuses maintenance; `GameResource` has `maintenance`/`maintenance_message`.
+- Bots: `BotSeeder::NAMES` seeds 100 bots (Armenian names/handles, level from `BotSeeder::level(name)`, stable); every bot plays every game at Hard — AI is only seated at the game's highest difficulty, so a bot at Easy/Medium never plays.
 - Bots: `BotSelector::pickMany` never seats the same bot twice while the game has enough bots (borrows
   other levels; difficulty is per seat); admin Bots list warns about shortages. A chess-clock flag-fall
   is a `loss`; per-turn timer timeouts and leaving are `abandoned` ("Timed out").

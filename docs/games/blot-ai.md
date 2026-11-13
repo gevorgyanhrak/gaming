@@ -46,6 +46,15 @@ plays whatever the engine allows. Where the references differ from the game or e
 Levels: Hard (what AI plays at) samples the most (bazar 24, Sur 48, cards 40 deals); Medium fewer; Easy is the
 former rule-based bot (`ClassicBlotBot`), also the arena baseline.
 
+## Learning from self-play
+
+The look-ahead's chance that a contract is made (share of sampled deals) is biased: its simulated players are
+simpler than the real ones. Self-play measures that bias: `blot:arena N --a=raw --b=raw --record=file` notes, for
+every deal, the chance the final contract's bidder gave it and whether it was made; `blot:calibrate files…` turns
+the notes into ten bands (`Bot/bid-calibration.json`, `BidCalibration`, each band pulled towards its raw chance by
+10 deals' worth of trust). `BidPlanner` then prices each number bid with the learned chance in place of the raw one
+(kaput keeps its own rule). No table file = raw chances. Kept only if the arena shows the calibrated AI winning.
+
 ## Measuring it
 
 `docker compose exec api php artisan blot:arena 300 --seed=1000` plays duplicate deals (each deal twice, the sides
