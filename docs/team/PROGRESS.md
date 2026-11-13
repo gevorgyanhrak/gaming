@@ -18,7 +18,8 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 - [x] Game-over panel (trophy, Fishkas won, +XP, New game / Exit) for every game — this commit (`ResultTrophy`, room `my_rewards`).
 - [x] Blot home with modes (win / bet / target per mode) — this commit (modes Quick 101 / Standard 151 / Bazar 301, trait `modeCards`).
 - [x] Blot AI research (3 agents, docs/research/blot-ai) and adopted techniques — e0fc1fe.
-- [x] Blot AI learning round 2 (owner: "continue learning"): card-counting playouts and sequential halving measured, no gain (removed); Hall's-condition sampler kept — this commit. Next: bid calibration from self-play (docs/research/blot-ai/00-summary.md).
+- [x] Blot AI learning round 2 (owner: "continue learning"): card-counting playouts and sequential halving measured, no gain (removed); Hall's-condition sampler kept — this commit. Self-play bid calibration learned from 1,200 contracts, measured −0.28 ± 1.90 (not shipped; tools kept).
+- [x] 100 bots (owner): Armenian names and handles, varied levels, all play at the strongest level — this commit.
 - [x] Next-gift timer + lucky wheel (free Fishkas) — this commit (`Platform/Fishka/FreeGifts`, /me/gifts). No VIP, shop or buying (owner).
 
 **AI platform-wide (owner, 2026-11-12)** — "Play against AI" everywhere, AI always at the highest level, no difficulty

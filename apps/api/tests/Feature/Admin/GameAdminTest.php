@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\BotDifficulty;
 use App\Filament\Resources\BotProfiles\Pages\CreateBotProfile;
 use App\Filament\Resources\GameCategories\GameCategoryResource;
 use App\Filament\Resources\GameCategories\Pages\CreateGameCategory;
@@ -122,14 +123,16 @@ it('seeds modes, bots and draft pages without overwriting admin changes', functi
     $this->seed([GameSeeder::class, GameModeSeeder::class, BotSeeder::class, ContentPageSeeder::class]);
 
     expect(GameMode::query()->count())->toBe(15)  // nardi long and short, chess blitz and rapid, checkers, durak, poker, blackjack, blot quick, standard and bazar, domino, ludo, pool, rummy
-        ->and(BotProfile::query()->pluck('name')->sort()->values()->all())->toBe(['Anahit', 'Ani', 'Aram', 'Armen', 'Davit', 'Gor', 'Hayk', 'Levon', 'Lilit', 'Mariam', 'Mikayel', 'Narek', 'Sevak', 'Tigran', 'Vardan'])
-        ->and(BotProfile::query()->where('name', 'Levon')->sole()->gameProfiles()->count())->toBe(11);
+        ->and(BotProfile::query()->count())->toBe(100)
+        ->and(BotProfile::query()->pluck('name')->all())->toContain('Armen', 'Levon', 'Sevak', 'Davo91', 'Lusine')
+        ->and(BotProfile::query()->where('name', 'Levon')->sole()->gameProfiles()->count())->toBe(11)
+        ->and(BotGameProfile::query()->where('difficulty', '!=', BotDifficulty::Hard)->exists())->toBeFalse();
 
     BotProfile::query()->where('name', 'Armen')->update(['is_enabled' => false]);
     $this->seed([GameModeSeeder::class, BotSeeder::class, ContentPageSeeder::class]);
 
     expect(GameMode::query()->count())->toBe(15)  // nardi long and short, chess blitz and rapid, checkers, durak, poker, blackjack, blot quick, standard and bazar, domino, ludo, pool, rummy
-        ->and(BotProfile::query()->count())->toBe(15)
+        ->and(BotProfile::query()->count())->toBe(100)
         ->and(BotProfile::query()->where('name', 'Armen')->sole()->is_enabled)->toBeFalse();
 });
 
@@ -144,8 +147,18 @@ it('teaches the sample bots a game added after them, and keeps admins\' removals
 
     $this->seed(BotSeeder::class);
 
-    expect(BotGameProfile::query()->where('game_id', $blackjack->id)->count())->toBe(15)
+    expect(BotGameProfile::query()->where('game_id', $blackjack->id)->count())->toBe(100)
         ->and($levon->gameProfiles()->where('game_id', $poker->id)->exists())->toBeFalse();
+});
+
+it('puts every bot at the strongest level, the only one AI is seated at', function () {
+    $game = Game::factory()->create();
+    $easy = BotProfile::factory()->create();
+    $easy->gameProfiles()->create(['game_id' => $game->id, 'difficulty' => BotDifficulty::Easy]);
+
+    (require database_path('migrations/2026_11_13_100000_every_bot_plays_at_the_strongest_level.php'))->up();
+
+    expect($easy->gameProfiles()->sole()->difficulty)->toBe(BotDifficulty::Hard);
 });
 
 it('gives the seeded bots Armenian names, keeping names admins chose', function () {
