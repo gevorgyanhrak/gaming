@@ -16,6 +16,7 @@ import { Container } from '@/shared/ui/Container'
 import { BackIcon, HistoryIcon, TargetIcon, TrophyIcon } from '@/shared/ui/icons'
 import { Skeleton } from '@/shared/ui/Skeleton'
 import { EmptyState, QueryErrorState } from '@/shared/ui/States'
+import { GameBackdrop } from '@/features/play/components/GameBackdrop'
 
 export function GamePage() {
   const { t } = useTranslation()
@@ -24,6 +25,8 @@ export function GamePage() {
 
   return (
     <Container className="py-6 sm:py-8">
+      {/* The game's own room behind its page (known from the address before the game loads). */}
+      <GameBackdrop slug={slug} />
       <Link
         to="/games"
         className="inline-flex items-center gap-1.5 text-sm font-medium text-accent-text hover:underline"

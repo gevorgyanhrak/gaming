@@ -433,7 +433,7 @@ export default function BlotBoard({
 
   return (
     <div className="space-y-3 text-white">
-      <div className="relative overflow-hidden rounded-3xl border border-gold/25 bg-[radial-gradient(ellipse_at_50%_35%,#3a2418_0%,#24150d_55%,#140b06_100%)] shadow-[inset_0_0_80px_rgb(0_0_0/0.55)]">
+      <div className="relative overflow-hidden rounded-3xl border border-gold/25 bg-[radial-gradient(ellipse_at_50%_35%,rgb(58_36_24/0.55)_0%,rgb(36_21_13/0.7)_55%,rgb(20_11_6/0.85)_100%)] shadow-[inset_0_0_80px_rgb(0_0_0/0.55)] backdrop-blur-[2px]">
         <TableAnnouncement view={view} name={name} levels={levels} describe={describe} />
 
         <div

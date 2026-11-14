@@ -151,6 +151,7 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   green PLAY (matchmaking) + `ModeCard`s (bot, friend, invite code) rising in with `animate-rise`.
   Games without uploaded art use the SVG scenes in `GameArt.tsx`; few short choices are
   `Segmented` radio pills. Never imply real money, VIP or a shop: play-for-fun only.
+- Game themes: `games/themes.ts` (`themeOf(slug)`: image from `assets/themes/<slug>.svg` — our own SVG scenes —, position, size, overlay, accent); `GameBackdrop` paints it as a fixed `-z-10` layer on `GamePage` and `RoomPage`. Quote `url(...)` (`JSON.stringify`): Vite inlines files under 4 KB as data URLs.
 - Game traits (`games/registry.ts` `traitsOf(slug)`: `seatsOnBoard`, `material`, `capture`, `roundWon`
   (poker hand won → `handWin` sound), `nextRound` (header caption while nobody acts in a pause), `mars` (a winner's score of 2 is a double win — Nardi only; other games score points)) let the room
   page and sounds avoid slug checks. Durak/Poker (`seatsOnBoard`) hide `PlayerList` while active and show

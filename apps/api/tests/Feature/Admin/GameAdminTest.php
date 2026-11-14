@@ -171,3 +171,19 @@ it('gives the seeded bots Armenian names, keeping names admins chose', function 
 
     expect(BotProfile::query()->orderBy('id')->pluck('name')->all())->toBe(['Armen', 'Sergey', 'Tigran', 'Mr. Smith']);
 });
+
+it('brings Blot\'s seeded rules up to date, keeping rules an administrator rewrote', function () {
+    $migration = require database_path('migrations/2026_11_14_110000_update_blot_rules.php');
+    $old = (new ReflectionClassConstant($migration, 'OLD'))->getValue();
+    $blot = Game::factory()->create(['slug' => 'blot', 'rules' => ['en' => $old]]);
+
+    $migration->up();
+    $blot->refresh();
+    expect($blot->getTranslation('rules', 'en'))->toContain('the bazar comes back to the bidder')
+        ->and($blot->getTranslation('rules', 'hy'))->toContain('Լավ ա')
+        ->and($blot->getTranslation('rules', 'ru'))->not->toBe('');
+
+    $blot->setTranslation('rules', 'en', 'House rules.')->save();
+    $migration->up();
+    expect($blot->refresh()->getTranslation('rules', 'en'))->toBe('House rules.');
+});

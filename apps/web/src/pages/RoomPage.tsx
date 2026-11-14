@@ -9,6 +9,7 @@ import { resultLabel } from '@/features/play/labels'
 import { GameOverPanel } from '@/features/play/components/GameOverPanel'
 import { RoomReactions } from '@/features/reactions/components/RoomReactions'
 import { GroupBadge } from '@/features/play/components/GroupBadge'
+import { GameBackdrop } from '@/features/play/components/GameBackdrop'
 import { TableBar } from '@/features/play/components/TableBar'
 import { PlayerList } from '@/features/play/components/PlayerList'
 import { WaitingTable } from '@/features/play/components/WaitingTable'
@@ -159,6 +160,7 @@ export function RoomPage() {
 
   return (
     <>
+      <GameBackdrop slug={data.game.slug} />
       <TableBar room={data} status={wide ? turnStatus : null} />
       <Container className="space-y-4 py-4 sm:space-y-5 sm:py-6">
         <title>{tabTitle}</title>
