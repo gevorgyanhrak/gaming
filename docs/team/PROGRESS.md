@@ -10,6 +10,18 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
+**Owner queue (2026-11-14, in this order):**
+- [x] Bidding: the bazar comes back to the bidder, play starts on their OK — dd29ada.
+- [x] Cards redesign (CardFace, Fomin CC0 courts), Blot hand/table/avatar badges — 95a8d7e; matchmaking table — 653755a.
+- [x] Per-game themes (games/themes.ts + GameBackdrop) and Blot rules text — 91958fb.
+- [ ] Compact lobby/player info for all games (owner screenshot: stats row, mode cards, group cards too big) +
+      online player count per game, configurable (hidden for poker and blackjack).
+- [ ] Card design from the owner's reference — waiting for his screenshot (the Google link doesn't open).
+- [ ] Casino platform, in stages (owner: stages; AI marked everywhere → new ADR replacing ADR 0021's "never
+      marked"; level tiers as named ranks, no "VIP" word; Fishka stays play money): 1) homepage + Blackjack/Poker/Blot
+      showcase, 2) Big Wins live (real players only, real-time) + >100,000 celebration, 3) leaderboards,
+      4) achievements, 5) rank tiers, 6) casino sounds with on/off.
+
 **Owner queue (2026-11-12, in this order; owner tests himself — implement only, keep lint/types/CI green):**
 - [x] Professional Blot AI (look-ahead, card memory, bazar/Quansh/Sur, thinking time, arena) — this commit.
 - [x] Quansh at any time during the bazar (out of turn), AI too — this commit (`HasOutOfTurnActions`, `ActsOutOfTurn`).
