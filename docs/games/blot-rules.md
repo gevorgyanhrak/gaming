@@ -35,8 +35,9 @@ Choices where the sources disagree or are silent are marked **(choice)**.
   turn** (owner, 2026-11-12; all three references place Quansh in the bazar, none during play); it ends the bidding. Then **either player of the
   contract pair** may say **recontra (Սուր)**, in turn: the first of them after the Quansh, and if they pass, their
   partner ("ответить реконтрой может один из игроков пары" — playelephant/gambler rules). Sur ×4 (Boy ×5).
-- The bidding ends after three passes following the last bid (or after contra/recontra is answered). Four passes and
-  no bid: redeal, the deal moves on.
+- After the last bid the other three answer; when all three pass ("OK"), the bazar comes back to the bidder, who may
+  raise their bid (the others answer again) or say "OK" — play starts only on that (owner, 2026-11-14). A contra ends
+  the bidding at once (then recontra or pass). Four passes and no bid: redeal, the deal moves on.
 
 ## Cards
 | | J | 9 | A | 10 | K | Q | 8 | 7 |

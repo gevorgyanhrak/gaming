@@ -66,6 +66,32 @@ const renderBoard = (v: BlotView, legal: object[], onAction = vi.fn()) =>
   )
 
 describe('BlotBoard', () => {
+  it('gives the bazar back to the bidder after the others pass: raise, or OK to start', async () => {
+    const onAction = vi.fn()
+    renderBoard(
+      view({
+        phase: 'bidding',
+        to_act: 0,
+        contract: contract({ seat: 0, team: 0, value: 8, suit: 'H' }),
+        bids: [
+          { seat: 0, type: 'bid', value: 8, suit: 'H' },
+          { seat: 1, type: 'pass' },
+          { seat: 2, type: 'pass' },
+          { seat: 3, type: 'pass' },
+        ],
+        trick: [],
+      }),
+      [{ type: 'bid', min: 9, max: 80 }, { type: 'pass' }],
+      onAction,
+    )
+
+    expect(
+      screen.getByText('Everyone accepted your bid: raise it, or press OK to start.'),
+    ).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Pass' }))
+    expect(onAction).toHaveBeenCalledWith({ type: 'pass' })
+  })
+
   it('plays only the cards the server allows and shows the match score in sai', async () => {
     const onAction = vi.fn()
     renderBoard(

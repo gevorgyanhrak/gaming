@@ -166,7 +166,7 @@ it('7 · answers a Quansh with Sur only when the contract is safe', function () 
 it('8 · loads its partner\'s sure trick with its ten instead of keeping it', function () {
     // Seat 0 bid hearts; seat 1 (the bot's partner) wins the spade lead with the ace; the bot plays last.
     $state = proAct(proBazar(['8S', 'JH', '9H', 'AH', '7D', '8D', '7C', '8C'], [1 => ['AS', 'KD', 'QD', 'JD', 'KC', 'QC', 'JC', '9C'], 2 => ['7S', 'TH', 'KH', 'QH', '8H', '7H', 'AD', 'TD'], 3 => ['TS', 'KS', '9D', 'AC', 'TC', '9S', 'QS', 'JS']]), [
-        ['bid', ['value' => 8, 'suit' => 'H']], ['pass', []], ['pass', []], ['pass', []], '8S', 'AS', '7S',
+        ['bid', ['value' => 8, 'suit' => 'H']], ['pass', []], ['pass', []], ['pass', []], ['pass', []], '8S', 'AS', '7S',
     ]);
 
     expect($state['to_act'])->toBe(3)->and(proChoice($state)->payload['card'])->toBe('TS');
@@ -174,7 +174,7 @@ it('8 · loads its partner\'s sure trick with its ten instead of keeping it', fu
 
 it('14 · keeps its ten when it can\'t win the trick: an opponent\'s ace leads', function () {
     $state = proAct(proBazar(['AS', 'JH', '9H', 'AH', '7D', '8D', '7C', '8C'], [1 => ['TS', '7S', 'QD', 'JD', 'KC', 'QC', 'JC', '9C']]), [
-        ['bid', ['value' => 8, 'suit' => 'H']], ['pass', []], ['pass', []], ['pass', []], 'AS',
+        ['bid', ['value' => 8, 'suit' => 'H']], ['pass', []], ['pass', []], ['pass', []], ['pass', []], 'AS',
     ]);
 
     // A sampled look-ahead: asked with five different random seeds, it keeps the ten nearly every time.
@@ -314,6 +314,17 @@ it('10 · knows the top trumps are gone: the ace is master now and nobody holds 
         $dealt = array_merge(...(new DealSampler)->deal($memory, $view, new SeededRandom($seed)));
         expect($dealt)->not->toContain('JH')->not->toContain('9H');
     }
+});
+
+it('doesn\'t read a bidder\'s "OK" to their own bid as a weak hand', function () {
+    $state = proBazar(['7S', '8S', '7D', '8D', '9C', '7C', '8C', '9S'], [1 => ['JH', '9H', 'AH', 'TH', 'AS', 'AD', 'AC', 'TS']]);
+    $before = proAct($state, [['bid', ['value' => 8, 'suit' => 'C']], ['bid', ['value' => 10, 'suit' => 'H']], ['pass', []], ['pass', []], ['pass', []]]);
+    $after = proAct($before, [['pass', []]]);   // seat 1 says OK: play starts
+    $sampler = new DealSampler;
+    $hands = proFill([1 => ['JH', '9H', 'AH', 'TH', 'AS', 'AD', 'AC', 'TS']]);
+    $view = fn (array $s) => (new BlotEngine)->viewFor($s, 0);
+
+    expect($sampler->likelihood($hands, $view($after), true))->toBe($sampler->likelihood($hands, $view($before), true));
 });
 
 it('16 · deals only what fits everything known, in every position of real deals (Hall\'s condition, no relaxing)', function () {

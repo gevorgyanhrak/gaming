@@ -35,14 +35,14 @@ function blotTypes(array $state, ?int $seat = null): array
     return array_map(fn (Action $a) => $a->type, (new BlotEngine)->legalActions($state, $seat ?? $state['to_act']));
 }
 
-/** Seat 0 bids $value in $suit (N = no-trump; 'kaput' for a kaput bid), then: pass, pass, pass — or contra (seat 1) and an answer (seat 2). */
+/** Seat 0 bids $value in $suit (N = no-trump; 'kaput' for a kaput bid), then: three passes and seat 0's "OK" — or contra (seat 1) and an answer (seat 2). */
 function blotContract(array $hands, string $suit = 'H', int|string $value = 8, int $doubled = 0): array
 {
     $state = blot();
     $state['hands'] = $hands;
     $state = $value === 'kaput' ? blotAct($state, 'kaput', ['suit' => $suit]) : blotAct($state, 'bid', ['value' => $value, 'suit' => $suit]);
     if ($doubled === 0) {
-        return blotAct(blotAct(blotAct($state, 'pass'), 'pass'), 'pass');
+        return blotAct(blotAct(blotAct(blotAct($state, 'pass'), 'pass'), 'pass'), 'pass');
     }
     $state = blotAct($state, 'contra');
     if ($doubled === 2) {
@@ -301,6 +301,57 @@ it('takes only higher bids with a suit or no-trump, from anyone including a part
         ->and(fn () => blotAct($state, 'bid', ['value' => 9, 'suit' => 'H']))->toThrow(IllegalAction::class);
     $state = blotAct(blotAct($state, 'pass'), 'bid', ['value' => 11, 'suit' => 'S']);   // the partner raises
     expect($state['contract'])->toMatchArray(['seat' => 2, 'team' => 0, 'value' => 11]);
+});
+
+it('never starts on the others\' passes alone: the bazar comes back to the bidder, who may raise or say OK', function () {
+    $state = blotAct(blot(), 'bid', ['value' => 8, 'suit' => 'H']);   // seat 0: "Heart 8"
+    $state = blotAct(blotAct(blotAct($state, 'pass'), 'pass'), 'pass');   // seats 1, 2, 3: "OK"
+
+    // Still the bazar, and seat 0's turn, with its controls: a higher bid or OK.
+    expect($state['phase'])->toBe('bidding')
+        ->and($state['to_act'])->toBe(0)
+        ->and(blotTypes($state))->toContain('bid', 'kaput', 'pass')
+        ->and((new BlotEngine)->isLegal($state, 0, new Action('bid', ['value' => 10, 'suit' => 'H'])))->toBeTrue()
+        ->and((new BlotEngine)->isLegal($state, 0, new Action('bid', ['value' => 8, 'suit' => 'S'])))->toBeFalse();   // not lower or equal
+});
+
+it('lets the bidder raise after the others passed; then the others answer again before play', function () {
+    $state = blotAct(blot(), 'bid', ['value' => 8, 'suit' => 'H']);
+    $state = blotAct(blotAct(blotAct($state, 'pass'), 'pass'), 'pass');
+    $state = blotAct($state, 'bid', ['value' => 10, 'suit' => 'H']);   // seat 0 changes its bid
+
+    expect($state['contract'])->toMatchArray(['seat' => 0, 'value' => 10, 'suit' => 'H'])
+        ->and($state['phase'])->toBe('bidding')->and($state['to_act'])->toBe(1);
+
+    $state = blotAct(blotAct(blotAct($state, 'pass'), 'pass'), 'pass');
+    expect($state['phase'])->toBe('bidding')->and($state['to_act'])->toBe(0);
+});
+
+it('starts play only on the bidder\'s own OK', function () {
+    $state = blotAct(blot(), 'bid', ['value' => 8, 'suit' => 'H']);
+    $state = blotAct(blotAct(blotAct(blotAct($state, 'pass'), 'pass'), 'pass'), 'pass');   // the fourth: the bidder's OK
+
+    expect($state['phase'])->toBe('playing')
+        ->and($state['contract'])->toMatchArray(['seat' => 0, 'value' => 8, 'suit' => 'H']);
+});
+
+it('gives the bazar back to whoever bid last, not to its opener', function () {
+    $state = blotAct(blot(), 'bid', ['value' => 8, 'suit' => 'H']);   // seat 0
+    $state = blotAct($state, 'bid', ['value' => 9, 'suit' => 'S']);   // seat 1 outbids
+    $state = blotAct(blotAct(blotAct($state, 'pass'), 'pass'), 'pass');   // seats 2, 3, 0
+
+    expect($state['phase'])->toBe('bidding')->and($state['to_act'])->toBe(1);
+    expect(blotAct($state, 'pass')['phase'])->toBe('playing');
+});
+
+it('has AI players confirm or raise their own bid the same way, and the deal goes on', function () {
+    $engine = new BlotEngine;
+    $state = blotAct(blot(), 'bid', ['value' => 8, 'suit' => 'H']);
+    $state = blotAct(blotAct(blotAct($state, 'pass'), 'pass'), 'pass');
+    $action = (new BlotBot)->chooseAction($engine->viewFor($state, 0), $engine->legalActions($state, 0), BotDifficulty::Hard, new SecureRandom);
+
+    expect($engine->isLegal($state, 0, $action))->toBeTrue()
+        ->and($action->type)->toBeIn(['pass', 'bid', 'kaput']);
 });
 
 it('takes number bids above 24, and a kaput over any number', function () {

@@ -906,7 +906,8 @@
     "pickSuit": "Pick a suit or Boy",
     "kaputFailed": "Kaput failed",
     "highestBid": "Highest bid",
-    "announced": "Announced by {{name}}"
+    "announced": "Announced by {{name}}",
+    "backToYou": "Everyone accepted your bid: raise it, or press OK to start."
   },
   "domino": {
     "you": "You",

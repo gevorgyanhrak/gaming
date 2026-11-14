@@ -170,8 +170,12 @@ final class DealSampler
         $seat = (int) $view['seat'];
         $weight = 1.0;
         $lowest = BlotEngine::MIN_BID;
+        $holder = null;
         foreach ($view['bids'] ?? [] as $bid) {
             $who = (int) $bid['seat'];
+            if ($bid['type'] === 'pass' && $who === $holder) {
+                continue;   // the bidder saying "OK" to their own bid tells nothing about their hand
+            }
             $isBid = $bid['type'] === 'bid' || $bid['type'] === 'kaput';
             $value = $bid['type'] === 'kaput' ? BlotEngine::KAPUT : (int) ($bid['value'] ?? 0);
             if ($who !== $seat && $isBid) {
@@ -188,6 +192,7 @@ final class DealSampler
             }
             if ($isBid) {
                 $lowest = $value + 1;
+                $holder = $who;
             }
         }
 

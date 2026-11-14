@@ -240,7 +240,9 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, HasOutOfTurnActio
 
                     return new Transition($this->deal($state, $random, nextDealer: true), $events);
                 }
-                if ($state['contract'] !== null && $state['passes'] === 3) {
+                // After the other three pass, the bazar comes back to the bidder, who may raise or say "OK" (pass):
+                // play starts only on that fourth pass (owner, 2026-11-14 — never on the others' passes alone).
+                if ($state['contract'] !== null && $state['passes'] === 4) {
                     return new Transition($this->startPlay($state), $events);
                 }
                 break;

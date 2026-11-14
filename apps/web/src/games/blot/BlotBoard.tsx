@@ -867,6 +867,12 @@ export default function BlotBoard({
     const canBid = chosen !== null && (isKaput ? kaputs.length > 0 : !!bidRange)
     return (
       <div className="flex w-full max-w-sm flex-col gap-2 rounded-2xl border border-gold/40 bg-[#2a1a12]/95 p-2.5 shadow-[0_16px_40px_rgb(0_0_0/0.55)] min-[641px]:gap-3 min-[641px]:p-3">
+        {/* Everyone else passed: the bazar is back with the bidder (the server waits for their OK). */}
+        {view.contract?.seat === me ? (
+          <p className="text-center text-sm font-semibold text-gold-light" role="status">
+            {t('blot.backToYou')}
+          </p>
+        ) : null}
         {bidRange || kaputs.length > 0 ? (
           <>
             <div

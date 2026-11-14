@@ -120,9 +120,9 @@ it('plays a whole deal on the server, shows every player the same score, and doe
     [$room, $users] = blotTable();
     $states = app(RoomStates::class);
 
-    // Bid 8 in spades, three passes; then everyone plays their first playable card until the deal is over.
+    // Bid 8 in spades, three passes and the bidder's OK; then everyone plays their first playable card.
     blotMove($room, ['type' => 'bid', 'value' => 8, 'suit' => 'S'])->assertOk();
-    foreach (range(1, 3) as $_) {
+    foreach (range(1, 4) as $_) {
         blotMove($room, ['type' => 'pass'])->assertOk();
     }
     for ($i = 0; $i < 32; $i++) {
