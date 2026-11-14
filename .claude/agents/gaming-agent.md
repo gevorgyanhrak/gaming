@@ -114,7 +114,7 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   (`boards[slug]`, lazy). A board only renders `state.view` and calls `onAction` with one of
   `state.legal_actions` — never rules in the UI. Boards live in `games/<slug>/<Game>Board.tsx` (default
   export) with i18n keys under `<slug>.*`; Nardi's board (pick a source, then one of its legal targets;
-  board turned for seat 1) is the reference. Shared card UI: `games/cards` (`PlayingCard`, `useCardLabel`).
+  board turned for seat 1) is the reference. Shared card UI: `games/cards` (`PlayingCard`, `useCardLabel`); faces are one SVG (`CardFace`: large corner index, pip layouts, court portraits from `cards/courts/*.svg` — Dmitry Fomin's CC0 English pattern, see its README); `xs`/`sm` use the compact face (big rank + suit); boxes stay 1 : 1.43, and hands size cards with `--card-w` + `size="fluid"`.
   Boards also receive `players` (names by seat). `ActiveGamesBar` (in PublicLayout) lists the games
   you're in with a return link and a close (leave) button; `usePresence` on RoomPage reports presence. Range actions (poker raise {min,max}) are sent as
   {type, amount}.

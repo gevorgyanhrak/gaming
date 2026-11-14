@@ -904,7 +904,8 @@
     "bidAction": "Քայլ",
     "pickSuit": "Ընտրեք գույնը կամ Բոյ",
     "kaputFailed": "Կապուտը չեղավ",
-    "highestBid": "Բազարում"
+    "highestBid": "Բազարում",
+    "announced": "{{name}}՝ հայտարարություններ"
   },
   "domino": {
     "you": "Դուք",

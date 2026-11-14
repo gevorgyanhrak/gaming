@@ -966,7 +966,8 @@
     "bidAction": "Заказ",
     "pickSuit": "Выберите масть или Бой",
     "kaputFailed": "Капут не вышел",
-    "highestBid": "Высший заказ"
+    "highestBid": "Высший заказ",
+    "announced": "Объявления: {{name}}"
   },
   "domino": {
     "you": "Вы",

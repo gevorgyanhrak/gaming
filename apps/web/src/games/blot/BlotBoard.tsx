@@ -367,6 +367,52 @@ export default function BlotBoard({
       bidText(b)
     )
   }
+  // What each player announced this deal, kept on their avatar: combinations, Blot/Reblot, Quansh/Sur.
+  const callText = (entry: LogEntry) =>
+    entry.type === 'declare'
+      ? t(`blot.declaration.${entry.kind}`)
+      : entry.type === 'blot'
+        ? t('blot.belote')
+        : entry.type === 'reblot'
+          ? t('blot.reblot')
+          : entry.type === 'contra'
+            ? t('blot.call.contra')
+            : entry.type === 'recontra'
+              ? t('blot.call.recontra')
+              : null
+  const badgesOf = (seat: number): Badge[] => {
+    const badges: Badge[] = []
+    for (const entry of view.log) {
+      if (!('seat' in entry) || entry.seat !== seat) continue
+      if (entry.type === 'declare') {
+        badges.push({
+          key: `d${badges.length}`,
+          text: `${entry.points}`,
+          title: callText(entry) ?? '',
+          tone: 'gold',
+        })
+      } else if (entry.type === 'blot' || entry.type === 'reblot') {
+        const blot = badges.findIndex((b) => b.key === 'blot')
+        const badge: Badge = {
+          key: 'blot',
+          text: callText(entry) ?? '',
+          title: callText(entry) ?? '',
+          tone: 'cream',
+        }
+        if (blot >= 0) badges[blot] = badge
+        else badges.push(badge)
+      } else if (entry.type === 'contra' || entry.type === 'recontra') {
+        badges.push({
+          key: entry.type,
+          text: callText(entry) ?? '',
+          title: callText(entry) ?? '',
+          tone: 'red',
+        })
+      }
+    }
+    return badges
+  }
+  const fresh = useFreshCalls(view, callText)
   const thinking = (seat: number) =>
     !dealing && view.to_act === seat && seat !== me && view.phase !== 'over' && !state.result
 
@@ -481,14 +527,18 @@ export default function BlotBoard({
                   return (
                     <span key={`${view.hand_no}-${card}`} className={`absolute ${spot}`}>
                       <span
-                        className={`block rounded-md motion-safe:animate-card-from ${won ? 'ring-2 ring-gold' : ''}`}
-                        style={{ '--fx': from?.x, '--fy': from?.y } as CSSProperties}
+                        className={`block rounded-[calc(var(--card-w)*0.072)] motion-safe:animate-card-from ${won ? 'ring-2 ring-gold' : ''}`}
+                        style={
+                          {
+                            '--fx': from?.x,
+                            '--fy': from?.y,
+                            '--card-w': narrow
+                              ? 'clamp(44px, 13vw, 60px)'
+                              : 'clamp(60px, 6.6vw, 96px)',
+                          } as CSSProperties
+                        }
                       >
-                        <PlayingCard
-                          card={card}
-                          label={labels.card(card)}
-                          size={narrow ? 'sm' : 'md'}
-                        />
+                        <PlayingCard card={card} label={labels.card(card)} size="fluid" />
                       </span>
                     </span>
                   )
@@ -503,7 +553,7 @@ export default function BlotBoard({
               const where = place(seat)
               const acting = view.to_act === seat && !dealing
               const declared = view.declared[seat] ?? []
-              const said = bubble(seat)
+              const said = bubble(seat) ?? fresh[seat] ?? null
               return (
                 <li
                   key={seat}
@@ -520,6 +570,7 @@ export default function BlotBoard({
                       level={levels[seat]}
                       ours={seat % 2 === myTeam}
                     />
+                    <AvatarBadges badges={badgesOf(seat)} name={name(seat)} end={where === 3} />
                     {view.dealer === seat ? (
                       <span
                         title={t('blot.dealer')}
@@ -620,11 +671,6 @@ export default function BlotBoard({
                           </span>
                         </span>
                       ))}
-                    </span>
-                  ) : null}
-                  {view.belote === seat && view.phase === 'playing' ? (
-                    <span className="mt-1 rounded-full bg-white/85 px-1.5 py-0.5 text-[0.65rem] font-extrabold text-black">
-                      {t('blot.belote')}
                     </span>
                   ) : null}
                 </li>
@@ -732,6 +778,12 @@ export default function BlotBoard({
             aria-label={t('blot.yourCards')}
             className="absolute inset-x-0 bottom-0 z-20 flex justify-center pb-1"
             data-deal-target="0"
+            // Large cards sized to the screen, as in a hand held up: about half of each shows.
+            style={
+              {
+                '--card-w': narrow ? 'clamp(52px, 15vw, 76px)' : 'clamp(76px, 8.4vw, 128px)',
+              } as CSSProperties
+            }
           >
             <div className="flex items-end">
               {shownHand.map((card, i) => {
@@ -745,25 +797,23 @@ export default function BlotBoard({
                     disabled={!canPlay || pending}
                     onClick={() => send({ type: 'play', card })}
                     aria-label={labels.card(card)}
-                    className={`relative origin-bottom rounded-lg transition-transform duration-200 ${i > 0 ? '-ml-9 min-[641px]:-ml-7' : ''} ${
+                    className={`relative origin-bottom rounded-[calc(var(--card-w)*0.072)] transition-transform duration-200 ${
                       canPlay
                         ? 'z-10 hover:z-20 focus-visible:z-20'
                         : view.phase === 'playing' && view.to_act === me
-                          ? 'brightness-50'
+                          ? 'brightness-[0.88]'
                           : ''
                     } ${dealing ? 'motion-safe:animate-card-flip' : ''}`}
                     style={{
-                      transform: `translateY(${offset * offset * (narrow ? 2.5 : 3) - (canPlay ? 10 : 0)}px) rotate(${offset * (narrow ? 4 : 3.5)}deg)`,
+                      marginLeft:
+                        i > 0 ? `calc(var(--card-w) * ${narrow ? -0.58 : -0.5})` : undefined,
+                      transform: `translateY(calc(var(--card-w) * ${(offset * offset * 0.035).toFixed(3)} - ${canPlay ? 'var(--card-w) * 0.12' : '0px'})) rotate(${offset * (narrow ? 4 : 3.5)}deg)`,
                     }}
                   >
                     <span
                       className={`block ${canPlay ? 'motion-safe:transition-transform motion-safe:hover:-translate-y-4' : ''}`}
                     >
-                      <PlayingCard
-                        card={card}
-                        label={labels.card(card)}
-                        size={narrow ? 'md' : 'lg'}
-                      />
+                      <PlayingCard card={card} label={labels.card(card)} size="fluid" />
                     </span>
                   </button>
                 )
@@ -987,7 +1037,7 @@ function Avatar({
       className={`relative block rounded-full p-[3px] shadow-[0_8px_20px_rgb(0_0_0/0.55)] ${acting ? 'motion-safe:animate-turn-glow' : ''}`}
       style={{ background: ring }}
     >
-      <span className="flex size-12 items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_35%,#5b4334,#2a1b12)] text-xl font-extrabold text-white uppercase shadow-[inset_0_0_0_2px_rgb(0_0_0/0.35)] min-[641px]:size-16 min-[641px]:text-2xl">
+      <span className="flex size-13 items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_35%,#5b4334,#2a1b12)] text-xl font-extrabold text-white uppercase shadow-[inset_0_0_0_2px_rgb(0_0_0/0.35)] min-[641px]:size-20 min-[641px]:text-3xl">
         {name.slice(0, 1)}
       </span>
       {level !== undefined ? (
@@ -995,6 +1045,76 @@ function Avatar({
       ) : null}
     </span>
   )
+}
+
+interface Badge {
+  key: string
+  text: string
+  title: string
+  tone: 'gold' | 'cream' | 'red'
+}
+
+const BADGE_TONE: Record<Badge['tone'], string> = {
+  gold: 'border-[#f6dc8f] bg-linear-to-b from-[#f7d774] to-[#c99a32] text-[#2a1b0c]',
+  cream: 'border-[#e8c66a] bg-[#fdf3d0] text-[#2a1b0c]',
+  red: 'border-[#ff9b8f] bg-linear-to-b from-[#d9473a] to-[#9e1f17] text-white',
+}
+
+/**
+ * What a player announced this deal, as small badges on the upper edge of their avatar (clear of the face):
+ * combinations by their points (20, 50, 100…), Blot then Reblot, Quansh, Sur.
+ */
+function AvatarBadges({ badges, name, end }: { badges: Badge[]; name: string; end: boolean }) {
+  const { t } = useTranslation()
+  if (badges.length === 0) return null
+  return (
+    <span
+      role="list"
+      aria-label={t('blot.announced', { name })}
+      // On the upper edge, towards the table's middle (the right-hand player's go left: the screen ends there).
+      className={`absolute -top-2 z-10 flex gap-0.5 ${end ? 'right-[62%] flex-row-reverse' : 'left-[62%]'}`}
+    >
+      {badges.map((b) => (
+        <span
+          key={b.key}
+          role="listitem"
+          title={b.title}
+          aria-label={b.title === b.text ? b.text : `${b.title} ${b.text}`}
+          className={`rounded-full border px-1.5 py-px text-[0.6rem] leading-tight font-extrabold whitespace-nowrap shadow-[0_2px_6px_rgb(0_0_0/0.5)] motion-safe:animate-card-in min-[641px]:text-[0.7rem] ${BADGE_TONE[b.tone]}`}
+        >
+          {b.text}
+        </span>
+      ))}
+    </span>
+  )
+}
+
+const CALLS = new Set(['declare', 'blot', 'reblot', 'contra', 'recontra'])
+
+/**
+ * Announcements made since the page opened, per seat, for 2.6 s: the speech bubble says them as they happen
+ * (what was said before is on the badges and in the ticker).
+ */
+function useFreshCalls(view: BlotView, text: (entry: LogEntry) => string | null) {
+  const calls = view.log
+    .map((entry, i) => ({ key: `${view.hand_no}:${i}`, entry }))
+    .filter(({ entry }) => CALLS.has(entry.type) && 'seat' in entry)
+  const [seen, setSeen] = useState(() => new Set(calls.map((c) => c.key)))
+  const fresh = calls.filter((c) => !seen.has(c.key))
+  const freshKeys = fresh.map((c) => c.key).join(',')
+  useEffect(() => {
+    if (!freshKeys) return
+    const timer = window.setTimeout(
+      () => setSeen((s) => new Set([...s, ...freshKeys.split(',')])),
+      2600,
+    )
+    return () => window.clearTimeout(timer)
+  }, [freshKeys])
+  const bySeat: Partial<Record<number, string>> = {}
+  for (const { entry } of fresh) {
+    if ('seat' in entry) bySeat[entry.seat] = text(entry) ?? undefined
+  }
+  return bySeat
 }
 
 /** Log entries worth a banner: the moments everyone at the table should notice. */

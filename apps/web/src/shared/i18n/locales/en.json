@@ -904,7 +904,8 @@
     "bidAction": "Bid",
     "pickSuit": "Pick a suit or Boy",
     "kaputFailed": "Kaput failed",
-    "highestBid": "Highest bid"
+    "highestBid": "Highest bid",
+    "announced": "Announced by {{name}}"
   },
   "domino": {
     "you": "You",
