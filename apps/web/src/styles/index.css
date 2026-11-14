@@ -176,6 +176,11 @@
   --animate-turn-pop: turn-pop 360ms var(--ease-pop) both;
   /* Matchmaking: a card lifts off the fan and drops back, one after another; an empty seat shimmers. */
   --animate-shuffle: shuffle 1800ms ease-in-out infinite;
+  /* Casino home: chips drifting, gold dust rising, a slow glow on the main button, light sweeping over gold text. */
+  --animate-float-chip: float-chip 7s ease-in-out infinite;
+  --animate-gold-dust: gold-dust 9s linear infinite;
+  --animate-gold-glow: gold-glow 2.8s ease-in-out infinite;
+  --animate-gold-sweep: gold-sweep 6s ease-in-out infinite;
   --animate-seat-search: seat-search 1600ms ease-in-out infinite;
 
   @keyframes drawer-in {
@@ -203,6 +208,50 @@
     to {
       opacity: 1;
       transform: none;
+    }
+  }
+  @keyframes float-chip {
+    0%,
+    100% {
+      transform: translateY(0) rotate(var(--tilt, 0deg));
+    }
+    50% {
+      transform: translateY(-14px) rotate(calc(var(--tilt, 0deg) + 8deg));
+    }
+  }
+  @keyframes gold-dust {
+    0% {
+      transform: translateY(0) scale(0.6);
+      opacity: 0;
+    }
+    15% {
+      opacity: 0.9;
+    }
+    100% {
+      transform: translateY(-60vh) scale(1);
+      opacity: 0;
+    }
+  }
+  @keyframes gold-glow {
+    0%,
+    100% {
+      box-shadow:
+        0 0 0 0 rgb(240 196 98 / 0.45),
+        0 10px 30px rgb(0 0 0 / 0.45);
+    }
+    50% {
+      box-shadow:
+        0 0 0 10px rgb(240 196 98 / 0),
+        0 10px 40px rgb(240 196 98 / 0.35);
+    }
+  }
+  @keyframes gold-sweep {
+    0%,
+    70% {
+      background-position: -150% 0;
+    }
+    100% {
+      background-position: 250% 0;
     }
   }
   @keyframes shuffle {
@@ -783,4 +832,18 @@ html:lang(hy) {
     transition-duration: 1ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Casino home: the gold title with a slow light sweep (the sweep only where motion is fine). */
+.casino-gold {
+  background-image:
+    linear-gradient(110deg, transparent 35%, rgb(255 246 214 / 0.85) 50%, transparent 65%),
+    linear-gradient(180deg, #fbe7a6, #e2b24f 55%, #a8772a);
+  background-size:
+    200% 100%,
+    100% 100%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }

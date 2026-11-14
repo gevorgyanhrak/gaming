@@ -1035,5 +1035,16 @@
     "collect": "Collect {{amount}} Fishkas",
     "won": "You won {{amount}} Fishkas!",
     "done": "Great"
+  },
+  "casino": {
+    "eyebrow": "Play-money card club",
+    "title": "Your seat at the table is waiting",
+    "subtitle": "Blackjack, Poker and Blot against people and AI — live, free, any time.",
+    "play": "Play now",
+    "join": "Join free",
+    "playMoney": "Fishkas are free play money: never bought, sold or cashed out.",
+    "playGame": "Play {{game}}",
+    "moreGames": "More games",
+    "mainGames": "Main games"
   }
 }

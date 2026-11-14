@@ -19,8 +19,10 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 - [x] Card design from the owner's reference (casino jumbo index) — 29cbba2.
 - [ ] Casino platform, in stages (owner: stages; AI marked everywhere → new ADR replacing ADR 0021's "never
       marked"; level tiers as named ranks, no "VIP" word; Fishka stays play money): 1) homepage + Blackjack/Poker/Blot
-      showcase, 2) Big Wins live (real players only, real-time) + >100,000 celebration, 3) leaderboards,
+      showcase [x this commit], 2) Big Wins live (real players only, real-time) + >100,000 celebration, 3) leaderboards,
       4) achievements, 5) rank tiers, 6) casino sounds with on/off.
+- [x] AI marked everywhere (ADR 0022) — 5824006.
+- [ ] Side bar → account menu (no games list) with the language switcher; table messages bar redesigned, friendlier (owner screenshots 2026-11-14).
 - [ ] Player profile popup on every avatar in every game (real stats, Esc/outside closes). No gifts between players:
       Fishkas are never sent between users (house rule).
 

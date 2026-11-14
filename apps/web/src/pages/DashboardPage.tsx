@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { GameIcon } from '@/features/catalog/components/GameArt'
-import { GameGrid } from '@/features/catalog/components/GameGrid'
+import { GameShowcase } from '@/features/casino/GameShowcase'
 import { useGames, type GameSummary } from '@/features/catalog/queries'
 import { fetchMyStats, myStatsKey } from '@/features/play/api'
 import { DailyBonusCard } from '@/features/wallet/components/DailyBonusCard'
@@ -64,9 +64,9 @@ export function DashboardPage() {
           <TryNext />
         </div>
         <FreeGifts className="club-panel-glass" />
-        <section className="club-panel-glass rounded-panel p-5 sm:p-6">
-          <h2 className="mb-5 text-2xl font-bold text-fg">{t('dashboard.gamesHeading')}</h2>
-          <GameGrid />
+        <section id="showcase" className="scroll-mt-24">
+          <h2 className="mb-3 text-2xl font-bold text-fg">{t('dashboard.gamesHeading')}</h2>
+          <GameShowcase />
         </section>
         <DashboardGames />
       </Container>
