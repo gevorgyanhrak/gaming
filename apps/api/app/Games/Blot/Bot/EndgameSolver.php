@@ -34,7 +34,8 @@ final class EndgameSolver
     }
 
     /**
-     * The deal's result (sai, $team's score less the other pair's) with perfect play from here.
+     * The deal's result (sai, $team's score less the other pair's, card points as a tie-break) with perfect
+     * play from here.
      *
      * @param  array<string, mixed>  $state  a full table state (all hands known)
      */
@@ -138,7 +139,8 @@ final class EndgameSolver
     private function value(array $points, array $tricks, int $team, bool $stopped): float
     {
         [$scored, , , $noTricks] = BlotEngine::score($this->contract, $points, $tricks, $this->decl, $this->belote, $stopped);
-        $value = $scored[$team] - $scored[1 - $team];
+        // Card points break ties, as in CardSearch: a decided deal is still played for its tricks.
+        $value = $scored[$team] - $scored[1 - $team] + CardSearch::POINT * ($points[$team] - $points[1 - $team]);
         if ($noTricks) {
             $value += $this->contract['team'] === $team ? -Simulator::MATCH : Simulator::MATCH;
         }

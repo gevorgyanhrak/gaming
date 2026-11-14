@@ -11,10 +11,17 @@ use App\Games\Blot\Engine\BlotCards;
  * see in ways that fit everything it knows (CardMemory, DealSampler), play every legal card on each of
  * those deals to the end of the deal (Simulator), and keep the card with the best average result for its
  * pair — the whole deal, not just this trick: points, the last trick, the contract made or failed,
- * multipliers, kaput. Ties go to the card that gives away the least.
+ * multipliers, kaput. When the score can't change (e.g. the contract has already failed) it still plays
+ * like a person — for the most card points and tricks (POINT) — and only then the card that gives away least.
  */
 final class CardSearch
 {
+    /**
+     * Each card point the pair takes, in sai: a tie-break only. 162 points weigh 0.0162 sai, less than the
+     * smallest real difference of averages over the deals it samples (1 sai over 40 deals = 0.025).
+     */
+    public const POINT = 0.0001;
+
     private readonly DealSampler $sampler;
 
     private readonly Simulator $simulator;
@@ -54,7 +61,7 @@ final class CardSearch
     }
 
     /**
-     * Each legal card's average result for the pair (sai), over $samples deals.
+     * Each legal card's average result for the pair (sai, with the card points as a tie-break), over $samples deals.
      *
      * @param  array<string, mixed>  $view
      * @param  list<string>  $cards
@@ -70,9 +77,14 @@ final class CardSearch
             $base = $this->simulator->state($view, $hands, $this->sampler->original($hands, $view));
             foreach ($cards as $card) {
                 $state = $this->simulator->act($base, $memory->seat, new Action('play', ['card' => $card]), $random);
-                $totals[$card] += $this->exact && $this->endgame->applies($state)
-                    ? $this->endgame->solve($state, $team)
-                    : $this->simulator->value($this->simulator->finish($state, $random), $team);
+                if ($this->exact && $this->endgame->applies($state)) {
+                    $totals[$card] += $this->endgame->solve($state, $team);
+
+                    continue;
+                }
+                $final = $this->simulator->finish($state, $random);
+                $points = $final['last_hand']['card_points'];
+                $totals[$card] += $this->simulator->value($final, $team) + self::POINT * ($points[$team] - $points[1 - $team]);
             }
         }
 

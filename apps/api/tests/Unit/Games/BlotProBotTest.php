@@ -7,6 +7,7 @@ use App\Games\Blot\Bot\BlotBot;
 use App\Games\Blot\Bot\CardMemory;
 use App\Games\Blot\Bot\ClassicBlotBot;
 use App\Games\Blot\Bot\DealSampler;
+use App\Games\Blot\Bot\EndgameSolver;
 use App\Games\Blot\Bot\Simulator;
 use App\Games\Blot\Engine\BlotCards;
 use App\Games\Blot\Engine\BlotEngine;
@@ -81,7 +82,7 @@ function proChoice(array $state, int $seed = 3): Action
  * @param  list<list<array{0: int, 1: string}>>  $history  [seat, card] per play, each trick led by its first
  * @param  list<array{0: int, 1: string}>  $trick
  */
-function proEndgame(array $hands, array $history, array $trick, string $trump, int $team, int $toAct): array
+function proEndgame(array $hands, array $history, array $trick, ?string $trump, int $team, int $toAct): array
 {
     $engine = new BlotEngine;
     $random = new SeededRandom(9);
@@ -235,6 +236,69 @@ it('reads a discard over an opponent\'s trump as "no higher trump", not "no trum
     expect($memory->mayHold(1, '7H'))->toBeTrue()          // may still hold lower trumps
         ->and($memory->mayHold(1, 'JH'))->toBeFalse()      // but not the jack, which beats the nine
         ->and($memory->mayHold(1, 'AH'))->toBeTrue();      // the ace is below the nine
+});
+
+/**
+ * The owner's game (room 620, 2026-11-14), after four tricks of a doubled Boy 14 by seats 1 and 3: seat 2
+ * (the AI) declared its terz J-Q-K of clubs; its partner led the ace and then the eight of clubs.
+ */
+function boyGame(): array
+{
+    $history = [
+        [[3, 'AS'], [0, '7S'], [1, 'TS'], [2, '8S']],
+        [[3, 'QS'], [0, 'KS'], [1, '7D'], [2, 'JS']],
+        [[0, 'AC'], [1, 'TC'], [2, 'JC'], [3, '7C']],
+    ];
+    $hands = [['JD', 'TD', '9C', 'QD'], ['KH', 'KD', 'AH', 'AD'], ['7H', 'TH', 'KC', 'QC', '8D'], ['9D', '8H', 'JH', 'QH', '9S']];
+    $state = proEndgame($hands, $history, [[0, '8C'], [1, '9H']], null, 1, 2);
+    $state['contract'] = ['seat' => 1, 'team' => 1, 'value' => 14, 'suit' => null, 'kaput' => false, 'doubled' => 1];
+    $state['declared'][2] = [['kind' => 'terz', 'cards' => ['JC', 'QC', 'KC'], 'points' => 20, 'key' => [20, 3, 5, 0]]];
+    $state['points'] = [43, 29];
+
+    return $state;
+}
+
+it('counts every trick of the deal, not just the one on the table: with the ace and ten gone its K and Q are the top clubs', function () {
+    $memory = new CardMemory((new BlotEngine)->viewFor(boyGame(), 2));
+
+    expect($memory->played)->toContain('AS', 'KS', 'AC', 'TC', 'JC', '7C', '8C', '9H')->toHaveCount(14)
+        // Seat 1 showed out of spades (7D on a spade) and out of clubs (9H on a club).
+        ->and($memory->voids[1])->toHaveKeys(['S', 'C'])
+        // Nobody else can hold a club above its queen: they are both winners.
+        ->and(collect([0, 1, 3])->every(fn (int $s) => ! $memory->mayHold($s, 'AC') && ! $memory->mayHold($s, 'TC')))->toBeTrue()
+        // The clubs still out: only the nine, and only its partner can hold it.
+        ->and(array_values(array_filter($memory->unseen(), fn (string $c) => $c[1] === 'C')))->toBe(['9C'])
+        ->and($memory->mayHold(1, '9C'))->toBeFalse();
+});
+
+it('wins its partner\'s club lead with one of its two top clubs, in the owner\'s game', function () {
+    expect(proChoice(boyGame())->payload['card'])->toBeIn(['QC', 'KC']);
+});
+
+it('knows the cards a player showed in a declaration: its partner\'s terz is in its partner\'s hand only', function () {
+    $state = boyGame();
+    $memory = new CardMemory((new BlotEngine)->viewFor($state, 0));   // the partner's view of seat 2's terz
+
+    expect($memory->known[2])->toBe(['QC', 'KC'])            // the jack has been played
+        ->and($memory->mayHold(2, 'KC'))->toBeTrue()
+        ->and($memory->mayHold(3, 'KC'))->toBeFalse()->and($memory->mayHold(1, 'QC'))->toBeFalse();
+});
+
+it('still plays a decided deal for its points: the contract has failed, yet it keeps its ace for the last trick', function () {
+    // Boy 16 by seats 1 and 3, who have 20 points with two tricks left: it can't be made, whatever is played.
+    // Leading the ace wins the ten now but gives the last trick (and its 10) to seat 3's ace of diamonds;
+    // leading the seven gives that ace a small trick and wins the last trick with the ace of clubs.
+    $state = proEndgame([['AC', '7D'], ['TC', '8D'], ['9C', 'KD'], ['QC', 'AD']], [], [], null, 1, 0);
+    $state['contract'] = ['seat' => 1, 'team' => 1, 'value' => 16, 'suit' => null, 'kaput' => false, 'doubled' => 0];
+    [$state['points'], $state['tricks']] = [[100, 20], [4, 2]];
+    $values = [];
+    foreach (['AC', '7D'] as $card) {
+        $next = (new Simulator)->act($state, 0, new Action('play', ['card' => $card]), new SeededRandom(1));
+        $values[$card] = (new EndgameSolver)->solve($next, 0);
+    }
+
+    expect(floor($values['AC']))->toBe(floor($values['7D']))   // the same score either way
+        ->and($values['7D'])->toBeGreaterThan($values['AC']);   // but more card points for the pair
 });
 
 it('10 · knows the top trumps are gone: the ace is master now and nobody holds the jack or nine', function () {

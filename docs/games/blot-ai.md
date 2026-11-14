@@ -38,6 +38,10 @@ plays whatever the engine allows. Where the references differ from the game or e
 - **CardSearch** — every legal card × every sampled deal, played to the end; the card with the best average result
   for the pair (ties: the card that gives away least). This plans the whole deal, not one trick: smearing points on
   a partner's sure trick, keeping a master trump for the last trick, drawing trumps before cashing an ace.
+- **A decided deal is still played for points** (owner's report, 2026-11-14): when every card gives the same score
+  (e.g. a doubled contract has already failed), the card search and the exact endgame break the tie by the pair's
+  card points (`CardSearch::POINT`, 0.0001 sai a point — below any real difference over 40 sampled deals), then by
+  the cheapest card. Before, a decided deal fell straight to "cheapest card", which looked like not counting.
 - **BidPlanner** — plays each sampled deal out with every trump and Boy, then prices each number and kaput with
   the table's scoring (`BlotEngine::score`) and bids the best one when it beats letting the bazar stand.
 - **QuanshAdvisor** — Quansh by the expected gain over a pass and the chance the contract fails (also used before
