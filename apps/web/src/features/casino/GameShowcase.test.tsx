@@ -10,8 +10,8 @@ describe('Casino home', () => {
     server.use(
       http.get('*/api/v1/games', () =>
         HttpResponse.json({
-          data: ['chess', 'blot', 'nardi', 'poker', 'blackjack'].map((slug, i) =>
-            gameFixture({ slug, name: slug[0]!.toUpperCase() + slug.slice(1), sort_order: i }),
+          data: ['chess', 'blot', 'nardi', 'poker', 'blackjack'].map((slug) =>
+            gameFixture({ slug, name: slug[0]!.toUpperCase() + slug.slice(1) }),
           ),
         }),
       ),
