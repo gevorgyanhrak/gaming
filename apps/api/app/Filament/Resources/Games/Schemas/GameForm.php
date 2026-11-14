@@ -42,6 +42,8 @@ class GameForm
                             ->preload()
                             ->placeholder('No category'),
                         Toggle::make('is_visible')->label('Shown in the catalog'),
+                        Toggle::make('show_online')->label('Show how many play it now')
+                            ->helperText('People only, never AI. Off for busy games where the number is noise (Poker, Blackjack).'),
                         Toggle::make('maintenance')->label('Maintenance mode')
                             ->helperText('Shown with the message below; no new games. Games under way go on.'),
                         // A game can only be played once its engine is registered (app/Games/*).

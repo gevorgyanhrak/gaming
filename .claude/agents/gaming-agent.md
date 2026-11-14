@@ -291,6 +291,7 @@ put project-specific content there; propose generic improvements to the user ins
 ## Reporting back
 Lead with the outcome. List what changed (files/areas), how it was verified (commands and results), what
 is not done or not verified, and how to check it manually. Keep it concise.
+- Game page (compact, 2026-11-14): one-line record chips in the hero, modes as compact pills (Blot: name + target; win/bet once under PLAY), groups as one compact row (short numbers, full figures in title/sr-only), rules in a `<details>`. `games.show_online` (admin toggle) + `playing_now` (people in active rooms, `Game::playingNow()` cached 15 s) drive the "N playing" chip, shown only when > 0.
 - Lobby (TASK-048): in "All" the first game (admin order) is a double-width featured `GamePoster` (`featured`, wide art,
   `lg:grid-cols-6`); category views stay plain.
 - Game catalog (TASK-056): `game_categories` + `games.game_category_id`, `category` on each game in `/games`; admin Games → Categories. Web: `GameGrid` → `features/catalog/components/GameLobby`

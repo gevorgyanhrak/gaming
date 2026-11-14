@@ -102,7 +102,7 @@ describe('Admin-managed platform settings in the app', () => {
     expect(body).toMatchObject({ accept_terms: true })
   })
 
-  it('lists a game’s modes', async () => {
+  it('lists the modes of a game that can’t be played yet, compactly (the description in the tooltip)', async () => {
     server.use(
       http.get('*/api/v1/games/chess', () =>
         HttpResponse.json({
@@ -124,8 +124,7 @@ describe('Admin-managed platform settings in the app', () => {
     )
     renderRoute('/games/chess')
 
-    expect(await screen.findByRole('heading', { name: 'Modes' })).toBeInTheDocument()
-    expect(screen.getByText('Blitz 5+3')).toBeInTheDocument()
-    expect(screen.getByText('5 minutes each.')).toBeInTheDocument()
+    expect(await screen.findByText('Blitz 5+3')).toBeInTheDocument()
+    expect(screen.getByTitle('5 minutes each.')).toBeInTheDocument()
   })
 })

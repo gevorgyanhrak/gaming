@@ -910,6 +910,10 @@ export interface components {
             /** @description In maintenance (Game Management): shown, but no new games; the message says why. */
             maintenance: boolean;
             maintenance_message: string | null;
+            /** @description Whether its page shows how many play it now (admin setting per game; off for Poker and Blackjack). */
+            show_online: boolean;
+            /** @description People (never AI) at its active tables now; null where the count isn't shown. */
+            playing_now: number | null;
             /** @description Paragraphs separated by blank lines. */
             rules: string;
             modes?: components["schemas"]["GameModeResource"][];
@@ -946,6 +950,10 @@ export interface components {
             /** @description In maintenance (Game Management): shown, but no new games; the message says why. */
             maintenance: boolean;
             maintenance_message: string | null;
+            /** @description Whether its page shows how many play it now (admin setting per game; off for Poker and Blackjack). */
+            show_online: boolean;
+            /** @description People (never AI) at its active tables now; null where the count isn't shown. */
+            playing_now: number | null;
         };
         /** GameStatResource */
         GameStatResource: {
@@ -1054,12 +1062,9 @@ export interface components {
                 name: string | null;
                 username: string | null;
                 avatar_url: string | null;
-                /** @description The player's level (a bot's is fixed). */
                 level: number;
-                /** @description The avatar frame a person's level unlocked; bots have none. */
                 frame: string | null;
                 result: string | null;
-                /** @description Points the result is worth (Nardi: 2 for a mars, a double win). */
                 score: number | null;
             }[];
             end_reason: string | null;

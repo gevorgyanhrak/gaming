@@ -58,7 +58,9 @@
     "notPlayable": "This game isn't available to play yet. Check back soon.",
     "notFound": "We couldn't find that game.",
     "modes": "Modes",
-    "maintenance": "This game is under maintenance. Please come back soon."
+    "maintenance": "This game is under maintenance. Please come back soon.",
+    "playingNow_one": "{{formatted}} playing",
+    "playingNow_other": "{{formatted}} playing"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",

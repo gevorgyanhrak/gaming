@@ -24,6 +24,29 @@ describe('Game page', () => {
     expect(screen.getByText(/isn't available to play yet/)).toBeInTheDocument()
   })
 
+  it.each([
+    { show_online: true, playing_now: 3, shown: true },
+    { show_online: false, playing_now: null, shown: false },
+    { show_online: true, playing_now: 0, shown: false },
+  ])(
+    'shows how many play now only where the game shows it and someone does (%o)',
+    async ({ show_online, playing_now, shown }) => {
+      server.use(
+        http.get('*/api/v1/games/chess', () =>
+          HttpResponse.json({
+            data: gameFixture({ slug: 'chess', name: 'Chess', show_online, playing_now }),
+          }),
+        ),
+      )
+
+      renderRoute('/games/chess')
+
+      expect(await screen.findByRole('heading', { level: 1, name: 'Chess' })).toBeInTheDocument()
+      expect(screen.queryByText('3 playing') !== null).toBe(shown)
+      expect(screen.queryByText(/playing$/) !== null).toBe(shown)
+    },
+  )
+
   it('shows a not-found message for unknown games', async () => {
     server.use(
       http.get('*/api/v1/games/unknown', () =>

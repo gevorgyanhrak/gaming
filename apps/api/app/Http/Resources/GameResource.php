@@ -38,6 +38,10 @@ class GameResource extends JsonResource
             'maintenance' => $this->maintenance,
             /** @var string|null */
             'maintenance_message' => $this->maintenance ? ($this->maintenance_message ?: __('platform.play.maintenance')) : null,
+            /** Whether its page shows how many play it now (admin setting per game; off for Poker and Blackjack). */
+            'show_online' => $this->show_online,
+            /** @var int|null People (never AI) at its active tables now; null where the count isn't shown. */
+            'playing_now' => $this->show_online ? (Game::playingNow()[$this->id] ?? 0) : null,
         ];
     }
 

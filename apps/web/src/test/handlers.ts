@@ -40,6 +40,8 @@ export function gameFixture(overrides: Partial<GameDetail> = {}): GameDetail {
     is_playable: false,
     maintenance: false,
     maintenance_message: null,
+    show_online: true,
+    playing_now: 0,
     rules: 'First paragraph.\n\nSecond paragraph.',
     modes: [],
     groups: [],

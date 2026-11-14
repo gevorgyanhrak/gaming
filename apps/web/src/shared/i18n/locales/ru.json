@@ -60,7 +60,11 @@
     "notPlayable": "В эту игру пока нельзя сыграть. Загляните позже.",
     "notFound": "Мы не нашли эту игру.",
     "modes": "Режимы",
-    "maintenance": "Игра на техническом обслуживании. Загляните позже."
+    "maintenance": "Игра на техническом обслуживании. Загляните позже.",
+    "playingNow_one": "{{formatted}} играет",
+    "playingNow_few": "{{formatted}} играют",
+    "playingNow_many": "{{formatted}} играют",
+    "playingNow_other": "{{formatted}} играют"
   },
   "errors": {
     "generic": "Что-то пошло не так. Попробуйте ещё раз.",

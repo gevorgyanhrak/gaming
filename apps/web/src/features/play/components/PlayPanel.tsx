@@ -152,12 +152,12 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
   const modeId = mode?.id
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:items-start">
-      <div className="space-y-5">
+    <div className="grid gap-4 lg:grid-cols-[1.15fr_1fr] lg:items-start">
+      <div className="space-y-3">
         {hero}
 
         {modes.length > 1 || tableSize !== undefined ? (
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-4 [animation-delay:120ms] motion-safe:animate-rise">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 [animation-delay:120ms] motion-safe:animate-rise">
             {modes.length > 1 && Preview ? (
               // Modes that look different (Nardi: Long and Short) are chosen by their picture.
               <fieldset className="w-full">
@@ -187,16 +187,15 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
                 </div>
               </fieldset>
             ) : modes.length > 1 && traits.modeCards ? (
-              // Modes by what is at stake and how long the match runs (Blot: to 101, 151, 301).
+              // Modes by how long the match runs (Blot: to 101, 151, 301): compact pills; what a win brings and
+              // the bet are the same for each, so they're said once, under PLAY.
               <fieldset className="w-full">
-                <legend className="mb-2 text-center text-sm font-semibold text-gold-light">
-                  {t('play.whatToPlay')}
-                </legend>
-                <div className="grid gap-2.5">
+                <legend className="sr-only">{t('play.whatToPlay')}</legend>
+                <div className="grid grid-cols-3 gap-2">
                   {modes.map((m) => (
                     <label
                       key={m.slug}
-                      className="club-panel flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-transparent px-4 py-3 transition hover:border-gold/40 has-checked:border-gold has-checked:shadow-[0_0_0_3px_rgb(214_171_78/0.25)] has-focus-visible:outline-2 has-focus-visible:outline-accent-text"
+                      className="club-panel flex min-h-11 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-transparent px-2 py-1.5 text-center transition hover:border-gold/40 has-checked:border-gold has-checked:bg-gold/10 has-checked:shadow-[0_0_0_3px_rgb(214_171_78/0.25)] has-focus-visible:outline-2 has-focus-visible:outline-accent-text"
                     >
                       <input
                         type="radio"
@@ -206,15 +205,15 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
                         onChange={() => setModeSlug(m.slug)}
                         className="sr-only"
                       />
-                      <span className="min-w-0 flex-1 text-lg font-extrabold text-gold-light">
+                      <span className="max-w-full truncate text-sm font-extrabold text-gold-light">
                         {m.name}
                       </span>
-                      <ModeStakes
-                        win={bet === undefined ? null : traits.modeCards!(bet, m.min_players)}
-                        bet={bet ?? null}
-                        target={m.target}
-                        format={format}
-                      />
+                      {m.target ? (
+                        <span className="flex items-center gap-1 text-xs font-semibold text-fg/80 tabular-nums">
+                          <TargetIcon className="size-3.5 text-gold" aria-hidden="true" />
+                          {format(m.target)}
+                        </span>
+                      ) : null}
                     </label>
                   ))}
                 </div>
@@ -241,7 +240,7 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
         ) : null}
 
         {group ? (
-          <div className="club-panel space-y-4 rounded-3xl p-4 [animation-delay:150ms] motion-safe:animate-rise sm:p-5">
+          <div className="club-panel space-y-3 rounded-2xl p-3 [animation-delay:150ms] motion-safe:animate-rise sm:p-4">
             <GroupPicker
               groups={groups}
               value={group.slug}

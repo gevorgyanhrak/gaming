@@ -48,6 +48,7 @@ class RoomPresenter
             }),
             'result' => $room->isActive() ? null : [
                 'end_reason' => $room->end_reason,
+                /** @var list<'win'|'loss'|'draw'|'abandoned'|null> */
                 'seats' => $room->participants->mapWithKeys(fn (GameParticipant $p) => [$p->seat => $p->result?->value])->all(),
             ],
         ];

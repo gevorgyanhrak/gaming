@@ -1,7 +1,11 @@
 <?php
 
+use App\Models\BotProfile;
 use App\Models\Game;
 use App\Models\GameCategory;
+use App\Models\GameMode;
+use App\Models\GameRoom;
+use App\Models\User;
 use Database\Seeders\GameSeeder;
 
 beforeEach(function () {
@@ -107,4 +111,26 @@ it('seeds the games without overwriting admin changes', function () {
 
     expect(Game::query()->count())->toBe(11)
         ->and(Game::query()->where('slug', 'chess')->firstOrFail()->description)->toBe('Edited by an admin');
+});
+
+it('says how many people play a game now — people only, never AI — where its setting shows it', function () {
+    $chess = Game::factory()->create(['slug' => 'chess', 'sort_order' => 10]);
+    $poker = Game::factory()->create(['slug' => 'poker', 'sort_order' => 20, 'show_online' => false]);
+    $table = function (Game $game, string $status, array $seats) {
+        $mode = GameMode::factory()->for($game)->create();
+        $room = GameRoom::query()->create(['game_id' => $game->id, 'game_mode_id' => $mode->id, 'type' => 'matchmaking', 'status' => $status, 'seats' => count($seats)]);
+        foreach ($seats as $seat => $who) {
+            $room->participants()->create(['seat' => $seat, 'is_active' => true, ...$who]);
+        }
+    };
+    $table($chess, 'active', [['user_id' => User::factory()->create()->id], ['bot_profile_id' => BotProfile::factory()->create()->id]]);
+    $table($chess, 'active', [['user_id' => User::factory()->create()->id], ['user_id' => User::factory()->create()->id, 'ai_controlled' => true]]);
+    $table($chess, 'finished', [['user_id' => User::factory()->create()->id], ['user_id' => User::factory()->create()->id]]);
+    $table($poker, 'active', [['user_id' => User::factory()->create()->id], ['user_id' => User::factory()->create()->id]]);
+
+    $this->getJson('/api/v1/games')
+        ->assertOk()
+        // Two people at chess tables now: the bot, the AI-held seat and the finished table don't count.
+        ->assertJsonPath('data.0.show_online', true)->assertJsonPath('data.0.playing_now', 2)
+        ->assertJsonPath('data.1.show_online', false)->assertJsonPath('data.1.playing_now', null);
 });

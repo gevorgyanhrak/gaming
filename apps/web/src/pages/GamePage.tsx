@@ -24,7 +24,7 @@ export function GamePage() {
   const game = useGame(slug)
 
   return (
-    <Container className="py-6 sm:py-8">
+    <Container className="py-4 sm:py-6">
       {/* The game's own room behind its page (known from the address before the game loads). */}
       <GameBackdrop slug={slug} />
       <Link
@@ -35,7 +35,7 @@ export function GamePage() {
         {t('game.back')}
       </Link>
 
-      <div className="mt-4">
+      <div className="mt-3">
         {game.isPending ? (
           <div data-testid="game-loading" className="space-y-4">
             <Skeleton className="h-14 w-1/3" />
@@ -68,34 +68,41 @@ export function GamePage() {
               </div>
             )}
 
-            <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_1.4fr]">
-              {game.data.modes && game.data.modes.length > 0 ? (
-                <section className="club-panel rounded-panel p-5 sm:p-6">
-                  <h2 className="text-xl font-bold">{t('game.modes')}</h2>
-                  <ul className="mt-4 space-y-3">
-                    {game.data.modes.map((mode) => (
-                      <li key={mode.slug} className="rounded-card bg-emerald-900/40 p-4">
-                        <p className="font-semibold">{mode.name}</p>
-                        {mode.description ? (
-                          <p className="mt-1 text-sm text-muted">{mode.description}</p>
-                        ) : null}
-                        <p className="mt-2 text-xs font-medium text-muted">
-                          <PlayerCount game={mode} />
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
+            {/* Below the play area: the rules folded away (opened on demand); the modes only when the game
+                can't be played yet (otherwise the mode picker above already shows them). */}
+            <div className="mt-5 space-y-3">
+              {!game.data.is_playable && game.data.modes && game.data.modes.length > 0 ? (
+                <ul className="flex flex-wrap gap-2">
+                  {game.data.modes.map((mode) => (
+                    <li
+                      key={mode.slug}
+                      className="club-panel rounded-xl px-3 py-1.5 text-sm"
+                      title={mode.description ?? undefined}
+                    >
+                      <span className="font-semibold">{mode.name}</span>{' '}
+                      <span className="text-xs text-muted">
+                        <PlayerCount game={mode} />
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               ) : null}
-
-              <section className="club-panel rounded-panel p-5 sm:p-6">
-                <h2 className="text-xl font-bold">{t('game.rules')}</h2>
-                <div className="mt-4 space-y-4 leading-relaxed text-fg/90">
+              <details className="club-panel group rounded-2xl">
+                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-4 py-2 font-bold [&::-webkit-details-marker]:hidden">
+                  {t('game.rules')}
+                  <span
+                    aria-hidden="true"
+                    className="text-gold transition-transform group-open:rotate-180"
+                  >
+                    ▾
+                  </span>
+                </summary>
+                <div className="space-y-3 px-4 pb-4 text-sm leading-relaxed text-fg/90">
                   {splitParagraphs(game.data.rules).map((paragraph, index) => (
                     <p key={index}>{paragraph}</p>
                   ))}
                 </div>
-              </section>
+              </details>
             </div>
           </article>
         )}
@@ -131,38 +138,68 @@ function GameHero({ game }: { game: GameDetail }) {
     : []
 
   return (
-    <header className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
+    <header className="space-y-2.5">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <ViewTransition name={titleTransition(game.slug)}>
-          <h1 className="text-gold-gradient font-display text-4xl font-bold sm:text-5xl">
+          <h1 className="text-gold-gradient font-display text-3xl font-bold sm:text-4xl">
             {game.name}
           </h1>
         </ViewTransition>
         {game.is_playable ? null : <Badge tone="warning">{t('catalog.comingSoon')}</Badge>}
+        {/* Your record in this game: icons and numbers, the words in the tooltip (and for screen readers). */}
+        {record.length > 0 ? (
+          <dl className="ml-auto flex items-center gap-1.5">
+            {record.map(({ key, Icon, label, value }) => (
+              <div
+                key={key}
+                title={label}
+                className="flex items-center gap-1 rounded-full bg-black/35 px-2.5 py-1 text-sm font-bold"
+              >
+                <dt className="sr-only">{label}</dt>
+                <Icon className="size-4 text-gold" aria-hidden="true" />
+                <dd className={key === 'wins' ? 'text-gold-light' : ''}>{value}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
       </div>
-      <p className="max-w-2xl text-fg/80 motion-safe:animate-rise">{game.description}</p>
+      <p
+        className="line-clamp-2 max-w-2xl text-sm text-fg/80"
+        title={game.description ?? undefined}
+      >
+        {game.description}
+      </p>
 
-      <div className="relative overflow-hidden rounded-panel border border-gold/30 shadow-raised">
+      <div className="relative overflow-hidden rounded-2xl border border-gold/30 shadow-raised">
         <ViewTransition name={artTransition(game.slug)}>
-          <GameArtwork game={game} className="aspect-[16/9] max-h-64 w-full lg:max-h-none" />
+          <GameArtwork game={game} className="aspect-[16/9] max-h-44 w-full sm:max-h-52" />
         </ViewTransition>
-        <p className="absolute top-3 right-3 rounded-full bg-emerald-900/85 px-3 py-1 text-sm font-medium text-fg">
-          <PlayerCount game={game} />
+        <p className="absolute top-2 right-2 flex gap-1.5 text-xs font-medium text-fg">
+          <span className="rounded-full bg-emerald-900/85 px-2.5 py-1">
+            <PlayerCount game={game} />
+          </span>
+          <OnlineNow game={game} />
         </p>
       </div>
-      {record.length > 0 ? (
-        <dl className="club-panel grid grid-cols-3 gap-2 rounded-panel p-4">
-          {record.map(({ key, Icon, label, value }) => (
-            <div key={key} className="flex flex-col items-center">
-              <dt className="text-xs font-medium text-muted sm:text-sm">{label}</dt>
-              <dd className="mt-1 flex items-center gap-2 text-2xl font-bold">
-                <Icon className="size-6 text-gold" />
-                <span className={key === 'wins' ? 'text-gold-light' : ''}>{value}</span>
-              </dd>
-            </div>
-          ))}
-        </dl>
-      ) : null}
     </header>
+  )
+}
+
+/**
+ * How many people are at this game's tables now — only for games whose admin setting shows it (off for Poker and
+ * Blackjack) and only when someone is playing (a 0 tells nothing). AI players are never counted.
+ */
+function OnlineNow({ game }: { game: GameDetail }) {
+  const { t, i18n } = useTranslation()
+  const count = game.playing_now
+  if (!game.show_online || !count) return null
+  return (
+    <span className="flex items-center gap-1 rounded-full bg-emerald-900/85 px-2.5 py-1">
+      <span
+        aria-hidden="true"
+        className="size-2 rounded-full bg-[#3ccf6e] motion-safe:animate-pulse"
+      />
+      {t('game.playingNow', { count, formatted: count.toLocaleString(i18n.language) })}
+    </span>
   )
 }
