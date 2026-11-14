@@ -26,3 +26,4 @@ Records are immutable once accepted; a changed decision gets a new record that s
 | [0019](0019-games-against-the-house.md) | Games against the house: the dealer is the engine, solo tables, `Outcome::HOUSE` | Accepted |
 | [0020](0020-server-side-pool-physics.md) | Server-side pool physics, replayed by the client from segments | Accepted |
 | [0021](0021-ai-players-platform-wide.md) | AI players platform-wide: one level, people first, AI stands in for people | Accepted |
+| [0022](0022-ai-players-are-marked.md) | AI players are marked wherever identity shows; AI never counts as people | Accepted |

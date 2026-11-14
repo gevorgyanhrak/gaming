@@ -2007,6 +2007,7 @@ export interface operations {
                                 name: string;
                                 avatar_url: string | null;
                                 level: number;
+                                is_bot: boolean;
                             }[] | null;
                             room: string | null;
                         };
@@ -2052,6 +2053,7 @@ export interface operations {
                                 name: string;
                                 avatar_url: string | null;
                                 level: number;
+                                is_bot: boolean;
                             }[] | null;
                             room: string | null;
                         };
@@ -2109,6 +2111,7 @@ export interface operations {
                                 name: string;
                                 avatar_url: string | null;
                                 level: number;
+                                is_bot: boolean;
                             }[] | null;
                             room: string | null;
                         };

@@ -271,7 +271,10 @@
     "stakeWin": "Win",
     "stakeBet": "Bet",
     "stakeTarget": "To",
-    "seatSearching": "Looking for a player…"
+    "seatSearching": "Looking for a player…",
+    "aiName": "{{name}} · AI",
+    "aiTag": "AI",
+    "aiTagTitle": "An AI player"
   },
   "room": {
     "players": "Players",

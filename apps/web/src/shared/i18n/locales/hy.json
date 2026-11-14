@@ -271,7 +271,10 @@
     "stakeWin": "Շահում",
     "stakeBet": "Խաղադրույք",
     "stakeTarget": "Մինչև",
-    "seatSearching": "Խաղացող ենք փնտրում…"
+    "seatSearching": "Խաղացող ենք փնտրում…",
+    "aiName": "{{name}} · AI",
+    "aiTag": "AI",
+    "aiTagTitle": "AI խաղացող"
   },
   "room": {
     "players": "Խաղացողներ",

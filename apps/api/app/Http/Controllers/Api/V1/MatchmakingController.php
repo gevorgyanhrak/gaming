@@ -76,7 +76,7 @@ class MatchmakingController extends Controller
             /**
              * The players at the table being prepared (everyone looks the same), or null while searching.
              *
-             * @var list<array{name: string, avatar_url: string|null, level: int}>|null
+             * @var list<array{name: string, avatar_url: string|null, level: int, is_bot: bool}>|null
              */
             'table' => $ticket === null ? null : $matchmaker->tablePlayers($ticket),
             /** @var string|null */

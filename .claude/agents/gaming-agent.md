@@ -154,9 +154,10 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
 - Game themes: `games/themes.ts` (`themeOf(slug)`: image from `assets/themes/<slug>.svg` — our own SVG scenes —, position, size, overlay, accent); `GameBackdrop` paints it as a fixed `-z-10` layer on `GamePage` and `RoomPage`. Quote `url(...)` (`JSON.stringify`): Vite inlines files under 4 KB as data URLs.
 - Game traits (`games/registry.ts` `traitsOf(slug)`: `seatsOnBoard`, `material`, `capture`, `roundWon`
   (poker hand won → `handWin` sound), `nextRound` (header caption while nobody acts in a pause), `mars` (a winner's score of 2 is a double win — Nardi only; other games score points)) let the room
-  page and sounds avoid slug checks. Durak/Poker (`seatsOnBoard`) hide `PlayerList` while active and show
-  no "Bot" marks anywhere at a table (owner, 2026-11-12: RoomPage no longer passes `BoardProps.bots`; bots carry Armenian
-  names); the lobby's "play against a bot" mode and the matchmaking bot offer stay.
+  page and sounds avoid slug checks. Durak/Poker (`seatsOnBoard`) hide `PlayerList` while active.
+- AI is marked (ADR 0022, supersedes ADR 0021's "never marked"): `shared/ui/AiTag` in player lists and the matchmaking
+  table (`table[].is_bot`), and RoomPage's `players` map gives every board "Name · AI" (`play.aiName`). AI never counts
+  in people statistics (playing now, Big Wins, leaderboards, achievements).
 - Sounds: `features/play/sounds.ts` synthesizes them with Web Audio (no files); `useGameSounds` picks
   at most one per new state version via the pure `soundFor` (result > your turn when hidden or > 2
   seats > capture > move) plus a low-time warning at 10 s; honours `preferences.sound`. The room tab

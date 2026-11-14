@@ -61,12 +61,12 @@ describe('Room', () => {
     renderRoute('/rooms/room-1')
 
     expect(await screen.findByText('Your turn')).toBeInTheDocument()
-    // Bots look like any other player: no "Bot" label at the table.
-    expect(screen.queryByText('Bot')).not.toBeInTheDocument()
+    // AI players are marked (ADR 0022): an "AI" tag by the name.
+    expect(screen.getAllByText('AI').length).toBeGreaterThan(0)
     await userEvent.click(await screen.findByRole('button', { name: 'play 0' }))
 
     expect(await screen.findByText('version 1')).toBeInTheDocument()
-    expect(screen.getByText('Waiting for Aram')).toBeInTheDocument()
+    expect(screen.getByText('Waiting for Aram · AI')).toBeInTheDocument()
     expect(body).toMatchObject({ expected_version: 0, action: { type: 'place', cell: 0 } })
     expect(body.client_action_id).toMatch(/^[0-9a-f-]{36}$/)
   })

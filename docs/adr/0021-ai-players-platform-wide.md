@@ -14,7 +14,7 @@ person drops out, so a table of several people isn't ruined by one of them. Each
   timeout (`bot_fallback_timeout_seconds`, or the settings default), everyone waiting sits down together and AI
   fills the empty seats (`fillWithAi`), in an ordinary matchmaking room. No offer, no countdown. Per game the admin
   chooses "fill with AI" or "keep waiting for people" (`bot_fallback_mode` `auto`/`off`; `offer` works as `auto`).
-- **Never marked:** nothing in a room shows who is AI (no pill, label or level); "Play against AI" stays as a mode
+- **Never marked** (superseded by ADR 0022 — AI is now marked): nothing in a room shows who is AI (no pill, label or level); "Play against AI" stays as a mode
   people choose before a game.
 - **AI stands in (`Gameplay/Lifecycle/AiTakeover`, `game_participants.ai_controlled`):** at tables of 3+ seats
   where another person plays,

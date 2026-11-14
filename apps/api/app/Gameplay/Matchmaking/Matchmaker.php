@@ -363,7 +363,7 @@ class Matchmaker
     /**
      * The players at the ticket's reserved table, for the countdown screen: people and AI alike.
      *
-     * @return list<array{name: string, avatar_url: string|null, level: int}>|null
+     * @return list<array{name: string, avatar_url: string|null, level: int, is_bot: bool}>|null
      */
     public function tablePlayers(Ticket $ticket): ?array
     {
@@ -374,10 +374,10 @@ class Matchmaker
         $people = array_keys(array_filter($this->queue($ticket->pool()), fn (Ticket $t) => $t->table === $ticket->table));
         $players = [];
         foreach (User::query()->with('profile')->whereIn('id', $people)->get() as $user) {
-            $players[] = ['name' => $user->profile->display_name ?? $user->username, 'avatar_url' => $user->profile->avatarUrl(), 'level' => (int) $user->level];
+            $players[] = ['name' => $user->profile->display_name ?? $user->username, 'avatar_url' => $user->profile->avatarUrl(), 'level' => (int) $user->level, 'is_bot' => false];
         }
         foreach (BotProfile::query()->whereIn('id', array_column($table['bots'], 'id'))->get() as $bot) {
-            $players[] = ['name' => $bot->name, 'avatar_url' => $bot->avatarUrl(), 'level' => (int) $bot->level];
+            $players[] = ['name' => $bot->name, 'avatar_url' => $bot->avatarUrl(), 'level' => (int) $bot->level, 'is_bot' => true];   // AI is marked (ADR 0022)
         }
 
         return $players;

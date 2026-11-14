@@ -7,6 +7,7 @@ import { useUserChannel } from '@/shared/realtime/useUserChannel'
 import { Avatar } from '@/shared/ui/Avatar'
 import { Button } from '@/shared/ui/Button'
 import { CardBack } from '@/games/cards/PlayingCard'
+import { AiTag } from '@/shared/ui/AiTag'
 import { cancelMatchmaking, fetchMatchmaking, matchmakingHeartbeat, matchmakingKey } from '../api'
 import { useCountdown } from '../useCountdown'
 
@@ -163,8 +164,9 @@ export function MatchmakingStatus({
                         size="sm"
                       />
                     </span>
-                    <span className="max-w-20 truncate rounded-md bg-black/60 px-1.5 text-[0.7rem] font-semibold">
-                      {player.name}
+                    <span className="flex max-w-20 items-center gap-1 rounded-md bg-black/60 px-1.5 text-[0.7rem] font-semibold">
+                      <span className="truncate">{player.name}</span>
+                      {'is_bot' in player && player.is_bot ? <AiTag /> : null}
                     </span>
                   </span>
                 ) : (

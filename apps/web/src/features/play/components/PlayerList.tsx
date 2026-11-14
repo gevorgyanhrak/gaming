@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { AiTag } from '@/shared/ui/AiTag'
 import { Avatar } from '@/shared/ui/Avatar'
 import { Badge } from '@/shared/ui/Badge'
 import type { ParticipantResult, Room } from '../api'
@@ -59,7 +60,7 @@ export function PlayerList({
             className="truncate text-sm font-semibold sm:text-base"
             title={player.username ? `@${player.username}` : undefined}
           >
-            {player.name}
+            {player.name} {player.is_bot ? <AiTag className="align-middle" /> : null}
           </p>
           <div
             className={`mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted ${mirrored ? 'justify-end' : ''}`}

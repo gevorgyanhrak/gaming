@@ -101,8 +101,12 @@ export function RoomPage() {
   const myResult =
     view?.seat != null ? data.participants.find((p) => p.seat === view.seat)?.result : null
 
+  // AI players are marked wherever a name shows (ADR 0022): every board gets "Name · AI".
   const playerNames: Partial<Record<number, string>> = Object.fromEntries(
-    data.participants.map((p) => [p.seat, p.name ?? '']),
+    data.participants.map((p) => [
+      p.seat,
+      p.is_bot ? t('play.aiName', { name: p.name ?? '' }) : (p.name ?? ''),
+    ]),
   )
   // Left a multi-player game that goes on without you.
   const leftTable = data.status === 'active' && myResult != null

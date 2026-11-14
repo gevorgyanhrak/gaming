@@ -261,3 +261,20 @@ it('finds the player’s ticket in their group’s queue, and only matches withi
     $this->deleteJson('/api/v1/matchmaking')->assertNoContent();
     $this->getJson('/api/v1/matchmaking')->assertJsonPath('data.ticket', null);
 });
+
+it('marks the AI at a table being prepared, and only the AI (ADR 0022)', function () {
+    $mode = pokerQueue();
+    withBots($mode);
+    $mode->game->update(['bot_fallback_timeout_seconds' => 5]);
+    $alice = User::factory()->create();
+    $this->actingAs($alice)->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id]);
+
+    $this->travel(6)->seconds();
+    $this->postJson('/api/v1/matchmaking/heartbeat');
+    app(Matchmaker::class)->sweep();
+
+    $table = $this->getJson('/api/v1/matchmaking')->json('data.table');
+    expect($table)->toBeArray()->not->toBeEmpty()
+        ->and(collect($table)->where('is_bot', false)->pluck('name')->all())->toBe([$alice->profile->display_name ?? $alice->username])
+        ->and(collect($table)->where('is_bot', true)->count())->toBe(count($table) - 1);
+});
