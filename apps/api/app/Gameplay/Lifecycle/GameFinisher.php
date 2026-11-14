@@ -10,6 +10,7 @@ use App\Models\GameMove;
 use App\Models\GameParticipant;
 use App\Models\GameRoom;
 use App\Models\UserGameStat;
+use App\Platform\Achievements\Achievements;
 use App\Platform\Levels\Levels;
 use App\Platform\Settings\Settings;
 use App\Platform\Wins\GameWins;
@@ -26,6 +27,7 @@ class GameFinisher
         private readonly Levels $levels,
         private readonly Settings $settings,
         private readonly GameWins $wins,
+        private readonly Achievements $achievements,
     ) {}
 
     /**
@@ -57,7 +59,10 @@ class GameFinisher
                 $this->recordStats($participant, $room->game_id, $result);
                 $this->awardXp($participant, $room, $result, $finishedAt->getTimestamp());
                 // Once the game's payouts and cash-outs are all in the ledger (same transaction).
-                DB::afterCommit(fn () => $this->wins->record($room, $participant));
+                DB::afterCommit(function () use ($room, $participant) {
+                    $this->wins->record($room, $participant);
+                    $this->achievements->afterGame((int) $participant->user_id, $room->game_id, $room->public_id);
+                });
             }
         }
 
@@ -86,7 +91,10 @@ class GameFinisher
         if ($participant->user_id !== null) {
             $this->recordStats($participant, $gameId, $result);
             $this->awardXp($participant, $participant->room, $result, now()->getTimestamp());
-            DB::afterCommit(fn () => $this->wins->record($participant->room, $participant));
+            DB::afterCommit(function () use ($participant, $gameId) {
+                $this->wins->record($participant->room, $participant);
+                $this->achievements->afterGame((int) $participant->user_id, $gameId, $participant->room->public_id);
+            });
         }
     }
 

@@ -1076,5 +1076,16 @@
       "poker": "Պոկեր",
       "blot": "Բլոտ"
     }
+  },
+  "achievements": {
+    "title": "Նվաճումներ",
+    "none": "Դեռ նվաճումներ չկան։",
+    "unlocked": "Նոր նվաճում։",
+    "big_win": "Մեծ շահում՝ {{game}}",
+    "streak": "Հաղթանակների շարք՝ {{game}}",
+    "daily_best": "Օրվա լավագույն խաղացող",
+    "weekly_champion": "Շաբաթվա չեմպիոն",
+    "veteran_one": "Փորձառու՝ {{count}} խաղ",
+    "veteran_other": "Փորձառու՝ {{count}} խաղ"
   }
 }

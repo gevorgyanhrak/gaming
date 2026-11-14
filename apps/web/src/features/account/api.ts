@@ -53,5 +53,6 @@ export function usePublicProfile(username: string) {
       apiRequest<ApiResponse<'v1.users.show'>>(`/api/v1/users/${encodeURIComponent(username)}`, {
         signal,
       }).then((r) => r.data),
+    enabled: username !== '',
   })
 }

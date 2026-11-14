@@ -1076,5 +1076,16 @@
       "poker": "Poker",
       "blot": "Blot"
     }
+  },
+  "achievements": {
+    "title": "Achievements",
+    "none": "No achievements yet.",
+    "unlocked": "Achievement unlocked!",
+    "big_win": "Big {{game}} win",
+    "streak": "Winning streak in {{game}}",
+    "daily_best": "Daily best player",
+    "weekly_champion": "Weekly champion",
+    "veteran_one": "Experienced: {{count}} game",
+    "veteran_other": "Experienced: {{count}} games"
   }
 }

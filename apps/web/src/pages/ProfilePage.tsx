@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { usePublicProfile } from '@/features/account/api'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { ProfileView } from '@/features/account/components/ProfileView'
@@ -27,6 +28,8 @@ export function ProfilePage() {
     queryFn: ({ signal }) => fetchMyGames(1, signal),
   })
 
+  // Your achievements, as everyone sees them on your public profile.
+  const own = usePublicProfile(user?.username ?? '')
   if (!user) return null
 
   const noGames = stats.data?.length === 0
@@ -40,6 +43,7 @@ export function ProfilePage() {
           looks: user.looks,
           display_name: user.profile.display_name,
           avatar_url: user.profile.avatar_url,
+          achievements: own.data?.achievements ?? [],
           bio: user.profile.bio,
           country: user.profile.country,
           created_at: user.created_at,

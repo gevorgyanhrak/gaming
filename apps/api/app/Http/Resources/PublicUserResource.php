@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\User;
+use App\Platform\Achievements\Achievements;
 use App\Platform\Levels\Levels;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -37,6 +38,8 @@ class PublicUserResource extends JsonResource
             /** @var string|null */
             'last_active_at' => $this->last_active_at?->toIso8601String(),
             'stats' => GameStatResource::collection($this->whenLoaded('gameStats')),
+            /** @var list<array{key: string, game: array{slug: string, name: string}|null, period: string|null, value: int|null, earned_at: string}> Achievements, newest first (AchievementCatalog). */
+            'achievements' => app(Achievements::class)->of($this->id),
         ];
     }
 }

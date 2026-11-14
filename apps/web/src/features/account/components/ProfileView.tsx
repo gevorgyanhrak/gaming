@@ -1,3 +1,4 @@
+import { PlayerAchievements } from '@/features/achievements/PlayerAchievements'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { badgeLabel } from '@/features/levels/items'
@@ -56,6 +57,7 @@ export function ProfileView({ user, actions }: { user: PublicUser; actions?: Rea
         {actions}
       </div>
       {user.bio ? <p className="mt-6 whitespace-pre-line text-fg/90">{user.bio}</p> : null}
+      <PlayerAchievements achievements={user.achievements ?? []} />
     </article>
   )
 }

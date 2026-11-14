@@ -1156,5 +1156,18 @@
       "poker": "Покер",
       "blot": "Блот"
     }
+  },
+  "achievements": {
+    "title": "Достижения",
+    "none": "Достижений пока нет.",
+    "unlocked": "Новое достижение!",
+    "big_win": "Крупный выигрыш: {{game}}",
+    "streak": "Серия побед: {{game}}",
+    "daily_best": "Лучший игрок дня",
+    "weekly_champion": "Чемпион недели",
+    "veteran_one": "Опытный: {{count}} игра",
+    "veteran_few": "Опытный: {{count}} игры",
+    "veteran_many": "Опытный: {{count}} игр",
+    "veteran_other": "Опытный: {{count}} игр"
   }
 }

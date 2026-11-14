@@ -1057,6 +1057,17 @@ export interface components {
             created_at: string;
             last_active_at: string | null;
             stats?: components["schemas"]["GameStatResource"][];
+            /** @description Achievements, newest first (AchievementCatalog). */
+            achievements: {
+                key: string;
+                game: {
+                    slug: string;
+                    name: string;
+                } | null;
+                period: string | null;
+                value: number | null;
+                earned_at: string;
+            }[];
         };
         /** RegisterRequest */
         RegisterRequest: {
