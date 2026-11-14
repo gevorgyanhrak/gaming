@@ -98,9 +98,11 @@ const LAYOUTS: Record<string, [number, number][]> = {
   ],
 }
 
-/** The pip area: between the index columns, leaving room for each pip (PIP wide). */
-const PIP = 46
-const AREA = { left: 88, right: 162, top: 52, bottom: 305 }
+/** The centre panel (casino "jumbo index" look): a thin frame between the two big corner indexes. */
+const PANEL = { x: 64, y: 70, width: 122, height: 217 }
+/** Pips sit inside the panel's area (PIP wide). */
+const PIP = 34
+const AREA = { left: 84, right: 166, top: 92, bottom: 265 }
 
 const courts = import.meta.glob<string>('./courts/*.svg', {
   query: '?url',
@@ -111,6 +113,8 @@ const courtArt = (card: string) => courts[`./courts/${card[0]}${card[1]}.svg`]
 
 /** Where the portrait sits in each court SVG (Fomin's frame, in his 360 × 540 card). */
 const FRAME = { x: 30, y: 30, width: 300, height: 480 }
+
+const FONT = "'Noto Serif Display', Georgia, serif"
 
 function Pip({
   suit,
@@ -134,22 +138,29 @@ function Pip({
   )
 }
 
+/** A rank in the tall, narrow face of casino cards (the serif squeezed sideways), centred on x. */
+function Rank({ text, x, y, size }: { text: string; x: number; y: number; size: number }) {
+  const squeeze = text === '10' ? 0.46 : 0.7
+  return (
+    <text
+      transform={`translate(${x} ${y}) scale(${squeeze} 1)`}
+      textAnchor="middle"
+      fontFamily={FONT}
+      fontWeight={800}
+      fontSize={size}
+      letterSpacing={text === '10' ? -4 : 0}
+    >
+      {text}
+    </text>
+  )
+}
+
+/** The corner index: a very large rank over its suit (readable from the visible strip of a fanned hand). */
 function Index({ card, suit }: { card: string; suit: Suit }) {
-  const rank = rankText(card)
   return (
     <g>
-      <text
-        x={34}
-        y={66}
-        textAnchor="middle"
-        fontFamily="'Noto Serif Display', Georgia, serif"
-        fontWeight={700}
-        fontSize={rank === '10' ? 52 : 62}
-        {...(rank === '10' ? { textLength: 46, lengthAdjust: 'spacingAndGlyphs' } : {})}
-      >
-        {rank}
-      </text>
-      <Pip suit={suit} x={34} y={94} size={38} />
+      <Rank text={rankText(card)} x={33} y={98} size={104} />
+      <Pip suit={suit} x={33} y={128} size={42} />
     </g>
   )
 }
@@ -163,7 +174,6 @@ export function CardFace({ card, compact = false }: { card: string; compact?: bo
   const rank = card[0] ?? ''
   const fill = suit === 'H' || suit === 'D' ? RED : BLACK
   if (compact) {
-    const text = rankText(card)
     return (
       <svg viewBox={`0 0 ${W} ${H}`} className="block size-full" aria-hidden="true">
         <rect
@@ -177,22 +187,15 @@ export function CardFace({ card, compact = false }: { card: string; compact?: bo
           strokeWidth={4}
         />
         <g fill={fill}>
-          <text
-            x={22}
-            y={128}
-            fontFamily="'Noto Serif Display', Georgia, serif"
-            fontWeight={800}
-            fontSize={130}
-            {...(text === '10' ? { textLength: 150, lengthAdjust: 'spacingAndGlyphs' } : {})}
-          >
-            {text}
-          </text>
-          <Pip suit={suit} x={W / 2 + 18} y={252} size={150} />
+          <Rank text={rankText(card)} x={80} y={150} size={170} />
+          <Pip suit={suit} x={W / 2 + 22} y={262} size={150} />
         </g>
       </svg>
     )
   }
-  const art = rank === 'J' || rank === 'Q' || rank === 'K' ? courtArt(card) : undefined
+  const court = rank === 'J' || rank === 'Q' || rank === 'K'
+  const art = court ? courtArt(card) : undefined
+  const { x, y, width, height } = PANEL
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="block size-full" aria-hidden="true">
@@ -209,7 +212,49 @@ export function CardFace({ card, compact = false }: { card: string; compact?: bo
       <g fill={fill}>
         <Index card={card} suit={suit} />
 
-        {rank === 'A' ? <Pip suit={suit} x={W / 2} y={H / 2} size={118} /> : null}
+        {rank === 'A' ? (
+          // The ace's panel: a double frame, a ring of dots and one large pip.
+          <g>
+            <rect
+              x={x}
+              y={y}
+              width={width}
+              height={height}
+              fill="none"
+              stroke={BLACK}
+              strokeWidth={2.5}
+            />
+            <rect
+              x={x + 6}
+              y={y + 6}
+              width={width - 12}
+              height={height - 12}
+              fill="none"
+              stroke={BLACK}
+              strokeWidth={1}
+            />
+            <circle
+              cx={W / 2}
+              cy={y + height / 2}
+              r={46}
+              fill="none"
+              stroke={fill}
+              strokeWidth={1.5}
+            />
+            {Array.from({ length: 16 }, (_, i) => {
+              const a = (i * Math.PI) / 8
+              return (
+                <circle
+                  key={i}
+                  cx={W / 2 + 54 * Math.cos(a)}
+                  cy={y + height / 2 + 54 * Math.sin(a)}
+                  r={2.4}
+                />
+              )
+            })}
+            <Pip suit={suit} x={W / 2} y={y + height / 2} size={66} />
+          </g>
+        ) : null}
 
         {LAYOUTS[rank]?.map(([px, py], i) => (
           <Pip
@@ -222,54 +267,36 @@ export function CardFace({ card, compact = false }: { card: string; compact?: bo
           />
         ))}
 
-        {rank === 'J' || rank === 'Q' || rank === 'K' ? (
-          <>
+        {court ? (
+          <g>
             {art ? (
               <svg
-                x={64}
-                y={20}
-                width={168}
-                height={317}
+                x={x}
+                y={y}
+                width={width}
+                height={height}
                 viewBox={`${FRAME.x} ${FRAME.y} ${FRAME.width} ${FRAME.height}`}
                 preserveAspectRatio="xMidYMid slice"
               >
                 <image href={art} width={360} height={540} />
               </svg>
             ) : (
-              // No art (yet): the court's letter and suit, framed.
-              <>
-                <text
-                  x={148}
-                  y={190}
-                  textAnchor="middle"
-                  fontFamily="'Noto Serif Display', Georgia, serif"
-                  fontWeight={800}
-                  fontSize={110}
-                  opacity={0.85}
-                >
-                  {rank}
-                </text>
-                <Pip suit={suit} x={148} y={250} size={56} />
-              </>
+              <Pip suit={suit} x={W / 2} y={y + height / 2} size={60} />
             )}
             <rect
-              x={64}
-              y={20}
-              width={168}
-              height={317}
-              rx={6}
+              x={x}
+              y={y}
+              width={width}
+              height={height}
               fill="none"
-              stroke={fill}
+              stroke={BLACK}
               strokeWidth={2.5}
             />
-          </>
+          </g>
         ) : null}
 
-        {/* The other corner, upside down (on a court card, on a plate over the portrait's corner). */}
+        {/* The other corner, upside down. */}
         <g transform={`rotate(180 ${W / 2} ${H / 2})`}>
-          {art !== undefined || rank === 'J' || rank === 'Q' || rank === 'K' ? (
-            <rect x={8} y={10} width={52} height={106} rx={8} fill="#fff" />
-          ) : null}
           <Index card={card} suit={suit} />
         </g>
       </g>
