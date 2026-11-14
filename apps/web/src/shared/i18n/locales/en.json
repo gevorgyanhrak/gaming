@@ -268,7 +268,8 @@
     "tablePlayers": "Players at the table",
     "stakeWin": "Win",
     "stakeBet": "Bet",
-    "stakeTarget": "To"
+    "stakeTarget": "To",
+    "seatSearching": "Looking for a player…"
   },
   "room": {
     "players": "Players",

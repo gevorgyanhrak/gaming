@@ -268,7 +268,8 @@
     "tablePlayers": "Սեղանի խաղացողները",
     "stakeWin": "Շահում",
     "stakeBet": "Խաղադրույք",
-    "stakeTarget": "Մինչև"
+    "stakeTarget": "Մինչև",
+    "seatSearching": "Խաղացող ենք փնտրում…"
   },
   "room": {
     "players": "Խաղացողներ",

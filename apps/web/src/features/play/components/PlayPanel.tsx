@@ -317,7 +317,9 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
           </Alert>
         ) : null}
 
-        <MatchmakingStatus />
+        <MatchmakingStatus
+          seatsFor={(modeId) => modes.find((m) => m.id === modeId)?.max_players ?? 2}
+        />
 
         {traits.modeCards && mode ? (
           <div className="flex justify-center">
