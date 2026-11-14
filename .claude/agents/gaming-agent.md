@@ -152,7 +152,7 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   Games without uploaded art use the SVG scenes in `GameArt.tsx`; few short choices are
   `Segmented` radio pills. Never imply real money, VIP or a shop: play-for-fun only.
 - Game traits (`games/registry.ts` `traitsOf(slug)`: `seatsOnBoard`, `material`, `capture`, `roundWon`
-  (poker hand won → `handWin` sound), `nextRound` (header caption while nobody acts in a pause)) let the room
+  (poker hand won → `handWin` sound), `nextRound` (header caption while nobody acts in a pause), `mars` (a winner's score of 2 is a double win — Nardi only; other games score points)) let the room
   page and sounds avoid slug checks. Durak/Poker (`seatsOnBoard`) hide `PlayerList` while active and show
   no "Bot" marks anywhere at a table (owner, 2026-11-12: RoomPage no longer passes `BoardProps.bots`; bots carry Armenian
   names); the lobby's "play against a bot" mode and the matchmaking bot offer stay.

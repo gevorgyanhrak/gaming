@@ -67,6 +67,8 @@ export interface GameTraits {
   fixedBet?: boolean
   /** Modes shown as cards with what a win brings, the bet and the target score: a win's net for a bet. */
   modeCards?: (bet: number, seats: number) => number
+  /** A winner's score of 2 is a double win (Nardi's mars); elsewhere the score is just points. */
+  mars?: boolean
 }
 
 const pieces = (view: View) =>
@@ -83,7 +85,12 @@ export const traits: Partial<Record<string, GameTraits>> = {
     capture: (a, b) => length(b.captured) > length(a.captured) || pieces(b) < pieces(a),
   },
   // A hit sends a checker to the bar.
-  nardi: { seatsOnBoard: false, material: 'wood', capture: (a, b) => sum(b.bar) > sum(a.bar) },
+  nardi: {
+    seatsOnBoard: false,
+    material: 'wood',
+    capture: (a, b) => sum(b.bar) > sum(a.bar),
+    mars: true,
+  },
   // The defender gives up and takes the cards.
   durak: { seatsOnBoard: true, material: 'cards', capture: (a, b) => !a.taking && !!b.taking },
   poker: {

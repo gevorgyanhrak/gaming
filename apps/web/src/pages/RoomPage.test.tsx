@@ -29,7 +29,12 @@ vi.mock('@/games/registry', async () => {
   return {
     boards: { tictactoe: board, cardtable: board },
     // "cardtable" stands for Durak/Poker: a board that seats every player itself.
-    traitsOf: (slug: string) => ({ seatsOnBoard: slug === 'cardtable', material: 'wood' }),
+    // "nardi" scores a mars as 2.
+    traitsOf: (slug: string) => ({
+      seatsOnBoard: slug === 'cardtable',
+      material: 'wood',
+      mars: slug === 'nardi',
+    }),
   }
 })
 
@@ -297,6 +302,7 @@ describe('Room', () => {
       roomFixture({
         status: 'finished',
         end_reason: 'completed',
+        game: { ...roomFixture().game, slug: 'nardi' },
         participants: [
           { ...roomFixture().participants[0]!, result: 'win', score: 2 },
           { ...roomFixture().participants[1]!, result: 'loss', score: null },
@@ -307,6 +313,26 @@ describe('Room', () => {
     renderRoute('/rooms/room-1')
 
     expect(await screen.findByText('Mars! The opponent bore off no checkers.')).toBeInTheDocument()
+  })
+
+  it('keeps the mars wording to Nardi: elsewhere a winner’s score is just points', async () => {
+    serveRoom(
+      roomFixture({
+        status: 'finished',
+        end_reason: 'completed',
+        // A game whose board isn't loaded here, scored in points (as Blot's 138 to 0).
+        game: { ...roomFixture().game, slug: 'points-game' },
+        participants: [
+          { ...roomFixture().participants[0]!, result: 'win', score: 138 },
+          { ...roomFixture().participants[1]!, result: 'loss', score: 0 },
+        ],
+      }),
+      roomStateFixture({ status: 'finished', seats_to_act: [], legal_actions: [] }),
+    )
+    renderRoute('/rooms/room-1')
+
+    expect(await screen.findByRole('heading', { name: 'You won!' })).toBeInTheDocument()
+    expect(screen.queryByText(/Mars!/)).not.toBeInTheDocument()
   })
 
   it('offers only the lobby after a private game', async () => {

@@ -18,6 +18,7 @@ import {
   type Room,
 } from '../api'
 import { endReasonLabel, outcomeLabel } from '../labels'
+import { traitsOf } from '@/games/registry'
 import { GameResult } from '@/features/wallet/components/GameResult'
 import { MatchmakingStatus } from './MatchmakingStatus'
 
@@ -102,8 +103,9 @@ export function GameOverPanel({
           ? t(outcomeLabel[result])
           : t('room.finished')
   const reason = !aborted && room.end_reason ? endReasonLabel[room.end_reason] : undefined
-  // A result worth two (Nardi's mars: the loser bore off none).
+  // A result worth two (Nardi's mars: the loser bore off none); other games' scores are points.
   const doubleWin =
+    traitsOf(room.game.slug).mars === true &&
     room.status === 'finished' &&
     room.participants.some((p) => p.result === 'win' && (p.score ?? 0) >= 2)
   const canPlayAgain = !aborted && room.type !== 'private'

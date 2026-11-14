@@ -93,22 +93,25 @@ class GameModeSeeder extends Seeder
                 'min_players' => 1, 'max_players' => 5,
                 'config' => ['rounds' => 10, 'decks' => 6, 'dealer_hits_soft_17' => false, 'max_bet_multiple' => 100, 'turn_seconds' => 30, 'table_wait_seconds' => 15, 'round_pause_ms' => 3500],
             ]],
-            // Blot's modes differ by the score the match is played to (owner, 2026-11-12: 101 / 151 / 301).
+            // Blot's modes differ by the score the match is played to (owner, 2026-11-12: 101 / 151 / 301);
+            // the full game to 301 comes first, so it is the one PLAY starts (owner, 2026-11-14).
             'blot' => [[
                 'slug' => 'quick',
+                'sort_order' => 30,
                 'name' => ['en' => 'Quick', 'ru' => 'Быстрая', 'hy' => 'Արագ'],
                 'description' => ['en' => 'Four players in two teams, to 101.', 'ru' => 'Четыре игрока, две команды, до 101.', 'hy' => 'Չորս խաղացող, երկու թիմ, մինչև 101։'],
                 'min_players' => 4, 'max_players' => 4,
                 'config' => ['target' => 101, 'turn_seconds' => 30, 'hand_pause_ms' => 5000],
             ], [
                 'slug' => 'standard',
+                'sort_order' => 20,
                 'name' => ['en' => 'Standard', 'ru' => 'Стандартная', 'hy' => 'Ստանդարտ'],
                 'description' => ['en' => 'Four players in two teams, to 151.', 'ru' => 'Четыре игрока, две команды, до 151.', 'hy' => 'Չորս խաղացող, երկու թիմ, մինչև 151։'],
                 'min_players' => 4, 'max_players' => 4,
                 'config' => ['target' => 151, 'turn_seconds' => 30, 'hand_pause_ms' => 5000],
             ], [
                 'slug' => 'bazar',
-                'sort_order' => 30,
+                'sort_order' => 10,
                 'name' => ['en' => 'Bazar blot', 'ru' => 'Базар-блот', 'hy' => 'Բազար բլոտ'],
                 'description' => ['en' => 'Four players in two teams, to 301.', 'ru' => 'Четыре игрока, две команды, до 301.', 'hy' => 'Չորս խաղացող, երկու թիմ, մինչև 301։'],
                 'min_players' => 4, 'max_players' => 4,
