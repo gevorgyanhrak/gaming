@@ -54,6 +54,9 @@ Route::prefix('v1')->name('v1.')->group(function () {
         Route::get('users/{username}', [PublicProfileController::class, 'show'])
             ->middleware('throttle:lookups')
             ->name('users.show');
+        Route::get('users/{username}/card', [PublicProfileController::class, 'card'])
+            ->middleware('throttle:lookups')
+            ->name('users.card');
 
         Route::prefix('auth')->name('auth.')->group(function () {
             Route::middleware('throttle:auth')->group(function () {

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+import { seatTrigger } from '@/features/players/seatTrigger'
 import { frameRing } from '@/shared/ui/frames'
 import { LevelBadge } from '@/shared/ui/LevelBadge'
 import { CardBack } from '../cards/PlayingCard'
@@ -56,6 +58,7 @@ export function CompactSeat({
   frame,
   label,
 }: SeatProps) {
+  const { t } = useTranslation()
   return (
     <li
       data-seat={seat}
@@ -70,7 +73,9 @@ export function CompactSeat({
         {role ? <Bubble role={role} small /> : null}
       </span>
       <span className="relative mt-1" data-seat-anchor={seat}>
-        <Avatar name={name} acting={acting} share={share} size="sm" level={level} frame={frame} />
+        <span {...seatTrigger(seat, t('playerCard.open', { name }))} className="block rounded-full">
+          <Avatar name={name} acting={acting} share={share} size="sm" level={level} frame={frame} />
+        </span>
       </span>
       <span className="mt-1 max-w-full truncate text-[0.72rem] font-medium text-white/85">
         {name}
@@ -102,6 +107,7 @@ export function PanelSeat({
   frame,
   label,
 }: SeatProps) {
+  const { t } = useTranslation()
   return (
     <div
       data-seat={seat}
@@ -115,7 +121,9 @@ export function PanelSeat({
       }`}
     >
       <span className="absolute -top-6 -left-3" data-seat-anchor={seat}>
-        <Avatar name={name} acting={acting} share={share} size="md" level={level} frame={frame} />
+        <span {...seatTrigger(seat, t('playerCard.open', { name }))} className="block rounded-full">
+          <Avatar name={name} acting={acting} share={share} size="md" level={level} frame={frame} />
+        </span>
       </span>
       {role ? (
         <span className="absolute -top-8 left-11">

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { AiTag } from '@/shared/ui/AiTag'
+import { seatTrigger } from '@/features/players/seatTrigger'
 import { Avatar } from '@/shared/ui/Avatar'
 import { Badge } from '@/shared/ui/Badge'
 import type { ParticipantResult, Room } from '../api'
@@ -48,13 +49,15 @@ export function PlayerList({
           mirrored ? 'flex-row-reverse text-right' : ''
         } ${toAct ? 'shadow-[0_0_0_2px_var(--color-turn),0_0_22px_rgb(242_193_78/0.3)]' : ''}`}
       >
-        <Avatar
-          url={player.avatar_url}
-          name={player.name ?? '?'}
-          size="md"
-          level={player.level}
-          frame={player.frame}
-        />
+        <span {...seatTrigger(player.seat, t('playerCard.open', { name: player.name ?? '?' }))}>
+          <Avatar
+            url={player.avatar_url}
+            name={player.name ?? '?'}
+            size="md"
+            level={player.level}
+            frame={player.frame}
+          />
+        </span>
         <div className="min-w-0 flex-1">
           <p
             className="truncate text-sm font-semibold sm:text-base"

@@ -1,3 +1,4 @@
+import { seatTrigger } from '@/features/players/seatTrigger'
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { playSound } from '@/shared/lib/sounds'
@@ -563,13 +564,15 @@ export default function BlotBoard({
                   data-deal-target={where === 0 ? undefined : where}
                 >
                   <span className="relative">
-                    <Avatar
-                      name={name(seat)}
-                      acting={acting}
-                      share={acting ? turnShare : null}
-                      level={levels[seat]}
-                      ours={seat % 2 === myTeam}
-                    />
+                    <span {...seatTrigger(seat, t('playerCard.open', { name: name(seat) }))}>
+                      <Avatar
+                        name={name(seat)}
+                        acting={acting}
+                        share={acting ? turnShare : null}
+                        level={levels[seat]}
+                        ours={seat % 2 === myTeam}
+                      />
+                    </span>
                     <AvatarBadges badges={badgesOf(seat)} name={name(seat)} end={where === 3} />
                     {view.dealer === seat ? (
                       <span

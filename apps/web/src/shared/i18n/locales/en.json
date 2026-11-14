@@ -1102,5 +1102,23 @@
     "toggle": "Sounds",
     "on": "Sounds on",
     "off": "Sounds off"
+  },
+  "playerCard": {
+    "level": "Level {{level}}",
+    "online": "Online now",
+    "offline": "Not online",
+    "playing": "Playing {{game}} now",
+    "ai": "An AI player: it plays at the strongest level and has no account or Fishkas.",
+    "error": "This player’s card can’t be shown right now.",
+    "xp": "Level progress",
+    "played": "Games",
+    "wins": "Wins",
+    "losses": "Losses",
+    "winRate": "Win rate",
+    "biggestWin": "Biggest win",
+    "favourite": "Favourite game",
+    "streak": "Winning streak",
+    "fullProfile": "Full profile",
+    "open": "Show {{name}}’s card"
   }
 }

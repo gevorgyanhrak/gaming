@@ -1,4 +1,4 @@
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ParseKeys } from 'i18next'
 import { Link, useParams } from 'react-router'
@@ -9,6 +9,7 @@ import { resultLabel } from '@/features/play/labels'
 import { GameOverPanel } from '@/features/play/components/GameOverPanel'
 import { RoomReactions } from '@/features/reactions/components/RoomReactions'
 import { GroupBadge } from '@/features/play/components/GroupBadge'
+import { PlayerProfilePopup } from '@/features/players/PlayerProfilePopup'
 import { GameBackdrop } from '@/features/play/components/GameBackdrop'
 import { TableBar } from '@/features/play/components/TableBar'
 import { PlayerList } from '@/features/play/components/PlayerList'
@@ -41,6 +42,29 @@ export function RoomPage() {
   const playing = room.data?.status === 'active' && state.data?.seat != null && !state.data?.result
   usePresence(id, playing)
   useMarkGameInProgress(playing)
+  // A player's card (PlayerProfilePopup): any avatar marked with seatTrigger opens it, on click or Enter/Space.
+  const [cardSeat, setCardSeat] = useState<number | null>(null)
+  useEffect(() => {
+    const seatOf = (target: EventTarget | null) =>
+      target instanceof Element ? target.closest('[data-player-seat]') : null
+    const onClick = (event: MouseEvent) => {
+      const el = seatOf(event.target)
+      if (el) setCardSeat(Number(el.getAttribute('data-player-seat')))
+    }
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return
+      const el = seatOf(event.target)
+      if (!el) return
+      event.preventDefault()
+      setCardSeat(Number(el.getAttribute('data-player-seat')))
+    }
+    document.addEventListener('click', onClick)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('click', onClick)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [])
   const mySeat = state.data?.seat
   const stillPlaying =
     mySeat != null && room.data?.participants.find((p) => p.seat === mySeat)?.result == null
@@ -165,6 +189,21 @@ export function RoomPage() {
   return (
     <>
       <GameBackdrop slug={data.game.slug} />
+      {(() => {
+        const p = cardSeat === null ? undefined : data.participants.find((x) => x.seat === cardSeat)
+        return p ? (
+          <PlayerProfilePopup
+            player={{
+              name: p.name ?? '',
+              username: p.username,
+              is_bot: p.is_bot,
+              level: p.level,
+              avatar_url: p.avatar_url,
+            }}
+            onClose={() => setCardSeat(null)}
+          />
+        ) : null
+      })()}
       <TableBar room={data} status={wide ? turnStatus : null} />
       <Container className="space-y-4 py-4 sm:space-y-5 sm:py-6">
         <title>{tabTitle}</title>

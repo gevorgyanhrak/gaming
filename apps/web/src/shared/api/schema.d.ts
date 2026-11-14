@@ -500,6 +500,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/users/{username}/card": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A player's card for the popup at a table (PlayerCard). Banned and deactivated accounts are not shown */
+        get: operations["v1.users.card"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/rooms/{room}/reactions": {
         parameters: {
             query?: never;
@@ -1041,6 +1058,57 @@ export interface components {
             min_balance: number;
             min_bet: number;
             max_bet: number | null;
+        };
+        /** PlayerCardResource */
+        PlayerCardResource: {
+            username: string;
+            name: string;
+            avatar_url: string | null;
+            level: number;
+            /** @description XP at which the current level began. */
+            level_xp: number;
+            xp: number;
+            /** @description XP the next level needs (null at the top level). */
+            next_level_xp: number | null;
+            /** @description Fishkas (play money). */
+            balance: number;
+            played: number;
+            wins: number;
+            losses: number;
+            /** @description Wins out of games played, in percent. */
+            win_rate: number | null;
+            biggest_win: {
+                amount: number;
+                game: {
+                    slug: string;
+                    name: string;
+                } | null;
+            } | null;
+            /** @description The game played most. */
+            favourite_game: {
+                slug: string;
+                name: string;
+            } | null;
+            /** @description Wins in a row (best current streak across games). */
+            streak: number;
+            /** @description Seen in the last few minutes. */
+            online: boolean;
+            /** @description The game they're at now. */
+            playing: {
+                slug: string;
+                name: string;
+            } | null;
+            /** @description The latest achievements. */
+            achievements: {
+                key: string;
+                game: {
+                    slug: string;
+                    name: string;
+                } | null;
+                period: string | null;
+                value: number | null;
+                earned_at: string;
+            }[];
         };
         /** PublicUserResource */
         PublicUserResource: {
@@ -2411,6 +2479,30 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["PublicUserResource"] & Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    "v1.users.card": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                username: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `PlayerCardResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PlayerCardResource"];
                     };
                 };
             };

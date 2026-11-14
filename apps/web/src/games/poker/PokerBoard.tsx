@@ -1,3 +1,4 @@
+import { seatTrigger } from '@/features/players/seatTrigger'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -238,14 +239,16 @@ export default function PokerBoard({
                             : ''
                         }`}
                       />
-                      <Avatar
-                        name={name(seat)}
-                        acting={acting}
-                        share={acting ? turnShare : null}
-                        winner={won}
-                        level={levels[seat]}
-                        frame={frames[seat]}
-                      />
+                      <span {...seatTrigger(seat, t('playerCard.open', { name: name(seat) }))}>
+                        <Avatar
+                          name={name(seat)}
+                          acting={acting}
+                          share={acting ? turnShare : null}
+                          winner={won}
+                          level={levels[seat]}
+                          frame={frames[seat]}
+                        />
+                      </span>
                       {won && gain != null ? (
                         <span
                           className={`absolute bottom-full left-1/2 z-30 -translate-x-1/2 rounded-full ${shown ? 'mb-9 min-[901px]:mb-12' : 'mb-1'} bg-black/75 px-2 text-sm font-extrabold whitespace-nowrap text-gold-light tabular-nums ${
