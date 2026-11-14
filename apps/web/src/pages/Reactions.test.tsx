@@ -108,6 +108,34 @@ function serve() {
 }
 
 describe('Emojis and quick messages', () => {
+  it('sends an everyday emoji with one tap from the bar, to the opponent', async () => {
+    const sent = serve()
+    renderRoute('/rooms/room-1')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Send 😂' }))
+
+    await waitFor(() => expect(sent).toHaveLength(1))
+    expect(sent[0]).toMatchObject({ kind: 'emoji', value: '😂', to_seat: 1 })
+  })
+
+  it('counts new lines on the chat button until the chat is opened', async () => {
+    serve()
+    renderRoute('/rooms/room-1')
+    const chat = await screen.findByRole('button', { name: /^Table chat/ })
+
+    act(() =>
+      emit(
+        'user.1',
+        'room.reaction',
+        reaction({ id: 'r-9', seq: 9, from_seat: 1, kind: 'message', value: 'gg' }),
+      ),
+    )
+
+    expect(await screen.findByText('1 new message')).toBeInTheDocument()
+    await userEvent.click(chat)
+    expect(screen.queryByText('1 new message')).not.toBeInTheDocument()
+  })
+
   it('sends an emoji to the opponent; it flies from your seat towards theirs', async () => {
     const sent = serve()
     renderRoute('/rooms/room-1')

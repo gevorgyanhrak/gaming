@@ -745,11 +745,16 @@
     "chat": {
       "title": "Чат стола",
       "empty": "Поздоровайтесь эмодзи или быстрым сообщением.",
-      "mute": "Без анимаций"
+      "mute": "Без анимаций",
+      "unread_one": "{{count}} новое сообщение",
+      "unread_few": "{{count}} новых сообщения",
+      "unread_many": "{{count}} новых сообщений",
+      "unread_other": "{{count}} новых сообщения"
     },
     "exclusive": "Эксклюзивные",
     "exclusiveHint": "Открываются с уровнем",
-    "lockedEmoji": "{{emoji}} откроется на уровне {{level}}"
+    "lockedEmoji": "{{emoji}} откроется на уровне {{level}}",
+    "sendEmoji": "Отправить {{emoji}}"
   },
   "daily": {
     "title": "Ежедневный бонус",

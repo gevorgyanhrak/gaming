@@ -68,6 +68,10 @@ export function RoomReactions({ room, mySeat }: { room: Room; mySeat: number | n
         error={error}
         onOpen={setPicker}
         onQuick={(key, toSeat) => deliver('message', key, toSeat)}
+        quickEmojis={(catalog.data?.emoji ?? [])
+          .flatMap((c) => c.emojis.map((e) => e.emoji))
+          .slice(0, 5)}
+        onEmoji={(emoji, toSeat) => deliver('emoji', emoji, toSeat)}
       />
       <ReactionLayer
         flights={flights}

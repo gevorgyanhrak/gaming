@@ -22,7 +22,7 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
       showcase [x this commit], 2) Big Wins live (real players only, real-time) + >100,000 celebration [x this commit], 3) leaderboards [x this commit],
       4) achievements [x this commit], 5) rank tiers [x this commit], 6) casino sounds with on/off [x this commit].
 - [x] AI marked everywhere (ADR 0022) — 5824006.
-- [x] Side bar → ☰ account menu (no games list) with the language switcher — this commit; table messages bar redesigned, friendlier (owner screenshots 2026-11-14).
+- [x] Side bar → ☰ account menu (no games list) with the language switcher — this commit; table messages bar redesigned, friendlier (owner screenshots 2026-11-14) [x this commit].
 - [ ] Player profile popup on every avatar in every game (real stats, Esc/outside closes). No gifts between players:
       Fishkas are never sent between users (house rule).
 

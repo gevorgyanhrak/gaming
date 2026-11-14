@@ -695,11 +695,14 @@
     "chat": {
       "title": "Table chat",
       "empty": "Say hello with an emoji or a quick message.",
-      "mute": "Mute animations"
+      "mute": "Mute animations",
+      "unread_one": "{{count}} new message",
+      "unread_other": "{{count}} new messages"
     },
     "exclusive": "Exclusive",
     "exclusiveHint": "Open as you level up",
-    "lockedEmoji": "{{emoji}} opens at level {{level}}"
+    "lockedEmoji": "{{emoji}} opens at level {{level}}",
+    "sendEmoji": "Send {{emoji}}"
   },
   "daily": {
     "title": "Daily bonus",
