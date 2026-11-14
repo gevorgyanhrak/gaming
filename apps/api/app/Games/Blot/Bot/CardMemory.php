@@ -8,8 +8,8 @@ use App\Games\Blot\Engine\BlotCards;
  * What a seat knows about the deal, from its own view only (its cards and what the whole table saw): every
  * card played this deal, cards other players are known to hold (shown in a declaration, or the other half of
  * a blot once its first card fell), and what their plays revealed under the rules of play — a player who
- * didn't follow suit has none of it; one who had to trump and didn't has no trumps; one who had to beat a
- * trump and couldn't has none higher. Never looks at anyone's hidden cards.
+ * didn't follow suit has none of it; one who had to trump a plain winner and didn't has no trumps; one who
+ * didn't beat an opponent's trump has none higher. Never looks at anyone's hidden cards.
  */
 final class CardMemory
 {
@@ -191,14 +191,19 @@ final class CardMemory
         if ($winner % 2 === $who % 2) {
             return;   // Partner winning: anything goes, nothing learned.
         }
+        $highest = max(array_map(fn (string $c) => BlotCards::strength($c, $led, $this->trump), $cards));
+        $trumped = $highest >= 100;   // an opponent's trump is winning
         if ($card[1] !== $this->trump) {
-            $voids[$who][$this->trump] = true;   // Had to trump, didn't: no trumps.
+            if ($trumped) {
+                $cap[$who] = min($cap[$who], $highest);   // Had to overtrump, didn't: nothing higher (may hold lower).
+            } else {
+                $voids[$who][$this->trump] = true;   // Had to trump, didn't: no trumps.
+            }
 
             return;
         }
         // Had to beat the highest trump on the table if they could.
-        $highest = max(array_map(fn (string $c) => BlotCards::strength($c, $led, $this->trump), $cards));
-        if ($highest >= 100 && BlotCards::strength($card, $led, $this->trump) < $highest) {
+        if ($trumped && BlotCards::strength($card, $led, $this->trump) < $highest) {
             $cap[$who] = min($cap[$who], $highest);
         }
     }

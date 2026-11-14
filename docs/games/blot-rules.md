@@ -47,9 +47,13 @@ Choices where the sources disagree or are silent are marked **(choice)**.
 Order: trump J 9 A 10 K Q 8 7; others A 10 K Q J 9 8 7. 152 card points + 10 for the last trick = 162.
 
 ## Play
-- Follow suit if you can (any card of it). Without the led suit you must trump, beating the highest trump on the table if
-  you can (otherwise any trump) — unless your partner is winning the trick, then any card. No trump in hand: any card.
-  No-trump games: just follow suit.
+- Follow suit if you can (any card of it, beating or not; a trump lead is followed with any trump).
+- Without the led suit (owner, 2026-11-14):
+  - your partner is winning the trick → any card;
+  - an opponent is winning with a card of another suit → you must trump (any trump); no trump → any card;
+  - an opponent is winning with a trump → you must play a higher trump if you have one; with only lower trumps or
+    none → any card (you are never forced to undertrump).
+- No-trump games: just follow suit.
 - The highest trump wins the trick, otherwise the highest card of the led suit; the winner leads.
 
 ## Declarations

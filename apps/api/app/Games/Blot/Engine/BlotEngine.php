@@ -366,10 +366,13 @@ final class BlotEngine implements GameEngine, HandlesTimeouts, HasOutOfTurnActio
         if ($trumps === []) {
             return $hand;
         }
+        // An opponent is winning: trump it, overtrumping a trump on the table. Every trump beats a plain card,
+        // so a plain winner means any trump; a trump only the higher ones. No higher trump: any card (owner,
+        // 2026-11-14 — never forced to undertrump).
         $highest = max(array_map(fn (string $c) => BlotCards::strength($c, $led, $trump), $played));
         $beating = array_values(array_filter($trumps, fn (string $c) => BlotCards::strength($c, $led, $trump) > $highest));
 
-        return $beating ?: $trumps;
+        return $beating ?: $hand;
     }
 
     /**

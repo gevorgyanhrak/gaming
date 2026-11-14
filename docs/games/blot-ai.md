@@ -13,7 +13,8 @@ plays whatever the engine allows. Where the references differ from the game or e
 | Topic | reblot.am | terz.am | blotstar | This game |
 |---|---|---|---|---|
 | Card points, multipliers (×1/2/4, Boy ×2/3/5) | same | contra ×2, recontra ×4 | same | same |
-| Trump led: must you play a higher trump? | yes, if you can | yes, if you can | — | **no: any trump** (spec: "follow suit, any card of it") — **owner to decide** |
+| Trump led: must you play a higher trump? | yes, if you can | yes, if you can | — | no: any trump (owner, 2026-11-14: follow suit with any card of it) |
+| Opponent trumped, you have only lower trumps | — | — | — | any card, never forced to undertrump (owner, 2026-11-14) |
 | Trumping when the partner wins | not required | not required | — | not required |
 | Bidding ceiling | none stated | bids above 25 may include capot | — | 80 (owner) |
 | After a kaput bid | only kaput, with a higher number | the other team can't name another trump | — | only another kaput (any suit), pass or Quansh (owner) |

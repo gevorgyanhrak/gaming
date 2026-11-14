@@ -10,7 +10,7 @@ use App\Games\Blot\Engine\BlotEngine;
  * exact endgame, +59..+90 Elo there): once every hand has MAX_CARDS or fewer, alpha-beta over every legal
  * line, the pair to act maximising its result and the other pair minimising it, scored with the table's
  * own scoring (BlotEngine::score). Plays by the same rules as the engine (following suit, trumping, the
- * partner exception, any trump on a trump lead) and stops a kaput at its first lost trick, as the engine does.
+ * partner exception, overtrumping only when it can, any trump on a trump lead) and stops a kaput at its first lost trick, as the engine does.
  */
 final class EndgameSolver
 {
@@ -128,7 +128,7 @@ final class EndgameSolver
         $highest = max(array_map(fn (string $c) => BlotCards::strength($c, $led, $this->trump), $played));
         $beating = array_values(array_filter($trumps, fn (string $c) => BlotCards::strength($c, $led, $this->trump) > $highest));
 
-        return $beating ?: $trumps;
+        return $beating ?: $hand;
     }
 
     /**

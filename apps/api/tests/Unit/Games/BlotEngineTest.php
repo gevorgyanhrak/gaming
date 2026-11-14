@@ -184,14 +184,57 @@ it('makes a player without the suit trump, beating the trump on the table when t
     expect(cardsOf($state))->toBe(['8H', 'QH', 'QC']);
 });
 
-it('makes a player beat an opponent\'s trump if they can, otherwise play any trump', function () {
-    $state = blotContract(HANDS, 'C');
-    $state['hands'] = [['AS'], ['9C'], ['7C', 'JC', '8D'], ['QD']];
-    $state = blotAct(blotAct($state, 'play', ['card' => 'AS']), 'play', ['card' => '9C']);
-    expect(cardsOf($state))->toBe(['JC']);
+// Seat 0 (seat 2's partner) leads, seat 1 (an opponent) plays, then seat 2 holds the hand; clubs are trumps.
+dataset('trick cases', [
+    // 1 · Following suit: any card of it, beating or not.
+    'has the led suit: any card of it' => [['AS', '9C'], ['7S', 'KS', 'JC', '8D'], ['7S', 'KS']],
+    'has the led suit, can\'t beat it: still any card of it' => [['AS', '7S'], ['8S', '9S', 'JC'], ['8S', '9S']],
+    // 2 · Partner winning: anything.
+    'partner winning, no led suit: any card' => [['AS', '7D'], ['JC', '8D', '7H'], ['JC', '8D', '7H']],
+    // 3 · Opponent winning with a plain card: must trump, with any trump.
+    'opponent winning with a plain card: any trump' => [['7S', 'AS'], ['7C', 'JC', '8D'], ['7C', 'JC']],
+    'opponent winning, no trumps: any card' => [['7S', 'AS'], ['8D', '7H'], ['8D', '7H']],
+    // 4 · Opponent winning with a trump: overtrump if possible, otherwise any card.
+    'opponent trumped, holds a higher trump: must overtrump' => [['7S', '9C'], ['7C', 'JC', '8D'], ['JC']],
+    'opponent trumped, two higher trumps: either' => [['7S', 'AC'], ['9C', 'JC', '7C', '8D'], ['9C', 'JC']],
+    'opponent trumped, only lower trumps: any card' => [['7S', '9C'], ['7C', '8C', '8D'], ['7C', '8C', '8D']],
+    'opponent trumped, no trumps: any card' => [['7S', '9C'], ['8D', '7H'], ['8D', '7H']],
+    // A trump lead is followed with any trump (rule 1).
+    'trump led: any trump, beating or not' => [['9C', 'AS'], ['7C', 'JC', '8D'], ['7C', 'JC']],
+]);
 
-    $state['hands'][2] = ['7C', '8C', '8D'];
-    expect(cardsOf($state))->toBe(['7C', '8C']);
+/**
+ * Seat 2's playable cards after seats 0 and 1 played $first and $second (clubs are trumps).
+ *
+ * @param  array{0: string, 1: string}  $plays
+ * @param  list<string>  $hand
+ * @param  list<string>  $playable
+ */
+it('lets the third player play exactly what the rules allow', function (array $plays, array $hand, array $playable) {
+    $state = blotContract(HANDS, 'C');
+    $state['hands'] = [[$plays[0]], [$plays[1]], $hand, ['QD']];
+    $state = blotAct(blotAct($state, 'play', ['card' => $plays[0]]), 'play', ['card' => $plays[1]]);
+
+    expect(cardsOf($state))->toBe($playable);
+})->with('trick cases');
+
+it('lets a player whose partner trumped play any card, never forcing an overtrump', function () {
+    $state = blotContract(HANDS, 'C');
+    // Seat 1 trumps seat 0's ace, seat 2 follows; seat 3 is seat 1's partner, whose trump is winning.
+    $state['hands'] = [['AS'], ['9C'], ['8S'], ['JC', '7C', '8D']];
+    $state = blotAct(blotAct(blotAct($state, 'play', ['card' => 'AS']), 'play', ['card' => '9C']), 'play', ['card' => '8S']);
+
+    expect(cardsOf($state))->toBe(['JC', '7C', '8D']);
+});
+
+it('refuses a card the rules don\'t allow, for people and AI alike (one engine check)', function () {
+    $state = blotContract(HANDS, 'C');
+    $state['hands'] = [['7S'], ['9C'], ['7C', 'JC', '8D'], ['QD']];
+    $state = blotAct(blotAct($state, 'play', ['card' => '7S']), 'play', ['card' => '9C']);
+
+    expect((new BlotEngine)->isLegal($state, 2, new Action('play', ['card' => '8D'])))->toBeFalse()
+        ->and((new BlotEngine)->isLegal($state, 2, new Action('play', ['card' => '7C'])))->toBeFalse()
+        ->and((new BlotEngine)->isLegal($state, 2, new Action('play', ['card' => 'JC'])))->toBeTrue();
 });
 
 it('lets any card follow when the suit is missing in no-trump', function () {
