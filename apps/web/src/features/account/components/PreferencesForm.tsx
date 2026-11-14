@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import type { CurrentUser } from '@/features/auth/api'
-import { playSound, unlockSounds } from '@/features/play/sounds'
+import { playSound, unlockSounds } from '@/shared/lib/sounds'
 import { bundledLocales, isLocale, languageName } from '@/shared/i18n'
 import { Card } from '@/shared/ui/Card'
 import { SelectField } from '@/shared/ui/Field'

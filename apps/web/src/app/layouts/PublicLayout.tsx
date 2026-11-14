@@ -10,6 +10,7 @@ import { useGames } from '@/features/catalog/queries'
 import { HomeBackdrop } from '@/features/catalog/components/HomeBackdrop'
 import { BigWinCelebration } from '@/features/wins/BigWinCelebration'
 import { AchievementToast } from '@/features/achievements/AchievementToast'
+import { SoundToggle } from '@/features/sound/SoundToggle'
 import { ActiveGamesBar } from '@/features/play/components/ActiveGamesBar'
 import { FishkaBalance } from '@/features/wallet/components/FishkaBalance'
 import { FishkaIcon } from '@/features/wallet/components/FishkaIcon'
@@ -143,6 +144,7 @@ export function PublicLayout() {
               )}
             </div>
             <nav aria-label={t('nav.main')} className="flex items-center gap-1 sm:gap-2">
+              <SoundToggle />
               {user.isPending ? (
                 <Skeleton className="size-9 rounded-full" />
               ) : user.data ? (

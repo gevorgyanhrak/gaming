@@ -20,7 +20,7 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 - [ ] Casino platform, in stages (owner: stages; AI marked everywhere → new ADR replacing ADR 0021's "never
       marked"; level tiers as named ranks, no "VIP" word; Fishka stays play money): 1) homepage + Blackjack/Poker/Blot
       showcase [x this commit], 2) Big Wins live (real players only, real-time) + >100,000 celebration [x this commit], 3) leaderboards [x this commit],
-      4) achievements [x this commit], 5) rank tiers [x this commit], 6) casino sounds with on/off.
+      4) achievements [x this commit], 5) rank tiers [x this commit], 6) casino sounds with on/off [x this commit].
 - [x] AI marked everywhere (ADR 0022) — 5824006.
 - [ ] Side bar → account menu (no games list) with the language switcher; table messages bar redesigned, friendlier (owner screenshots 2026-11-14).
 - [ ] Player profile popup on every avatar in every game (real stats, Esc/outside closes). No gifts between players:

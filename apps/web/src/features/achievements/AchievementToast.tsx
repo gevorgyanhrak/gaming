@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCurrentUser } from '@/features/auth/hooks'
+import { playUiSound } from '@/shared/lib/sounds'
 import { useUserChannel } from '@/shared/realtime/useUserChannel'
 import { CloseIcon } from '@/shared/ui/icons'
 import { AchievementBadge } from './AchievementBadge'
@@ -18,7 +19,10 @@ export function AchievementToast() {
   const current = queue[0]
 
   useUserChannel(user?.id, {
-    'achievement.unlocked': (a: Achievement) => setQueue((q) => [...q, a]),
+    'achievement.unlocked': (a: Achievement) => {
+      setQueue((q) => [...q, a])
+      playUiSound('unlock')
+    },
   })
 
   useEffect(() => {

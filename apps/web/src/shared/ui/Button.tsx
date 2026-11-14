@@ -1,3 +1,4 @@
+import { playUiSound } from '@/shared/lib/sounds'
 import type { ComponentProps, ReactNode } from 'react'
 import { Link, type LinkProps } from 'react-router'
 
@@ -49,6 +50,7 @@ export function Button({
   type = 'button',
   disabled,
   children,
+  onClick,
   ...props
 }: ComponentProps<'button'> & {
   variant?: Variant
@@ -63,6 +65,11 @@ export function Button({
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}
+      onClick={(event) => {
+        // A soft tick on the main buttons (when sounds are on).
+        if (variant === 'gold' || variant === 'primary') playUiSound('click')
+        onClick?.(event)
+      }}
       {...props}
     >
       {loading ? <Spinner /> : null}

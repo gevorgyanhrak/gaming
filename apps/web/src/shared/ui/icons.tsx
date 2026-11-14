@@ -158,3 +158,17 @@ export const LockIcon = (p: IconProps) => (
     <path d="M8 11V8a4 4 0 0 1 8 0v3" />
   </Icon>
 )
+
+export const SoundOnIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" />
+    <path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" />
+  </Icon>
+)
+
+export const SoundOffIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" />
+    <path d="m16 9.5 5 5M21 9.5l-5 5" />
+  </Icon>
+)

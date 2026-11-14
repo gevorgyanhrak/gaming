@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { GameTraits } from '@/games/registry'
 import type { RoomState } from './api'
-import { playSound, unlockSounds, type Sound } from './sounds'
+import { playSound, unlockSounds, type Sound } from '@/shared/lib/sounds'
 
 type Snapshot = Pick<RoomState, 'version' | 'seat' | 'seats_to_act' | 'view' | 'result'>
 

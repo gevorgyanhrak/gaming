@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { GameIcon } from '@/features/catalog/components/GameArt'
 import { FishkaBalance } from '@/features/wallet/components/FishkaBalance'
+import { SoundToggle } from '@/features/sound/SoundToggle'
 import { BackIcon } from '@/shared/ui/icons'
 import { Skeleton } from '@/shared/ui/Skeleton'
 import type { Room } from '../api'
@@ -48,6 +49,7 @@ export function TableBar({ room, status = null }: { room?: Room; status?: ReactN
         </div>
       )}
       {status}
+      <SoundToggle className="size-9" />
       {user ? <FishkaBalance key={user.id} /> : null}
     </header>
   )

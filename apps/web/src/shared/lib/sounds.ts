@@ -6,7 +6,21 @@
  */
 
 export type Sound =
-  'move' | 'capture' | 'yourTurn' | 'lowTime' | 'handWin' | 'win' | 'draw' | 'loss'
+  | 'move'
+  | 'capture'
+  | 'yourTurn'
+  | 'lowTime'
+  | 'handWin'
+  | 'win'
+  | 'draw'
+  | 'loss'
+  // Casino touches outside the games (2026-11-14): a card dealt, chips clinking, a soft button tick, the
+  // big-win fanfare and the achievement chime.
+  | 'deal'
+  | 'chips'
+  | 'click'
+  | 'fanfare'
+  | 'unlock'
 export type Material = 'wood' | 'cards'
 
 const MASTER = 0.25
@@ -29,6 +43,18 @@ export function unlockSounds() {
   } catch {
     context = null
   }
+}
+
+let uiOn = false
+
+/** Whether the player has sounds on (set from their preference by useSoundSetting); UI sounds follow it. */
+export function setUiSounds(on: boolean) {
+  uiOn = on
+}
+
+/** A sound outside a game (buttons, chips, celebrations): only when the player has sounds on. */
+export function playUiSound(sound: Sound) {
+  if (uiOn) playSound(sound)
 }
 
 /** Plays a sound now, if audio is unlocked and running. */
@@ -151,6 +177,30 @@ const recipes: Record<Sound, Recipe> = {
     tone(ctx, out, at, { freq: 392, peak: 0.5, decay: 0.22 })
     tone(ctx, out, at + 0.16, { freq: 392, peak: 0.5, decay: 0.22 })
   },
+  deal: (ctx, out, at) => noiseBurst(ctx, out, at, 2600, 0.35, 0.09),
+  chips: (ctx, out, at) => {
+    // Three quick clinks, a little apart in pitch.
+    ;[0, 0.05, 0.11].forEach((dt, i) => {
+      tone(ctx, out, at + dt, { type: 'triangle', freq: 2400 + i * 260, peak: 0.18, decay: 0.07 })
+      tone(ctx, out, at + dt, { type: 'sine', freq: 4700 + i * 300, peak: 0.08, decay: 0.05 })
+    })
+  },
+  click: (ctx, out, at) =>
+    tone(ctx, out, at, { type: 'triangle', freq: 1250, peak: 0.12, decay: 0.05 }),
+  fanfare: (ctx, out, at) => {
+    // A rising brass-like arpeggio, then a shimmer.
+    ;[523, 659, 784, 1047].forEach((freq, i) => {
+      tone(ctx, out, at + i * 0.12, { type: 'sawtooth', freq, peak: 0.16, decay: 0.32 })
+      tone(ctx, out, at + i * 0.12, { type: 'triangle', freq, peak: 0.3, decay: 0.36 })
+    })
+    ;[1568, 2093, 2637].forEach((freq, i) => {
+      tone(ctx, out, at + 0.55 + i * 0.07, { type: 'sine', freq, peak: 0.12, decay: 0.5 })
+    })
+  },
+  unlock: (ctx, out, at) => {
+    tone(ctx, out, at, { type: 'sine', freq: 1319, peak: 0.3, decay: 0.6 })
+    tone(ctx, out, at + 0.09, { type: 'sine', freq: 1976, peak: 0.22, decay: 0.7 })
+  },
   loss: (ctx, out, at) => {
     const low = ctx.createBiquadFilter()
     low.type = 'lowpass'
@@ -159,4 +209,28 @@ const recipes: Record<Sound, Recipe> = {
     tone(ctx, low, at, { freq: 440, peak: 0.5, decay: 0.35 })
     tone(ctx, low, at + 0.18, { freq: 349, peak: 0.5, decay: 0.35 })
   },
+}
+
+/** A short filtered noise burst: a card sliding off the deck. */
+function noiseBurst(
+  ctx: AudioContext,
+  out: AudioNode,
+  at: number,
+  cutoff: number,
+  peak: number,
+  decay: number,
+) {
+  const length = Math.ceil(ctx.sampleRate * decay)
+  const buffer = ctx.createBuffer(1, length, ctx.sampleRate)
+  const data = buffer.getChannelData(0)
+  for (let i = 0; i < length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / length)
+  const source = ctx.createBufferSource()
+  source.buffer = buffer
+  const band = ctx.createBiquadFilter()
+  band.type = 'bandpass'
+  band.frequency.value = cutoff
+  source.connect(band)
+  band.connect(envelope(ctx, out, at, peak, decay))
+  source.start(at)
+  source.stop(at + decay)
 }

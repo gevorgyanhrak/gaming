@@ -1175,5 +1175,10 @@
     "veteran_few": "Опытный: {{count}} игры",
     "veteran_many": "Опытный: {{count}} игр",
     "veteran_other": "Опытный: {{count}} игр"
+  },
+  "sound": {
+    "toggle": "Звук",
+    "on": "Звук включён",
+    "off": "Звук выключен"
   }
 }

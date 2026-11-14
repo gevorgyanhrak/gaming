@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { useCurrentUser } from '@/features/auth/hooks'
-import { playSound } from '@/features/play/sounds'
+import { playSound } from '@/shared/lib/sounds'
 import { useTranslation } from 'react-i18next'
 import { useCountdown } from '@/features/play/useCountdown'
 import { useMediaQuery } from '@/shared/lib/useMediaQuery'

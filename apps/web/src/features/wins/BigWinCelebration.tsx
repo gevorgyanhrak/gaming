@@ -3,6 +3,7 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router'
 import { FishkaIcon } from '@/features/wallet/components/FishkaIcon'
+import { playUiSound } from '@/shared/lib/sounds'
 import { usePublicChannel } from '@/shared/realtime/usePublicChannel'
 import { Avatar } from '@/shared/ui/Avatar'
 import { CloseIcon } from '@/shared/ui/icons'
@@ -31,7 +32,10 @@ export function BigWinCelebration() {
     'win.recorded': (next: Win) => {
       queryClient.setQueryData<Win[]>(winsKey, (old) => withWin(old, next))
       queryClient.setQueryData(freshWinKey, next.id)
-      if (next.celebrate) setWin(next)
+      if (next.celebrate && !window.location.pathname.startsWith('/rooms/')) {
+        setWin(next)
+        playUiSound('fanfare')
+      }
     },
   })
 

@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { useRealtimeConnected } from '@/shared/realtime/useRealtimeConnected'
+import { playUiSound } from '@/shared/lib/sounds'
 import { useUserChannel } from '@/shared/realtime/useUserChannel'
 import { fetchWallet, walletHistoryKey, walletKey } from './api'
 
@@ -31,7 +32,9 @@ export function useWalletSync() {
   const queryClient = useQueryClient()
 
   useUserChannel(user?.id, {
-    'wallet.updated': () => {
+    'wallet.updated': (payload: { change?: number }) => {
+      // Fishkas coming in clink (when sounds are on).
+      if ((payload?.change ?? 0) > 0) playUiSound('chips')
       void queryClient.invalidateQueries({ queryKey: walletKey })
       void queryClient.invalidateQueries({ queryKey: walletHistoryKey })
     },

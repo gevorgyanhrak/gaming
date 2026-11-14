@@ -1091,5 +1091,10 @@
     "weekly_champion": "Weekly champion",
     "veteran_one": "Experienced: {{count}} game",
     "veteran_other": "Experienced: {{count}} games"
+  },
+  "sound": {
+    "toggle": "Sounds",
+    "on": "Sounds on",
+    "off": "Sounds off"
   }
 }

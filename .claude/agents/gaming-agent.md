@@ -158,7 +158,7 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
 - AI is marked (ADR 0022, supersedes ADR 0021's "never marked"): `shared/ui/AiTag` in player lists and the matchmaking
   table (`table[].is_bot`), and RoomPage's `players` map gives every board "Name · AI" (`play.aiName`). AI never counts
   in people statistics (playing now, Big Wins, leaderboards, achievements).
-- Sounds: `features/play/sounds.ts` synthesizes them with Web Audio (no files); `useGameSounds` picks
+- Sounds: `shared/lib/sounds.ts` synthesizes them (game sounds + casino UI sounds: deal, chips, click, fanfare, unlock — `playUiSound` follows the player's on/off via `features/sound/useSoundSetting`; `SoundToggle` in the header and TableBar) with Web Audio (no files); `useGameSounds` picks
   at most one per new state version via the pure `soundFor` (result > your turn when hidden or > 2
   seats > capture > move) plus a low-time warning at 10 s; honours `preferences.sound`. The room tab
   title shows "● Your turn · {game}".
