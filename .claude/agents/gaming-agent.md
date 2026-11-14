@@ -142,8 +142,8 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   `games/registry.ts` (lazy preview component, `mode` prop); others keep the Segmented switch.
 - Club look (modelled on bazarblot.am): the app is a brass-edged window (`.club-frame`) over a lamp-lit
   wood room (`.club-room`); panels are `.club-panel`, icon medallions `.club-medal`. Warm tokens in
-  `index.css`: accent is the green "play" colour, accent-text/gold is brass. Navigation is a ☰ drawer
-  (`Drawer` + `SideNav` in PublicLayout; a back arrow on `/rooms/*`) plus a phone tab bar. Games are
+  `index.css`: accent is the green "play" colour, accent-text/gold is brass. Navigation is a ☰ menu
+  (`MenuDrawer` in PublicLayout: home, games, leaderboards, the account's pages, the language — no games list, no side rail; owner 2026-11-14; a back arrow on `/rooms/*`) plus a phone tab bar. Games are
   a 3D carousel (`GameCarousel`: arrows, dots, swipe, arrow keys, autoplay off with reduced motion);
   the opened game's art and title travel to its page with React `<ViewTransition name>` (names in
   `features/catalog/transitions.ts`; the Outlet is wrapped in one `<ViewTransition>`; don't use the

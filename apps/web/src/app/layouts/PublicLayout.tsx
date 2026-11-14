@@ -1,12 +1,10 @@
-import { useState, ViewTransition, type ReactNode } from 'react'
+import { useEffect, useRef, useState, ViewTransition, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import { updateSettings } from '@/features/account/api'
 import { UserMenu } from '@/features/auth/components/UserMenu'
 import { VerificationBanner } from '@/features/auth/components/VerificationBanner'
 import { useCurrentUser } from '@/features/auth/hooks'
-import { GameIcon } from '@/features/catalog/components/GameArt'
-import { useGames } from '@/features/catalog/queries'
 import { HomeBackdrop } from '@/features/catalog/components/HomeBackdrop'
 import { BigWinCelebration } from '@/features/wins/BigWinCelebration'
 import { AchievementToast } from '@/features/achievements/AchievementToast'
@@ -29,24 +27,18 @@ import { ButtonLink } from '@/shared/ui/Button'
 import { Container } from '@/shared/ui/Container'
 import {
   BackIcon,
-  ChevronIcon,
+  CloseIcon,
   GridIcon,
   HistoryIcon,
   HomeIcon,
+  MenuIcon,
   SettingsIcon,
+  StarIcon,
   TrophyIcon,
   UserIcon,
 } from '@/shared/ui/icons'
 import { Skeleton } from '@/shared/ui/Skeleton'
-import { Tooltip } from '@/shared/ui/Tooltip'
 import { useRefreshOnLanguageChange } from '../useRefreshOnLanguageChange'
-
-const railLink = ({ isActive }: { isActive: boolean }) =>
-  `relative flex min-h-11 items-center gap-3 rounded-control px-3 text-sm font-medium transition-colors duration-150 ${
-    isActive
-      ? 'bg-emerald-800 text-fg shadow-[inset_2px_0_0_var(--color-gold)]'
-      : 'text-muted hover:bg-emerald-800/70 hover:text-fg'
-  }`
 
 const tabLink = ({ isActive }: { isActive: boolean }) =>
   `flex min-h-16 flex-1 flex-col items-center justify-center gap-1 text-xs font-medium ${
@@ -56,17 +48,8 @@ const tabLink = ({ isActive }: { isActive: boolean }) =>
 const iconButton =
   'flex size-11 shrink-0 items-center justify-center rounded-control border border-border-strong/50 bg-emerald-800 text-fg transition-colors hover:border-gold-light'
 
-const readRail = (): boolean | null => {
-  try {
-    const stored = localStorage.getItem('rail')
-    return stored === null ? null : stored === 'icons'
-  } catch {
-    return null
-  }
-}
-
 /**
- * The app's shell (TASK-048): a left rail from 1024 px, a header with the balance and account, the page,
+ * The app's shell (TASK-048): a header with the ☰ menu (MenuDrawer), the balance and account, the page,
  * and a bottom bar on phones and tablets. At a table the room shows its own bar (TableBar) instead.
  */
 export function PublicLayout() {
@@ -85,8 +68,9 @@ export function PublicLayout() {
   const atTable = pathname.startsWith('/rooms/')
   // The landing page and a signed-in player's home show the one big picture.
   const isHome = !inMaintenance && (pathname === '/' || pathname === '/dashboard')
-  const showRail = wide && !atTable
   const showBar = !wide && !atTable
+  // The ☰ menu (owner, 2026-11-14: no side bar of games; the account's pages and the language, in a menu).
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const brand = (
     <>
@@ -125,7 +109,13 @@ export function PublicLayout() {
         <HomeBackdrop className="pointer-events-none fixed inset-x-0 top-0 -z-10 h-lvh w-full" />
       ) : null}
 
-      {showRail ? <Rail home={home} signedIn={Boolean(user.data)} language={language} /> : null}
+      <MenuDrawer
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        home={home}
+        signedIn={Boolean(user.data)}
+        language={language}
+      />
 
       <div className={`flex min-h-dvh min-w-0 flex-1 flex-col ${showBar ? 'pb-tabbar' : ''}`}>
         {/* At a table the room draws its own bar (TableBar); during maintenance the header stays. */}
@@ -137,11 +127,20 @@ export function PublicLayout() {
                   <BackIcon />
                 </Link>
               ) : null}
-              {showRail ? null : (
-                <Link to={home} className="flex min-w-0 items-center gap-2.5 font-bold text-fg">
-                  {brand}
-                </Link>
+              {atTable ? null : (
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen(true)}
+                  aria-label={t('nav.menu')}
+                  aria-expanded={menuOpen}
+                  className={iconButton}
+                >
+                  <MenuIcon />
+                </button>
               )}
+              <Link to={home} className="flex min-w-0 items-center gap-2.5 font-bold text-fg">
+                {brand}
+              </Link>
             </div>
             <nav aria-label={t('nav.main')} className="flex items-center gap-1 sm:gap-2">
               <SoundToggle />
@@ -212,7 +211,7 @@ export function PublicLayout() {
                 </nav>
               ) : null}
             </div>
-            {showRail ? null : language}
+            {language}
           </Container>
         </footer>
       </div>
@@ -258,111 +257,127 @@ export function PublicLayout() {
   )
 }
 
-/** The left rail: every section and game, labelled from 1280 px, icons with tooltips below; the player can toggle it. */
-function Rail({
+/**
+ * The ☰ menu: a panel from the left with the main pages, the player's account pages and the language. Closes on
+ * Escape, a tap outside or a choice; the page behind stays as it was.
+ */
+function MenuDrawer({
+  open,
+  onClose,
   home,
   signedIn,
   language,
 }: {
+  open: boolean
+  onClose: () => void
   home: string
   signedIn: boolean
   language: ReactNode
 }) {
   const { t } = useTranslation()
   const config = usePublicConfig()
-  const games = useGames()
-  const roomy = useMediaQuery('(min-width: 1280px)')
-  const [choice, setChoice] = useState(readRail)
-  const iconsOnly = choice ?? !roomy
+  const { pathname } = useLocation()
+  const panelRef = useRef<HTMLDivElement>(null)
+  const [openedAt, setOpenedAt] = useState(pathname)
+  if (open && openedAt !== pathname) {
+    setOpenedAt(pathname)
+    onClose()
+  }
 
-  const toggle = () => {
-    const next = !iconsOnly
-    setChoice(next)
-    try {
-      localStorage.setItem('rail', next ? 'icons' : 'full')
-    } catch {
-      // Only a convenience: the choice simply isn't remembered.
+  useEffect(() => {
+    if (!open) return
+    panelRef.current?.querySelector<HTMLElement>('a, button')?.focus()
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
     }
-  }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose])
 
-  const link = (to: string, label: string, icon: ReactNode, end = false) => {
-    const item = (
-      <NavLink to={to} end={end} className={railLink} aria-label={iconsOnly ? label : undefined}>
-        <span className="flex size-6 shrink-0 items-center justify-center">{icon}</span>
-        {iconsOnly ? null : <span className="truncate">{label}</span>}
-      </NavLink>
-    )
-    return iconsOnly ? (
-      <Tooltip key={to} text={label}>
-        {item}
-      </Tooltip>
-    ) : (
-      <div key={to}>{item}</div>
-    )
-  }
+  if (!open) return null
+  const link = (to: string, label: string, icon: ReactNode, end = false) => (
+    <NavLink
+      to={to}
+      end={end}
+      onClick={onClose}
+      className="flex min-h-11 items-center gap-3 rounded-control px-3 text-sm font-semibold text-fg hover:bg-emerald-800/70 aria-[current=page]:bg-gold/15 aria-[current=page]:text-gold-light"
+    >
+      <span className="flex size-6 shrink-0 items-center justify-center text-gold">{icon}</span>
+      {label}
+    </NavLink>
+  )
 
   return (
-    <aside
-      className={`sticky top-0 flex h-dvh shrink-0 flex-col gap-5 border-r border-gold/20 bg-emerald-900 px-3 py-3 ${iconsOnly ? 'w-rail-icons' : 'w-rail'}`}
-    >
-      <Link to={home} className="flex h-10 items-center gap-2.5 px-2 font-bold text-fg">
-        <img
-          src={config.data?.logo_url ?? '/favicon.svg'}
-          alt=""
-          className="size-8 shrink-0 object-contain"
-        />
-        {iconsOnly ? (
-          <span className="sr-only">{config.data?.name}</span>
-        ) : (
-          <span className="truncate">{config.data?.name}</span>
-        )}
-      </Link>
-
-      <nav aria-label={t('nav.sections')} className="flex min-h-0 flex-1 flex-col gap-5">
-        <div className="flex flex-col gap-1">
-          {link(home, t('nav.home'), <HomeIcon />, true)}
-          {link('/games', t('nav.games'), <GridIcon />, true)}
-        </div>
-
-        <div className="flex flex-col gap-1">
-          {iconsOnly ? null : (
-            <p className="px-3 pb-1 text-xs font-semibold text-muted">{t('nav.games')}</p>
-          )}
-          {games.isPending
-            ? Array.from({ length: 5 }, (_, i) => <Skeleton key={i} className="mx-3 my-1.5 h-5" />)
-            : (games.data ?? []).map((game) =>
-                link(
-                  `/games/${game.slug}`,
-                  game.name,
-                  <GameIcon slug={game.slug} name={game.name} />,
-                ),
-              )}
-        </div>
-
-        {signedIn ? (
-          <div className="flex flex-col gap-1">
-            {link('/wallet', t('nav.wallet'), <FishkaIcon className="size-6" />)}
-            {link('/ranks', t('nav.ranks'), <TrophyIcon />)}
-            {link('/history', t('nav.history'), <HistoryIcon />)}
-            {link('/profile', t('nav.profile'), <UserIcon />)}
-          </div>
-        ) : null}
-
-        <div className="mt-auto flex flex-col gap-1">
-          {signedIn ? link('/settings', t('nav.settings'), <SettingsIcon />) : null}
-          {iconsOnly ? null : <div className="px-3 py-1">{language}</div>}
+    <div className="fixed inset-0 z-50">
+      <button
+        type="button"
+        aria-label={t('nav.closeMenu')}
+        onClick={onClose}
+        className="absolute inset-0 bg-black/60 motion-safe:animate-[fade-in_150ms_ease-out]"
+      />
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('nav.menu')}
+        className="absolute inset-y-0 left-0 flex w-[min(20rem,85vw)] flex-col gap-4 border-r border-gold/25 bg-emerald-900 p-3 shadow-[0_0_40px_rgb(0_0_0/0.6)] motion-safe:animate-[drawer-in_200ms_ease-out]"
+      >
+        <div className="flex items-center justify-between gap-2 px-1">
+          <Link
+            to={home}
+            onClick={onClose}
+            className="flex min-w-0 items-center gap-2.5 font-bold text-fg"
+          >
+            <img
+              src={config.data?.logo_url ?? '/favicon.svg'}
+              alt=""
+              className="size-8 shrink-0 object-contain"
+            />
+            <span className="truncate">{config.data?.name}</span>
+          </Link>
           <button
             type="button"
-            aria-expanded={!iconsOnly}
-            aria-label={t('nav.toggleRail')}
-            onClick={toggle}
-            className="flex min-h-11 items-center justify-center rounded-control text-muted hover:bg-emerald-800/70 hover:text-fg"
+            onClick={onClose}
+            aria-label={t('nav.closeMenu')}
+            className={iconButton}
           >
-            <ChevronIcon className={`size-5 ${iconsOnly ? '' : 'rotate-180'}`} />
+            <CloseIcon />
           </button>
         </div>
-      </nav>
-    </aside>
+        <nav
+          aria-label={t('nav.sections')}
+          className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto"
+        >
+          <div className="flex flex-col gap-1">
+            {link(home, t('nav.home'), <HomeIcon />, true)}
+            {link('/games', t('nav.games'), <GridIcon />, true)}
+            {link('/leaderboards', t('leaders.title'), <TrophyIcon />)}
+          </div>
+          {signedIn ? (
+            <div className="flex flex-col gap-1 border-t border-gold/15 pt-3">
+              <p className="px-3 pb-1 text-xs font-semibold tracking-wider text-muted uppercase">
+                {t('nav.account')}
+              </p>
+              {link('/profile', t('nav.profile'), <UserIcon />)}
+              {link('/wallet', t('nav.wallet'), <FishkaIcon className="size-6" />)}
+              {link('/ranks', t('nav.ranks'), <StarIcon className="size-5" />)}
+              {link('/history', t('nav.history'), <HistoryIcon />)}
+              {link('/settings', t('nav.settings'), <SettingsIcon />)}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2 border-t border-gold/15 px-1 pt-3">
+              <ButtonLink to="/login" variant="secondary" onClick={onClose}>
+                {t('nav.login')}
+              </ButtonLink>
+              <ButtonLink to="/register" variant="gold" onClick={onClose}>
+                {t('nav.register')}
+              </ButtonLink>
+            </div>
+          )}
+          <div className="mt-auto border-t border-gold/15 px-3 pt-3">{language}</div>
+        </nav>
+      </div>
+    </div>
   )
 }
 

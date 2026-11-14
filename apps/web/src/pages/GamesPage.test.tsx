@@ -1,7 +1,7 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { delay, http, HttpResponse } from 'msw'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { gameFixture, summaryOf } from '@/test/handlers'
 import { renderRoute } from '@/test/render'
 import { server } from '@/test/server'
@@ -85,12 +85,7 @@ describe('Games catalog', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Игры')
   })
 
-  it('lists every game in the rail on wide screens', async () => {
-    vi.stubGlobal('matchMedia', (query: string) => ({
-      matches: query.includes('1024'),
-      addEventListener: () => undefined,
-      removeEventListener: () => undefined,
-    }))
+  it('opens the ☰ menu with the sections and the language — no list of games — and closes it with Escape', async () => {
     server.use(
       http.get('*/api/v1/games', () =>
         HttpResponse.json({
@@ -98,15 +93,19 @@ describe('Games catalog', () => {
         }),
       ),
     )
-
     renderRoute('/games')
 
-    const rail = await screen.findByRole('navigation', { name: 'Sections' })
-    expect(await within(rail).findByRole('link', { name: 'Durak' })).toHaveAttribute(
+    await userEvent.click(await screen.findByRole('button', { name: 'Menu' }))
+    const menu = screen.getByRole('dialog', { name: 'Menu' })
+    expect(within(menu).getByRole('link', { name: 'Leaderboards' })).toHaveAttribute(
       'href',
-      '/games/durak',
+      '/leaderboards',
     )
-    vi.unstubAllGlobals()
+    expect(within(menu).queryByRole('link', { name: 'Durak' })).not.toBeInTheDocument()
+    expect(within(menu).getByRole('combobox', { name: 'Language' })).toBeInTheDocument()
+
+    await userEvent.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog', { name: 'Menu' })).not.toBeInTheDocument()
   })
 
   const board = { slug: 'board', name: 'Board games', sort_order: 10 }
