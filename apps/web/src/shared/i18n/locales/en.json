@@ -1056,5 +1056,25 @@
     "congrats": "Congratulations!",
     "wonIn": "Won {{amount}} in {{game}}!",
     "close": "Close"
+  },
+  "leaders": {
+    "title": "Leaderboards",
+    "subtitle": "Who won the most Fishkas — people only, from finished games.",
+    "period": "Period",
+    "periods": {
+      "day": "Today",
+      "week": "This week",
+      "month": "This month"
+    },
+    "gameFilter": "Game",
+    "all": "All",
+    "rank": "Place",
+    "empty": "No winners in this period yet.",
+    "error": "The leaderboard can’t be shown right now.",
+    "game": {
+      "blackjack": "Blackjack",
+      "poker": "Poker",
+      "blot": "Blot"
+    }
   }
 }

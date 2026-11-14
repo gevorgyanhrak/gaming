@@ -155,6 +155,7 @@ export const handlers = [
   http.get('*/api/v1/me/stats', () => HttpResponse.json({ data: [] })),
   // Big Wins live: an empty week unless a test serves wins.
   http.get('*/api/v1/wins', () => HttpResponse.json({ data: [] })),
+  http.get('*/api/v1/leaderboards', () => HttpResponse.json({ data: [] })),
   http.get('*/api/v1/me/rooms', () => HttpResponse.json({ data: [] })),
   http.post('*/api/v1/rooms/:id/presence', () => new HttpResponse(null, { status: 204 })),
   http.get('*/api/v1/matchmaking', () =>

@@ -4,6 +4,7 @@ import { useCurrentUser } from '@/features/auth/hooks'
 import { GameIcon } from '@/features/catalog/components/GameArt'
 import { GameShowcase } from '@/features/casino/GameShowcase'
 import { LiveBigWins } from '@/features/wins/LiveBigWins'
+import { LeaderboardCard } from '@/features/leaderboards/LeaderboardCard'
 import { useGames, type GameSummary } from '@/features/catalog/queries'
 import { fetchMyStats, myStatsKey } from '@/features/play/api'
 import { DailyBonusCard } from '@/features/wallet/components/DailyBonusCard'
@@ -69,7 +70,10 @@ export function DashboardPage() {
           <h2 className="mb-3 text-2xl font-bold text-fg">{t('dashboard.gamesHeading')}</h2>
           <GameShowcase />
           <div className="mt-5">
-            <LiveBigWins />
+            <div className="grid gap-5 lg:grid-cols-2">
+              <LiveBigWins />
+              <LeaderboardCard />
+            </div>
           </div>
         </section>
         <DashboardGames />

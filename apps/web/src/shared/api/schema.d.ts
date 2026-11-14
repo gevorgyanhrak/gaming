@@ -281,6 +281,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/leaderboards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1.leaderboards.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/me/level": {
         parameters: {
             query?: never;
@@ -985,6 +1001,25 @@ export interface components {
             current_streak: number;
             best_streak: number;
             last_played_at: string | null;
+        };
+        /** LeaderboardRowResource */
+        LeaderboardRowResource: {
+            rank: number;
+            /** @description Fishkas won in the period (net results of games won). */
+            total: number;
+            /** @description Games won in the period. */
+            wins: number;
+            player: {
+                username: string;
+                name: string;
+                avatar_url: string | null;
+                level: number;
+            };
+            /** @description The board's game, or (overall) the one they won most in. */
+            game: {
+                slug: string;
+                name: string;
+            } | null;
         };
         /** LoginRequest */
         LoginRequest: {
@@ -1859,6 +1894,32 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.leaderboards.index": {
+        parameters: {
+            query?: {
+                period?: "day" | "week" | "month";
+                game?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `LeaderboardRowResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["LeaderboardRowResource"][];
+                    };
+                };
+            };
+            422: components["responses"]["ValidationException"];
         };
     };
     "v1.me.level.show": {

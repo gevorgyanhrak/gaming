@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\Auth\VerificationController;
 use App\Http\Controllers\Api\V1\ConfigController;
 use App\Http\Controllers\Api\V1\ContentPageController;
 use App\Http\Controllers\Api\V1\GameController;
+use App\Http\Controllers\Api\V1\LeaderboardController;
 use App\Http\Controllers\Api\V1\MatchmakingController;
 use App\Http\Controllers\Api\V1\Me\AvatarController;
 use App\Http\Controllers\Api\V1\Me\ContactController;
@@ -99,6 +100,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
 
         Route::get('stats/online', OnlineController::class)->middleware('throttle:lookups')->name('stats.online');
         Route::get('wins', [WinController::class, 'index'])->middleware('throttle:lookups')->name('wins.index');
+        Route::get('leaderboards', [LeaderboardController::class, 'index'])->middleware('throttle:lookups')->name('leaderboards.index');
 
         Route::middleware(['auth:sanctum', 'active', 'touch-last-active', 'throttle:game'])
             ->prefix('matchmaking')
