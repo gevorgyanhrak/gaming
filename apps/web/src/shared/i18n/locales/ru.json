@@ -814,7 +814,13 @@
     "ruby": "Рубин",
     "amethyst": "Аметист",
     "levels": "Уровни {{from}}–{{to}}",
-    "levelsUp": "Уровни {{from}}+"
+    "levelsUp": "Уровни {{from}}+",
+    "yours": "Ваш ранг: {{rank}} (уровень {{level}})",
+    "toNext_one": "{{count}} уровень до ранга «{{rank}}»",
+    "toNext_few": "{{count}} уровня до ранга «{{rank}}»",
+    "toNext_many": "{{count}} уровней до ранга «{{rank}}»",
+    "toNext_other": "{{count}} уровня до ранга «{{rank}}»",
+    "progress": "Путь к следующему рангу"
   },
   "home": {
     "tryNext": "Попробуйте ещё"

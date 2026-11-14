@@ -762,7 +762,11 @@
     "ruby": "Ռուբին",
     "amethyst": "Ամեթիստ",
     "levels": "Մակարդակներ {{from}}–{{to}}",
-    "levelsUp": "Մակարդակներ {{from}}+"
+    "levelsUp": "Մակարդակներ {{from}}+",
+    "yours": "Ձեր կոչումը՝ {{rank}} (մակարդակ {{level}})",
+    "toNext_one": "{{count}} մակարդակ մինչև {{rank}}",
+    "toNext_other": "{{count}} մակարդակ մինչև {{rank}}",
+    "progress": "Առաջընթաց մինչև հաջորդ կոչում"
   },
   "home": {
     "tryNext": "Փորձեք նաև"

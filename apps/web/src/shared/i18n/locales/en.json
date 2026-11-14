@@ -762,7 +762,11 @@
     "ruby": "Ruby",
     "amethyst": "Amethyst",
     "levels": "Levels {{from}}–{{to}}",
-    "levelsUp": "Levels {{from}}+"
+    "levelsUp": "Levels {{from}}+",
+    "yours": "Your rank: {{rank}} (level {{level}})",
+    "toNext_one": "{{count}} level to {{rank}}",
+    "toNext_other": "{{count}} levels to {{rank}}",
+    "progress": "Progress to the next rank"
   },
   "home": {
     "tryNext": "Try next"

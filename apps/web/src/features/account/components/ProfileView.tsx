@@ -1,4 +1,6 @@
 import { PlayerAchievements } from '@/features/achievements/PlayerAchievements'
+import { RankEmblem } from '@/features/levels/components/RankEmblem'
+import { tierOf } from '@/features/levels/ranks'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { badgeLabel } from '@/features/levels/items'
@@ -27,6 +29,11 @@ export function ProfileView({ user, actions }: { user: PublicUser; actions?: Rea
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
             <h1 className="truncate text-2xl font-bold">{name}</h1>
+            {/* The player's rank emblem and name (earned by playing). */}
+            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-gold-light">
+              <RankEmblem level={user.level} size={26} />
+              {t(`ranks.${tierOf(user.level).key}`)}
+            </span>
             {user.looks.badge ? (
               <span className="inline-flex items-center gap-1 rounded-full border border-gold/50 bg-gold/15 px-2.5 py-0.5 text-xs font-bold text-gold-light">
                 <span aria-hidden="true">★</span>
