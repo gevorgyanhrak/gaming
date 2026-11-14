@@ -25,6 +25,11 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 - [x] Side bar → ☰ account menu (no games list) with the language switcher — this commit; table messages bar redesigned, friendlier (owner screenshots 2026-11-14) [x this commit].
 - [ ] Player profile popup on every avatar in every game (real stats, Esc/outside closes). No gifts between players:
       Fishkas are never sent between users (house rule).
+      NEXT (not started): backend `GET /api/v1/users/{username}/card` (PlayerCard: level + `Levels::progress`, balance,
+      played/wins/losses/win rate from user_game_stats, biggest win = max game_wins.amount + game, favourite game = most
+      played, current streak, achievements, online = last_active_at < 5 min, current game = active room); web
+      `PlayerProfilePopup` (Modal, Esc/outside), opened by delegation from RoomPage on `[data-player-seat]` buttons
+      added to PlayerList, Blot Avatar, Poker seats, DurakSeat; AI seats get a short card with the AI tag.
 
 **Owner queue (2026-11-12, in this order; owner tests himself — implement only, keep lint/types/CI green):**
 - [x] Professional Blot AI (look-ahead, card memory, bazar/Quansh/Sur, thinking time, arena) — this commit.
