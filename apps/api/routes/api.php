@@ -28,6 +28,7 @@ use App\Http\Controllers\Api\V1\ReactionCatalogController;
 use App\Http\Controllers\Api\V1\Rooms\ActionController;
 use App\Http\Controllers\Api\V1\Rooms\ReactionController;
 use App\Http\Controllers\Api\V1\Rooms\RoomController;
+use App\Http\Controllers\Api\V1\WinController;
 use Illuminate\Support\Facades\Route;
 
 // Unversioned infrastructure endpoints. Liveness is Laravel's built-in GET /up.
@@ -97,6 +98,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
             });
 
         Route::get('stats/online', OnlineController::class)->middleware('throttle:lookups')->name('stats.online');
+        Route::get('wins', [WinController::class, 'index'])->middleware('throttle:lookups')->name('wins.index');
 
         Route::middleware(['auth:sanctum', 'active', 'touch-last-active', 'throttle:game'])
             ->prefix('matchmaking')

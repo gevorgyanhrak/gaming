@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { CasinoHero } from '@/features/casino/CasinoHero'
 import { GameShowcase } from '@/features/casino/GameShowcase'
+import { LiveBigWins } from '@/features/wins/LiveBigWins'
 import { RankLadder } from '@/features/levels/components/RankLadder'
 import { usePublicConfig } from '@/features/platform/usePublicConfig'
 import { Container } from '@/shared/ui/Container'
@@ -20,6 +21,9 @@ export function LandingPage() {
           <section id="showcase" aria-label={t('casino.mainGames')} className="scroll-mt-24">
             <GameShowcase />
           </section>
+          <div className="mt-6">
+            <LiveBigWins />
+          </div>
         </Container>
       </div>
 

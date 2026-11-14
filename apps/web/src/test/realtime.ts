@@ -20,6 +20,10 @@ export const fakeEcho = {
     }
     return channel
   },
+  /** Public channels work the same way here. */
+  channel(name: string) {
+    return fakeEcho.private(name)
+  },
   disconnect() {},
 }
 

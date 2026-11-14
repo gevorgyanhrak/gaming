@@ -1046,5 +1046,15 @@
     "playGame": "Play {{game}}",
     "moreGames": "More games",
     "mainGames": "Main games"
+  },
+  "wins": {
+    "title": "BIG WINS LIVE",
+    "subtitle": "The biggest wins of the week, by people — in Fishkas, the free play money.",
+    "empty": "No wins yet this week. The first big one will show here.",
+    "error": "Big wins can’t be shown right now.",
+    "line": "{{name}} won {{amount}} Fishkas in {{game}}",
+    "congrats": "Congratulations!",
+    "wonIn": "Won {{amount}} in {{game}}!",
+    "close": "Close"
   }
 }

@@ -123,6 +123,9 @@ class ManageSettings extends Page
                         TextInput::make('fishka.registration_bonus')->label('Welcome bonus')
                             ->numeric()->integer()->required()->minValue(0)->maxValue(1000000)
                             ->helperText('Given once, when the account is created.'),
+                        TextInput::make('wins.celebrate_at')->label('Celebrate wins from (Fishkas)')
+                            ->numeric()->integer()->required()->minValue(1)->maxValue(1000000000)
+                            ->helperText('A person who wins this much in one game is celebrated on every open page (Big Wins).'),
                         TextInput::make('fishka.gift_amount')->label('Free gift (Fishkas)')
                             ->numeric()->integer()->required()->minValue(0)->maxValue(1000000)
                             ->helperText('Collected once in every period below.'),

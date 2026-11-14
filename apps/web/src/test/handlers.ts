@@ -1,3 +1,4 @@
+import type { Schemas } from '@/shared/api/types'
 import { http, HttpResponse } from 'msw'
 import type { Wallet } from '@/features/wallet/api'
 import type { CurrentUser } from '@/features/auth/api'
@@ -152,6 +153,8 @@ export const handlers = [
   http.get('*/api/v1/me', unauthenticated),
   http.get('*/sanctum/csrf-cookie', () => new HttpResponse(null, { status: 204 })),
   http.get('*/api/v1/me/stats', () => HttpResponse.json({ data: [] })),
+  // Big Wins live: an empty week unless a test serves wins.
+  http.get('*/api/v1/wins', () => HttpResponse.json({ data: [] })),
   http.get('*/api/v1/me/rooms', () => HttpResponse.json({ data: [] })),
   http.post('*/api/v1/rooms/:id/presence', () => new HttpResponse(null, { status: 204 })),
   http.get('*/api/v1/matchmaking', () =>
@@ -224,6 +227,20 @@ export function roomStateFixture(overrides: Partial<RoomState> = {}): RoomState 
     view: { board: [null, null, null] },
     legal_actions: [{ type: 'place', cell: 0 }],
     result: null,
+    ...overrides,
+  }
+}
+
+export function winFixture(
+  overrides: Partial<Schemas['WinResource']> = {},
+): Schemas['WinResource'] {
+  return {
+    id: 1,
+    amount: 150_000,
+    won_at: new Date().toISOString(),
+    celebrate: true,
+    player: { username: 'hrak', name: 'Hrak', avatar_url: null, level: 12 },
+    game: { slug: 'blackjack', name: 'Blackjack' },
     ...overrides,
   }
 }

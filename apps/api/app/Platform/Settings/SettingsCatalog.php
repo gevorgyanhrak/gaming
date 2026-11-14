@@ -56,6 +56,8 @@ final class SettingsCatalog
             new SettingDefinition('fishka.registration_bonus', SettingType::Integer, 5000, rules: ['required', 'integer', 'min:0', 'max:1000000']),
             new SettingDefinition('fishka.daily_bonus', SettingType::Integer, 1000, rules: ['required', 'integer', 'min:0', 'max:1000000']),
             // Free gifts (FreeGifts): one every few hours, and a lucky wheel spun once a day ("amount:weight").
+            // Big Wins: a win this big (Fishkas) is celebrated on every open page.
+            new SettingDefinition('wins.celebrate_at', SettingType::Integer, 100000, rules: ['required', 'integer', 'min:1', 'max:1000000000']),
             new SettingDefinition('fishka.gift_amount', SettingType::Integer, 120, rules: ['required', 'integer', 'min:0', 'max:1000000']),
             new SettingDefinition('fishka.gift_interval_hours', SettingType::Integer, 4, rules: ['required', 'integer', 'min:1', 'max:168']),
             new SettingDefinition('fishka.wheel_prizes', SettingType::StringList, ['50:30', '100:25', '150:18', '200:12', '300:8', '500:5', '1000:2'], rules: ['array', 'min:2', 'max:12'], elementRules: ['string', 'regex:/^\d{1,7}:\d{1,4}$/']),

@@ -210,6 +210,16 @@
       transform: none;
     }
   }
+  @keyframes spark {
+    0% {
+      transform: translate(0, 0) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(var(--sx), var(--sy)) scale(0.3);
+      opacity: 0;
+    }
+  }
   @keyframes float-chip {
     0%,
     100% {

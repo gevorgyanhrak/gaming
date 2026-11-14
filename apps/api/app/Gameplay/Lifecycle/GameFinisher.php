@@ -12,11 +12,12 @@ use App\Models\GameRoom;
 use App\Models\UserGameStat;
 use App\Platform\Levels\Levels;
 use App\Platform\Settings\Settings;
+use App\Platform\Wins\GameWins;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Ends a room: results per seat, room status, players' statistics and XP. Called inside the transaction
+ * Ends a room: results per seat, room status, players' statistics, XP and wins (GameWins, after commit). Called inside the transaction
  * that records the final move, so a game can never end twice.
  */
 class GameFinisher
@@ -24,6 +25,7 @@ class GameFinisher
     public function __construct(
         private readonly Levels $levels,
         private readonly Settings $settings,
+        private readonly GameWins $wins,
     ) {}
 
     /**
@@ -54,6 +56,8 @@ class GameFinisher
             if ($participant->user_id !== null) {
                 $this->recordStats($participant, $room->game_id, $result);
                 $this->awardXp($participant, $room, $result, $finishedAt->getTimestamp());
+                // Once the game's payouts and cash-outs are all in the ledger (same transaction).
+                DB::afterCommit(fn () => $this->wins->record($room, $participant));
             }
         }
 
@@ -82,6 +86,7 @@ class GameFinisher
         if ($participant->user_id !== null) {
             $this->recordStats($participant, $gameId, $result);
             $this->awardXp($participant, $participant->room, $result, now()->getTimestamp());
+            DB::afterCommit(fn () => $this->wins->record($participant->room, $participant));
         }
     }
 

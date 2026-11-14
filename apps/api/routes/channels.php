@@ -13,3 +13,5 @@ Broadcast::channel('room.{room}', function (User $user, string $room) {
 
     return $participant === null ? false : ['id' => $user->id, 'seat' => $participant->seat];
 });
+
+// Big Wins live: public (anyone may watch who won), so no authorisation callback is needed for Channel('wins').

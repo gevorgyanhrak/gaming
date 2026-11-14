@@ -8,6 +8,7 @@ import { useCurrentUser } from '@/features/auth/hooks'
 import { GameIcon } from '@/features/catalog/components/GameArt'
 import { useGames } from '@/features/catalog/queries'
 import { HomeBackdrop } from '@/features/catalog/components/HomeBackdrop'
+import { BigWinCelebration } from '@/features/wins/BigWinCelebration'
 import { ActiveGamesBar } from '@/features/play/components/ActiveGamesBar'
 import { FishkaBalance } from '@/features/wallet/components/FishkaBalance'
 import { FishkaIcon } from '@/features/wallet/components/FishkaIcon'
@@ -116,6 +117,7 @@ export function PublicLayout() {
 
   return (
     <div className="club-room isolate flex min-h-dvh">
+      <BigWinCelebration />
       {isHome ? (
         <HomeBackdrop className="pointer-events-none fixed inset-x-0 top-0 -z-10 h-lvh w-full" />
       ) : null}
