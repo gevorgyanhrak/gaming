@@ -59,3 +59,12 @@ it('lets an active signed-in player join the online channel, with nothing but th
     expect($rule($active))->toBe(['id' => $active->id])
         ->and($rule($banned))->toBeFalse();
 });
+
+it('serves the live feeds under their own limit, apart from other public lookups', function () {
+    reverbSays(fn () => (object) ['user_count' => 1]);
+    foreach (range(1, 40) as $_) {
+        $this->getJson('/api/v1/stats/online')->assertOk();
+    }
+    // 40 > the lookups limit (30): the feeds have their own.
+    $this->getJson('/api/v1/wins')->assertOk();
+});

@@ -5,7 +5,7 @@ import { apiRequest } from '@/shared/api/http'
 type Online = { online: number | null }
 
 /** How often the counter asks; the server asks Reverb at most every 10 s. */
-const EVERY_MS = 15_000
+const EVERY_MS = 30_000
 
 /**
  * The live online counter at the top: people connected right now, as Reverb counts them on the "online" presence

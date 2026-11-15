@@ -101,9 +101,9 @@ Route::prefix('v1')->name('v1.')->group(function () {
                 Route::post('level-ups/claim', [LevelController::class, 'claim'])->name('level-ups.claim');
             });
 
-        Route::get('stats/online', OnlineController::class)->middleware('throttle:lookups')->name('stats.online');
-        Route::get('wins', [WinController::class, 'index'])->middleware('throttle:lookups')->name('wins.index');
-        Route::get('leaderboards', [LeaderboardController::class, 'index'])->middleware('throttle:lookups')->name('leaderboards.index');
+        Route::get('stats/online', OnlineController::class)->middleware('throttle:feeds')->name('stats.online');
+        Route::get('wins', [WinController::class, 'index'])->middleware('throttle:feeds')->name('wins.index');
+        Route::get('leaderboards', [LeaderboardController::class, 'index'])->middleware('throttle:feeds')->name('leaderboards.index');
 
         Route::middleware(['auth:sanctum', 'active', 'touch-last-active', 'throttle:game'])
             ->prefix('matchmaking')

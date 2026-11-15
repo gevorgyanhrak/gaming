@@ -63,6 +63,9 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('auth', fn (Request $request) => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('lookups', fn (Request $request) => Limit::perMinute(30)->by($request->ip()));
+        // The home page's live public feeds (Big Wins, leaderboards, the online counter): cheap reads every open
+        // page polls a little; by player when signed in, so people sharing an IP (a café, an office) don't starve.
+        RateLimiter::for('feeds', fn (Request $request) => Limit::perMinute(120)->by($byUserOrIp($request)));
         RateLimiter::for('verification', fn (Request $request) => Limit::perMinute(10)->by($byUserOrIp($request)));
         // The player's own account: /me and /me/* (wallet, rooms, stats) together. Every page load reads
         // several of them, and the wallet is polled while live updates are down.
