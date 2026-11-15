@@ -827,18 +827,71 @@
     "tipButton": "Tip {{amount}}",
     "tipHint": "Optional. The chips go to the house — a thank-you, nothing more.",
     "say": {
-      "next": "Place your bets.",
-      "blackjack": "Blackjack! Beautifully played.",
-      "dealerBust": "I bust — the hand is yours!",
-      "youWin": "Congratulations, you win!",
-      "youLose": "The house takes this one. Next hand!",
-      "push": "A push — your bet stays.",
-      "tipSmall": "Thank you!",
-      "tipNice": "Thank you very much!",
-      "tipBig": "How generous! Thank you!",
-      "tipSmallNamed": "Thank you, {{name}}!",
-      "tipNiceNamed": "Thank you very much, {{name}}!",
-      "tipBigNamed": "How generous, {{name}}! Thank you!"
+      "next": {
+        "0": "Bets, please.",
+        "1": "Place your bets.",
+        "2": "New hand. Bets in."
+      },
+      "blackjack": {
+        "0": "Blackjack!",
+        "1": "Twenty-one. Nice.",
+        "2": "Blackjack — well played."
+      },
+      "dealerBust": {
+        "0": "I bust. It's yours.",
+        "1": "Too many for me.",
+        "2": "Dealer busts."
+      },
+      "youWin": {
+        "0": "Your hand.",
+        "1": "Nicely done.",
+        "2": "That one's yours."
+      },
+      "youLose": {
+        "0": "House wins this one.",
+        "1": "Not this time.",
+        "2": "Close one."
+      },
+      "youBust": {
+        "0": "Over 21, sorry.",
+        "1": "Bust. Next one.",
+        "2": "Too many, unlucky."
+      },
+      "push": {
+        "0": "Push.",
+        "1": "A tie. Bet stays.",
+        "2": "Even this time."
+      },
+      "tipSmall": {
+        "0": "Thanks!",
+        "1": "Appreciated.",
+        "2": "Thank you."
+      },
+      "tipNice": {
+        "0": "Very kind, thanks.",
+        "1": "Thank you!",
+        "2": "Much appreciated."
+      },
+      "tipBig": {
+        "0": "Wow, thank you!",
+        "1": "That's generous. Thanks!",
+        "2": "You're too kind!"
+      },
+      "tipSmallNamed": {
+        "0": "Thanks, {{name}}!",
+        "1": "Appreciated, {{name}}.",
+        "2": "Thank you, {{name}}."
+      },
+      "tipNiceNamed": {
+        "0": "Very kind, {{name}}.",
+        "1": "Thank you, {{name}}!",
+        "2": "Much appreciated, {{name}}."
+      },
+      "tipBigNamed": {
+        "0": "Wow, thank you, {{name}}!",
+        "1": "Generous, {{name}}. Thanks!",
+        "2": "{{name}}, you're too kind!"
+      }
     }
   },
   "blot": {

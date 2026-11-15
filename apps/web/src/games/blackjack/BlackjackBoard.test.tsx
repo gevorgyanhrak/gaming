@@ -213,7 +213,7 @@ describe('BlackjackBoard', () => {
         {...props}
       />,
     )
-    expect(screen.getByText('Congratulations, you win!')).toBeInTheDocument()
+    expect(screen.getByText(/^(Your hand\.|Nicely done\.|That one's yours\.)$/)).toBeInTheDocument()
 
     rerender(
       <BlackjackBoard
@@ -226,6 +226,8 @@ describe('BlackjackBoard', () => {
         {...props}
       />,
     )
-    expect(screen.getByText('How generous! Thank you!')).toBeInTheDocument()
+    expect(
+      screen.getByText(/^(Wow, thank you!|That's generous\. Thanks!|You're too kind!)$/),
+    ).toBeInTheDocument()
   })
 })

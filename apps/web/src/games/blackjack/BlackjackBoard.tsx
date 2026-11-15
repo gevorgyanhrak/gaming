@@ -150,6 +150,7 @@ export default function BlackjackBoard({
           me === null || mine.length === 0 ? null : (last.net[me] ?? 0),
           mine.some((h) => h.result === 'blackjack'),
           last.dealer_total > 21,
+          mine.length > 0 && mine.every((h) => h.status === 'bust'),
         ),
         key: reaction.key + 1,
       })
