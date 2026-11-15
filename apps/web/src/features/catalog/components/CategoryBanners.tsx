@@ -58,7 +58,7 @@ export function CategoryBanners({
             type="button"
             aria-pressed={pressed}
             onClick={() => onSelect(option.key)}
-            className={`group relative flex min-h-32 overflow-hidden rounded-3xl border bg-linear-to-br p-4 text-left shadow-[0_14px_30px_rgb(0_0_0/0.45)] transition duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-text motion-safe:hover:-translate-y-1 sm:min-h-32 ${TINTS[i % TINTS.length]} ${
+            className={`group hover-shine relative flex min-h-32 overflow-hidden rounded-3xl border bg-linear-to-br p-4 text-left shadow-[0_14px_30px_rgb(0_0_0/0.45)] transition duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-text motion-safe:hover:-translate-y-1 sm:min-h-32 ${TINTS[i % TINTS.length]} ${
               pressed
                 ? 'border-gold shadow-[0_14px_30px_rgb(0_0_0/0.45),0_0_0_2px_rgb(226_184_79/0.6),0_0_30px_rgb(226_184_79/0.3)]'
                 : 'border-gold/25 hover:border-gold/60'

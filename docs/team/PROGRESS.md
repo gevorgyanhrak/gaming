@@ -23,7 +23,7 @@ Phase A — platform first:
 - [x] A5. Blackjack dealer — drawn croupier with reactions, shoe, dealt/flipped cards, optional tip (out-of-turn engine action) —: dealer character + avatar, deal/flip animations from the shoe, reactions; optional
       Fishka tip to the dealer after a win (server-side debit, ledger type `dealer_tip`, reactions by amount).
       A tip goes to the house, never to a user (house rule holds).
-- [ ] A6. Design/animation polish (keep the direction): screen transitions, hover, animated cards, win effects,
+- [x] A6. Design/animation polish (count-up balance, win burst, hover shine on cards/banners/gold buttons, page rise-in) — (keep the direction): screen transitions, hover, animated cards, win effects,
       animated balance.
 - [ ] A7. Test everything (owner's §16 list), report.
 Phase B — casino (only after A): banners managed in admin; slot games from ready-made providers (research licences;

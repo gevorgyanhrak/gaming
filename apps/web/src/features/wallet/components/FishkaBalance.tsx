@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useCountUp } from '@/shared/lib/useCountUp'
 import { Link } from 'react-router'
 import { useWallet } from '../hooks'
 import { FishkaIcon } from './FishkaIcon'
@@ -29,6 +30,8 @@ export function FishkaBalance() {
     })
   }
 
+  // The number rolls to a new balance (a win counts up, a bet counts down).
+  const shownBalance = useCountUp(balance ?? 0)
   if (balance === undefined) return null
   const { delta, id } = seen
 
@@ -51,7 +54,7 @@ export function FishkaBalance() {
         key={id}
         className={`tabular-nums ${delta ? 'motion-safe:animate-[fishka-bump_450ms_ease-out]' : ''}`}
       >
-        {format(balance)}
+        {format(shownBalance)}
       </span>
       {delta ? (
         <span

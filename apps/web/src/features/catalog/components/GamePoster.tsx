@@ -31,7 +31,7 @@ export function GamePoster({
   const [seating, setSeating] = useState(false)
 
   return (
-    <div className="group relative flex flex-1 flex-col overflow-hidden rounded-card border border-gold/30 bg-emerald-800 shadow-raised transition-[transform,border-color,box-shadow] duration-150 ease-soft hover:border-gold hover:shadow-[var(--shadow-raised),0_0_0_1px_var(--color-gold)] motion-safe:hover:-translate-y-1.5">
+    <div className="group hover-shine relative flex flex-1 flex-col overflow-hidden rounded-card border border-gold/30 bg-emerald-800 shadow-raised transition-[transform,border-color,box-shadow] duration-150 ease-soft hover:border-gold hover:shadow-[var(--shadow-raised),0_0_0_1px_var(--color-gold)] motion-safe:hover:-translate-y-1.5">
       <Link to={`/games/${game.slug}`} data-game-card="" className="flex flex-1 flex-col">
         <ViewTransition name={artTransition(game.slug)}>
           <div

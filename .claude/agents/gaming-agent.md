@@ -322,6 +322,8 @@ is not done or not verified, and how to check it manually. Keep it concise.
   out-of-turn action `tip {amount}` (offered `{min,max}` after a won round, in the pause and next betting, once per
   round, ≤ win and keeping the min bet; chips go to the house; `last_tip` drives the thanks). `GameActionService` lets
   a `ValidatesActions` engine judge range out-of-turn actions (offered {min,max}, sent {amount}).
+- Motion (A6): `useCountUp` (balance roll), `WinBurst` behind the win trophy, `.hover-shine` (in @layer components so
+  utilities like `absolute` still win), page rise-in on `::view-transition-new(root)`. All off under reduced motion.
 - Local web tests time out at random when the Mac is loaded (Chrome/Docker, load > 20): run `npx vitest run --maxWorkers=2`.
 - Game catalog (TASK-056): `game_categories` + `games.game_category_id`, `category` on each game in `/games`; admin Games → Categories. Web: `GameGrid` → `features/catalog/components/GameLobby`
   (shelves come from the games; `_other` is reserved for uncategorised), `HomeArt` posters, `HomeBackdrop` (the fixed night-room picture on `/` and `/dashboard`, `PublicLayout` `isHome`,

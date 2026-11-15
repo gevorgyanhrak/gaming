@@ -3,7 +3,7 @@ import type { ComponentProps, ReactNode } from 'react'
 import { Link, type LinkProps } from 'react-router'
 
 const gold =
-  'bg-linear-to-b from-gold-light to-gold text-ink shadow-gold hover:brightness-105 active:brightness-95'
+  'hover-shine bg-linear-to-b from-gold-light to-gold text-ink shadow-gold hover:brightness-105 active:scale-[0.98] active:brightness-95'
 
 const variants = {
   /** The one main action of a view: gold. */

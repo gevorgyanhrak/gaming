@@ -9,6 +9,7 @@ import { Button, ButtonLink } from '@/shared/ui/Button'
 import { CloseIcon, StarIcon } from '@/shared/ui/icons'
 import { FishkaIcon } from '@/features/wallet/components/FishkaIcon'
 import { ResultTrophy } from './ResultTrophy'
+import { WinBurst } from './WinBurst'
 import { Modal } from '@/shared/ui/Modal'
 import {
   createBotRoom,
@@ -166,7 +167,10 @@ export function GameOverPanel({
       >
         <CloseIcon className="size-5" />
       </button>
-      <ResultTrophy outcome={trophy} />
+      <div className="relative">
+        {trophy === 'win' ? <WinBurst /> : null}
+        <ResultTrophy outcome={trophy} />
+      </div>
       {aborted ? null : (
         <p className="text-xs font-semibold tracking-wider text-muted uppercase">
           {t('room.over')}

@@ -900,3 +900,86 @@ html:lang(hy) {
     transform: translateX(100%);
   }
 }
+
+/* A win behind the trophy (WinBurst): a glow, then coins and confetti thrown out and falling. */
+@keyframes win-glow {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.6);
+  }
+}
+@keyframes win-piece {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  15% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--wx)), calc(-50% + var(--wy)))
+      rotate(calc(var(--wr) * 0.6));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--wx) * 1.1), calc(-50% + var(--wy) + 70px))
+      rotate(var(--wr));
+  }
+}
+
+@layer components {
+  /* A light that sweeps across a card or banner on hover (only where motion is fine). */
+  .hover-shine {
+    position: relative;
+    overflow: hidden;
+  }
+  .hover-shine::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      110deg,
+      transparent 35%,
+      rgb(255 246 214 / 0.22) 50%,
+      transparent 65%
+    );
+    transform: translateX(-120%);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .hover-shine:hover::after,
+    .hover-shine:focus-visible::after {
+      transition: transform 900ms ease-out;
+      transform: translateX(120%);
+    }
+  }
+}
+
+/* Pages rise in a little as you go from one to the next (the shared art and titles travel on their own). */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-new(root) {
+    animation: page-in 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  ::view-transition-old(root) {
+    animation: page-out 180ms ease-in both;
+  }
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@keyframes page-out {
+  to {
+    opacity: 0;
+  }
+}
