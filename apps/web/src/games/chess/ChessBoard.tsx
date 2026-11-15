@@ -61,7 +61,7 @@ const isWhite = (piece: Piece) => piece === piece.toUpperCase()
  * Chess board. Renders the server's view from the player's side (black sees the board turned) and
  * offers exactly the server's legal moves: pick a piece, then a target; promotions ask which piece.
  */
-export default function ChessBoard({ state, onAction, pending, players }: BoardProps) {
+export default function ChessBoard({ state, onAction, pending, players, faces }: BoardProps) {
   const { t } = useTranslation()
   const view = state.view as unknown as ChessView
   const me = state.seat ?? 0
@@ -113,7 +113,7 @@ export default function ChessBoard({ state, onAction, pending, players }: BoardP
           <p className={view.check ? 'font-semibold text-take' : 'text-muted'} aria-live="polite">
             {view.check ? `${t('chess.check')} ` : ''}
             {!myTurn
-              ? (waitingCaption(state, players, t) ?? '')
+              ? (waitingCaption(state, players, t, faces) ?? '')
               : selected === null
                 ? t('chess.pickPiece')
                 : t('chess.pickTarget')}

@@ -359,7 +359,8 @@
     "shareText": "Միացիր իմ սեղանին՝ {{game}}։",
     "nextRound": "Հաջորդ խաղափուլը",
     "rewardFishkas": "Ֆիշկաներ",
-    "rewardXp": "միավոր"
+    "rewardXp": "միավոր",
+    "thinking": "{{name}}-ը մտածում է…"
   },
   "history": {
     "title": "Խաղերի պատմություն",

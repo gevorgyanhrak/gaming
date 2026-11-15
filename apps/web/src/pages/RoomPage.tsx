@@ -132,6 +132,10 @@ export function RoomPage() {
       p.is_bot ? t('play.aiName', { name: p.name ?? '' }) : (p.name ?? ''),
     ]),
   )
+  // AI seats and the name each one's drawn face is made from.
+  const aiFaces: Partial<Record<number, string>> = Object.fromEntries(
+    data.participants.filter((p) => p.is_bot).map((p) => [p.seat, p.name ?? '']),
+  )
   // Left a multi-player game that goes on without you.
   const leftTable = data.status === 'active' && myResult != null
   const over = data.status === 'finished' || data.status === 'aborted' || leftTable
@@ -176,7 +180,7 @@ export function RoomPage() {
             : view.seats_to_act.length === 0
               ? // A pause between rounds (poker hands); the time left is when the next starts.
                 t(pauseCaption(traitsOf(data.game.slug).nextRound, view.view))
-              : (waitingCaption(view, playerNames, t) ?? t('room.theirTurn'))}
+              : (waitingCaption(view, playerNames, t, aiFaces) ?? t('room.theirTurn'))}
         </p>
         {secondsLeft !== null && !clocks ? (
           <p className={`truncate text-xs sm:text-sm ${myTurn ? 'text-black/70' : 'text-muted'}`}>
@@ -256,9 +260,7 @@ export function RoomPage() {
                   players={playerNames}
                   levels={Object.fromEntries(data.participants.map((p) => [p.seat, p.level]))}
                   frames={Object.fromEntries(data.participants.map((p) => [p.seat, p.frame]))}
-                  faces={Object.fromEntries(
-                    data.participants.filter((p) => p.is_bot).map((p) => [p.seat, p.name ?? '']),
-                  )}
+                  faces={aiFaces}
                 />
               </Suspense>
             ) : (

@@ -6,6 +6,7 @@ import { useCountdown } from '@/features/play/useCountdown'
 import { walletKey } from '@/features/wallet/api'
 import { flyFishkas } from '@/features/wallet/flyFishkas'
 import { useMediaQuery } from '@/shared/lib/useMediaQuery'
+import { ThinkingDots } from '@/shared/ui/ThinkingDots'
 import { AiFace } from '@/shared/ui/AiFace'
 import { frameRing } from '@/shared/ui/frames'
 import { LevelBadge } from '@/shared/ui/LevelBadge'
@@ -558,10 +559,22 @@ function Avatar({
       </span>
     </span>
   )
-  if (level === undefined) return face
+  const thinking =
+    acting && ai ? <ThinkingDots name={name} className="absolute -top-3 -right-4 z-30" /> : null
+  if (level === undefined) {
+    return thinking ? (
+      <span className="relative block">
+        {face}
+        {thinking}
+      </span>
+    ) : (
+      face
+    )
+  }
   return (
     <span className="relative block">
       {face}
+      {thinking}
       {/* Top left: the nameplate covers the bottom of the frame, the dealer button its top right. */}
       <LevelBadge level={level} size="md" className="absolute -top-1.5 -left-2 z-10" />
     </span>

@@ -32,7 +32,7 @@ const squareName = (square: number) =>
  * around) and offers exactly the server's legal steps: pick a piece, then one of its targets.
  * During a capture series the capturing piece stays selected.
  */
-export default function CheckersBoard({ state, onAction, pending, players }: BoardProps) {
+export default function CheckersBoard({ state, onAction, pending, players, faces }: BoardProps) {
   const { t } = useTranslation()
   const view = state.view as unknown as CheckersView
   const me = state.seat ?? 0
@@ -58,7 +58,7 @@ export default function CheckersBoard({ state, onAction, pending, players }: Boa
   }
 
   const status = !myTurn
-    ? (waitingCaption(state, players, t) ?? '')
+    ? (waitingCaption(state, players, t, faces) ?? '')
     : view.capturing !== null
       ? t('checkers.continueCapture')
       : selected === null

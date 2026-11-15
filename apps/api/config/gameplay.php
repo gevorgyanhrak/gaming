@@ -11,7 +11,4 @@ return [
     // Seconds a seat has to act when the game mode doesn't set "turn_seconds".
     'default_turn_seconds' => 60,
 
-    // Bots wait a little before moving so games feel natural (milliseconds).
-    'bot_delay_ms' => ['min' => 700, 'max' => 1800],
-
 ];

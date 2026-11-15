@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { seatTrigger } from '@/features/players/seatTrigger'
+import { ThinkingDots } from '@/shared/ui/ThinkingDots'
 import { AiFace } from '@/shared/ui/AiFace'
 import { frameRing } from '@/shared/ui/frames'
 import { LevelBadge } from '@/shared/ui/LevelBadge'
@@ -208,10 +209,22 @@ export function Avatar({
       </span>
     </span>
   )
-  if (level === undefined) return face
+  const thinking =
+    acting && ai ? <ThinkingDots name={name} className="absolute -top-3 -right-4 z-30" /> : null
+  if (level === undefined) {
+    return thinking ? (
+      <span className="relative block">
+        {face}
+        {thinking}
+      </span>
+    ) : (
+      face
+    )
+  }
   return (
     <span className="relative block">
       {face}
+      {thinking}
       <LevelBadge
         level={level}
         size={size === 'md' ? 'md' : 'sm'}

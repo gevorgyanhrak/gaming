@@ -32,3 +32,11 @@ person drops out, so a table of several people isn't ruined by one of them. Each
 - A held seat's moves are logged under the person's participant, marked `auto:`; replays are unchanged.
 - Results at a table where someone left: the leaver's Loss is recorded at once; the others' results come from the
   game. A held seat that never comes back gets the game's result.
+
+## Addendum (2026-11-16, owner): human-like AI
+- Thinking time is shared for every game (`Gameplay/Bots/HumanPace`): longer for more choices, quick for forced
+  moves, an occasional longer pause, the personality's pace, AI players due together staggered one after another,
+  always inside the turn timer.
+- AI still plays at the strongest level, except for occasional lapses (`BotPersonality::lapsePercent`, 6–12 % of
+  moves) where it plays one level down — never a random move.
+- The table shows an AI's turn as "… is thinking" (header caption) and with thinking dots at board avatars.

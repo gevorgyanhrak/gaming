@@ -39,9 +39,17 @@ Phase B — casino:
 - [ ] B2b. Open-source slot provider (MIT Stake Engine Math SDK sample tables, drawn by our server): BLOCKED — running
       the SDK (pip + third-party code) was denied by the permission classifier; needs the owner's permission.
 - [ ] B5. Identity/sounds pass (after the owner's homepage/AI/poker ticket below).
-- [ ] NEXT: owner ticket 2026-11-16 "Homepage UI Improvements" (compact welcome banner with daily bonus / gifts / wheel,
-      Durak in "Try also", human-like AI timing for all games + thinking indicator, poker deal/flip animations,
-      natural dealer lines, avatar popup: emoji to the recipient, quick message above me, my-avatar emoji 2 s).
+Owner ticket 2026-11-16 "Homepage UI Improvements" (in progress):
+- [x] Compact welcome strip with daily bonus / free gift / lucky wheel tiles; Try next = game cards with Durak — f9dc4cf.
+- [x] Human-like AI for all games: `HumanPace` (choices, ponder, personality, stagger, timer), lapses one level down,
+      "… is thinking" caption + ThinkingDots at avatars (ADR 0021 addendum) — this commit.
+- [ ] Poker: cards dealt one by one from the dealer, flips, card moves, smoother dealer; sounds with controls.
+- [ ] Dealer lines: short, natural, contextual, not repeated.
+- [ ] Avatar popup: emoji to the recipient (floats over their avatar, seen by all), quick message bubble over me,
+      my avatar shows a chosen emoji for 2 s; old emoji bar removed.
+Then owner ticket 2026-11-16 "Game-Specific Leaderboards & Ranking": per-game points (+10/−5, AI too, no duplicates)
+for Durak, Checkers, Nardi, Blot, Chess with Top 10 on each game page; Poker/Blackjack Top 10 by chips; home
+leaderboard with a Highest level / Most chips select; top-3 badges, profile popup on avatars.
 Phase B — casino (only after A): banners managed in admin; slot games from ready-made providers (research licences;
 no own slot engine; Fishka wallet server-side, no client-trusted results, replay-proof; document limits); slot admin;
 Top Winners; casino lobby (search, filters, carousel, recently played).

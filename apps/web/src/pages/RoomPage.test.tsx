@@ -66,7 +66,7 @@ describe('Room', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'play 0' }))
 
     expect(await screen.findByText('version 1')).toBeInTheDocument()
-    expect(screen.getByText('Waiting for Aram · AI')).toBeInTheDocument()
+    expect(screen.getByText('Aram · AI is thinking…')).toBeInTheDocument()
     expect(body).toMatchObject({ expected_version: 0, action: { type: 'place', cell: 0 } })
     expect(body.client_action_id).toMatch(/^[0-9a-f-]{36}$/)
   })

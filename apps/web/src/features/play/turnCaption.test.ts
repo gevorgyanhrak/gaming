@@ -29,4 +29,10 @@ describe('waitingCaption', () => {
       'Waiting for the other player',
     )
   })
+
+  it('says an AI player is thinking over its move', () => {
+    expect(waitingCaption(roomStateFixture({ seats_to_act: [1] }), names, t, { 1: 'Aram' })).toBe(
+      'Aram is thinking…',
+    )
+  })
 })

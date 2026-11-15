@@ -371,7 +371,8 @@
     "shareText": "Садись за мой стол: {{game}}.",
     "nextRound": "Следующий раунд",
     "rewardFishkas": "Фишки",
-    "rewardXp": "опыта"
+    "rewardXp": "опыта",
+    "thinking": "{{name}} думает…"
   },
   "history": {
     "title": "История игр",

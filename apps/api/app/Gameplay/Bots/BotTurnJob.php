@@ -56,9 +56,14 @@ class BotTurnJob implements ShouldQueue
         $engine = $states->engine($room);
         $strategy = $registry->get($room->game->slug)->bot();
         $difficulty = $bot->bot_difficulty ?? $ai->difficulty($room->game) ?? BotDifficulty::Hard;
+        $personality = $bot->bot_profile_id !== null ? $bot->bot->personality : BotPersonality::Steady;
         // An AI player plays in its own style where the game leaves room for one (a seat held for a person: steady).
         if ($strategy instanceof PlaysInStyle) {
-            $strategy = $strategy->inStyle($bot->bot_profile_id !== null ? $bot->bot->personality : BotPersonality::Steady);
+            $strategy = $strategy->inStyle($personality);
+        }
+        // Like a person, it sometimes plays below its best (owner, 2026-11-16): one level down, never at random.
+        if ($difficulty === BotDifficulty::Hard && random_int(1, 100) <= $personality->lapsePercent()) {
+            $difficulty = BotDifficulty::Medium;
         }
 
         if ($this->outOfTurn) {

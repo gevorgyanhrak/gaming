@@ -41,4 +41,18 @@ enum BotPersonality: string
     {
         return $this === self::Tricky ? 0.45 : 0.1;
     }
+
+    /**
+     * The share of moves (in percent) it plays a level below its best — a person's lapses: misjudging a hand,
+     * missing a better move. Never a random move.
+     */
+    public function lapsePercent(): int
+    {
+        return match ($this) {
+            self::Steady => 6,
+            self::Cautious => 8,
+            self::Bold => 10,
+            self::Tricky => 12,
+        };
+    }
 }

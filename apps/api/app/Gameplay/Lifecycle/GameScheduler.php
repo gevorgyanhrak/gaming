@@ -3,6 +3,7 @@
 namespace App\Gameplay\Lifecycle;
 
 use App\Gameplay\Bots\BotTurnJob;
+use App\Gameplay\Bots\HumanPace;
 use App\Gameplay\Contracts\ActsOutOfTurn;
 use App\Gameplay\Contracts\HasOutOfTurnActions;
 use App\Gameplay\Contracts\PacesThinking;
@@ -50,45 +51,41 @@ class GameScheduler
 
         $engine = $this->states->engine($room);
         $bot = $this->registry->get($room->game->slug)->bot();
-        foreach ($room->participants as $participant) {
+        // AI players due at the same moment take their turns one after another, as people would.
+        $queue = 0;
+        foreach ($room->participants->sortBy(fn ($p) => random_int(0, 1000)) as $participant) {
             if (! $participant->playedByAi()) {
                 continue;
             }
             if (in_array($participant->seat, $state->seatsToAct, true)) {
                 BotTurnJob::dispatch($room->id, $state->version, $participant->seat)
                     ->onQueue(config('gameplay.queue'))
-                    ->delay(now()->addMilliseconds($this->thinking($room, $state, $participant->seat)));
+                    ->delay(now()->addMilliseconds($this->thinking($room, $state, $participant->seat, $queue++)));
             } elseif ($engine instanceof HasOutOfTurnActions && $bot instanceof ActsOutOfTurn
                 && $engine->outOfTurnActions($state->state, $participant->seat) !== []) {
                 // AI may also act out of turn (Blot's Quansh), after a moment's thought.
                 BotTurnJob::dispatch($room->id, $state->version, $participant->seat, outOfTurn: true)
                     ->onQueue(config('gameplay.queue'))
-                    ->delay(now()->addMilliseconds(random_int(1500, 3500)));
+                    ->delay(now()->addMilliseconds(1500 + HumanPace::thinkingMs(1, $participant->bot?->personality, $queue++)));
             }
         }
     }
 
     /**
-     * How long the AI at $seat waits before it moves: as its game's bot says (PacesThinking), or the default — then
-     * at its personality's pace (a cautious player takes longer, a bold one less, a tricky one varies most).
+     * How long the AI at $seat waits before it moves (HumanPace): its game's own estimate where the bot gives one
+     * (PacesThinking), otherwise from how many moves it can choose from; at its personality's pace, after the AI
+     * players before it in $queue, and inside the turn timer.
      */
-    private function thinking(GameRoom $room, RoomState $state, int $seat): int
+    private function thinking(GameRoom $room, RoomState $state, int $seat, int $queue): int
     {
+        $engine = $this->states->engine($room);
+        $legal = $engine->legalActions($state->state, $seat);
         $bot = $this->registry->get($room->game->slug)->bot();
-        if ($bot instanceof PacesThinking) {
-            $engine = $this->states->engine($room);
-            $ms = max(0, $bot->thinkingMs($engine->viewFor($state->state, $seat), $engine->legalActions($state->state, $seat), new SecureRandom));
-        } else {
-            $delay = config('gameplay.bot_delay_ms');
-            $ms = random_int($delay['min'], $delay['max']);
-        }
+        $base = $bot instanceof PacesThinking
+            ? max(0, $bot->thinkingMs($engine->viewFor($state->state, $seat), $legal, new SecureRandom))
+            : null;
+        $msLeft = $state->deadline === null ? null : max(0, $state->deadline * 1000 - (int) floor(microtime(true) * 1000));
 
-        $personality = $room->participants->firstWhere('seat', $seat)?->bot?->personality;
-        if ($personality === null || $ms === 0) {
-            return $ms;
-        }
-        $spread = $personality->jitter();
-
-        return (int) round($ms * $personality->tempo() * (1 + $spread * (random_int(-100, 100) / 100)));
+        return HumanPace::thinkingMs(count($legal), $room->participants->firstWhere('seat', $seat)?->bot?->personality, $queue, $base, $msLeft);
     }
 }

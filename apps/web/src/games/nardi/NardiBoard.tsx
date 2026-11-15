@@ -30,7 +30,7 @@ type Step = {
  * server's view from the player's side (their home board bottom right) and offers exactly the server's
  * legal steps: pick a checker, then one of its highlighted targets.
  */
-export default function NardiBoard({ state, onAction, pending, players }: BoardProps) {
+export default function NardiBoard({ state, onAction, pending, players, faces }: BoardProps) {
   const { t } = useTranslation()
   const view = state.view as unknown as NardiView
   const me = state.seat ?? 0
@@ -203,7 +203,7 @@ export default function NardiBoard({ state, onAction, pending, players }: BoardP
               : barFirst
                 ? t('nardi.pickBar')
                 : t('nardi.pickChecker')
-            : (waitingCaption(state, players, t) ?? '')}
+            : (waitingCaption(state, players, t, faces) ?? '')}
         </p>
       </div>
 

@@ -8,7 +8,7 @@ use App\Gameplay\Random\RandomSource;
 /**
  * Optional for a game's bot (BotStrategy): how long a person would think before this decision, so AI
  * players don't answer at machine speed — a forced move quickly, a hard choice longer. Without it the
- * platform waits `gameplay.bot_delay_ms`.
+ * platform paces it by its number of choices (HumanPace).
  */
 interface PacesThinking
 {

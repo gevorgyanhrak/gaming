@@ -359,7 +359,8 @@
     "shareText": "Join my {{game}} table.",
     "nextRound": "Next round",
     "rewardFishkas": "Fishkas",
-    "rewardXp": "XP"
+    "rewardXp": "XP",
+    "thinking": "{{name}} is thinking…"
   },
   "history": {
     "title": "Game history",

@@ -168,7 +168,7 @@ export default function DurakBoard({
   const status = !myTurn
     ? view.taking && view.defender === me
       ? t('durak.youTake')
-      : (waitingCaption(state, players, t) ?? '')
+      : (waitingCaption(state, players, t, faces) ?? '')
     : view.defender === me
       ? t('durak.defend')
       : view.table.length === 0
