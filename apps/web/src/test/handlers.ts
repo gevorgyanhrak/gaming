@@ -155,6 +155,8 @@ export const handlers = [
   http.get('*/api/v1/me/stats', () => HttpResponse.json({ data: [] })),
   // Big Wins live: an empty week unless a test serves wins.
   http.get('*/api/v1/wins', () => HttpResponse.json({ data: [] })),
+  // No promotion banners unless a test serves some.
+  http.get('*/api/v1/banners', () => HttpResponse.json({ data: [] })),
   // The online counter: unknown (hidden) unless a test serves a number.
   http.get('*/api/v1/stats/online', () => HttpResponse.json({ data: { online: null } })),
   http.get('*/api/v1/leaderboards', () => HttpResponse.json({ data: [] })),

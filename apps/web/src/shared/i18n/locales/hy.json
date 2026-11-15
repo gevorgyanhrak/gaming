@@ -1079,7 +1079,15 @@
     "top": "ԹՈՓ {{n}}",
     "allGames": "Բոլոր խաղերը",
     "gameCount_one": "{{count}} խաղ",
-    "gameCount_other": "{{count}} խաղ"
+    "gameCount_other": "{{count}} խաղ",
+    "banners": {
+      "label": "Ակցիաներ",
+      "slide": "{{n}}՝ {{count}}-ից",
+      "previous": "Նախորդ ակցիան",
+      "next": "Հաջորդ ակցիան",
+      "goTo": "Ցույց տալ ակցիա {{n}}",
+      "open": "Բացել"
+    }
   },
   "wins": {
     "title": "ՄԵԾ ՇԱՀՈՒՄՆԵՐ ՀԻՄԱ",

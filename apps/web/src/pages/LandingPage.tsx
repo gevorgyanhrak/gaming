@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { CasinoHero } from '@/features/casino/CasinoHero'
 import { GameShowcase } from '@/features/casino/GameShowcase'
 import { MAIN_GAMES } from '@/features/casino/mainGames'
+import { PromoBanners } from '@/features/casino/PromoBanners'
 import { GameGrid } from '@/features/catalog/components/GameGrid'
 import { LiveBigWins } from '@/features/wins/LiveBigWins'
 import { LeaderboardCard } from '@/features/leaderboards/LeaderboardCard'
@@ -21,6 +22,7 @@ export function LandingPage() {
 
       <div className="bg-[radial-gradient(ellipse_at_50%_0%,#13241b_0%,#07110c_70%)]">
         <Container className="py-8">
+          <PromoBanners />
           <section id="showcase" aria-labelledby="top-games" className="scroll-mt-24">
             <h2
               id="top-games"

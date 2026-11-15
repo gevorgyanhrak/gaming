@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\Auth\SessionController;
 use App\Http\Controllers\Api\V1\Auth\UsernameAvailabilityController;
 use App\Http\Controllers\Api\V1\Auth\VerificationController;
+use App\Http\Controllers\Api\V1\CasinoBannerController;
 use App\Http\Controllers\Api\V1\ConfigController;
 use App\Http\Controllers\Api\V1\ContentPageController;
 use App\Http\Controllers\Api\V1\GameController;
@@ -50,6 +51,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
     Route::middleware('maintenance')->group(function () {
         Route::get('games', [GameController::class, 'index'])->name('games.index');
         Route::get('games/{slug}', [GameController::class, 'show'])->name('games.show');
+        Route::get('banners', [CasinoBannerController::class, 'index'])->name('banners.index');
 
         Route::get('users/{username}', [PublicProfileController::class, 'show'])
             ->middleware('throttle:lookups')

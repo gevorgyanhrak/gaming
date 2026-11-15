@@ -1079,7 +1079,15 @@
     "top": "TOP {{n}}",
     "allGames": "All games",
     "gameCount_one": "{{count}} game",
-    "gameCount_other": "{{count}} games"
+    "gameCount_other": "{{count}} games",
+    "banners": {
+      "label": "Promotions",
+      "slide": "{{n}} of {{count}}",
+      "previous": "Previous promotion",
+      "next": "Next promotion",
+      "goTo": "Show promotion {{n}}",
+      "open": "Open"
+    }
   },
   "wins": {
     "title": "BIG WINS LIVE",

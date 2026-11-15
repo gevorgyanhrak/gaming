@@ -26,7 +26,14 @@ Phase A — platform first:
 - [x] A6. Design/animation polish (count-up balance, win burst, hover shine on cards/banners/gold buttons, page rise-in) — (keep the direction): screen transitions, hover, animated cards, win effects,
       animated balance.
 - [x] A7. Tested end to end (live: categories/images/top 3 shots, tip in a real game + dealer thanks, win → Big Wins, online count, card deal animations counted; suites 658 API / 236 web; CI green). Found and fixed: feeds rate limit (d2d0b09), double deal animation in dev.
-- [ ] NEXT: Phase B (casino). Start with B0 research: slot providers (licences, Fishka wallet, server results) → docs/research/casino-slots.md; then banners admin.
+Phase B — casino:
+- [x] B0. Slot provider research → `docs/research/casino-slots.md`: no provider is both licensed for us and able to
+      take a secure Fishka wallet for free → no slot is playable until one is connected; owner decides option A
+      (commercial provider) or B (MIT outcome tables + MIT renderer).
+- [x] B1. Casino banners managed in admin (Content → Casino banners: picture, title, text, button, link, visible,
+      date window, order; audited) and the home carousel (`PromoBanners`, nothing shown when none) — this commit.
+- [ ] B2. Slot wallet + provider adapter contract (no provider connected), slot admin (providers, games, rounds, errors).
+- [ ] B3. Top Winners from real transactions. · [ ] B4. Casino lobby (search, filters, recently played). · [ ] B5. Identity/sounds pass.
 Phase B — casino (only after A): banners managed in admin; slot games from ready-made providers (research licences;
 no own slot engine; Fishka wallet server-side, no client-trusted results, replay-proof; document limits); slot admin;
 Top Winners; casino lobby (search, filters, carousel, recently played).

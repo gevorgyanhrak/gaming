@@ -1165,7 +1165,15 @@
     "gameCount_one": "{{count}} игра",
     "gameCount_few": "{{count}} игры",
     "gameCount_many": "{{count}} игр",
-    "gameCount_other": "{{count}} игры"
+    "gameCount_other": "{{count}} игры",
+    "banners": {
+      "label": "Акции",
+      "slide": "{{n}} из {{count}}",
+      "previous": "Предыдущая акция",
+      "next": "Следующая акция",
+      "goTo": "Показать акцию {{n}}",
+      "open": "Открыть"
+    }
   },
   "wins": {
     "title": "КРУПНЫЕ ВЫИГРЫШИ",
