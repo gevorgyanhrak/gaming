@@ -22,7 +22,8 @@ export function dealFromShoe(card: HTMLElement | null) {
   if (!card || reduced() || performance.now() < quietUntil || typeof card.animate !== 'function')
     return
   const shoe = document.querySelector<HTMLElement>('[data-blackjack-shoe]')
-  if (!shoe) return
+  // Already on its way (an effect run twice, as in development): measuring now would find it at the shoe.
+  if (!shoe || card.getAnimations().some((a) => a.id === 'deal')) return
   const from = shoe.getBoundingClientRect()
   const to = card.getBoundingClientRect()
   const dx = from.left + from.width / 2 - (to.left + to.width / 2)
@@ -39,7 +40,13 @@ export function dealFromShoe(card: HTMLElement | null) {
       { transform: `translate(${dx}px, ${dy}px) rotate(-25deg) scale(0.7)`, opacity: 0.25 },
       { transform: 'translate(0, 0) rotate(0) scale(1)', opacity: 1 },
     ],
-    { duration: 430, delay, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'backwards' },
+    {
+      id: 'deal',
+      duration: 430,
+      delay,
+      easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+      fill: 'backwards',
+    },
   )
 }
 
@@ -47,12 +54,13 @@ export function dealFromShoe(card: HTMLElement | null) {
 export function flipOver(card: HTMLElement | null) {
   if (!card || reduced() || performance.now() < quietUntil || typeof card.animate !== 'function')
     return
+  if (card.getAnimations().some((a) => a.id === 'flip')) return
   card.animate(
     [
       { transform: 'perspective(400px) rotateY(90deg)', filter: 'brightness(0.6)' },
       { transform: 'perspective(400px) rotateY(0)', filter: 'none' },
     ],
-    { duration: 420, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' },
+    { id: 'flip', duration: 420, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' },
   )
 }
 

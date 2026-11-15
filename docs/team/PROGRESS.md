@@ -25,7 +25,8 @@ Phase A — platform first:
       A tip goes to the house, never to a user (house rule holds).
 - [x] A6. Design/animation polish (count-up balance, win burst, hover shine on cards/banners/gold buttons, page rise-in) — (keep the direction): screen transitions, hover, animated cards, win effects,
       animated balance.
-- [ ] A7. Test everything (owner's §16 list), report.
+- [x] A7. Tested end to end (live: categories/images/top 3 shots, tip in a real game + dealer thanks, win → Big Wins, online count, card deal animations counted; suites 658 API / 236 web; CI green). Found and fixed: feeds rate limit (d2d0b09), double deal animation in dev.
+- [ ] NEXT: Phase B (casino). Start with B0 research: slot providers (licences, Fishka wallet, server results) → docs/research/casino-slots.md; then banners admin.
 Phase B — casino (only after A): banners managed in admin; slot games from ready-made providers (research licences;
 no own slot engine; Fishka wallet server-side, no client-trusted results, replay-proof; document limits); slot admin;
 Top Winners; casino lobby (search, filters, carousel, recently played).
