@@ -24,7 +24,22 @@ export const fakeEcho = {
   channel(name: string) {
     return fakeEcho.private(name)
   },
+  /** Presence channels: joined while a page is open (see joined()). */
+  join(name: string) {
+    present.add(name)
+    return fakeEcho.private(`presence-${name}`)
+  },
+  leave(name: string) {
+    present.delete(name)
+  },
   disconnect() {},
+}
+
+const present = new Set<string>()
+
+/** The presence channels joined right now, e.g. 'online'. */
+export function joined(name: string) {
+  return present.has(name)
 }
 
 /** Deliver a server event, e.g. emit('user.1', 'room.updated', {...}). */
@@ -34,4 +49,5 @@ export function emit(channel: string, event: string, payload: unknown) {
 
 export function resetChannels() {
   channels.clear()
+  present.clear()
 }

@@ -18,7 +18,7 @@ Phase A — platform first:
 - [x] A2. Big Wins: works with real data and refreshes about every 5 s. Cause found: `game_wins` is empty — no person
       has had a net win since it shipped. Fix: real results only — people's Fishka wins, plus AI players' real wins
       from real games, marked AI; never invented (owner allows "clearly identified AI/demo"; we use real AI results).
-- [ ] A3. Online players counter at the top, from real connected sessions; live.
+- [x] A3. Online players counter at the top, from real connected sessions; live.
 - [ ] A4. AI opponents: personalities/styles (names and avatars exist: 100 bots), marked AI (ADR 0022).
 - [ ] A5. Blackjack dealer: dealer character + avatar, deal/flip animations from the shoe, reactions; optional
       Fishka tip to the dealer after a win (server-side debit, ledger type `dealer_tip`, reactions by amount).

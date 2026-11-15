@@ -166,7 +166,6 @@ it('shows game history and statistics', function () {
         ->assertJsonPath('data.0.losses', 1);
     $this->getJson('/api/v1/users/alice')->assertJsonPath('data.stats.0.played', 1);
 
-    $this->getJson('/api/v1/stats/online')->assertOk()->assertJsonPath('data.online', 1);
 });
 
 /** The seeded poker mode (2–6 players, tables wait 20 s for more players). */

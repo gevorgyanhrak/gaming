@@ -1129,5 +1129,10 @@
     "streak": "Winning streak",
     "fullProfile": "Full profile",
     "open": "Show {{name}}’s card"
+  },
+  "online": {
+    "title": "People connected right now",
+    "label_one": "online",
+    "label_other": "online"
   }
 }

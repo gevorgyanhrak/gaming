@@ -1217,5 +1217,12 @@
     "streak": "Серия побед",
     "fullProfile": "Полный профиль",
     "open": "Карточка игрока {{name}}"
+  },
+  "online": {
+    "title": "Сейчас на сайте",
+    "label_one": "онлайн",
+    "label_few": "онлайн",
+    "label_many": "онлайн",
+    "label_other": "онлайн"
   }
 }

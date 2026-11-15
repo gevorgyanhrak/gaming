@@ -3,19 +3,20 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Platform\Presence\OnlinePlayers;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Cache;
 
 class OnlineController extends Controller
 {
     /**
-     * Players active in the last 5 minutes (from last activity, cached briefly).
+     * People connected right now (the counter at the top of the app): unique signed-in users on the "online"
+     * presence channel. Null when Reverb can't be asked.
      */
-    public function __invoke(): JsonResponse
+    public function __invoke(OnlinePlayers $online): JsonResponse
     {
-        $count = Cache::remember('stats:online', 30, fn () => User::query()->where('last_active_at', '>=', now()->subMinutes(5))->count());
-
-        return response()->json(['data' => ['online' => $count]]);
+        return response()->json(['data' => [
+            /** @var int|null */
+            'online' => $online->count(),
+        ]]);
     }
 }

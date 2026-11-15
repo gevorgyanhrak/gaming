@@ -9,6 +9,8 @@ import { HomeBackdrop } from '@/features/catalog/components/HomeBackdrop'
 import { BigWinCelebration } from '@/features/wins/BigWinCelebration'
 import { AchievementToast } from '@/features/achievements/AchievementToast'
 import { SoundToggle } from '@/features/sound/SoundToggle'
+import { OnlineCounter } from '@/features/presence/OnlineCounter'
+import { useOnlinePresence } from '@/shared/realtime/useOnlinePresence'
 import { ActiveGamesBar } from '@/features/play/components/ActiveGamesBar'
 import { FishkaBalance } from '@/features/wallet/components/FishkaBalance'
 import { FishkaIcon } from '@/features/wallet/components/FishkaIcon'
@@ -57,6 +59,7 @@ export function PublicLayout() {
   useRefreshOnLanguageChange()
   const config = usePublicConfig()
   const user = useCurrentUser()
+  useOnlinePresence(user.data?.id)
   const { pathname } = useLocation()
   const wide = useMediaQuery('(min-width: 1024px)')
   useFavicon(config.data?.favicon_url)
@@ -143,6 +146,7 @@ export function PublicLayout() {
               </Link>
             </div>
             <nav aria-label={t('nav.main')} className="flex items-center gap-1 sm:gap-2">
+              <OnlineCounter />
               <SoundToggle />
               {user.isPending ? (
                 <Skeleton className="size-9 rounded-full" />

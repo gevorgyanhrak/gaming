@@ -308,6 +308,10 @@ is not done or not verified, and how to check it manually. Keep it concise.
   `RoomStakes::aiWinnings` in `settle` → pot share or chips over `options.stacks`), newest first, ids `p…`/`a…`, `is_ai`.
   AI rows never celebrate, never reach leaderboards/achievements. `LiveBigWins` spotlight steps every 5 s (pause on
   hover/focus/button).
+- Online counter (A3): signed-in pages join presence channel `online` (`useOnlinePresence` in PublicLayout); `GET
+  /stats/online` = `Platform/Presence/OnlinePlayers` (Reverb `user_count`, cached 10 s, null when Reverb can't be asked —
+  never `last_active_at`). `OnlineCounter` in the header hides on null. Test fake: `join/leave`, `joined('online')`.
+  The app's `emerald-*` tokens are dark greens: use explicit hex for bright green.
 - Local web tests time out at random when the Mac is loaded (Chrome/Docker, load > 20): run `npx vitest run --maxWorkers=2`.
 - Game catalog (TASK-056): `game_categories` + `games.game_category_id`, `category` on each game in `/games`; admin Games → Categories. Web: `GameGrid` → `features/catalog/components/GameLobby`
   (shelves come from the games; `_other` is reserved for uncategorised), `HomeArt` posters, `HomeBackdrop` (the fixed night-room picture on `/` and `/dashboard`, `PublicLayout` `isHome`,

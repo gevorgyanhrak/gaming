@@ -15,3 +15,7 @@ Broadcast::channel('room.{room}', function (User $user, string $room) {
 });
 
 // Big Wins live: public (anyone may watch who won), so no authorisation callback is needed for Channel('wins').
+
+// Who is online (the counter at the top): every open page of a signed-in player joins; Reverb counts unique users.
+// Members learn nothing about each other but an id.
+Broadcast::channel('online', fn (User $user) => $user->isActive() ? ['id' => $user->id] : false);
