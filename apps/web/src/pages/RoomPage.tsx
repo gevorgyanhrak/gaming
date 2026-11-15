@@ -7,7 +7,9 @@ import { useCurrentUser } from '@/features/auth/hooks'
 import { leaveRoom, type ParticipantResult } from '@/features/play/api'
 import { resultLabel } from '@/features/play/labels'
 import { GameOverPanel } from '@/features/play/components/GameOverPanel'
+import { usePublicConfig } from '@/features/platform/usePublicConfig'
 import { RoomReactions } from '@/features/reactions/components/RoomReactions'
+import { canReact } from '@/features/reactions/open'
 import { GroupBadge } from '@/features/play/components/GroupBadge'
 import { PlayerProfilePopup } from '@/features/players/PlayerProfilePopup'
 import { GameBackdrop } from '@/features/play/components/GameBackdrop'
@@ -35,6 +37,7 @@ export function RoomPage() {
   const { id = '' } = useParams()
   const { room, state, act } = useRoom(id)
   const { data: user } = useCurrentUser()
+  const config = usePublicConfig()
   const [confirmResign, setConfirmResign] = useState(false)
   const wide = useMediaQuery('(min-width: 768px)')
   const secondsLeft = useCountdown(state.data?.deadline, state.data?.server_time)
@@ -42,21 +45,23 @@ export function RoomPage() {
   const playing = room.data?.status === 'active' && state.data?.seat != null && !state.data?.result
   usePresence(id, playing)
   useMarkGameInProgress(playing)
-  // A player's card (PlayerProfilePopup): any avatar marked with seatTrigger opens it, on click or Enter/Space.
+  // Any avatar marked with seatTrigger, on click or Enter/Space: the reactions picker for that player (emoji, quick
+  // message; your own avatar too) where reactions are open, else the player's card (PlayerProfilePopup).
+  const [tappedSeat, setTappedSeat] = useState<number | null>(null)
   const [cardSeat, setCardSeat] = useState<number | null>(null)
   useEffect(() => {
     const seatOf = (target: EventTarget | null) =>
       target instanceof Element ? target.closest('[data-player-seat]') : null
     const onClick = (event: MouseEvent) => {
       const el = seatOf(event.target)
-      if (el) setCardSeat(Number(el.getAttribute('data-player-seat')))
+      if (el) setTappedSeat(Number(el.getAttribute('data-player-seat')))
     }
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== 'Enter' && event.key !== ' ') return
       const el = seatOf(event.target)
       if (!el) return
       event.preventDefault()
-      setCardSeat(Number(el.getAttribute('data-player-seat')))
+      setTappedSeat(Number(el.getAttribute('data-player-seat')))
     }
     document.addEventListener('click', onClick)
     document.addEventListener('keydown', onKey)
@@ -160,6 +165,12 @@ export function RoomPage() {
 
   // Your seat: from the game state once it runs, before that from the room's players, so everyone
   // who joins a table sees themselves at the bottom.
+  // Your seat for reactions: as the state says, or found by your name (a waiting table has no state seat yet).
+  const reactSeat =
+    view?.seat ??
+    data.participants.find((p) => !p.is_bot && user && p.username === user.username)?.seat ??
+    null
+  const reacting = canReact(Boolean(config.data?.play.reactions), data, reactSeat)
   const tableSeat =
     view?.seat ??
     data.participants.find((p) => !p.is_bot && user && p.username === user.username)?.seat ??
@@ -194,7 +205,8 @@ export function RoomPage() {
     <>
       <GameBackdrop slug={data.game.slug} />
       {(() => {
-        const p = cardSeat === null ? undefined : data.participants.find((x) => x.seat === cardSeat)
+        const shown = reacting ? cardSeat : (cardSeat ?? tappedSeat)
+        const p = shown === null ? undefined : data.participants.find((x) => x.seat === shown)
         return p ? (
           <PlayerProfilePopup
             player={{
@@ -205,7 +217,10 @@ export function RoomPage() {
               level: p.level,
               avatar_url: p.avatar_url,
             }}
-            onClose={() => setCardSeat(null)}
+            onClose={() => {
+              setCardSeat(null)
+              setTappedSeat(null)
+            }}
           />
         ) : null
       })()}
@@ -225,12 +240,13 @@ export function RoomPage() {
         {/* The table chat: between the header and the table, in view while playing. */}
         <RoomReactions
           room={data}
-          mySeat={
-            view?.seat ??
-            data.participants.find((p) => !p.is_bot && user && p.username === user.username)
-              ?.seat ??
-            null
-          }
+          mySeat={reactSeat}
+          target={reacting ? tappedSeat : null}
+          onClose={() => setTappedSeat(null)}
+          onProfile={(seat) => {
+            setTappedSeat(null)
+            setCardSeat(seat)
+          }}
         />
 
         {data.status === 'waiting' ? (

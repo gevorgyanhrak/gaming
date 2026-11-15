@@ -759,7 +759,10 @@
     "exclusive": "Эксклюзивные",
     "exclusiveHint": "Открываются с уровнем",
     "lockedEmoji": "{{emoji}} откроется на уровне {{level}}",
-    "sendEmoji": "Отправить {{emoji}}"
+    "sendEmoji": "Отправить {{emoji}}",
+    "forMe": "Показать на вашем аватаре",
+    "toPlayer": "Для {{name}}",
+    "profile": "Профиль"
   },
   "daily": {
     "title": "Ежедневный бонус",
@@ -1305,7 +1308,7 @@
     "favourite": "Любимая игра",
     "streak": "Серия побед",
     "fullProfile": "Полный профиль",
-    "open": "Карточка игрока {{name}}",
+    "open": "{{name}}: эмодзи, сообщения и карточка",
     "style": "Стиль: {{style}}",
     "styles": {
       "cautious": "Осторожный",

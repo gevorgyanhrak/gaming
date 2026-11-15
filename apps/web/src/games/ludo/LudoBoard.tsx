@@ -1,3 +1,4 @@
+import { SeatTap } from '@/features/players/SeatTap'
 import { useTranslation } from 'react-i18next'
 import { useCountdown } from '@/features/play/useCountdown'
 import { LevelBadge } from '@/shared/ui/LevelBadge'
@@ -324,7 +325,13 @@ export default function LudoBoard({
                   className="size-4 shrink-0 rounded-full border border-black/40"
                   style={{ background: COLOURS[colour] }}
                 />
-                <span className="min-w-0 flex-1 truncate text-sm font-semibold">{name(seat)}</span>
+                <SeatTap
+                  seat={seat}
+                  name={name(seat)}
+                  className="min-w-0 flex-1 truncate text-sm font-semibold"
+                >
+                  {name(seat)}
+                </SeatTap>
                 {levels[seat] !== undefined ? <LevelBadge level={levels[seat]} size="sm" /> : null}
                 <span className="text-xs text-gold-light tabular-nums">
                   {t('ludo.home', { count: home })}

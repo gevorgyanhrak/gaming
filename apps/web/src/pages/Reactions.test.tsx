@@ -107,42 +107,22 @@ function serve() {
   return sent
 }
 
+/** Taps a player's avatar (Bob's, or yours: alice) and waits for what it opens. */
+async function tap(name: 'Bob' | 'alice') {
+  await userEvent.click(
+    await screen.findByRole('button', { name: `${name}: emojis, messages and card` }),
+  )
+}
+
 describe('Emojis and quick messages', () => {
-  it('sends an everyday emoji with one tap from the bar, to the opponent', async () => {
+  it('opens from the opponent’s avatar, for them: an emoji flies from your seat to theirs', async () => {
     const sent = serve()
     renderRoute('/rooms/room-1')
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Send 😂' }))
-
-    await waitFor(() => expect(sent).toHaveLength(1))
-    expect(sent[0]).toMatchObject({ kind: 'emoji', value: '😂', to_seat: 1 })
-  })
-
-  it('has no chat panel to open, and the picker turns the others’ animations off', async () => {
-    serve()
-    renderRoute('/rooms/room-1')
-    await screen.findByRole('button', { name: 'Send 😂' })
-    expect(screen.queryByRole('button', { name: /^Table chat/ })).not.toBeInTheDocument()
-
-    await userEvent.click(screen.getByRole('button', { name: 'Send an emoji' }))
-    const picker = await screen.findByRole('dialog', { name: 'Emojis and messages' })
-    const mute = within(picker).getByRole('button', { name: 'Mute animations' })
-    expect(mute).toHaveAttribute('aria-pressed', 'false')
-    await userEvent.click(mute)
-    expect(mute).toHaveAttribute('aria-pressed', 'true')
-    await userEvent.click(mute)
-  })
-
-  it('sends an emoji to the opponent; it flies from your seat towards theirs', async () => {
-    const sent = serve()
-    renderRoute('/rooms/room-1')
-
-    await userEvent.click(await screen.findByRole('button', { name: 'Send an emoji' }))
-    const picker = await screen.findByRole('dialog', { name: 'Emojis and messages' })
-    expect(within(picker).getByRole('button', { name: 'Bob' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
+    await tap('Bob')
+    const picker = await screen.findByRole('dialog', { name: 'To Bob' })
+    // Already for Bob: no one else to choose.
+    expect(within(picker).queryByRole('button', { name: 'Everyone' })).not.toBeInTheDocument()
     await userEvent.click(within(picker).getByRole('button', { name: '❤️ heart' }))
 
     await waitFor(() => expect(sent).toHaveLength(1))
@@ -154,10 +134,63 @@ describe('Emojis and quick messages', () => {
     expect(await within(log).findByText('❤️')).toBeInTheDocument()
     expect(within(log).getByText(/→ Bob/)).toBeInTheDocument()
 
-    // You are at the bottom, the other player at the top: the heart travels up.
+    // You are at the bottom, the other player at the top: the heart travels up to Bob's avatar.
     await waitFor(() => expect(flights.map((f) => f.text)).toContain('❤️'))
     const heart = flights.find((f) => f.text === '❤️')!
     expect(yOf(heart.frames.at(-1))).toBeLessThan(yOf(heart.frames[0]))
+  })
+
+  it('shows a quick message over your own avatar, even when it is for the opponent', async () => {
+    const sent = serve()
+    renderRoute('/rooms/room-1')
+
+    await tap('Bob')
+    const picker = await screen.findByRole('dialog', { name: 'To Bob' })
+    await userEvent.click(within(picker).getByRole('tab', { name: 'Quick messages' }))
+    await userEvent.click(within(picker).getByRole('button', { name: 'GG!' }))
+
+    await waitFor(() => expect(sent).toHaveLength(1))
+    expect(sent[0]).toMatchObject({ kind: 'message', value: 'gg', to_seat: 1 })
+    expect(await within(screen.getByRole('log')).findByText('GG!')).toBeInTheDocument()
+    // Your seat is low on the screen (600), Bob's high (100): the bubble stays down by yours.
+    await waitFor(() => expect(flights.some((f) => f.text.includes('GG!'))).toBe(true))
+    const bubble = flights.find((f) => f.text.includes('GG!'))!
+    expect(yOf(bubble.frames.at(-1))).toBeGreaterThan(400)
+    expect(yOf(bubble.frames[0])).toBeGreaterThan(400)
+  })
+
+  it('puts an emoji in place of your own avatar for 2 seconds', async () => {
+    const sent = serve()
+    renderRoute('/rooms/room-1')
+
+    await tap('alice')
+    const picker = await screen.findByRole('dialog', { name: 'Show on your avatar' })
+    expect(within(picker).queryByRole('button', { name: 'Profile' })).toBeInTheDocument()
+    await userEvent.click(within(picker).getAllByRole('button', { name: '❤️ heart' })[0]!)
+
+    await waitFor(() => expect(sent).toHaveLength(1))
+    expect(sent[0]).toMatchObject({ kind: 'emoji', value: '❤️', to_seat: null })
+    await waitFor(() => expect(flights.map((f) => f.text)).toContain('❤️'))
+    const self = flights.find((f) => f.text === '❤️')!
+    // It stays on your avatar (seat 0: 600–640, centre 620): no flight across the table.
+    expect(self.frames.every((frame) => yOf(frame) === 620)).toBe(true)
+  })
+
+  it('opens the player’s card from the picker, and mutes the others’ animations', async () => {
+    serve()
+    renderRoute('/rooms/room-1')
+
+    await tap('Bob')
+    const picker = await screen.findByRole('dialog', { name: 'To Bob' })
+    const mute = within(picker).getByRole('button', { name: 'Mute animations' })
+    expect(mute).toHaveAttribute('aria-pressed', 'false')
+    await userEvent.click(mute)
+    expect(mute).toHaveAttribute('aria-pressed', 'true')
+    await userEvent.click(mute)
+
+    await userEvent.click(within(picker).getByRole('button', { name: 'Profile' }))
+    expect(await screen.findByRole('dialog', { name: /Bob/ })).toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: 'To Bob' })).not.toBeInTheDocument()
   })
 
   it('shows what the other player sends, coming the other way, once', async () => {
@@ -212,47 +245,27 @@ describe('Emojis and quick messages', () => {
     await waitFor(() => expect(flights).toHaveLength(3))
   })
 
-  it('sends a quick message with one tap, and finds emojis by name in any language', async () => {
+  it('sends the same quick message twice in a second only once, and finds emojis by name in any language', async () => {
     const sent = serve()
     renderRoute('/rooms/room-1')
 
-    await userEvent.click(await screen.findByRole('button', { name: 'GG!' }))
-    await waitFor(() => expect(sent).toHaveLength(1))
-    expect(sent[0]).toMatchObject({ kind: 'message', value: 'gg', to_seat: 1 })
+    for (let i = 0; i < 2; i++) {
+      await tap('Bob')
+      const picker = await screen.findByRole('dialog', { name: 'To Bob' })
+      await userEvent.click(within(picker).getByRole('tab', { name: 'Quick messages' }))
+      await userEvent.click(within(picker).getByRole('button', { name: 'GG!' }))
+    }
     expect(await within(screen.getByRole('log')).findByText('GG!')).toBeInTheDocument()
+    expect(sent).toHaveLength(1)
 
-    await userEvent.click(screen.getByRole('button', { name: /Messages/ }))
-    const picker = await screen.findByRole('dialog')
-    expect(within(picker).getByRole('tab', { name: 'Quick messages' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    )
-    await userEvent.click(within(picker).getByRole('tab', { name: 'Emojis' }))
+    await tap('Bob')
+    const picker = await screen.findByRole('dialog', { name: 'To Bob' })
     await userEvent.type(within(picker).getByRole('searchbox', { name: 'Search emojis' }), 'сердце')
     expect(within(picker).getByRole('button', { name: '❤️ heart' })).toBeInTheDocument()
     expect(within(picker).queryByRole('button', { name: /😂/ })).not.toBeInTheDocument()
-  })
-
-  it('sends a double-clicked quick message once', async () => {
-    const sent = serve()
-    renderRoute('/rooms/room-1')
-
-    await userEvent.dblClick(await screen.findByRole('button', { name: 'GG!' }))
-
-    expect(await within(screen.getByRole('log')).findByText('GG!')).toBeInTheDocument()
-    expect(sent).toHaveLength(1)
-  })
-
-  it('finds emojis by a plural word too', async () => {
-    serve()
-    renderRoute('/rooms/room-1')
-
-    await userEvent.click(await screen.findByRole('button', { name: 'Send an emoji' }))
-    await userEvent.type(await screen.findByRole('searchbox', { name: 'Search emojis' }), 'hearts')
-
-    expect(
-      within(screen.getByRole('dialog')).getByRole('button', { name: '❤️ heart' }),
-    ).toBeInTheDocument()
+    await userEvent.clear(within(picker).getByRole('searchbox', { name: 'Search emojis' }))
+    await userEvent.type(within(picker).getByRole('searchbox', { name: 'Search emojis' }), 'hearts')
+    expect(within(picker).getByRole('button', { name: '❤️ heart' })).toBeInTheDocument()
   })
 
   it('retries a send the server could not take, without sending it twice', async () => {
@@ -281,7 +294,10 @@ describe('Emojis and quick messages', () => {
     )
     renderRoute('/rooms/room-1')
 
-    await userEvent.click(await screen.findByRole('button', { name: 'GG!' }))
+    await tap('Bob')
+    const picker = await screen.findByRole('dialog', { name: 'To Bob' })
+    await userEvent.click(within(picker).getByRole('tab', { name: 'Quick messages' }))
+    await userEvent.click(within(picker).getByRole('button', { name: 'GG!' }))
 
     expect(await within(screen.getByRole('log')).findByText('GG!')).toBeInTheDocument()
     expect(ids).toHaveLength(2)
@@ -304,7 +320,7 @@ describe('Emojis and quick messages', () => {
     expect(flights).toHaveLength(0)
   })
 
-  it('is not offered when an administrator switched it off', async () => {
+  it('opens the card from an avatar when an administrator switched reactions off', async () => {
     serve()
     server.use(
       http.get('*/api/v1/config', () =>
@@ -317,6 +333,8 @@ describe('Emojis and quick messages', () => {
 
     await screen.findByRole('heading', { name: 'Tic-tac-toe' })
     expect(screen.queryByRole('log', { name: 'Table chat' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Send an emoji' })).not.toBeInTheDocument()
+    await tap('Bob')
+    expect(await screen.findByRole('dialog', { name: /Bob/ })).toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: 'To Bob' })).not.toBeInTheDocument()
   })
 })

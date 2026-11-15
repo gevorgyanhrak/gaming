@@ -707,7 +707,10 @@
     "exclusive": "Բացառիկ",
     "exclusiveHint": "Բացվում են մակարդակի հետ",
     "lockedEmoji": "{{emoji}}-ն կբացվի {{level}}-րդ մակարդակում",
-    "sendEmoji": "Ուղարկել {{emoji}}"
+    "sendEmoji": "Ուղարկել {{emoji}}",
+    "forMe": "Ցույց տալ ձեր ավատարի վրա",
+    "toPlayer": "{{name}}-ին",
+    "profile": "Պրոֆիլ"
   },
   "daily": {
     "title": "Օրական բոնուս",
@@ -1217,7 +1220,7 @@
     "favourite": "Սիրելի խաղ",
     "streak": "Հաղթանակների շարք",
     "fullProfile": "Ամբողջական պրոֆիլ",
-    "open": "{{name}}-ի քարտը",
+    "open": "{{name}}․ էմոջիներ, հաղորդագրություններ և քարտ",
     "style": "Ոճ՝ {{style}}",
     "styles": {
       "cautious": "Զգույշ",

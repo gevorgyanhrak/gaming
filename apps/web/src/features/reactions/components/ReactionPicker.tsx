@@ -20,6 +20,8 @@ export function ReactionPicker({
   recipients,
   myLevel,
   initialTab,
+  target,
+  onProfile,
   onSend,
   onClose,
 }: {
@@ -29,6 +31,13 @@ export function ReactionPicker({
   /** The sender's level: exclusive emojis open at the level shown on them (ADR 0018). */
   myLevel: number
   initialTab: ReactionKind
+  /**
+   * Opened from a player's avatar: for them (an emoji flies to their avatar), or — your own avatar — for you (an
+   * emoji takes your avatar's place for 2 s). Messages always show over your own avatar.
+   */
+  target?: Recipient & { self: boolean }
+  /** Opens the tapped player's card. */
+  onProfile?: () => void
   onSend: (kind: ReactionKind, value: string, toSeat: number | null) => void
   onClose: () => void
 }) {
@@ -37,8 +46,19 @@ export function ReactionPicker({
   const [tab, setTab] = useState<ReactionKind>(initialTab)
   // One opponent: it's for them; at a bigger table: for everyone until a player is chosen.
   const [to, setTo] = useState<number | null>(
-    recipients.length === 1 ? (recipients[0]?.seat ?? null) : null,
+    target
+      ? target.self
+        ? null
+        : target.seat
+      : recipients.length === 1
+        ? (recipients[0]?.seat ?? null)
+        : null,
   )
+  const title = target
+    ? target.self
+      ? t('reactions.forMe')
+      : t('reactions.toPlayer', { name: target.name })
+    : t('reactions.title')
   const [query, setQuery] = useState('')
   const [recent] = useState(recentEmojis)
   const grid = useRef<HTMLDivElement>(null)
@@ -100,15 +120,24 @@ export function ReactionPicker({
   return (
     <Modal
       onClose={onClose}
-      label={t('reactions.title')}
+      label={title}
       lockScroll={false}
       scrolls={false}
-      rootClassName="fixed inset-0 z-50 flex items-end justify-center sm:items-end sm:justify-end sm:p-6"
+      rootClassName={`fixed inset-0 z-50 flex items-end justify-center sm:p-6 ${target ? 'sm:items-center' : 'sm:items-end sm:justify-end'}`}
       backdropClassName="absolute inset-0 bg-black/45 motion-safe:animate-[fade-in_160ms_ease-out] sm:bg-black/25"
-      className="flex max-h-[78vh] flex-col rounded-t-3xl pb-[env(safe-area-inset-bottom)] sm:max-h-[min(36rem,80vh)] sm:w-[25rem] sm:rounded-3xl"
+      className={`flex flex-col rounded-t-3xl pb-[env(safe-area-inset-bottom)] sm:w-[25rem] sm:rounded-3xl ${target ? 'max-h-[62vh] sm:max-h-[min(30rem,75vh)]' : 'max-h-[78vh] sm:max-h-[min(36rem,80vh)]'}`}
     >
       <div className="flex items-center justify-between gap-2 px-4 pt-4">
-        <h2 className="text-base font-bold text-gold-light">{t('reactions.title')}</h2>
+        <h2 className="min-w-0 truncate text-base font-bold text-gold-light">{title}</h2>
+        {onProfile ? (
+          <button
+            type="button"
+            onClick={onProfile}
+            className="ml-auto min-h-10 shrink-0 rounded-full border border-gold/40 px-3.5 text-sm font-semibold text-gold-light hover:bg-gold/15"
+          >
+            {t('reactions.profile')}
+          </button>
+        ) : null}
         <button
           type="button"
           onClick={onClose}
@@ -119,7 +148,7 @@ export function ReactionPicker({
         </button>
       </div>
 
-      {recipients.length > 0 ? (
+      {!target && recipients.length > 0 ? (
         <fieldset className="px-4 pt-2">
           <legend className="mb-1.5 text-xs font-semibold tracking-wider text-muted uppercase">
             {t('reactions.sendTo')}

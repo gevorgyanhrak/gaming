@@ -1,36 +1,53 @@
-import { useCallback, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCurrentUser } from '@/features/auth/hooks'
 import type { Room } from '@/features/play/api'
-import { usePublicConfig } from '@/features/platform/usePublicConfig'
 import { isApiError } from '@/shared/api/errors'
 import type { ReactionKind } from '../api'
-import { reactionsOpen } from '../open'
+import { useReactionsEnabled } from '../open'
 import { useReactionsMuted } from '../prefs'
 import { useReactionCatalog, useRoomReactions } from '../useRoomReactions'
 import { ReactionLayer } from './ReactionLayer'
 import { ReactionPicker } from './ReactionPicker'
-import { TableChat } from './TableChat'
+import { ReactionLog } from './ReactionLog'
 
 /** The same reaction to the same player again within this is a double click, not a second send. */
 const REPEAT_MS = 1000
 
 /**
- * Emojis and quick messages for one room (TASK-043): the table chat, the picker and the flights over
- * the page. Only for the room's own players, while the admin has them on and the table takes them.
+ * Emojis and quick messages for one room (TASK-043, reworked 2026-11-16): tapping a player's avatar opens the
+ * picker for them (`target`) — an emoji flies to their avatar; tapping your own lets an emoji take your avatar's
+ * place for 2 s; a quick message shows over your own avatar. The flights are seen by everyone at the table; a
+ * hidden log reads them out. Only for the room's own players, while the admin has them on and the table takes them.
  */
-export function RoomReactions({ room, mySeat }: { room: Room; mySeat: number | null }) {
+export function RoomReactions({
+  room,
+  mySeat,
+  target,
+  onClose,
+  onProfile,
+}: {
+  room: Room
+  mySeat: number | null
+  /** The seat whose avatar was tapped (yours too), or null. */
+  target: number | null
+  onClose: () => void
+  /** Opens that player's card instead. */
+  onProfile: (seat: number) => void
+}) {
   const { t } = useTranslation()
   const { data: user } = useCurrentUser()
-  const config = usePublicConfig()
-  const enabled = Boolean(config.data?.play.reactions) && mySeat !== null && reactionsOpen(room)
+  const enabled = useReactionsEnabled(room, mySeat)
   const catalog = useReactionCatalog(enabled)
   const { log, flights, send, landed } = useRoomReactions(room.id, enabled)
   const muted = useReactionsMuted()
-  const [picker, setPicker] = useState<ReactionKind | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const closePicker = useCallback(() => setPicker(null), [])
   const lastSent = useRef(new Map<string, number>())
+  useEffect(() => {
+    if (!error) return
+    const timer = window.setTimeout(() => setError(null), 4000)
+    return () => window.clearTimeout(timer)
+  }, [error])
 
   if (!enabled) return null
 
@@ -40,7 +57,7 @@ export function RoomReactions({ room, mySeat }: { room: Room; mySeat: number | n
   const recipients = room.participants
     .filter((p) => p.seat !== mySeat)
     .map((p) => ({ seat: p.seat, name: p.name ?? '?' }))
-  const quickTo = recipients.length === 1 ? (recipients[0]?.seat ?? null) : null
+  const tapped = target === null ? undefined : room.participants.find((p) => p.seat === target)
 
   const deliver = (kind: ReactionKind, value: string, toSeat: number | null) => {
     // A double click sends once: the same reaction to the same player within a second is one send.
@@ -59,19 +76,12 @@ export function RoomReactions({ room, mySeat }: { room: Room; mySeat: number | n
 
   return (
     <>
-      <TableChat
+      <ReactionLog
         log={log}
         mySeat={mySeat}
         names={names}
         levels={Object.fromEntries(room.participants.map((p) => [p.seat, p.level]))}
-        quickTo={quickTo}
         error={error}
-        onOpen={setPicker}
-        onQuick={(key, toSeat) => deliver('message', key, toSeat)}
-        quickEmojis={(catalog.data?.emoji ?? [])
-          .flatMap((c) => c.emojis.map((e) => e.emoji))
-          .slice(0, 5)}
-        onEmoji={(emoji, toSeat) => deliver('emoji', emoji, toSeat)}
       />
       <ReactionLayer
         flights={flights}
@@ -80,14 +90,17 @@ export function RoomReactions({ room, mySeat }: { room: Room; mySeat: number | n
         muted={muted}
         onLanded={landed}
       />
-      {picker && catalog.data ? (
+      {tapped && catalog.data ? (
         <ReactionPicker
+          key={tapped.seat}
           catalog={catalog.data}
           recipients={recipients}
           myLevel={user?.level ?? room.participants.find((p) => p.seat === mySeat)?.level ?? 1}
-          initialTab={picker}
+          initialTab="emoji"
+          target={{ seat: tapped.seat, name: tapped.name ?? '?', self: tapped.seat === mySeat }}
+          onProfile={() => onProfile(tapped.seat)}
           onSend={deliver}
-          onClose={closePicker}
+          onClose={onClose}
         />
       ) : null}
     </>

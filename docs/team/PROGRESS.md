@@ -43,10 +43,13 @@ Owner ticket 2026-11-16 "Homepage UI Improvements" (in progress):
 - [x] Compact welcome strip with daily bonus / free gift / lucky wheel tiles; Try next = game cards with Durak — f9dc4cf.
 - [x] Human-like AI for all games: `HumanPace` (choices, ponder, personality, stagger, timer), lapses one level down,
       "… is thinking" caption + ThinkingDots at avatars (ADR 0021 addendum) — this commit.
-- [ ] Poker: cards dealt one by one from the dealer, flips, card moves, smoother dealer; sounds with controls.
-- [ ] Dealer lines: short, natural, contextual, not repeated.
-- [ ] Avatar popup: emoji to the recipient (floats over their avatar, seen by all), quick message bubble over me,
-      my avatar shows a chosen emoji for 2 s; old emoji bar removed.
+- [x] Poker: cards dealt one by one from the deck round the table, board cards face up, showdown flips, deal sound
+      (games/cards/motion.ts).
+- [x] Dealer lines: short, 3 variants per situation, never the same twice in a row, a bust line.
+- [x] Avatar taps open the reactions picker for that player (emoji flies to them; quick message over your own avatar;
+      your own avatar: emoji in its place for 2 s; Profile button → card); chat bar removed; Blackjack, Domino, Ludo,
+      Rummy and Pool plates tappable (SeatTap) — this commit.
+- [ ] Live check of the ticket in a browser.
 Then owner ticket 2026-11-16 "Game-Specific Leaderboards & Ranking": per-game points (+10/−5, AI too, no duplicates)
 for Durak, Checkers, Nardi, Blot, Chess with Top 10 on each game page; Poker/Blackjack Top 10 by chips; home
 leaderboard with a Highest level / Most chips select; top-3 badges, profile popup on avatars.

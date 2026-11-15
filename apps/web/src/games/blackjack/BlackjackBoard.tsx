@@ -1,3 +1,4 @@
+import { SeatTap } from '@/features/players/SeatTap'
 import { useQueryClient } from '@tanstack/react-query'
 import {
   useEffect,
@@ -344,14 +345,16 @@ export default function BlackjackBoard({
                     ))}
                   </div>
                   <div className="relative">
-                    <SeatPlate
-                      name={name(seat)}
-                      stack={format(stack)}
-                      acting={acting}
-                      share={acting ? turnShare : null}
-                      level={levels[seat]}
-                      mine={seat === me}
-                    />
+                    <SeatTap seat={seat} name={name(seat)} className="block">
+                      <SeatPlate
+                        name={name(seat)}
+                        stack={format(stack)}
+                        acting={acting}
+                        share={acting ? turnShare : null}
+                        level={levels[seat]}
+                        mine={seat === me}
+                      />
+                    </SeatTap>
                     {pendingBet > 0 || hands.length > 0 ? (
                       // The bet, as a chip on the nameplate's corner.
                       <span className="absolute -top-3 -right-4 z-10 flex items-center gap-0.5 rounded-full bg-black/75 py-0.5 pr-1.5 pl-0.5 text-[0.65rem] font-bold tabular-nums motion-safe:animate-card-in min-[901px]:-right-6 min-[901px]:text-xs">

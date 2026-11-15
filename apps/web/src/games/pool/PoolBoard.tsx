@@ -1,3 +1,4 @@
+import { SeatTap } from '@/features/players/SeatTap'
 import { useEffect, useEffectEvent, useId, useRef, useState, type PointerEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCountdown } from '@/features/play/useCountdown'
@@ -214,15 +215,16 @@ export default function PoolBoard({
     <div className="space-y-3 text-white">
       <div className="flex flex-wrap items-stretch justify-center gap-2">
         {[0, 1].map((seat) => (
-          <PlayerPlate
-            key={seat}
-            name={name(seat)}
-            group={view.groups[seat] ?? null}
-            balls={balls}
-            acting={view.to_act === seat && !animating}
-            level={levels[seat]}
-            seconds={view.to_act === seat ? secondsLeft : null}
-          />
+          <SeatTap key={seat} seat={seat} name={name(seat)} className="flex">
+            <PlayerPlate
+              name={name(seat)}
+              group={view.groups[seat] ?? null}
+              balls={balls}
+              acting={view.to_act === seat && !animating}
+              level={levels[seat]}
+              seconds={view.to_act === seat ? secondsLeft : null}
+            />
+          </SeatTap>
         ))}
       </div>
 

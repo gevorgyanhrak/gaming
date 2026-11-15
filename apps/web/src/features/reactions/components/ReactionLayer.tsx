@@ -151,7 +151,8 @@ function Flight({
       return
     }
     const from = seatPoint(reaction.from_seat)
-    const target = reaction.to_seat
+    // A quick message always shows over its sender's own avatar; an emoji goes to its receiver.
+    const target = message ? null : reaction.to_seat
     const to = target === null ? null : seatPoint(target)
     const dest = target === null ? from : to
     // Where it should end isn't on screen: the chat has it.
@@ -238,16 +239,21 @@ function Flight({
           { duration: 1800, fill: 'forwards' },
         )
       } else if (!to) {
-        // To everyone: pops up over the sender and rises.
+        // On your own avatar: the emoji takes the avatar's place for 2 seconds, fading in and back out.
+        const size = Math.max(from.right - from.left, from.bottom - from.top)
+        node.style.width = `${size}px`
+        node.style.height = `${size}px`
+        node.style.fontSize = `${Math.round(size * 0.62)}px`
+        node.dataset.onAvatar = ''
         animation = node.animate(
           [
-            { transform: at(from.x, from.top, 0.4), opacity: 0 },
-            { transform: at(from.x, from.top - 10, 1.5), opacity: 1, offset: 0.15 },
-            { transform: at(from.x, from.top - 16, 1.15), opacity: 1, offset: 0.3 },
-            { transform: at(from.x, from.top - 70, 1.1), opacity: 1, offset: 0.8 },
-            { transform: at(from.x, from.top - 100, 0.9), opacity: 0 },
+            { transform: at(from.x, from.y, 0.5), opacity: 0 },
+            { transform: at(from.x, from.y, 1.08), opacity: 1, offset: 0.1, easing: 'ease-out' },
+            { transform: at(from.x, from.y, 1), opacity: 1, offset: 0.16 },
+            { transform: at(from.x, from.y, 1), opacity: 1, offset: 2000 / 2300 },
+            { transform: at(from.x, from.y, 0.6), opacity: 0 },
           ],
-          { duration: 1900, easing: 'ease-out', fill: 'forwards' },
+          { duration: 2300, easing: 'ease-in-out', fill: 'forwards' },
         )
       } else {
         // An arc from the sender to the receiver, a bounce on arrival beside their avatar, then away.
@@ -285,7 +291,9 @@ function Flight({
       className={
         message
           ? 'absolute top-0 left-0 max-w-56 rounded-2xl rounded-bl-sm border border-gold/40 bg-black/85 px-3 py-1.5 text-sm font-semibold text-white opacity-0 shadow-lg shadow-black/50 will-change-transform'
-          : 'absolute top-0 left-0 text-4xl leading-none opacity-0 drop-shadow-[0_4px_10px_rgb(0_0_0/0.55)] will-change-transform sm:text-5xl'
+          : reaction.to_seat === null
+            ? 'absolute top-0 left-0 flex items-center justify-center rounded-full bg-[radial-gradient(circle,#3a2614,#120a05)] leading-none opacity-0 shadow-[0_0_0_2px_rgb(232_198_106/0.8),0_6px_16px_rgb(0_0_0/0.5)] will-change-transform'
+            : 'absolute top-0 left-0 text-4xl leading-none opacity-0 drop-shadow-[0_4px_10px_rgb(0_0_0/0.55)] will-change-transform sm:text-5xl'
       }
     >
       {message ? (

@@ -1,3 +1,4 @@
+import { SeatTap } from '@/features/players/SeatTap'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCountdown } from '@/features/play/useCountdown'
@@ -97,16 +98,18 @@ export default function DominoBoard({
         >
           {others.map((seat) => (
             <li key={seat} aria-current={view.to_act === seat ? 'step' : undefined}>
-              <Plate
-                name={name(seat)}
-                score={format(view.scores[seat] ?? 0)}
-                tiles={view.hand_sizes[seat] ?? 0}
-                tilesLabel={t('domino.tilesLeft', { count: view.hand_sizes[seat] ?? 0 })}
-                acting={view.to_act === seat}
-                share={view.to_act === seat ? turnShare : null}
-                level={levels[seat]}
-                gone={view.out[seat] ?? false}
-              />
+              <SeatTap seat={seat} name={name(seat)} className="block">
+                <Plate
+                  name={name(seat)}
+                  score={format(view.scores[seat] ?? 0)}
+                  tiles={view.hand_sizes[seat] ?? 0}
+                  tilesLabel={t('domino.tilesLeft', { count: view.hand_sizes[seat] ?? 0 })}
+                  acting={view.to_act === seat}
+                  share={view.to_act === seat ? turnShare : null}
+                  level={levels[seat]}
+                  gone={view.out[seat] ?? false}
+                />
+              </SeatTap>
             </li>
           ))}
         </ul>

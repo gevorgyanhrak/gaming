@@ -1,3 +1,4 @@
+import { SeatTap } from '@/features/players/SeatTap'
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCountdown } from '@/features/play/useCountdown'
@@ -148,9 +149,13 @@ export default function RummyBoard({
               } ${view.out[seat] ? 'opacity-45' : ''}`}
             >
               {levels[seat] !== undefined ? <LevelBadge level={levels[seat]} size="sm" /> : null}
-              <span className="max-w-24 truncate text-xs font-semibold min-[641px]:text-sm">
+              <SeatTap
+                seat={seat}
+                name={name(seat)}
+                className="max-w-24 truncate text-xs font-semibold min-[641px]:text-sm"
+              >
                 {name(seat)}
-              </span>
+              </SeatTap>
               <span
                 className="flex"
                 aria-label={t('rummy.cards', { count: view.hand_sizes[seat] ?? 0 })}

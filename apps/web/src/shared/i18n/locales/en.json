@@ -707,7 +707,10 @@
     "exclusive": "Exclusive",
     "exclusiveHint": "Open as you level up",
     "lockedEmoji": "{{emoji}} opens at level {{level}}",
-    "sendEmoji": "Send {{emoji}}"
+    "sendEmoji": "Send {{emoji}}",
+    "forMe": "Show on your avatar",
+    "toPlayer": "To {{name}}",
+    "profile": "Profile"
   },
   "daily": {
     "title": "Daily bonus",
@@ -1217,7 +1220,7 @@
     "favourite": "Favourite game",
     "streak": "Winning streak",
     "fullProfile": "Full profile",
-    "open": "Show {{name}}’s card",
+    "open": "{{name}}: emojis, messages and card",
     "style": "Style: {{style}}",
     "styles": {
       "cautious": "Cautious",
