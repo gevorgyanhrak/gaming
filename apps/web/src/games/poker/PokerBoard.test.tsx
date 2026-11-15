@@ -275,4 +275,52 @@ describe('summarize', () => {
     expect(result.details).toEqual(['with a pair', 'Side pot · Levon · 400 chips'])
     expect(result.mine).toBe(false)
   })
+
+  it('deals a new hand one card at a time round the table, then the flop face up card by card', () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    vi.stubGlobal('matchMedia', (q: string) => ({
+      matches: false,
+      media: q,
+      addEventListener() {},
+      removeEventListener() {},
+    }))
+    const dealt: string[] = []
+    const animate = vi.fn(function (
+      this: HTMLElement,
+      _k: Keyframe[],
+      o: KeyframeAnimationOptions,
+    ) {
+      if (o.id === 'deal') {
+        dealt.push(
+          this.getAttribute('data-poker-hole') ?? `board-${this.getAttribute('data-poker-board')}`,
+        )
+      }
+      return { id: o.id } as unknown as Animation
+    })
+    HTMLElement.prototype.animate = animate
+    HTMLElement.prototype.getAnimations = () => []
+    const board = (extra: object) => (
+      <PokerBoard
+        state={roomStateFixture({ seat: 2, seats_to_act: [0], view: view(extra) })}
+        onAction={vi.fn()}
+        pending={false}
+        players={players}
+      />
+    )
+
+    const { rerender } = render(board({}))
+    vi.advanceTimersByTime(500)
+    expect(dealt).toEqual([])
+
+    // Hand 4, the button on seat 2: seat 0 first, twice round.
+    rerender(board({ hand: 4 }))
+    expect(dealt).toEqual(['0-0', '1-0', '2-0', '0-1', '1-1', '2-1'])
+
+    dealt.length = 0
+    rerender(board({ hand: 4, street: 'flop', board: ['2C', '7D', 'JH'] }))
+    expect(dealt).toEqual(['board-0', 'board-1', 'board-2'])
+
+    vi.unstubAllGlobals()
+    vi.useRealTimers()
+  })
 })

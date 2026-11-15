@@ -1,6 +1,6 @@
 import { seatTrigger } from '@/features/players/seatTrigger'
 import { useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCountdown } from '@/features/play/useCountdown'
 import { walletKey } from '@/features/wallet/api'
@@ -11,6 +11,7 @@ import { AiFace } from '@/shared/ui/AiFace'
 import { frameRing } from '@/shared/ui/frames'
 import { LevelBadge } from '@/shared/ui/LevelBadge'
 import { useCardLabel } from '../cards/cards'
+import { dealCard, flipCard, settleCards } from '../cards/motion'
 import { CardBack, PlayingCard } from '../cards/PlayingCard'
 import type { BoardProps } from '../registry'
 import { ChipFlight, ResultPlate } from './HandResult'
@@ -113,6 +114,45 @@ export default function PokerBoard({
   }, [endedHand, iWon, queryClient])
   const boardCards = result && last ? last.board : view.board
 
+  // Dealing, from the deck in the middle: a new hand's hole cards go round the table one at a time from the seat
+  // after the button, twice; the flop, turn and river land face up one by one; shown cards flip at the showdown.
+  // Only what changes while the page is open moves (useLayoutEffect: a card is placed before it shows).
+  const tableRef = useRef<HTMLDivElement>(null)
+  const seenRef = useRef<{ hand: number; board: number } | null>(null)
+  const shownKey = result && fresh ? Object.keys(last.shown).join(',') : ''
+  useLayoutEffect(() => {
+    const root = tableRef.current
+    const seen = seenRef.current
+    seenRef.current = { hand: view.hand, board: boardCards.length }
+    if (!root) return
+    if (seen === null) {
+      settleCards()
+      return
+    }
+    const deck = root.querySelector('[data-poker-deck]')
+    let order = 0
+    if (view.hand !== seen.hand && view.street !== 'over') {
+      const count = view.stacks.length
+      for (let round = 0; round < 2; round++) {
+        for (let i = 1; i <= count; i++) {
+          const seat = (view.button + i) % count
+          const card = root.querySelector<HTMLElement>(`[data-poker-hole="${seat}-${round}"]`)
+          if (card) dealCard(card, deck, order++, seat === me)
+        }
+      }
+    }
+    const from = view.hand !== seen.hand ? 0 : seen.board
+    for (let i = from; i < boardCards.length; i++) {
+      dealCard(root.querySelector<HTMLElement>(`[data-poker-board="${i}"]`), deck, order++, true)
+    }
+  }, [view.hand, view.button, view.street, view.stacks.length, boardCards.length, me])
+  useLayoutEffect(() => {
+    if (!shownKey) return
+    tableRef.current
+      ?.querySelectorAll<HTMLElement>('[data-poker-shown]')
+      .forEach((card, i) => flipCard(card, i))
+  }, [shownKey])
+
   const seats = view.stacks.length
   // Round the oval from your seat at the bottom; x and y in percent of the table (radii may differ).
   const spot = (seat: number, radius: number, radiusY = radius) => {
@@ -141,7 +181,7 @@ export default function PokerBoard({
   }
 
   return (
-    <div className="space-y-5 text-white">
+    <div ref={tableRef} className="space-y-5 text-white">
       {/* The room: a dark patterned stage, the table on it, the table's info in the corner. */}
       <div className="poker-stage relative rounded-3xl px-7 pt-14 pb-12 min-[901px]:px-14 min-[901px]:pt-[4.5rem] min-[901px]:pb-12">
         <div className="relative mx-auto aspect-[3/4] w-full max-w-[max(18rem,min(36rem,calc((100dvh-24rem)*0.75)))] min-[901px]:aspect-[2.45/1] min-[901px]:max-w-[min(64rem,calc((100dvh-25.5rem)*2.45))]">
@@ -152,13 +192,30 @@ export default function PokerBoard({
             </div>
           </div>
 
+          {/* The deck the cards are dealt from, by the board. */}
+          <span
+            aria-hidden="true"
+            data-poker-deck=""
+            className="absolute top-[29%] left-[8%] z-10 grid min-[901px]:top-[30%] min-[901px]:left-[20%]"
+          >
+            <CardBack
+              size="xs"
+              className="col-start-1 row-start-1 translate-x-[3px] -translate-y-[3px] opacity-80"
+            />
+            <CardBack
+              size="xs"
+              className="col-start-1 row-start-1 translate-x-[1.5px] -translate-y-[1.5px]"
+            />
+            <CardBack size="xs" className="col-start-1 row-start-1" />
+          </span>
+
           <section
             aria-label={t('poker.board')}
             className="absolute inset-x-[5%] top-[38%] flex flex-col items-center gap-2 text-center min-[901px]:inset-x-[12%] min-[901px]:top-1/2 min-[901px]:-translate-y-1/2 min-[901px]:gap-3"
           >
             <div className="flex justify-center gap-1 min-[901px]:gap-2 max-[900px]:[&>span>span]:h-[50px] max-[900px]:[&>span>span]:w-9 max-[900px]:[&>span>span]:rounded-md">
-              {boardCards.map((card) => (
-                <span key={card} className="motion-safe:animate-card-in">
+              {boardCards.map((card, i) => (
+                <span key={card} data-poker-board={i}>
                   <PlayingCard card={card} label={labels.card(card)} />
                 </span>
               ))}
@@ -270,6 +327,7 @@ export default function PokerBoard({
                           {shown.map((card, i) => (
                             <span
                               key={card}
+                              data-poker-shown=""
                               className={`${i === 0 ? '-rotate-6' : '-ml-3 rotate-6'} ${won ? 'rounded-[5px] ring-2 ring-gold' : ''}`}
                             >
                               <PlayingCard
@@ -295,8 +353,12 @@ export default function PokerBoard({
                           aria-hidden="true"
                           className="absolute -top-4 left-1/2 -z-10 flex -translate-x-1/2"
                         >
-                          <CardBack size="sm" className="-rotate-12" />
-                          <CardBack size="sm" className="-ml-6 rotate-12" />
+                          <span data-poker-hole={`${seat}-0`} className="-rotate-12">
+                            <CardBack size="sm" />
+                          </span>
+                          <span data-poker-hole={`${seat}-1`} className="-ml-6 rotate-12">
+                            <CardBack size="sm" />
+                          </span>
                         </span>
                       ) : null}
                     </div>
@@ -361,7 +423,11 @@ export default function PokerBoard({
         <div className="flex shrink-0 gap-2" aria-label={t('poker.yourCards')}>
           {view.hand_cards.length > 0
             ? view.hand_cards.map((card, i) => (
-                <span key={card} className={i === 0 ? '-rotate-6' : 'rotate-6'}>
+                <span
+                  key={card}
+                  data-poker-hole={`${me}-${i}`}
+                  className={i === 0 ? '-rotate-6' : 'rotate-6'}
+                >
                   <PlayingCard card={card} label={labels.card(card)} size="lg" />
                 </span>
               ))
