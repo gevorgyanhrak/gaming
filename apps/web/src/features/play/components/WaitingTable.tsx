@@ -96,6 +96,7 @@ export function WaitingTable({
                     {player ? (
                       <Avatar
                         url={player.avatar_url}
+                        ai={player.is_bot}
                         name={player.name ?? '?'}
                         size="md"
                         frame={player.frame}

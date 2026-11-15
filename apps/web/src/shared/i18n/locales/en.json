@@ -812,7 +812,26 @@
     "dealerPlays": "The dealer plays…",
     "tableClosed": "The table is closed.",
     "waitingBet": "Waiting for {{name}} to bet…",
-    "waitingFor": "Waiting for {{name}}…"
+    "waitingFor": "Waiting for {{name}}…",
+    "dealerName": "The dealer",
+    "shoe": "The shoe",
+    "tipTitle": "Tip the dealer?",
+    "tipButton": "Tip {{amount}}",
+    "tipHint": "Optional. The chips go to the house — a thank-you, nothing more.",
+    "say": {
+      "next": "Place your bets.",
+      "blackjack": "Blackjack! Beautifully played.",
+      "dealerBust": "I bust — the hand is yours!",
+      "youWin": "Congratulations, you win!",
+      "youLose": "The house takes this one. Next hand!",
+      "push": "A push — your bet stays.",
+      "tipSmall": "Thank you!",
+      "tipNice": "Thank you very much!",
+      "tipBig": "How generous! Thank you!",
+      "tipSmallNamed": "Thank you, {{name}}!",
+      "tipNiceNamed": "Thank you very much, {{name}}!",
+      "tipBigNamed": "How generous, {{name}}! Thank you!"
+    }
   },
   "blot": {
     "you": "You",
@@ -1128,7 +1147,20 @@
     "favourite": "Favourite game",
     "streak": "Winning streak",
     "fullProfile": "Full profile",
-    "open": "Show {{name}}’s card"
+    "open": "Show {{name}}’s card",
+    "style": "Style: {{style}}",
+    "styles": {
+      "cautious": "Cautious",
+      "bold": "Bold",
+      "tricky": "Tricky",
+      "steady": "Steady"
+    },
+    "styleHints": {
+      "cautious": "Takes its time, bets small, rarely bluffs.",
+      "bold": "Quick, raises and bets big.",
+      "tricky": "Hard to read: varies its pace, bluffs the most.",
+      "steady": "Even pace, by the book."
+    }
   },
   "online": {
     "title": "People connected right now",

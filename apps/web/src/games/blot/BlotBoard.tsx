@@ -5,6 +5,7 @@ import { playSound } from '@/shared/lib/sounds'
 import { useTranslation } from 'react-i18next'
 import { useCountdown } from '@/features/play/useCountdown'
 import { useMediaQuery } from '@/shared/lib/useMediaQuery'
+import { AiFace } from '@/shared/ui/AiFace'
 import { LevelBadge } from '@/shared/ui/LevelBadge'
 import { suitSymbols, useCardLabel, type Suit } from '../cards/cards'
 import { CardBack, PlayingCard } from '../cards/PlayingCard'
@@ -133,6 +134,7 @@ export default function BlotBoard({
   pending,
   players = {},
   levels = {},
+  faces = {},
 }: BoardProps) {
   const { t, i18n } = useTranslation()
   const labels = useCardLabel()
@@ -571,6 +573,7 @@ export default function BlotBoard({
                         share={acting ? turnShare : null}
                         level={levels[seat]}
                         ours={seat % 2 === myTeam}
+                        ai={faces[seat]}
                       />
                     </span>
                     <AvatarBadges badges={badgesOf(seat)} name={name(seat)} end={where === 3} />
@@ -1026,12 +1029,15 @@ function Avatar({
   share,
   level,
   ours,
+  ai,
 }: {
   name: string
   acting: boolean
   share: number | null
   level?: number
   ours: boolean
+  /** An AI player: its drawn face instead of the initial. */
+  ai?: string
 }) {
   const ring =
     acting && share !== null
@@ -1046,8 +1052,8 @@ function Avatar({
       className={`relative block rounded-full p-[3px] shadow-[0_8px_20px_rgb(0_0_0/0.55)] ${acting ? 'motion-safe:animate-turn-glow' : ''}`}
       style={{ background: ring }}
     >
-      <span className="flex size-13 items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_35%,#5b4334,#2a1b12)] text-xl font-extrabold text-white uppercase shadow-[inset_0_0_0_2px_rgb(0_0_0/0.35)] min-[641px]:size-20 min-[641px]:text-3xl">
-        {name.slice(0, 1)}
+      <span className="flex size-13 items-center justify-center overflow-hidden rounded-full bg-[radial-gradient(circle_at_50%_35%,#5b4334,#2a1b12)] text-xl font-extrabold text-white uppercase shadow-[inset_0_0_0_2px_rgb(0_0_0/0.35)] min-[641px]:size-20 min-[641px]:text-3xl">
+        {ai ? <AiFace name={ai} className="size-full" /> : name.slice(0, 1)}
       </span>
       {level !== undefined ? (
         <LevelBadge level={level} size="sm" className="absolute -right-2 bottom-0" />

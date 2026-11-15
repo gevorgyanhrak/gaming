@@ -18,6 +18,8 @@ export interface PopupPlayer {
   name: string
   username: string | null
   is_bot: boolean
+  /** An AI player's character (cautious, bold, tricky, steady). */
+  personality?: string | null
   level: number
   avatar_url: string | null
 }
@@ -72,7 +74,13 @@ export function PlayerProfilePopup({
 
         <header className="flex items-center gap-3 pr-10">
           <span className="relative">
-            <Avatar url={player.avatar_url} name={player.name} level={player.level} size="md" />
+            <Avatar
+              url={player.avatar_url}
+              name={player.name}
+              level={player.level}
+              size="md"
+              ai={player.is_bot}
+            />
             {c?.online ? (
               <span
                 className="absolute right-0 bottom-0 size-3.5 rounded-full border-2 border-emerald-900 bg-[#3ccf6e]"
@@ -102,9 +110,23 @@ export function PlayerProfilePopup({
         </header>
 
         {player.is_bot ? (
-          <p className="rounded-xl bg-black/30 px-3 py-2 text-sm text-fg/85">
-            {t('playerCard.ai')}
-          </p>
+          <div className="space-y-2 rounded-xl bg-black/30 px-3 py-2 text-sm text-fg/85">
+            {player.personality ? (
+              <p>
+                <span className="font-semibold text-gold-light">
+                  {t('playerCard.style', {
+                    style: t(`playerCard.styles.${player.personality}`, {
+                      defaultValue: player.personality,
+                    }),
+                  })}
+                </span>
+                <span className="block text-xs text-muted">
+                  {t(`playerCard.styleHints.${player.personality}`, { defaultValue: '' })}
+                </span>
+              </p>
+            ) : null}
+            <p>{t('playerCard.ai')}</p>
+          </div>
         ) : card.isPending ? (
           <div className="space-y-2">
             <Skeleton className="h-3 rounded-full" />

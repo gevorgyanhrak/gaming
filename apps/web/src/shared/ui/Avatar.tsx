@@ -1,3 +1,4 @@
+import { AiFace } from './AiFace'
 import { LevelBadge } from './LevelBadge'
 
 const sizes = { sm: 'size-8 text-sm', md: 'size-12 text-lg', lg: 'size-24 text-3xl' } as const
@@ -10,7 +11,8 @@ const frames: Record<string, string> = {
 }
 
 /**
- * A user's avatar image, or their initial on a neutral tile. With a level, the level badge sits on its
+ * A user's avatar image, or their initial on a neutral tile; an AI player without a picture gets its drawn face
+ * (AiFace). With a level, the level badge sits on its
  * corner (and a frame, if the level unlocked one, goes round it) — the same everywhere.
  */
 export function Avatar({
@@ -19,15 +21,24 @@ export function Avatar({
   size = 'md',
   level,
   frame,
+  ai = false,
 }: {
   url: string | null
   name: string
+  /** An AI player: its drawn face when it has no picture. */
+  ai?: boolean
   size?: keyof typeof sizes
   level?: number | null
   frame?: string | null
 }) {
   const face = url ? (
     <img src={url} alt="" className={`${sizes[size]} rounded-full object-cover`} />
+  ) : ai ? (
+    <span
+      className={`${sizes[size]} inline-flex shrink-0 overflow-hidden rounded-full border border-sky-300/40`}
+    >
+      <AiFace name={name} className="size-full" />
+    </span>
   ) : (
     <span
       aria-hidden="true"

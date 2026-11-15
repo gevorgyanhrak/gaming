@@ -90,9 +90,13 @@ class GameActionService
             }
             $engine = $this->states->engine($room);
             if (! in_array($actor->seat, $current->seatsToAct, true)) {
-                // Some actions belong to no turn (Blot's Quansh): the engine says which, and when.
-                $outOfTurn = $engine instanceof HasOutOfTurnActions
-                    && collect($engine->outOfTurnActions($current->state, $actor->seat))->contains(fn (Action $a) => $a->equals($action));
+                // Some actions belong to no turn (Blot's Quansh, a blackjack tip): the engine says which, and when. A
+                // range (a tip of 1…n) is offered as {min, max} and sent as {amount}: an engine that validates its own
+                // actions judges those.
+                $offered = $engine instanceof HasOutOfTurnActions ? $engine->outOfTurnActions($current->state, $actor->seat) : [];
+                $outOfTurn = $engine instanceof ValidatesActions
+                    ? collect($offered)->contains(fn (Action $a) => $a->type === $action->type) && $engine->isLegal($current->state, $actor->seat, $action)
+                    : collect($offered)->contains(fn (Action $a) => $a->equals($action));
                 if (! $outOfTurn) {
                     throw new IllegalAction(__('platform.play.not_your_turn'));
                 }

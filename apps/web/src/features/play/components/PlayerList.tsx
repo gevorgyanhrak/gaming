@@ -52,6 +52,7 @@ export function PlayerList({
         <span {...seatTrigger(player.seat, t('playerCard.open', { name: player.name ?? '?' }))}>
           <Avatar
             url={player.avatar_url}
+            ai={player.is_bot}
             name={player.name ?? '?'}
             size="md"
             level={player.level}

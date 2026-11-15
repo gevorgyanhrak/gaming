@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\BotDifficulty;
+use App\Enums\BotPersonality;
 use App\Models\BotGameProfile;
 use App\Models\BotProfile;
 use App\Models\Game;
@@ -38,7 +39,7 @@ class BotSeeder extends Seeder
         $newGames = Game::query()->whereNotIn('id', BotGameProfile::query()->select('game_id'))->pluck('id');
 
         foreach (self::NAMES as $name) {
-            $bot = BotProfile::query()->firstOrCreate(['name' => $name], ['level' => self::level($name)]);
+            $bot = BotProfile::query()->firstOrCreate(['name' => $name], ['level' => self::level($name), 'personality' => BotPersonality::for($name)]);
 
             foreach ($bot->wasRecentlyCreated ? $games : $newGames as $gameId) {
                 $bot->gameProfiles()->firstOrCreate(['game_id' => $gameId], ['difficulty' => BotDifficulty::Hard]);

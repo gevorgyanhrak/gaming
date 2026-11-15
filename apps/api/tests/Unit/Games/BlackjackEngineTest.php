@@ -311,3 +311,45 @@ it('lets bots of every difficulty play whole games', function (BotDifficulty $di
 
     expect($engine->outcome($state))->not->toBeNull();
 })->with([BotDifficulty::Easy, BotDifficulty::Medium, BotDifficulty::Hard]);
+
+it('offers a winner a tip for the dealer, up to what they won, keeping the minimum bet', function () {
+    $engine = new BlackjackEngine;
+    // A blackjack: +150, 1,150 chips; the pause after the round.
+    $state = bj(stackShoe(blackjack(), ['AS', '9H', 'KD', '7C']), 'bet', 100);
+
+    expect($engine->outOfTurnActions($state, 0))->toHaveCount(1)
+        ->and($engine->outOfTurnActions($state, 0)[0]->payload)->toBe(['max' => 150, 'min' => 1]);
+
+    $state = $engine->apply($state, 0, new Action('tip', ['amount' => 40]), new SecureRandom)->state;
+
+    expect($state['stacks'][0])->toBe(1110)
+        ->and($state['tips'][0])->toBe(40)
+        ->and($state['last_tip'])->toMatchArray(['seat' => 0, 'amount' => 40, 'round' => 1, 'n' => 1])
+        ->and($engine->chipsOf($state, 0))->toBe(1110)
+        // Once per round won.
+        ->and($engine->outOfTurnActions($state, 0))->toBe([]);
+});
+
+it('lets a winner tip while bets are taken for the next round too, then not', function () {
+    $engine = new BlackjackEngine;
+    $state = bj(stackShoe(blackjack(), ['AS', '9H', 'KD', '7C']), 'bet', 100);
+    $state = $engine->resume($state, new SecureRandom)->state;   // round 2, betting
+
+    expect(types($state))->toBe(['bet', 'tip']);
+    $state = bj($state, 'tip', 10, 0);
+    expect(types($state))->toBe(['bet'])
+        ->and($state['to_act'])->toBe(0);   // tipping takes no turn
+});
+
+it('offers no tip after a lost round, and refuses one outside the range', function () {
+    $engine = new BlackjackEngine;
+    // 10+7 against the dealer's 20: lost.
+    $lost = bj(bj(stackShoe(blackjack(), ['TS', 'TH', '7D', 'KC']), 'bet', 100), 'stand');
+    expect($lost['last_round']['net'])->toBe([-100])
+        ->and($engine->outOfTurnActions($lost, 0))->toBe([]);
+
+    $won = bj(stackShoe(blackjack(), ['AS', '9H', 'KD', '7C']), 'bet', 100);
+    expect(fn () => bj($won, 'tip', 151, 0))->toThrow(IllegalAction::class)
+        ->and(fn () => bj($won, 'tip', 0, 0))->toThrow(IllegalAction::class)
+        ->and(fn () => $engine->apply($won, 0, new Action('tip', ['amount' => '5']), new SecureRandom))->toThrow(IllegalAction::class);
+});

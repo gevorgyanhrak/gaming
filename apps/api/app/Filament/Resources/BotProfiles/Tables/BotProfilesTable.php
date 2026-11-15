@@ -20,6 +20,7 @@ class BotProfilesTable
                 ImageColumn::make('avatar_path')->label('')->disk('public')->circular(),
                 TextColumn::make('name')->searchable()->sortable(),
                 TextColumn::make('level')->sortable(),
+                TextColumn::make('personality')->badge()->formatStateUsing(fn ($state) => ucfirst($state instanceof \BackedEnum ? (string) $state->value : (string) $state)),
                 IconColumn::make('is_enabled')->label('Enabled')->boolean(),
                 TextColumn::make('game_profiles_count')->counts('gameProfiles')->label('Games'),
                 TextColumn::make('updated_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),

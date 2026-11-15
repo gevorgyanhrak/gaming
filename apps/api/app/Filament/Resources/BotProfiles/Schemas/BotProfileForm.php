@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\BotProfiles\Schemas;
 
 use App\Enums\BotDifficulty;
+use App\Enums\BotPersonality;
 use App\Filament\Resources\Games\Schemas\GameForm;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
@@ -32,6 +33,11 @@ class BotProfileForm
                             ->numeric()->integer()->required()->minValue(10)->maxValue(100)
                             ->default(fn () => random_int(18, 57))
                             ->helperText('Shown next to the bot like a player’s level. Fixed: bots earn no XP and no rewards.'),
+                        Select::make('personality')
+                            ->required()
+                            ->options(collect(BotPersonality::cases())->mapWithKeys(fn ($p) => [$p->value => ucfirst($p->value)]))
+                            ->default(BotPersonality::Steady->value)
+                            ->helperText('Pace and style (poker bluffing and raising, blackjack bet size) — never strength.'),
                         Toggle::make('is_enabled')->label('Enabled')->default(true),
                     ]),
                 Section::make('Games')

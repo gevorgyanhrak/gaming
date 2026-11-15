@@ -3,9 +3,11 @@
 namespace App\Gameplay\Bots;
 
 use App\Enums\BotDifficulty;
+use App\Enums\BotPersonality;
 use App\Gameplay\Actions\GameActionService;
 use App\Gameplay\Contracts\ActsOutOfTurn;
 use App\Gameplay\Contracts\HasOutOfTurnActions;
+use App\Gameplay\Contracts\PlaysInStyle;
 use App\Gameplay\Exceptions\RoomNotActive;
 use App\Gameplay\Exceptions\VersionConflict;
 use App\Gameplay\GameRegistry;
@@ -54,6 +56,10 @@ class BotTurnJob implements ShouldQueue
         $engine = $states->engine($room);
         $strategy = $registry->get($room->game->slug)->bot();
         $difficulty = $bot->bot_difficulty ?? $ai->difficulty($room->game) ?? BotDifficulty::Hard;
+        // An AI player plays in its own style where the game leaves room for one (a seat held for a person: steady).
+        if ($strategy instanceof PlaysInStyle) {
+            $strategy = $strategy->inStyle($bot->bot_profile_id !== null ? $bot->bot->personality : BotPersonality::Steady);
+        }
 
         if ($this->outOfTurn) {
             $offered = $engine instanceof HasOutOfTurnActions ? $engine->outOfTurnActions($state->state, $this->seat) : [];

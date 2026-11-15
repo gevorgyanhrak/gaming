@@ -16,6 +16,8 @@ export interface BoardProps {
   levels?: Partial<Record<number, number>>
   /** Avatar frames by seat, for boards that draw their own avatars. */
   frames?: Partial<Record<number, string | null>>
+  /** AI seats: the name their drawn face (AiFace) is made from. */
+  faces?: Partial<Record<number, string>>
 }
 
 /**

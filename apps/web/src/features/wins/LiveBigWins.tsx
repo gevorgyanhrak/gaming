@@ -124,6 +124,7 @@ export function LiveBigWins() {
               >
                 <Avatar
                   url={win.player.avatar_url}
+                  ai={win.is_ai}
                   name={win.player.name}
                   level={win.player.level}
                   size="sm"
@@ -192,7 +193,12 @@ function Spotlight({
         {label}
       </p>
       <div className="mt-1 flex items-center gap-3">
-        <Avatar url={win.player.avatar_url} name={win.player.name} level={win.player.level} />
+        <Avatar
+          url={win.player.avatar_url}
+          name={win.player.name}
+          level={win.player.level}
+          ai={win.is_ai}
+        />
         <div className="min-w-0 flex-1">
           <p className="flex min-w-0 items-center gap-1.5">
             <span className="truncate font-bold">{win.player.name}</span>

@@ -6,6 +6,7 @@ use App\Enums\RoomStatus;
 use App\Gameplay\Actions\GameActionService;
 use App\Gameplay\Bots\BotTurnJob;
 use App\Gameplay\Lifecycle\ResumeRoundJob;
+use App\Gameplay\Rooms\RoomState;
 use App\Gameplay\Rooms\RoomStates;
 use App\Gameplay\Rooms\RoomStateStore;
 use App\Models\BotProfile;
@@ -169,4 +170,38 @@ it('still requires an opponent in games for two', function () {
 
     $this->actingAs(User::factory()->create())->postJson('/api/v1/rooms', ['game_mode_id' => $mode->id, 'type' => 'bot', 'opponents' => 0])
         ->assertUnprocessable()->assertJsonValidationErrors('opponents');
+});
+
+it('takes a tip for the dealer from a winner during the pause, once, as a recorded move', function () {
+    $mode = blackjackMode();
+    $user = User::factory()->create();
+    $data = $this->actingAs($user)->postJson('/api/v1/rooms', ['game_mode_id' => $mode->id, 'type' => 'bot', 'opponents' => 0, 'group' => 'intermediate'])
+        ->assertCreated()->json('data');
+    $room = blackjackRoom($data['id']);
+    $store = app(RoomStateStore::class);
+    $current = app(RoomStates::class)->current($room);
+    // A blackjack for the player on the next deal.
+    $state = $current->state;
+    // (A full shoe behind them: a short one is reshuffled before the deal.)
+    $state['shoe'] = ['AS', '9H', 'KD', '7C', ...array_fill(0, 300, '2C')];
+    $store->put($room, new RoomState($current->version, $state, $current->seatsToAct, $current->deadline));
+    $min = $state['limits'][0];
+    $post = fn (array $action, int $version) => $this->actingAs($user)->postJson("/api/v1/rooms/{$room->public_id}/actions", [
+        'client_action_id' => (string) Str::uuid(), 'expected_version' => $version, 'action' => $action,
+    ]);
+    $post(['type' => 'bet', 'amount' => $min], $current->version)->assertOk();
+
+    $paused = app(RoomStates::class)->current(blackjackRoom($room->public_id));
+    expect($paused->seatsToAct)->toBe([])
+        ->and($paused->state['last_round']['net'][0])->toBeGreaterThan(0);
+    $stack = $paused->state['stacks'][0];
+
+    $post(['type' => 'tip', 'amount' => 1], $paused->version)->assertOk();
+    $after = app(RoomStates::class)->current(blackjackRoom($room->public_id));
+    expect($after->state['stacks'][0])->toBe($stack - 1)
+        ->and($after->state['last_tip'])->toMatchArray(['seat' => 0, 'amount' => 1])
+        ->and($room->moves()->where('type', 'tip')->count())->toBe(1);
+
+    // Once per round, and never more than the round won.
+    $post(['type' => 'tip', 'amount' => 1], $after->version)->assertUnprocessable();
 });

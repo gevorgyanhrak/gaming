@@ -19,8 +19,8 @@ Phase A — platform first:
       has had a net win since it shipped. Fix: real results only — people's Fishka wins, plus AI players' real wins
       from real games, marked AI; never invented (owner allows "clearly identified AI/demo"; we use real AI results).
 - [x] A3. Online players counter at the top, from real connected sessions; live.
-- [ ] A4. AI opponents: personalities/styles (names and avatars exist: 100 bots), marked AI (ADR 0022).
-- [ ] A5. Blackjack dealer: dealer character + avatar, deal/flip animations from the shoe, reactions; optional
+- [x] A4. AI opponents — personalities (pace + poker/blackjack style) and drawn AI faces —: personalities/styles (names and avatars exist: 100 bots), marked AI (ADR 0022).
+- [x] A5. Blackjack dealer — drawn croupier with reactions, shoe, dealt/flipped cards, optional tip (out-of-turn engine action) —: dealer character + avatar, deal/flip animations from the shoe, reactions; optional
       Fishka tip to the dealer after a win (server-side debit, ledger type `dealer_tip`, reactions by amount).
       A tip goes to the house, never to a user (house rule holds).
 - [ ] A6. Design/animation polish (keep the direction): screen transitions, hover, animated cards, win effects,

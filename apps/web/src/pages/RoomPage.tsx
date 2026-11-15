@@ -197,6 +197,7 @@ export function RoomPage() {
               name: p.name ?? '',
               username: p.username,
               is_bot: p.is_bot,
+              personality: p.personality,
               level: p.level,
               avatar_url: p.avatar_url,
             }}
@@ -255,6 +256,9 @@ export function RoomPage() {
                   players={playerNames}
                   levels={Object.fromEntries(data.participants.map((p) => [p.seat, p.level]))}
                   frames={Object.fromEntries(data.participants.map((p) => [p.seat, p.frame]))}
+                  faces={Object.fromEntries(
+                    data.participants.filter((p) => p.is_bot).map((p) => [p.seat, p.name ?? '']),
+                  )}
                 />
               </Suspense>
             ) : (

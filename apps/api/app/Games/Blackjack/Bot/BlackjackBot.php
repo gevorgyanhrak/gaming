@@ -3,7 +3,9 @@
 namespace App\Games\Blackjack\Bot;
 
 use App\Enums\BotDifficulty;
+use App\Enums\BotPersonality;
 use App\Gameplay\Contracts\BotStrategy;
+use App\Gameplay\Contracts\PlaysInStyle;
 use App\Gameplay\Engine\Action;
 use App\Gameplay\Random\RandomSource;
 use App\Games\Blackjack\Engine\BlackjackCards;
@@ -13,8 +15,15 @@ use App\Games\Blackjack\Engine\BlackjackCards;
  * does too but slips now and then; easy hits below 15 and never doubles or splits. Bots bet the table
  * minimum or a little more.
  */
-final class BlackjackBot implements BotStrategy
+final class BlackjackBot implements BotStrategy, PlaysInStyle
 {
+    public function __construct(private readonly BotPersonality $personality = BotPersonality::Steady) {}
+
+    public function inStyle(BotPersonality $personality): BotStrategy
+    {
+        return new self($personality);
+    }
+
     /**
      * @param  array<string, mixed>  $view
      */
@@ -28,7 +37,13 @@ final class BlackjackBot implements BotStrategy
         if (isset($legal['bet'])) {
             $min = (int) $legal['bet']->payload['min'];
             $max = (int) $legal['bet']->payload['max'];
-            $times = $difficulty === BotDifficulty::Easy ? $random->int(1, 3) : $random->int(1, 2);
+            // The bet is style (the play after it is basic strategy): cautious the minimum, bold up to four times it.
+            $times = $difficulty === BotDifficulty::Easy ? $random->int(1, 3) : match ($this->personality) {
+                BotPersonality::Cautious => 1,
+                BotPersonality::Bold => $random->int(2, 4),
+                BotPersonality::Tricky => $random->int(1, 3),
+                BotPersonality::Steady => $random->int(1, 2),
+            };
 
             return new Action('bet', ['amount' => max($min, min($max, $min * $times))]);
         }

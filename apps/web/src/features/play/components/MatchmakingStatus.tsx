@@ -159,6 +159,7 @@ export function MatchmakingStatus({
                     <span className="rounded-full shadow-[0_6px_16px_rgb(0_0_0/0.55)] ring-2 ring-gold">
                       <Avatar
                         url={player.avatar_url}
+                        ai={player.is_bot}
                         name={player.name}
                         level={player.level}
                         size="sm"

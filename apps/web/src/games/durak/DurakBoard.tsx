@@ -78,6 +78,7 @@ export default function DurakBoard({
   players = {},
   levels = {},
   frames = {},
+  faces = {},
 }: BoardProps) {
   const { t } = useTranslation()
   const view = state.view as unknown as DurakView
@@ -209,6 +210,7 @@ export default function DurakBoard({
       share: acting ? turnShare : null,
       level: levels[other],
       frame: frames[other],
+      ai: faces[other],
       label: [t('durak.opponentCards', { name: nameOf(other), count }), role?.text]
         .filter(Boolean)
         .join(', '),

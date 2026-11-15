@@ -3,7 +3,9 @@
 namespace App\Games\Poker\Bot;
 
 use App\Enums\BotDifficulty;
+use App\Enums\BotPersonality;
 use App\Gameplay\Contracts\BotStrategy;
+use App\Gameplay\Contracts\PlaysInStyle;
 use App\Gameplay\Engine\Action;
 use App\Gameplay\Random\RandomSource;
 use App\Games\Poker\Engine\PokerHands;
@@ -12,10 +14,39 @@ use App\Games\Poker\Engine\PokerHands;
  * Easy calls a lot, folds at random and sometimes min-raises. Medium and hard estimate their chance
  * of winning against the players still in the hand (Monte Carlo over the unseen cards) and compare it
  * with the pot odds: raise strong hands, call when the price is right, otherwise check or fold. Hard
- * samples more, sizes bets to the pot and bluffs now and then.
+ * samples more, sizes bets to the pot and bluffs now and then — how often, and how strong a hand it wants before
+ * raising, by its personality (cautious bluffs least and raises later, tricky bluffs most, bold raises soonest).
  */
-final class PokerBot implements BotStrategy
+final class PokerBot implements BotStrategy, PlaysInStyle
 {
+    public function __construct(private readonly BotPersonality $personality = BotPersonality::Steady) {}
+
+    public function inStyle(BotPersonality $personality): BotStrategy
+    {
+        return new self($personality);
+    }
+
+    /** How often (percent) a hard bot bets with nothing when it may check. */
+    private function bluffPercent(): int
+    {
+        return match ($this->personality) {
+            BotPersonality::Cautious => 3,
+            BotPersonality::Bold => 12,
+            BotPersonality::Tricky => 18,
+            BotPersonality::Steady => 8,
+        };
+    }
+
+    /** Added to the equity a hand needs before it raises for value. */
+    private function valueMargin(): float
+    {
+        return match ($this->personality) {
+            BotPersonality::Cautious => 0.05,
+            BotPersonality::Bold => -0.04,
+            BotPersonality::Tricky, BotPersonality::Steady => 0.0,
+        };
+    }
+
     /**
      * @param  array<string, mixed>  $view
      */
@@ -46,9 +77,9 @@ final class PokerBot implements BotStrategy
         $pot = $view['pot'];
         $odds = $owe > 0 ? $owe / ($pot + $owe) : 0.0;
         // With more opponents, a hand needs to be stronger than its share to bet for value.
-        $strong = 1.6 / ($opponents + 1) + 0.15;
+        $strong = 1.6 / ($opponents + 1) + 0.15 + ($hard ? $this->valueMargin() : 0.0);
 
-        if ($raise !== null && ($equity >= $strong || ($hard && $owe === 0 && $roll <= 8))) {
+        if ($raise !== null && ($equity >= $strong || ($hard && $owe === 0 && $roll <= $this->bluffPercent()))) {
             $size = $hard ? (int) round($view['current_bet'] + max($view['min_raise'], $pot * ($equity > 0.8 ? 1.0 : 0.6))) : (int) $raise->payload['min'];
 
             return $this->raiseTo($raise, $equity > 0.85 && $view['street'] === 'river' ? (int) $raise->payload['max'] : $size);

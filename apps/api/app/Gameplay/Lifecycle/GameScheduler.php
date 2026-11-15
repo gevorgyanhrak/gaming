@@ -68,17 +68,27 @@ class GameScheduler
         }
     }
 
-    /** How long the AI at $seat waits before it moves: as its game's bot says (PacesThinking), or the default. */
+    /**
+     * How long the AI at $seat waits before it moves: as its game's bot says (PacesThinking), or the default — then
+     * at its personality's pace (a cautious player takes longer, a bold one less, a tricky one varies most).
+     */
     private function thinking(GameRoom $room, RoomState $state, int $seat): int
     {
         $bot = $this->registry->get($room->game->slug)->bot();
         if ($bot instanceof PacesThinking) {
             $engine = $this->states->engine($room);
-
-            return max(0, $bot->thinkingMs($engine->viewFor($state->state, $seat), $engine->legalActions($state->state, $seat), new SecureRandom));
+            $ms = max(0, $bot->thinkingMs($engine->viewFor($state->state, $seat), $engine->legalActions($state->state, $seat), new SecureRandom));
+        } else {
+            $delay = config('gameplay.bot_delay_ms');
+            $ms = random_int($delay['min'], $delay['max']);
         }
-        $delay = config('gameplay.bot_delay_ms');
 
-        return random_int($delay['min'], $delay['max']);
+        $personality = $room->participants->firstWhere('seat', $seat)?->bot?->personality;
+        if ($personality === null || $ms === 0) {
+            return $ms;
+        }
+        $spread = $personality->jitter();
+
+        return (int) round($ms * $personality->tempo() * (1 + $spread * (random_int(-100, 100) / 100)));
     }
 }

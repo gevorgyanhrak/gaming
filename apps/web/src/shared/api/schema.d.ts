@@ -395,7 +395,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Players active in the last 5 minutes (from last activity, cached briefly) */
+        /**
+         * People connected right now (the counter at the top of the app): unique signed-in users on the "online"
+         *     presence channel. Null when Reverb can't be asked
+         */
         get: operations["v1.stats.online"];
         put?: never;
         post?: never;
@@ -1189,6 +1192,7 @@ export interface components {
             participants: {
                 seat: number;
                 is_bot: boolean;
+                personality: string | null;
                 name: string | null;
                 username: string | null;
                 avatar_url: string | null;
@@ -2338,7 +2342,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: {
-                            online: number;
+                            online: number | null;
                         };
                     };
                 };

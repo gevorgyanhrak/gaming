@@ -187,6 +187,7 @@ export function roomFixture(overrides: Partial<Room> = {}): Room {
       {
         seat: 0,
         is_bot: false,
+        personality: null,
         name: 'alice',
         username: 'alice',
         avatar_url: null,
@@ -198,6 +199,7 @@ export function roomFixture(overrides: Partial<Room> = {}): Room {
       {
         seat: 1,
         is_bot: true,
+        personality: 'bold',
         name: 'Aram',
         username: null,
         avatar_url: null,

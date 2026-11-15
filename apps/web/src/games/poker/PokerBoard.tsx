@@ -6,6 +6,7 @@ import { useCountdown } from '@/features/play/useCountdown'
 import { walletKey } from '@/features/wallet/api'
 import { flyFishkas } from '@/features/wallet/flyFishkas'
 import { useMediaQuery } from '@/shared/lib/useMediaQuery'
+import { AiFace } from '@/shared/ui/AiFace'
 import { frameRing } from '@/shared/ui/frames'
 import { LevelBadge } from '@/shared/ui/LevelBadge'
 import { useCardLabel } from '../cards/cards'
@@ -49,6 +50,7 @@ export default function PokerBoard({
   players = {},
   levels = {},
   frames = {},
+  faces = {},
 }: BoardProps) {
   const { t, i18n } = useTranslation()
   const labels = useCardLabel()
@@ -247,6 +249,7 @@ export default function PokerBoard({
                           winner={won}
                           level={levels[seat]}
                           frame={frames[seat]}
+                          ai={faces[seat]}
                         />
                       </span>
                       {won && gain != null ? (
@@ -525,6 +528,7 @@ function Avatar({
   winner = false,
   level,
   frame,
+  ai,
 }: {
   name: string
   acting: boolean
@@ -532,6 +536,8 @@ function Avatar({
   winner?: boolean
   level?: number
   frame?: string | null
+  /** An AI player: its drawn face instead of the initial. */
+  ai?: string
 }) {
   const ring =
     acting && share !== null
@@ -547,8 +553,8 @@ function Avatar({
       style={{ background: ring }}
       aria-hidden="true"
     >
-      <span className="flex size-12 items-center justify-center rounded-[0.7rem] bg-linear-to-b from-[#4a342b] to-[#1c120c] text-xl font-bold uppercase shadow-[inset_0_0_0_1px_rgb(214_171_78/0.35)] min-[901px]:size-16 min-[901px]:rounded-xl min-[901px]:text-2xl">
-        {name.slice(0, 1)}
+      <span className="flex size-12 items-center justify-center overflow-hidden rounded-[0.7rem] bg-linear-to-b from-[#4a342b] to-[#1c120c] text-xl font-bold uppercase shadow-[inset_0_0_0_1px_rgb(214_171_78/0.35)] min-[901px]:size-16 min-[901px]:rounded-xl min-[901px]:text-2xl">
+        {ai ? <AiFace name={ai} className="size-full" /> : name.slice(0, 1)}
       </span>
     </span>
   )

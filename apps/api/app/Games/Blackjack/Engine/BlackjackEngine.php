@@ -5,6 +5,7 @@ namespace App\Games\Blackjack\Engine;
 use App\Gameplay\Contracts\GameEngine;
 use App\Gameplay\Contracts\HandlesDepartures;
 use App\Gameplay\Contracts\HandlesTimeouts;
+use App\Gameplay\Contracts\HasOutOfTurnActions;
 use App\Gameplay\Contracts\PausesBetweenRounds;
 use App\Gameplay\Contracts\PlaysForChips;
 use App\Gameplay\Contracts\ValidatesActions;
@@ -38,7 +39,7 @@ use App\Gameplay\Random\RandomSource;
  * hole_hidden, to_act, active (hand index), last_round (number, dealer, dealer_total, net per seat),
  * pause_ms, result.
  */
-final class BlackjackEngine implements GameEngine, HandlesDepartures, HandlesTimeouts, PausesBetweenRounds, PlaysForChips, ValidatesActions
+final class BlackjackEngine implements GameEngine, HandlesDepartures, HandlesTimeouts, HasOutOfTurnActions, PausesBetweenRounds, PlaysForChips, ValidatesActions
 {
     /** Hands a seat may hold after splitting. */
     private const MAX_HANDS = 4;
@@ -72,6 +73,10 @@ final class BlackjackEngine implements GameEngine, HandlesDepartures, HandlesTim
             'to_act' => null,
             'active' => 0,
             'last_round' => null,
+            // Tips to the dealer: chips per seat, the round each seat last tipped for, the latest (for its thanks).
+            'tips' => array_fill(0, $seats, 0),
+            'tipped' => array_fill(0, $seats, null),
+            'last_tip' => null,
             'pause_ms' => (int) ($options['round_pause_ms'] ?? 3500),
             'result' => null,
         ];
@@ -98,7 +103,7 @@ final class BlackjackEngine implements GameEngine, HandlesDepartures, HandlesTim
         if ($state['phase'] === 'betting') {
             [$min, $max] = $this->betRange($state, $seat);
 
-            return [new Action('bet', ['max' => $max, 'min' => $min])];
+            return [new Action('bet', ['max' => $max, 'min' => $min]), ...$this->outOfTurnActions($state, $seat)];
         }
 
         $hand = $state['hands'][$seat][$state['active']];
@@ -119,6 +124,13 @@ final class BlackjackEngine implements GameEngine, HandlesDepartures, HandlesTim
      */
     public function isLegal(array $state, int $seat, Action $action): bool
     {
+        if ($action->type === 'tip') {
+            $range = $this->tipRange($state, $seat);
+            $amount = $action->payload['amount'] ?? null;
+
+            return $range !== null && is_int($amount) && array_keys($action->payload) === ['amount']
+                && $amount >= $range[0] && $amount <= $range[1];
+        }
         if ($this->seatsToAct($state) !== [$seat]) {
             return false;
         }
@@ -145,6 +157,17 @@ final class BlackjackEngine implements GameEngine, HandlesDepartures, HandlesTim
         }
 
         $events = [];
+        if ($action->type === 'tip') {
+            // To the dealer, i.e. the house: the chips leave the player's stack for good.
+            $amount = (int) $action->payload['amount'];
+            $round = (int) $state['last_round']['number'];
+            $state['stacks'][$seat] -= $amount;
+            $state['tips'][$seat] = ($state['tips'][$seat] ?? 0) + $amount;
+            $state['tipped'][$seat] = $round;
+            $state['last_tip'] = ['seat' => $seat, 'amount' => $amount, 'round' => $round, 'n' => (int) ($state['last_tip']['n'] ?? 0) + 1];
+
+            return new Transition($state, [['type' => 'tip', 'seat' => $seat, 'amount' => $amount]]);
+        }
         if ($action->type === 'bet') {
             $amount = (int) $action->payload['amount'];
             $state['stacks'][$seat] -= $amount;
@@ -318,6 +341,38 @@ final class BlackjackEngine implements GameEngine, HandlesDepartures, HandlesTim
         $state = $this->startRound($state);
 
         return new Transition($state, [['type' => 'next_round', 'round' => $state['round']]]);
+    }
+
+    /**
+     * A tip for the dealer, after a round the seat won (in the pause, or while bets are taken for the next round),
+     * once per round: from 1 up to what it won, keeping at least the table's minimum bet.
+     *
+     * @param  array<string, mixed>  $state
+     * @return list<Action>
+     */
+    public function outOfTurnActions(array $state, int $seat): array
+    {
+        $range = $this->tipRange($state, $seat);
+
+        return $range === null ? [] : [new Action('tip', ['max' => $range[1], 'min' => $range[0]])];
+    }
+
+    /**
+     * @param  array<string, mixed>  $state
+     * @return array{0: int, 1: int}|null
+     */
+    private function tipRange(array $state, int $seat): ?array
+    {
+        $last = $state['last_round'];
+        if ($state['result'] !== null || $last === null || ($state['out'][$seat] ?? true)
+            || ! in_array($state['phase'], ['over', 'betting'], true) || $state['bets'][$seat] > 0
+            || ($state['tipped'][$seat] ?? null) === $last['number']) {
+            return null;
+        }
+        $won = (int) ($last['net'][$seat] ?? 0);
+        $max = min($won, $state['stacks'][$seat] - $state['limits'][0]);
+
+        return $max >= 1 ? [1, $max] : null;
     }
 
     /**

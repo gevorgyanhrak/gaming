@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { seatTrigger } from '@/features/players/seatTrigger'
+import { AiFace } from '@/shared/ui/AiFace'
 import { frameRing } from '@/shared/ui/frames'
 import { LevelBadge } from '@/shared/ui/LevelBadge'
 import { CardBack } from '../cards/PlayingCard'
@@ -21,6 +22,8 @@ interface SeatProps {
   share: number | null
   level: number | undefined
   frame: string | null | undefined
+  /** An AI player: the name its drawn face is made from. */
+  ai?: string
   label: string
 }
 
@@ -56,6 +59,7 @@ export function CompactSeat({
   share,
   level,
   frame,
+  ai,
   label,
 }: SeatProps) {
   const { t } = useTranslation()
@@ -74,7 +78,15 @@ export function CompactSeat({
       </span>
       <span className="relative mt-1" data-seat-anchor={seat}>
         <span {...seatTrigger(seat, t('playerCard.open', { name }))} className="block rounded-full">
-          <Avatar name={name} acting={acting} share={share} size="sm" level={level} frame={frame} />
+          <Avatar
+            name={name}
+            acting={acting}
+            share={share}
+            size="sm"
+            level={level}
+            frame={frame}
+            ai={ai}
+          />
         </span>
       </span>
       <span className="mt-1 max-w-full truncate text-[0.72rem] font-medium text-white/85">
@@ -105,6 +117,7 @@ export function PanelSeat({
   share,
   level,
   frame,
+  ai,
   label,
 }: SeatProps) {
   const { t } = useTranslation()
@@ -122,7 +135,15 @@ export function PanelSeat({
     >
       <span className="absolute -top-6 -left-3" data-seat-anchor={seat}>
         <span {...seatTrigger(seat, t('playerCard.open', { name }))} className="block rounded-full">
-          <Avatar name={name} acting={acting} share={share} size="md" level={level} frame={frame} />
+          <Avatar
+            name={name}
+            acting={acting}
+            share={share}
+            size="md"
+            level={level}
+            frame={frame}
+            ai={ai}
+          />
         </span>
       </span>
       {role ? (
@@ -155,6 +176,7 @@ export function Avatar({
   size,
   level,
   frame,
+  ai,
 }: {
   name: string
   acting: boolean
@@ -162,6 +184,8 @@ export function Avatar({
   size: 'sm' | 'md'
   level?: number
   frame?: string | null
+  /** An AI player: its drawn face instead of the initial. */
+  ai?: string
 }) {
   const ring =
     acting && share !== null
@@ -176,11 +200,11 @@ export function Avatar({
       aria-hidden="true"
     >
       <span
-        className={`flex items-center justify-center rounded-full bg-ink font-bold uppercase ${
+        className={`flex items-center justify-center overflow-hidden rounded-full bg-ink font-bold uppercase ${
           size === 'md' ? 'size-12 text-xl' : 'size-9 text-base'
         }`}
       >
-        {name.slice(0, 1)}
+        {ai ? <AiFace name={ai} className="size-full" /> : name.slice(0, 1)}
       </span>
     </span>
   )

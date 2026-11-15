@@ -1,5 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState, type CSSProperties } from 'react'
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCountdown } from '@/features/play/useCountdown'
 import { walletKey } from '@/features/wallet/api'
@@ -9,6 +16,9 @@ import { LevelBadge } from '@/shared/ui/LevelBadge'
 import { useCardLabel } from '../cards/cards'
 import { CardBack, PlayingCard } from '../cards/PlayingCard'
 import type { BoardProps } from '../registry'
+import { Dealer, type DealerMood } from './Dealer'
+import { roundMood, tipMood, type DealerLine } from './dealerMood'
+import { dealFromShoe, flipOver, flyTip, settleTable } from './motion'
 
 type HandResult = 'win' | 'lose' | 'push' | 'blackjack'
 
@@ -42,15 +52,23 @@ export interface BlackjackView {
   to_act: number | null
   active: number
   last_round: { number: number; dealer: string[]; dealer_total: number; net: number[] } | null
+  /** Chips each seat gave the dealer. */
+  tips?: number[]
+  /** The latest tip (n counts them), for the dealer's thanks. */
+  last_tip?: { seat: number; amount: number; round: number; n: number } | null
 }
 
 type BlackjackAction =
-  { type: 'hit' | 'stand' | 'double' | 'split' } | { type: 'bet'; min: number; max: number }
+  | { type: 'hit' | 'stand' | 'double' | 'split' }
+  | { type: 'bet'; min: number; max: number }
+  | { type: 'tip'; min: number; max: number }
 
 /**
- * Blackjack: the dealer at the top of a half-moon table, the players' boxes round its edge. The board
- * shows the server's view and offers its legal actions (bet within the range, hit, stand, double,
- * split); totals and results come from the server. After a round the table pauses on the result.
+ * Blackjack: the dealer (a drawn croupier who reacts to the table) behind the shoe at the top of a half-moon
+ * table, the players' boxes round its edge. New cards are dealt from the shoe, the hole card is turned over. The
+ * board shows the server's view and offers its legal actions (bet within the range, hit, stand, double, split, and
+ * after a win an optional tip for the dealer); totals and results come from the server. After a round the table
+ * pauses on the result.
  */
 export default function BlackjackBoard({
   state,
@@ -65,6 +83,9 @@ export default function BlackjackBoard({
   const me = state.seat
   const actions = state.legal_actions as unknown as BlackjackAction[]
   const bet = actions.find((a): a is Extract<BlackjackAction, { type: 'bet' }> => a.type === 'bet')
+  const tip = actions.find((a): a is Extract<BlackjackAction, { type: 'tip' }> => a.type === 'tip')
+  // Cards already on the table when the page opens stay where they are (only new ones are dealt).
+  useState(settleTable)
   const has = (type: BlackjackAction['type']) => actions.some((a) => a.type === type)
   const narrow = useMediaQuery('(max-width: 900px)')
   const format = (n: number) => n.toLocaleString(i18n.language)
@@ -108,6 +129,76 @@ export default function BlackjackBoard({
     }
     refresh()
   }, [endedRound, iWon, queryClient])
+
+  // The dealer's face and line: a round you just watched end, then a tip; back to neutral after a while.
+  const [reaction, setReaction] = useState<{
+    mood: DealerMood
+    line: DealerLine | null
+    key: number
+  }>({
+    mood: 'neutral',
+    line: null,
+    key: 0,
+  })
+  const [seenRound, setSeenRound] = useState(endedRound)
+  if (endedRound !== seenRound) {
+    setSeenRound(endedRound)
+    if (endedRound !== null && last) {
+      const mine = me === null ? [] : (view.hands[me] ?? [])
+      setReaction({
+        ...roundMood(
+          me === null || mine.length === 0 ? null : (last.net[me] ?? 0),
+          mine.some((h) => h.result === 'blackjack'),
+          last.dealer_total > 21,
+        ),
+        key: reaction.key + 1,
+      })
+    }
+  }
+  const tipN = view.last_tip?.n ?? 0
+  const [seenTip, setSeenTip] = useState(tipN)
+  if (tipN !== seenTip) {
+    setSeenTip(tipN)
+    const given = view.last_tip
+    if (given && tipN > seenTip) {
+      setReaction({
+        ...tipMood(
+          given.amount,
+          last?.net[given.seat] ?? 0,
+          given.seat === me ? null : name(given.seat),
+        ),
+        key: reaction.key + 1,
+      })
+    }
+  }
+  const tipSeat = view.last_tip?.seat ?? null
+  const tipAmount = view.last_tip?.amount ?? 0
+  useEffect(() => {
+    if (reaction.key === 0) return
+    const timer = window.setTimeout(
+      () => setReaction((r) => ({ mood: 'neutral', line: null, key: r.key })),
+      3800,
+    )
+    return () => window.clearTimeout(timer)
+  }, [reaction.key])
+  useEffect(() => {
+    if (tipN === 0 || tipSeat === null) return
+    flyTip(document.querySelector(`[data-blackjack-seat="${tipSeat}"]`), format(tipAmount))
+    // Only for a new tip.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tipN])
+  const dealerLine = reaction.line
+    ? t(reaction.line.key, { ...reaction.line.values, defaultValue: '' })
+    : null
+
+  // The tip being chosen: a few amounts from what the round won.
+  const tipOptions = tip
+    ? [...new Set([0.05, 0.1, 0.25, 0.5].map((x) => Math.max(1, Math.ceil(tip.max * x))))].filter(
+        (v) => v <= tip.max,
+      )
+    : []
+  const [tipChoice, setTipChoice] = useState<number | null>(null)
+  const tipAmountChosen = tip ? Math.min(tip.max, tipChoice ?? tipOptions[0] ?? tip.min) : 0
 
   const seats = view.stacks.length
   // Round the curved edge of the table, first seat on the left; percentages of the table box. The
@@ -167,19 +258,29 @@ export default function BlackjackBoard({
             </div>
           </div>
 
-          {/* The dealer. */}
+          {/* The dealer: the croupier, the shoe on its right, its cards. */}
           <section
             aria-label={t('blackjack.dealer')}
-            className="absolute top-[3%] left-1/2 flex -translate-x-1/2 flex-col items-center gap-1"
+            className="absolute top-[2%] left-1/2 flex -translate-x-1/2 flex-col items-center gap-1"
           >
-            <span className="text-[0.65rem] font-extrabold tracking-[0.2em] text-gold-light/85 uppercase min-[901px]:text-xs">
-              {t('blackjack.dealer')}
-            </span>
+            <div className="flex items-center gap-2 min-[901px]:gap-3">
+              <Dealer
+                mood={reaction.mood}
+                line={dealerLine}
+                lineKey={reaction.key}
+                size={narrow ? 'sm' : 'md'}
+              />
+              <span className="text-[0.65rem] font-extrabold tracking-[0.2em] text-gold-light/85 uppercase min-[901px]:text-xs">
+                {t('blackjack.dealer')}
+              </span>
+              <Shoe />
+            </div>
             <div className="flex min-h-[50px] min-[901px]:min-h-24">
               {view.dealer.map((card, i) => (
-                <span
+                <DealtCard
                   key={`${i}-${card ?? 'hole'}`}
-                  className={`${i > 0 ? '-ml-5 min-[901px]:-ml-8' : ''} motion-safe:animate-card-in`}
+                  reveal={i === 1 && card !== null && view.phase !== 'playing'}
+                  className={i > 0 ? '-ml-5 min-[901px]:-ml-8' : ''}
                 >
                   {card === null ? (
                     <CardBack size={narrow ? 'sm' : 'md'} />
@@ -190,7 +291,7 @@ export default function BlackjackBoard({
                       size={narrow ? 'sm' : 'md'}
                     />
                   )}
-                </span>
+                </DealtCard>
               ))}
             </div>
             {view.dealer_total !== null ? (
@@ -213,6 +314,7 @@ export default function BlackjackBoard({
                   key={seat}
                   aria-current={acting ? 'step' : undefined}
                   data-blackjack-me={seat === me ? '' : undefined}
+                  data-blackjack-seat={seat}
                   aria-label={`${name(seat)}, ${t('blackjack.chips', { count: stack })}`}
                   className={`absolute flex w-[18%] -translate-x-1/2 -translate-y-full flex-col items-center gap-1 min-[901px]:w-[17%] ${
                     view.out[seat] ? 'opacity-45' : ''
@@ -307,6 +409,45 @@ export default function BlackjackBoard({
       </div>
 
       <div className="club-panel mx-auto flex max-w-4xl flex-col items-center gap-3 rounded-3xl p-4 min-[901px]:p-5">
+        {tip ? (
+          // After a win: an optional tip for the dealer (it goes to the house), from the chips at the table.
+          <div
+            role="group"
+            aria-label={t('blackjack.tipTitle')}
+            className="flex w-full max-w-2xl flex-wrap items-center justify-center gap-2 rounded-2xl border border-gold/30 bg-black/30 px-3 py-2 motion-safe:animate-rise"
+          >
+            <span className="text-sm font-semibold text-gold-light">{t('blackjack.tipTitle')}</span>
+            {tipOptions.map((value) => (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={tipAmountChosen === value}
+                onClick={() => setTipChoice(value)}
+                className={`min-h-10 min-w-12 rounded-full border-2 border-dashed px-2 text-xs font-extrabold tabular-nums transition ${
+                  tipAmountChosen === value
+                    ? 'border-[#fff8e7] bg-gold text-black'
+                    : 'border-white/40 bg-black/40 text-white hover:border-gold'
+                }`}
+              >
+                {format(value)}
+              </button>
+            ))}
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => {
+                setTipChoice(null)
+                onAction({ type: 'tip', amount: tipAmountChosen })
+              }}
+              className="min-h-10 rounded-xl border border-gold/50 bg-linear-to-b from-gold-light to-gold px-4 text-sm font-bold text-black shadow-lg shadow-black/40 transition hover:brightness-110 active:translate-y-px disabled:opacity-60"
+            >
+              {t('blackjack.tipButton', { amount: format(tipAmountChosen) })}
+            </button>
+            <span className="w-full text-center text-[0.7rem] text-white/60">
+              {t('blackjack.tipHint')}
+            </span>
+          </div>
+        ) : null}
         {bet ? (
           <div className="flex w-full flex-col items-center gap-3">
             <p className="text-sm font-semibold text-gold-light">{t('blackjack.placeBet')}</p>
@@ -442,13 +583,13 @@ function HandCards({
       } ${hand.status === 'bust' ? 'opacity-60' : ''}`}
     >
       {hand.cards.map((card, i) => (
-        <span
+        <DealtCard
           key={`${i}-${card}`}
-          className={`${hand.doubled && i === 2 ? 'rotate-90' : ''} motion-safe:animate-card-in`}
+          className={hand.doubled && i === 2 ? 'rotate-90' : ''}
           style={i > 0 ? { marginLeft: overlap } : undefined}
         >
           <PlayingCard card={card} label={label(card)} size={small ? 'xs' : 'sm'} />
-        </span>
+        </DealtCard>
       ))}
     </span>
   )
@@ -553,3 +694,45 @@ const chipColours = [
 
 const actionButton =
   'rounded-xl border px-3 py-3 text-sm font-bold shadow-lg shadow-black/40 transition hover:brightness-110 active:translate-y-px disabled:opacity-60 min-[901px]:text-base'
+
+/** A card on the table: dealt from the shoe when it appears (or, the hole card, turned over). */
+function DealtCard({
+  children,
+  reveal = false,
+  className = '',
+  style,
+}: {
+  children: ReactNode
+  reveal?: boolean
+  className?: string
+  style?: CSSProperties
+}) {
+  const cardRef = useRef<HTMLSpanElement>(null)
+  useLayoutEffect(() => {
+    if (reveal) flipOver(cardRef.current)
+    else dealFromShoe(cardRef.current)
+    // On arrival only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  return (
+    <span ref={cardRef} className={`inline-block ${className}`} style={style}>
+      {children}
+    </span>
+  )
+}
+
+/** The dealing shoe: a dark box with the backs of the cards showing at its mouth. */
+function Shoe() {
+  const { t } = useTranslation()
+  return (
+    <span
+      data-blackjack-shoe=""
+      title={t('blackjack.shoe')}
+      aria-hidden="true"
+      className="relative block h-9 w-12 rounded-md border border-black/60 bg-linear-to-b from-[#3a2a20] to-[#1a110c] shadow-[0_6px_14px_rgb(0_0_0/0.5)] min-[901px]:h-12 min-[901px]:w-16"
+    >
+      <span className="absolute top-1.5 right-1 left-2 h-[60%] -skew-x-12 rounded-sm border border-white/30 bg-[repeating-linear-gradient(45deg,#8d2338_0_3px,#6d1a2b_3px_6px)]" />
+      <span className="absolute inset-x-1 bottom-1 h-1 rounded-full bg-gold/50" />
+    </span>
+  )
+}

@@ -155,4 +155,77 @@ describe('BlackjackBoard', () => {
     expect(screen.getByText('Waiting for Levon…')).toBeInTheDocument()
     expect(screen.getByRole('listitem', { current: 'step' })).toHaveAccessibleName(/Levon/)
   })
+
+  it('offers a winner an optional tip for the dealer, and sends the chosen amount', async () => {
+    const onAction = vi.fn()
+    const over = view({
+      phase: 'over',
+      to_act: null,
+      stacks: [1100, 980],
+      hands: [[hand(['TS', 'QD'], { result: 'win', total: 20 })], []],
+      dealer: ['7C', 'TD'],
+      dealer_total: 17,
+      last_round: { number: 2, dealer: ['7C', 'TD'], dealer_total: 17, net: [100, 0] },
+    })
+    render(
+      <BlackjackBoard
+        state={roomStateFixture({
+          seat: 0,
+          view: over as never,
+          seats_to_act: [],
+          legal_actions: [{ type: 'tip', min: 1, max: 100 }],
+        })}
+        onAction={onAction}
+        pending={false}
+        players={players}
+      />,
+    )
+
+    const tip = screen.getByRole('group', { name: 'Tip the dealer?' })
+    // 5%, 10%, 25%, 50% of the win.
+    expect(
+      within(tip)
+        .getAllByRole('button', { pressed: false })
+        .map((b) => b.textContent),
+    ).toEqual(['10', '25', '50'])
+    await userEvent.click(within(tip).getByRole('button', { name: '25' }))
+    await userEvent.click(within(tip).getByRole('button', { name: 'Tip 25' }))
+    expect(onAction).toHaveBeenCalledWith({ type: 'tip', amount: 25 })
+  })
+
+  it('has the dealer react to your win, and thank a player for a tip, warmer for a big one', () => {
+    const before = view({ phase: 'playing', to_act: 0 })
+    const props = { onAction: vi.fn(), pending: false, players }
+    const { rerender } = render(
+      <BlackjackBoard state={roomStateFixture({ seat: 0, view: before as never })} {...props} />,
+    )
+    const over = view({
+      phase: 'over',
+      to_act: null,
+      hands: [[hand(['TS', 'QD'], { result: 'win', total: 20 })], []],
+      dealer: ['7C', 'TD'],
+      dealer_total: 17,
+      last_round: { number: 2, dealer: ['7C', 'TD'], dealer_total: 17, net: [100, 0] },
+    })
+    rerender(
+      <BlackjackBoard
+        state={roomStateFixture({ seat: 0, version: 2, view: over as never, legal_actions: [] })}
+        {...props}
+      />,
+    )
+    expect(screen.getByText('Congratulations, you win!')).toBeInTheDocument()
+
+    rerender(
+      <BlackjackBoard
+        state={roomStateFixture({
+          seat: 0,
+          version: 3,
+          view: { ...over, last_tip: { seat: 0, amount: 60, round: 2, n: 1 } },
+          legal_actions: [],
+        })}
+        {...props}
+      />,
+    )
+    expect(screen.getByText('How generous! Thank you!')).toBeInTheDocument()
+  })
 })

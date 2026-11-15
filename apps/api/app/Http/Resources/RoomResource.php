@@ -44,10 +44,12 @@ class RoomResource extends JsonResource
             'group' => $this->group === null ? null : new PlayGroupResource($this->group),
             /** What each player bets (stake games; 0 for poker). */
             'stake' => $this->stake,
-            /** @var list<array{seat: int, is_bot: bool, name: string|null, username: string|null, avatar_url: string|null, level: int, frame: string|null, result: string|null, score: int|null}> */
+            /** @var list<array{seat: int, is_bot: bool, personality: string|null, name: string|null, username: string|null, avatar_url: string|null, level: int, frame: string|null, result: string|null, score: int|null}> */
             'participants' => $this->participants->map(fn (GameParticipant $p) => [
                 'seat' => $p->seat,
                 'is_bot' => $p->isBot(),
+                /** @var string|null An AI player's character (cautious, bold, tricky, steady); null for people. */
+                'personality' => $p->isBot() ? $p->bot?->personality->value : null,
                 'name' => $p->isBot() ? $p->bot?->name : ($p->user?->profile->display_name ?? $p->user?->username),
                 /** @var string|null */
                 'username' => $p->user?->username,

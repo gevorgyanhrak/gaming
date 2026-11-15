@@ -312,6 +312,16 @@ is not done or not verified, and how to check it manually. Keep it concise.
   /stats/online` = `Platform/Presence/OnlinePlayers` (Reverb `user_count`, cached 10 s, null when Reverb can't be asked —
   never `last_active_at`). `OnlineCounter` in the header hides on null. Test fake: `join/leave`, `joined('online')`.
   The app's `emerald-*` tokens are dark greens: use explicit hex for bright green.
+- AI personalities (A4): `bot_profiles.personality` (`BotPersonality`: cautious/bold/tricky/steady, seeded by name hash)
+  sets pace in `GameScheduler::thinking` (tempo × jitter) and style via `PlaysInStyle::inStyle()` in `BotTurnJob`
+  (poker bluff %/value margin, blackjack bet size) — never strength. Room participants carry `personality`; the AI
+  card shows it. AI faces: `shared/ui/AiFace` (drawn SVG from the name; `Avatar ai`, boards' `faces` prop). No new
+  npm packages without the owner (installing one was refused by the permission check).
+- Blackjack dealer (A5): `games/blackjack/{Dealer,dealerMood,motion}` — moods from server results, cards dealt from
+  `[data-blackjack-shoe]` via WAAPI (`settleTable` on mount keeps loaded cards still), hole card flips. Tip = engine
+  out-of-turn action `tip {amount}` (offered `{min,max}` after a won round, in the pause and next betting, once per
+  round, ≤ win and keeping the min bet; chips go to the house; `last_tip` drives the thanks). `GameActionService` lets
+  a `ValidatesActions` engine judge range out-of-turn actions (offered {min,max}, sent {amount}).
 - Local web tests time out at random when the Mac is loaded (Chrome/Docker, load > 20): run `npx vitest run --maxWorkers=2`.
 - Game catalog (TASK-056): `game_categories` + `games.game_category_id`, `category` on each game in `/games`; admin Games → Categories. Web: `GameGrid` → `features/catalog/components/GameLobby`
   (shelves come from the games; `_other` is reserved for uncategorised), `HomeArt` posters, `HomeBackdrop` (the fixed night-room picture on `/` and `/dashboard`, `PublicLayout` `isHome`,

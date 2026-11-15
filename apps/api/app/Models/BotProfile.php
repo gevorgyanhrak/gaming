@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BotPersonality;
 use App\Observers\AdminChangeObserver;
 use Database\Factories\BotProfileFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -18,9 +19,10 @@ use Illuminate\Support\Facades\Storage;
  * @property string $name
  * @property string|null $avatar_path
  * @property int $level The level shown next to the bot (fixed; bots earn no XP).
+ * @property BotPersonality $personality Pace and style (not strength).
  * @property bool $is_enabled
  */
-#[Fillable(['name', 'avatar_path', 'level', 'is_enabled'])]
+#[Fillable(['name', 'avatar_path', 'level', 'personality', 'is_enabled'])]
 #[ObservedBy(AdminChangeObserver::class)]
 class BotProfile extends Model
 {
@@ -34,6 +36,7 @@ class BotProfile extends Model
     {
         return [
             'is_enabled' => 'boolean',
+            'personality' => BotPersonality::class,
             'level' => 'integer',
         ];
     }
