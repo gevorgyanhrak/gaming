@@ -40,7 +40,7 @@ class CasinoBannerResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMegaphone;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Content';
+    protected static string|UnitEnum|null $navigationGroup = 'Casino';
 
     protected static ?string $navigationLabel = 'Casino banners';
 

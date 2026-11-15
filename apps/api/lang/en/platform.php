@@ -65,6 +65,9 @@ return [
         'locked' => 'Reach level :level to send this emoji.',
         'no_such_player' => 'Choose another player at this table.',
     ],
+    'slots' => [
+        'unavailable' => 'This game isn\'t available right now.',
+    ],
     'play' => [
         'group_unavailable' => 'This group is not available for this game.',
         'bet_range' => 'Choose a bet from :min to :max Fishkas.',

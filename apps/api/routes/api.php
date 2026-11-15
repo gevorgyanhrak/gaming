@@ -30,6 +30,8 @@ use App\Http\Controllers\Api\V1\ReactionCatalogController;
 use App\Http\Controllers\Api\V1\Rooms\ActionController;
 use App\Http\Controllers\Api\V1\Rooms\ReactionController;
 use App\Http\Controllers\Api\V1\Rooms\RoomController;
+use App\Http\Controllers\Api\V1\SlotController;
+use App\Http\Controllers\Api\V1\SlotWalletController;
 use App\Http\Controllers\Api\V1\WinController;
 use Illuminate\Support\Facades\Route;
 
@@ -47,6 +49,10 @@ Route::prefix('v1')->name('v1.')->group(function () {
     Route::get('me', [MeController::class, 'show'])
         ->middleware(['auth:sanctum', 'active', 'touch-last-active', 'throttle:account'])
         ->name('me.show');
+
+    // A slot provider's server-to-server wallet calls (signed; see SlotWalletController). Outside maintenance so
+    // rounds already played can still be settled.
+    Route::post('slots/wallet/{provider}', SlotWalletController::class)->middleware('throttle:slot-wallet')->name('slots.wallet');
 
     Route::middleware('maintenance')->group(function () {
         Route::get('games', [GameController::class, 'index'])->name('games.index');
@@ -106,6 +112,10 @@ Route::prefix('v1')->name('v1.')->group(function () {
         Route::get('stats/online', OnlineController::class)->middleware('throttle:feeds')->name('stats.online');
         Route::get('wins', [WinController::class, 'index'])->middleware('throttle:feeds')->name('wins.index');
         Route::get('leaderboards', [LeaderboardController::class, 'index'])->middleware('throttle:feeds')->name('leaderboards.index');
+        Route::get('slots', [SlotController::class, 'index'])->middleware('throttle:feeds')->name('slots.index');
+        Route::post('slots/{slug}/launch', [SlotController::class, 'launch'])
+            ->middleware(['auth:sanctum', 'active', 'touch-last-active', 'throttle:game', 'verified-contact'])
+            ->name('slots.launch');
 
         Route::middleware(['auth:sanctum', 'active', 'touch-last-active', 'throttle:game'])
             ->prefix('matchmaking')

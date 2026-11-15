@@ -6,6 +6,7 @@ use App\Gameplay\GameRegistry;
 use App\Models\User;
 use App\Platform\Levels\Levels;
 use App\Platform\Settings\Settings;
+use App\Platform\Slots\SlotAdapters;
 use App\Platform\Sms\LogSmsGateway;
 use App\Platform\Sms\SmsGateway;
 use Database\Seeders\RoleSeeder;
@@ -29,6 +30,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Engines register themselves here (see app/Games/*); one registry for the whole app.
         $this->app->singleton(GameRegistry::class);
+
+        // Slot provider adapters register under the "slot-adapters" tag (none yet: docs/research/casino-slots.md).
+        $this->app->bind(SlotAdapters::class, fn ($app) => new SlotAdapters($app->tagged('slot-adapters')));
 
         $this->app->singleton(SmsGateway::class, fn () => match (config('services.sms.driver')) {
             'log' => new LogSmsGateway,
@@ -66,6 +70,8 @@ class AppServiceProvider extends ServiceProvider
         // The home page's live public feeds (Big Wins, leaderboards, the online counter): cheap reads every open
         // page polls a little; by player when signed in, so people sharing an IP (a café, an office) don't starve.
         RateLimiter::for('feeds', fn (Request $request) => Limit::perMinute(120)->by($byUserOrIp($request)));
+        // A slot provider's wallet calls: many per second at busy times, counted per provider.
+        RateLimiter::for('slot-wallet', fn (Request $request) => Limit::perMinute(3000)->by('slot:'.$request->route('provider')));
         RateLimiter::for('verification', fn (Request $request) => Limit::perMinute(10)->by($byUserOrIp($request)));
         // The player's own account: /me and /me/* (wallet, rooms, stats) together. Every page load reads
         // several of them, and the wallet is polled while live updates are down.

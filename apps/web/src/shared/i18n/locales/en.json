@@ -615,7 +615,10 @@
       "game_stake": "Game bet",
       "game_payout": "Game winnings",
       "free_gift": "Free gift",
-      "wheel_prize": "Lucky wheel"
+      "wheel_prize": "Lucky wheel",
+      "slot_bet": "Slot bet",
+      "slot_win": "Slot win",
+      "slot_refund": "Slot bet returned"
     },
     "ok": "OK",
     "balanceLabelTable": "Your Fishkas: {{amount}}, {{table}} of them at a table. Open your wallet",

@@ -29,4 +29,10 @@ enum FishkaTransactionType: string
     case FreeGift = 'free_gift';
     /** The lucky wheel's prize, one spin a day (FreeGifts). */
     case WheelPrize = 'wheel_prize';
+    /** A slot spin's bet, taken by a provider's signed wallet call (SlotWallet). */
+    case SlotBet = 'slot_bet';
+    /** A slot round's win, paid by a provider's signed wallet call (SlotWallet). */
+    case SlotWin = 'slot_win';
+    /** A slot bet given back because the provider rolled the round back. */
+    case SlotRefund = 'slot_refund';
 }

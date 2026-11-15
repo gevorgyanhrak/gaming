@@ -353,3 +353,9 @@ is not done or not verified, and how to check it manually. Keep it concise.
   Rummy: melds are `{type:'meld', cards:'7S,7H,7D'}` in the server's order — the board matches the selection against
   the listed melds, never builds one. Run bot-only games in a loop when adding a game: they find stalls (Rummy had two).
 - Poker table: its phone layout applies at 900 px and below (`min-[901px]:` / `max-[900px]:` in `PokerBoard`, `HandResult`; `useMediaQuery('(max-width: 900px)')`), TASK-058. The state sends `turn_seconds` for timers drawn as a share of the turn. Nardi board art: `.nardi-*` in `styles/index.css`.
+- Casino (Phase B): banners are `casino_banners` (admin Casino → Casino banners; `GET /banners`, `PromoBanners`
+  carousel, nothing shown when none; links = app path or https). Slots (ADR 0023, `docs/research/casino-slots.md`):
+  `Platform/Slots` — `SlotAdapter` (tag `slot-adapters`, none shipped), `SlotWallet` (signed provider calls
+  `POST /slots/wallet/{provider}`, unique `provider_tx_id`, win ≤ max_multiplier × round bets, rollback once),
+  `SlotSessions` (hashed one-off token, 4 h). A provider can't be switched on without a ready adapter; `GET /slots`
+  lists nothing until then. Tests use `tests/Fixtures/Slots/FakeSlotAdapter`.

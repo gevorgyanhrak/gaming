@@ -775,6 +775,55 @@ export interface paths {
         patch: operations["v1.me.settings.update"];
         trace?: never;
     };
+    "/v1/slots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1.slots.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/slots/{slug}/launch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Opens the game: the address to show it at, for this player's new session */
+        post: operations["v1.slots.launch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/slots/wallet/{provider}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1.slots.wallet"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/username-available": {
         parameters: {
             query?: never;
@@ -957,7 +1006,7 @@ export interface components {
         FishkaTransactionResource: {
             id: number;
             /** @enum {string} */
-            type: "registration_bonus" | "daily_login_bonus" | "game_entry_fee" | "game_entry_refund" | "game_stake" | "game_payout" | "poker_bet" | "poker_winning" | "admin_credit" | "admin_debit" | "insufficient_balance_bonus" | "level_reward" | "free_gift" | "wheel_prize";
+            type: "registration_bonus" | "daily_login_bonus" | "game_entry_fee" | "game_entry_refund" | "game_stake" | "game_payout" | "poker_bet" | "poker_winning" | "admin_credit" | "admin_debit" | "insufficient_balance_bonus" | "level_reward" | "free_gift" | "wheel_prize" | "slot_bet" | "slot_win" | "slot_refund";
             amount: number;
             balance_after: number;
             description: string | null;
@@ -1250,6 +1299,15 @@ export interface components {
         /** SendVerificationRequest */
         SendVerificationRequest: {
             channel: components["schemas"]["ContactChannel"];
+        };
+        /** SlotGameResource */
+        SlotGameResource: {
+            slug: string;
+            name: string;
+            provider: string;
+            image_url: string | null;
+            min_bet: number;
+            max_bet: number;
         };
         /** SubmitActionRequest */
         SubmitActionRequest: {
@@ -3007,6 +3065,127 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.slots.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `SlotGameResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SlotGameResource"][];
+                    };
+                };
+            };
+        };
+    };
+    "v1.slots.launch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            session: string;
+                            url: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.slots.wallet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        status: "ok";
+                        error: null;
+                        balance: number;
+                        tx_id: string;
+                    } | {
+                        /** @constant */
+                        status: "refused";
+                        error: string;
+                        balance: number;
+                        tx_id: string;
+                    } | {
+                        status: string;
+                        error: string | null;
+                        balance: number;
+                        tx_id: string;
+                    } | {
+                        /** @constant */
+                        status: "refused";
+                        /** @constant */
+                        error: "tx_conflict";
+                        balance: number;
+                        tx_id: string;
+                    } | {
+                        /** @constant */
+                        status: "ok";
+                        error: null;
+                        balance: number;
+                        tx_id: null;
+                    } | {
+                        /** @constant */
+                        status: "refused";
+                        /** @constant */
+                        error: "bad_session";
+                        balance: null;
+                        tx_id: string | null;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        status: "refused";
+                        /** @constant */
+                        error: "bad_signature";
+                    };
+                };
+            };
         };
     };
     "v1.auth.username-available": {

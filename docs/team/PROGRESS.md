@@ -32,7 +32,8 @@ Phase B — casino:
       (commercial provider) or B (MIT outcome tables + MIT renderer).
 - [x] B1. Casino banners managed in admin (Content → Casino banners: picture, title, text, button, link, visible,
       date window, order; audited) and the home carousel (`PromoBanners`, nothing shown when none) — this commit.
-- [ ] B2. Slot wallet + provider adapter contract (no provider connected), slot admin (providers, games, rounds, errors).
+- [x] B2. Slot wallet (`Platform/Slots`: signed provider calls, unique tx ids, win cap, rollback; ADR 0023) + adapter
+      contract (no adapter ships) + admin Casino → Slot providers / Slot games / Slot wallet calls — this commit.
 - [ ] B3. Top Winners from real transactions. · [ ] B4. Casino lobby (search, filters, recently played). · [ ] B5. Identity/sounds pass.
 Phase B — casino (only after A): banners managed in admin; slot games from ready-made providers (research licences;
 no own slot engine; Fishka wallet server-side, no client-trusted results, replay-proof; document limits); slot admin;
