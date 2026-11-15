@@ -49,7 +49,8 @@ Owner ticket 2026-11-16 "Homepage UI Improvements" (in progress):
 - [x] Avatar taps open the reactions picker for that player (emoji flies to them; quick message over your own avatar;
       your own avatar: emoji in its place for 2 s; Profile button → card); chat bar removed; Blackjack, Domino, Ludo,
       Rummy and Pool plates tappable (SeatTap) — this commit.
-- [ ] Live check of the ticket in a browser.
+- [x] Live check (headless Chrome, player1): compact strip on desktop/phone, poker deal order and flips counted in a
+      real hand, AI thinking caption + dots, emoji to an AI's avatar, quick message over mine, my avatar emoji 2 s.
 Then owner ticket 2026-11-16 "Game-Specific Leaderboards & Ranking": per-game points (+10/−5, AI too, no duplicates)
 for Durak, Checkers, Nardi, Blot, Chess with Top 10 on each game page; Poker/Blackjack Top 10 by chips; home
 leaderboard with a Highest level / Most chips select; top-3 badges, profile popup on avatars.

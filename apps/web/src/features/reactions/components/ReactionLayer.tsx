@@ -243,7 +243,7 @@ function Flight({
         const size = Math.max(from.right - from.left, from.bottom - from.top)
         node.style.width = `${size}px`
         node.style.height = `${size}px`
-        node.style.fontSize = `${Math.round(size * 0.62)}px`
+        node.style.fontSize = `${Math.round(size * 0.8)}px`
         node.dataset.onAvatar = ''
         animation = node.animate(
           [

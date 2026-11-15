@@ -518,7 +518,9 @@ export default function PokerBoard({
                 : t('poker.nextHand')
               : view.to_act === null
                 ? ' '
-                : t('poker.waitingFor', { name: name(view.to_act) })}
+                : faces[view.to_act] !== undefined
+                  ? t('room.thinking', { name: name(view.to_act) })
+                  : t('poker.waitingFor', { name: name(view.to_act) })}
           </p>
         )}
       </div>
@@ -626,7 +628,9 @@ function Avatar({
     </span>
   )
   const thinking =
-    acting && ai ? <ThinkingDots name={name} className="absolute -top-3 -right-4 z-30" /> : null
+    acting && ai ? (
+      <ThinkingDots name={name} className="absolute -top-4 left-1/2 z-30 -translate-x-1/2" />
+    ) : null
   if (level === undefined) {
     return thinking ? (
       <span className="relative block">

@@ -359,3 +359,21 @@ is not done or not verified, and how to check it manually. Keep it concise.
   `POST /slots/wallet/{provider}`, unique `provider_tx_id`, win ≤ max_multiplier × round bets, rollback once),
   `SlotSessions` (hashed one-off token, 4 h). A provider can't be switched on without a ready adapter; `GET /slots`
   lists nothing until then. Tests use `tests/Fixtures/Slots/FakeSlotAdapter`.
+- Home dashboard (2026-11-16): a compact welcome strip (avatar, greeting, Choose a game) with three perk tiles —
+  `DailyBonusTile`, `GiftTiles` (features/gifts: free gift + lucky wheel) — icon over label on phones; "Try next" =
+  `GamePoster` cards, Durak always first (`ALWAYS_TRY`). Home lobby: search over every game, `RecentlyPlayed`
+  (from `/me/games`), Casino shelf (`casino` category: Blackjack, Poker).
+- AI pacing (ADR 0021 addendum): `Gameplay/Bots/HumanPace` for every game (choices, ponder, personality tempo,
+  stagger of AI due together, inside the turn timer); `BotPersonality::lapsePercent` plays one level down now and
+  then. UI: `waitingCaption(…, faces)` says "X is thinking…"; `shared/ui/ThinkingDots` at poker/durak avatars.
+- Card motion: `games/cards/motion.ts` (`dealCard` from a deck element, staggered with a `deal` UI sound;
+  `flipCard`; `settleCards` on first paint). Poker marks `data-poker-deck`, `data-poker-hole="seat-i"`,
+  `data-poker-board`, `data-poker-shown` and deals in a `useLayoutEffect` on hand/board changes.
+- Reactions (reworked 2026-11-16): no chat bar. A tap on any `seatTrigger`/`SeatTap` avatar or plate opens
+  `ReactionPicker` with `target` (Profile button → PlayerProfilePopup); when reactions are off (`canReact` in
+  `features/reactions/open.ts`) the tap opens the card. Emoji → flies to the recipient; quick message → bubble over
+  the sender; emoji to yourself (to_seat null) → covers your avatar for 2 s. `ReactionLog` is the sr-only log.
+- Blackjack dealer lines: `blackjack.say.<situation>.<0-2>`, picked by `line()` never repeating the last one.
+- Live checks: Playwright's cached `chrome-headless-shell` with `--remote-debugging-port=9333` and a tiny CDP driver
+  (Node's global WebSocket: Page.navigate, Runtime.evaluate, Page.captureScreenshot); log in via fetch to
+  `/sanctum/csrf-cookie` + `/api/v1/auth/login` with the XSRF header. Read dialogs after a wait (React renders later).

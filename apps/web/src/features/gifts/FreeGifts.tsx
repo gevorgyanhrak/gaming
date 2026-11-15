@@ -73,12 +73,12 @@ export function GiftTiles({ tileClassName }: { tileClassName: string }) {
           <span className="text-2xl leading-none" aria-hidden="true">
             🎁
           </span>
-          <span className="min-w-0 text-left">
-            <span className="block truncate text-xs font-semibold sm:text-sm">
+          <span className="min-w-0 leading-tight sm:text-left">
+            <span className="block text-[11px] font-semibold sm:truncate sm:text-sm">
               {t('gifts.heading')}
             </span>
             <span
-              className={`block truncate text-[11px] tabular-nums sm:text-xs ${gift.available ? 'font-bold text-gold-light' : 'text-muted'}`}
+              className={`block text-[11px] tabular-nums sm:truncate sm:text-xs ${gift.available ? 'font-bold text-gold-light' : 'text-muted'}`}
               role="timer"
             >
               {gift.available
@@ -103,12 +103,12 @@ export function GiftTiles({ tileClassName }: { tileClassName: string }) {
           }}
         >
           <WheelIcon className="size-7 shrink-0" />
-          <span className="min-w-0 text-left">
-            <span className="block truncate text-xs font-semibold sm:text-sm">
+          <span className="min-w-0 leading-tight sm:text-left">
+            <span className="block text-[11px] font-semibold sm:truncate sm:text-sm">
               {t('gifts.wheel')}
             </span>
             <span
-              className={`block truncate text-[11px] sm:text-xs ${wheel.available ? 'font-bold text-gold-light' : 'text-muted'}`}
+              className={`block text-[11px] sm:truncate sm:text-xs ${wheel.available ? 'font-bold text-gold-light' : 'text-muted'}`}
             >
               {wheel.available ? t('gifts.spin') : t('gifts.wheelTomorrow')}
             </span>

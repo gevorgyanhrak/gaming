@@ -47,7 +47,7 @@ export function DashboardPage() {
                 frame={user.looks.frame}
               />
               <div className="min-w-0">
-                <h1 className="text-gold-gradient truncate font-display text-xl font-bold lg:text-2xl">
+                <h1 className="text-gold-gradient font-display text-lg leading-tight font-bold break-words sm:text-xl lg:text-2xl">
                   {t('dashboard.welcome', { name })}
                 </h1>
                 <p className="truncate text-xs text-muted">
@@ -89,7 +89,7 @@ export function DashboardPage() {
 
 /** A perk tile in the welcome strip: icon, label and state, all one button. */
 const PERK_TILE =
-  'flex min-h-14 w-full items-center gap-2 rounded-2xl border border-gold/30 bg-black/35 px-2.5 py-2 text-fg transition-colors hover:border-gold/70 hover:bg-black/50 aria-disabled:cursor-default aria-disabled:hover:border-gold/30 aria-disabled:hover:bg-black/35 sm:gap-3 sm:px-3'
+  'flex min-h-14 w-full flex-col items-center gap-1 rounded-2xl border border-gold/30 bg-black/35 px-1.5 py-2 text-center text-fg transition-colors hover:border-gold/70 hover:bg-black/50 aria-disabled:cursor-default aria-disabled:hover:border-gold/30 aria-disabled:hover:bg-black/35 sm:flex-row sm:gap-3 sm:px-3 sm:text-left'
 
 /** Today's daily bonus as a tile: opens the bonus popup (collect, or see the streak). */
 function DailyBonusTile({ tileClassName }: { tileClassName: string }) {
@@ -109,12 +109,12 @@ function DailyBonusTile({ tileClassName }: { tileClassName: string }) {
     <li>
       <button type="button" className={tileClassName} onClick={openDailyBonus}>
         <FishkaIcon className="size-7 shrink-0" />
-        <span className="min-w-0 text-left">
-          <span className="block truncate text-xs font-semibold sm:text-sm">
+        <span className="min-w-0 leading-tight sm:text-left">
+          <span className="block text-[11px] font-semibold sm:truncate sm:text-sm">
             {t('daily.title')}
           </span>
           <span
-            className={`block truncate text-[11px] sm:text-xs ${claimed ? 'text-muted' : 'font-bold text-gold-light'}`}
+            className={`block text-[11px] sm:truncate sm:text-xs ${claimed ? 'text-muted' : 'font-bold text-gold-light'}`}
           >
             {claimed ? t('daily.collected') : `+${amount.toLocaleString(i18n.language)}`}
           </span>
