@@ -15,6 +15,8 @@ use App\Models\User;
 use App\Platform\Fishka\FishkaWallets;
 use App\Platform\Fishka\InsufficientFishkas;
 use App\Platform\Settings\Settings;
+use App\Platform\Wins\GameWins;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -38,6 +40,7 @@ class RoomStakes
         private readonly GameRegistry $registry,
         private readonly FishkaWallets $wallets,
         private readonly Settings $settings,
+        private readonly GameWins $wins,
     ) {}
 
     /**
@@ -155,6 +158,11 @@ class RoomStakes
      */
     public function settle(GameRoom $room, array $state): void
     {
+        $ai = $this->aiWinnings($room, $state);
+        if ($ai !== []) {
+            DB::afterCommit(fn () => $this->wins->recordAi($room, $ai));
+        }
+
         if ($this->chips($room->mode) !== null) {
             foreach ($room->participants as $participant) {
                 $this->cashOut($room, $participant, $state);
@@ -229,6 +237,38 @@ class RoomStakes
             fn (int $seat) => ($p = $bySeat->get($seat)) !== null && $p->user_id !== null ? $p->stake : $bots,
             range(0, $room->seats - 1),
         );
+    }
+
+    /**
+     * What the game gave each AI seat that won (call after the results are recorded): at a chip table the chips
+     * it gained over its starting stack, in a stake game its share of the pot (which goes back to the house).
+     *
+     * @param  array<string, mixed>  $state
+     * @return array<int, array{bot_profile_id: int, amount: int}> by seat
+     */
+    public function aiWinnings(GameRoom $room, array $state): array
+    {
+        $engine = $this->chips($room->mode);
+        $seated = $room->participants()->get();
+        $winners = $seated->filter(fn (GameParticipant $p) => $p->result === ParticipantResult::Win)->count();
+        /** @var array<int, int|null> $stacks */
+        $stacks = (array) ($room->options['stacks'] ?? []);
+
+        $won = [];
+        foreach ($seated as $p) {
+            if ($p->bot_profile_id === null || $p->user_id !== null) {
+                continue;
+            }
+            $amount = $engine !== null
+                ? $engine->chipsOf($state, $p->seat) - (int) ($stacks[$p->seat] ?? 0)
+                : ($p->result === ParticipantResult::Win && $room->stake > 0 && $winners > 0
+                    ? intdiv($room->stake * $room->seats, $winners) : 0);
+            if ($amount > 0 && ($engine === null || isset($stacks[$p->seat]))) {
+                $won[$p->seat] = ['bot_profile_id' => (int) $p->bot_profile_id, 'amount' => $amount];
+            }
+        }
+
+        return $won;
     }
 
     private function chips(GameMode $mode): ?PlaysForChips

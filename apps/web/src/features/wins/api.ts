@@ -11,8 +11,10 @@ export const fetchWins = (signal?: AbortSignal) =>
 /** The id of the win that just arrived (for its entrance in the feed); set by the one "wins" listener. */
 export const freshWinKey = ['wins', 'fresh'] as const
 
-const KEEP = 12
+const KEEP = 15
 
-/** A new win into the feed's list: biggest first, each once, the top KEEP. */
+/** A new win into the feed's list: newest first, each once, the latest KEEP. */
 export const withWin = (old: Win[] = [], win: Win) =>
-  [win, ...old.filter((w) => w.id !== win.id)].sort((a, b) => b.amount - a.amount).slice(0, KEEP)
+  [win, ...old.filter((w) => w.id !== win.id)]
+    .sort((a, b) => Date.parse(b.won_at) - Date.parse(a.won_at))
+    .slice(0, KEEP)

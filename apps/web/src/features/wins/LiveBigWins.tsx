@@ -1,10 +1,16 @@
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { GameIcon } from '@/features/catalog/components/GameArt'
 import { FishkaIcon } from '@/features/wallet/components/FishkaIcon'
+import { AiTag } from '@/shared/ui/AiTag'
 import { Avatar } from '@/shared/ui/Avatar'
 import { Skeleton } from '@/shared/ui/Skeleton'
 import { TrophyIcon } from '@/shared/ui/icons'
+import type { Win } from './api'
 import { useWinsFeed } from './useWinsFeed'
+
+/** A new win steps into the spotlight about this often (owner: one about every 5 seconds). */
+const SPOTLIGHT_MS = 5000
 
 /** "5 min ago" in the reader's language. */
 function ago(iso: string, lang: string) {
@@ -18,13 +24,33 @@ function ago(iso: string, lang: string) {
 }
 
 /**
- * BIG WINS LIVE: the biggest wins of the week across every game, biggest first, from the server's ledger (people
- * only — AI never wins Fishkas). A new win slides in with a gold flash. Nothing invented: an empty week says so.
+ * BIG WINS LIVE: the latest wins of the week across every game, newest first, from the server (people's from the
+ * ledger; AI players' from real games, marked AI). A spotlight steps through them, one about every 5 seconds
+ * (paused on hover, focus or with its button); a win that just happened takes it at once with a gold flash.
+ * Nothing invented: an empty week says so.
  */
 export function LiveBigWins() {
   const { t, i18n } = useTranslation()
   const { wins, fresh } = useWinsFeed()
   const format = (n: number) => n.toLocaleString(i18n.language)
+  const list = wins.data ?? []
+  const [step, setStep] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const [held, setHeld] = useState(false)
+  // A win that just arrived is first in the list: show it now.
+  const [seenFresh, setSeenFresh] = useState(fresh)
+  if (fresh !== seenFresh) {
+    setSeenFresh(fresh)
+    setStep(0)
+  }
+
+  useEffect(() => {
+    if (paused || held || list.length < 2) return
+    const timer = window.setInterval(() => setStep((s) => s + 1), SPOTLIGHT_MS)
+    return () => window.clearInterval(timer)
+  }, [paused, held, list.length])
+
+  const current = list.length > 0 ? list[step % list.length] : undefined
 
   return (
     <section
@@ -57,56 +83,133 @@ export function LiveBigWins() {
           {t('wins.empty')}
         </p>
       ) : (
-        <ol className="mt-3 space-y-2">
-          {(wins.data ?? []).map((win, i) => (
-            <li
-              key={win.id}
-              className={`flex items-center gap-3 rounded-2xl border px-3 py-2 transition ${
-                win.id === fresh
-                  ? 'border-gold bg-gold/15 shadow-[0_0_24px_rgb(240_196_98/0.35)] motion-safe:animate-rise'
-                  : 'border-white/5 bg-black/30'
-              }`}
+        <>
+          {current ? (
+            <div
+              className="relative mt-3"
+              onMouseEnter={() => setHeld(true)}
+              onMouseLeave={() => setHeld(false)}
+              onFocus={() => setHeld(true)}
+              onBlur={() => setHeld(false)}
             >
-              <span
-                aria-hidden="true"
-                className={`w-5 text-center text-sm font-extrabold tabular-nums ${i < 3 ? 'text-gold-light' : 'text-muted'}`}
-              >
-                {i + 1}
-              </span>
-              <Avatar
-                url={win.player.avatar_url}
-                name={win.player.name}
-                level={win.player.level}
-                size="sm"
+              <Spotlight
+                key={`${current.id}-${step}`}
+                win={current}
+                label={t('wins.spotlight')}
+                amount={format(current.amount)}
+                when={ago(current.won_at, i18n.language)}
               />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-bold">{win.player.name}</span>
-                <span className="flex items-center gap-1 text-xs text-muted">
-                  <GameIcon
-                    slug={win.game.slug}
-                    name={win.game.name}
-                    className="size-3.5 text-gold"
-                  />
-                  <span className="truncate">{win.game.name}</span>
-                  <span aria-hidden="true">·</span>
-                  <time dateTime={win.won_at}>{ago(win.won_at, i18n.language)}</time>
+              {list.length > 1 ? (
+                <button
+                  type="button"
+                  onClick={() => setPaused(!paused)}
+                  aria-label={paused ? t('wins.play') : t('wins.pause')}
+                  title={paused ? t('wins.play') : t('wins.pause')}
+                  className="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full border border-gold/30 bg-black/40 text-xs text-gold-light hover:border-gold"
+                >
+                  <span aria-hidden="true">{paused ? '▶' : '❚❚'}</span>
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+          <ol className="mt-3 max-h-[22rem] space-y-2 overflow-y-auto overscroll-contain pr-1">
+            {list.map((win) => (
+              <li
+                key={win.id}
+                className={`flex items-center gap-3 rounded-2xl border px-3 py-2 transition ${
+                  win.id === fresh
+                    ? 'border-gold bg-gold/15 shadow-[0_0_24px_rgb(240_196_98/0.35)] motion-safe:animate-rise'
+                    : 'border-white/5 bg-black/30'
+                }`}
+              >
+                <Avatar
+                  url={win.player.avatar_url}
+                  name={win.player.name}
+                  level={win.player.level}
+                  size="sm"
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    <span className="truncate text-sm font-bold">{win.player.name}</span>
+                    {win.is_ai ? <AiTag /> : null}
+                  </span>
+                  <span className="flex items-center gap-1 text-xs text-muted">
+                    <GameIcon
+                      slug={win.game.slug}
+                      name={win.game.name}
+                      className="size-3.5 text-gold"
+                    />
+                    <span className="truncate">{win.game.name}</span>
+                    <span aria-hidden="true">·</span>
+                    <time dateTime={win.won_at}>{ago(win.won_at, i18n.language)}</time>
+                  </span>
                 </span>
-              </span>
-              <span className="flex items-center gap-1 text-base font-extrabold text-gold-light tabular-nums sm:text-lg">
-                +{format(win.amount)}
-                <FishkaIcon className="size-5" />
-              </span>
-              <span className="sr-only">
-                {t('wins.line', {
-                  name: win.player.name,
-                  amount: format(win.amount),
-                  game: win.game.name,
-                })}
-              </span>
-            </li>
-          ))}
-        </ol>
+                <span className="flex items-center gap-1 text-base font-extrabold text-gold-light tabular-nums sm:text-lg">
+                  +{format(win.amount)}
+                  <FishkaIcon className="size-5" />
+                </span>
+                <span className="sr-only">
+                  {t(win.is_ai ? 'wins.lineAi' : 'wins.line', {
+                    name: win.player.name,
+                    amount: format(win.amount),
+                    game: win.game.name,
+                  })}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </>
       )}
     </section>
+  )
+}
+
+/** The win in the spotlight: large, rising in with a gold sweep. */
+function Spotlight({
+  win,
+  label,
+  amount,
+  when,
+}: {
+  win: Win
+  label: string
+  amount: string
+  when: string
+}) {
+  return (
+    <div
+      className={`relative overflow-hidden rounded-2xl border p-3 pr-12 motion-safe:animate-rise ${
+        win.is_ai
+          ? 'border-sky-300/30 bg-linear-to-r from-sky-950/60 via-black/40 to-black/30'
+          : 'border-gold/50 bg-linear-to-r from-gold/20 via-black/40 to-black/30 shadow-[0_0_28px_rgb(240_196_98/0.25)]'
+      }`}
+    >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/15 to-transparent motion-safe:animate-[spot-sweep_1.4s_ease-out_both]"
+      />
+      <p className="text-[0.65rem] font-bold tracking-widest text-gold-light/80 uppercase">
+        {label}
+      </p>
+      <div className="mt-1 flex items-center gap-3">
+        <Avatar url={win.player.avatar_url} name={win.player.name} level={win.player.level} />
+        <div className="min-w-0 flex-1">
+          <p className="flex min-w-0 items-center gap-1.5">
+            <span className="truncate font-bold">{win.player.name}</span>
+            {win.is_ai ? <AiTag /> : null}
+          </p>
+          <p className="flex items-center gap-1 text-xs text-muted">
+            <GameIcon slug={win.game.slug} name={win.game.name} className="size-3.5 text-gold" />
+            <span className="truncate">{win.game.name}</span>
+            <span aria-hidden="true">·</span>
+            <time dateTime={win.won_at}>{when}</time>
+          </p>
+        </div>
+        <span className="flex items-center gap-1 text-xl font-black text-gold-light tabular-nums sm:text-2xl">
+          +{amount}
+          <FishkaIcon className="size-6" />
+        </span>
+      </div>
+    </div>
   )
 }

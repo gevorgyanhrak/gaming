@@ -14,7 +14,10 @@ use Illuminate\Support\Facades\Storage;
  * Winnings from games, as the ledger recorded them: a person's net Fishkas for a room (entry fees, buy-ins, stakes,
  * payouts and cash-outs, all tagged with the room) once their game is over. Above zero it is a win — kept in
  * game_wins (once per room and person) and announced on the public "wins" channel; the biggest are celebrated.
- * Computed only by the server from its own ledger: nothing a client sends, never AI (it has no wallet).
+ * Computed only by the server from its own ledger: nothing a client sends.
+ *
+ * AI players' wins in real games (owner 2026-11-15) are kept apart in ai_wins and shown in the feed marked AI
+ * (`is_ai`), never celebrated and never on leaderboards or achievements. Nothing here is invented: no game, no win.
  */
 class GameWins
 {
@@ -48,6 +51,30 @@ class GameWins
         WinRecorded::dispatch($this->present($id));
     }
 
+    /**
+     * Records what AI seats won in a finished room (RoomStakes::aiWinnings) and announces each, marked AI.
+     *
+     * @param  array<int, array{bot_profile_id: int, amount: int}>  $bySeat
+     */
+    public function recordAi(GameRoom $room, array $bySeat): void
+    {
+        foreach ($bySeat as $seat => $win) {
+            $inserted = DB::table('ai_wins')->insertOrIgnore([
+                'bot_profile_id' => $win['bot_profile_id'],
+                'game_id' => $room->game_id,
+                'room_public_id' => $room->public_id,
+                'seat' => $seat,
+                'amount' => $win['amount'],
+                'won_at' => now(),
+            ]);
+            if ($inserted === 0) {
+                continue;
+            }
+            $id = (int) DB::table('ai_wins')->where('room_public_id', $room->public_id)->where('seat', $seat)->value('id');
+            WinRecorded::dispatch($this->presentAi($id));
+        }
+    }
+
     /** The amount from which a win is celebrated on every open page (admin setting). */
     public function celebrateAt(): int
     {
@@ -55,22 +82,31 @@ class GameWins
     }
 
     /**
-     * The biggest wins of the last $days days, biggest first.
+     * The latest wins of the last $days days, people's and AI's together, newest first (the live feed).
      *
      * @return list<array<string, mixed>>
      */
-    public function biggest(int $days = 7, int $limit = 12): array
+    public function recent(int $days = 7, int $limit = 15): array
     {
-        return array_map(fn (int $id) => $this->present($id), DB::table('game_wins')
-            ->where('won_at', '>=', now()->subDays($days))
-            ->orderByDesc('amount')->orderByDesc('won_at')
-            ->limit($limit)->pluck('id')->map(fn ($id) => (int) $id)->all());
+        $since = now()->subDays($days);
+        $people = DB::table('game_wins')->where('won_at', '>=', $since)
+            ->orderByDesc('won_at')->limit($limit)->get(['id', 'won_at'])
+            ->map(fn ($w) => ['ai' => false, 'id' => (int) $w->id, 'at' => (string) $w->won_at]);
+        $ai = DB::table('ai_wins')->where('won_at', '>=', $since)
+            ->orderByDesc('won_at')->limit($limit)->get(['id', 'won_at'])
+            ->map(fn ($w) => ['ai' => true, 'id' => (int) $w->id, 'at' => (string) $w->won_at]);
+
+        return $people->concat($ai)
+            ->sortByDesc(fn (array $w) => $w['at'].sprintf('%012d', $w['id']))
+            ->take($limit)
+            ->map(fn (array $w) => $w['ai'] ? $this->presentAi($w['id']) : $this->present($w['id']))
+            ->values()->all();
     }
 
     /**
      * One win as the feed shows it.
      *
-     * @return array{id: int, amount: int, won_at: string, celebrate: bool, player: array{username: string, name: string, avatar_url: string|null, level: int}, game: array{slug: string, name: string}}
+     * @return array{id: string, amount: int, won_at: string, celebrate: bool, is_ai: bool, player: array{username: string|null, name: string, avatar_url: string|null, level: int}, game: array{slug: string, name: string}}
      */
     public function present(int $id): array
     {
@@ -83,13 +119,44 @@ class GameWins
         $game = Game::query()->where('slug', $win->slug)->first();
 
         return [
-            'id' => (int) $win->id,
+            'id' => 'p'.$win->id,
             'amount' => (int) $win->amount,
             'won_at' => Carbon::parse($win->won_at)->toIso8601String(),
             'celebrate' => (int) $win->amount >= $this->celebrateAt(),
+            'is_ai' => false,
             'player' => [
                 'username' => (string) $win->username,
                 'name' => (string) ($win->display_name ?? $win->username),
+                'avatar_url' => $win->avatar_path === null ? null : Storage::disk('public')->url((string) $win->avatar_path),
+                'level' => (int) $win->level,
+            ],
+            'game' => ['slug' => (string) $win->slug, 'name' => (string) ($game->name ?? $win->slug)],
+        ];
+    }
+
+    /**
+     * An AI player's win as the feed shows it: marked AI, never celebrated, no profile link.
+     *
+     * @return array{id: string, amount: int, won_at: string, celebrate: bool, is_ai: bool, player: array{username: string|null, name: string, avatar_url: string|null, level: int}, game: array{slug: string, name: string}}
+     */
+    public function presentAi(int $id): array
+    {
+        $win = DB::table('ai_wins')
+            ->join('bot_profiles', 'bot_profiles.id', '=', 'ai_wins.bot_profile_id')
+            ->join('games', 'games.id', '=', 'ai_wins.game_id')
+            ->where('ai_wins.id', $id)
+            ->first(['ai_wins.id', 'ai_wins.amount', 'ai_wins.won_at', 'bot_profiles.name as bot', 'bot_profiles.level', 'bot_profiles.avatar_path', 'games.slug', 'games.name']);
+        $game = Game::query()->where('slug', $win->slug)->first();
+
+        return [
+            'id' => 'a'.$win->id,
+            'amount' => (int) $win->amount,
+            'won_at' => Carbon::parse($win->won_at)->toIso8601String(),
+            'celebrate' => false,
+            'is_ai' => true,
+            'player' => [
+                'username' => null,
+                'name' => (string) $win->bot,
                 'avatar_url' => $win->avatar_path === null ? null : Storage::disk('public')->url((string) $win->avatar_path),
                 'level' => (int) $win->level,
             ],

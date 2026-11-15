@@ -1,29 +1,33 @@
 import { act, screen, within } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { winFixture } from '@/test/handlers'
 import { emit } from '@/test/realtime'
 import { renderRoute } from '@/test/render'
 import { server } from '@/test/server'
 
 describe('Big Wins live', () => {
-  it('lists the week’s biggest wins from the server, and says so when there are none', async () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('lists the week’s wins from the server, and says so when there are none', async () => {
     renderRoute('/')
     expect(await screen.findByText(/No wins yet this week/)).toBeInTheDocument()
   })
 
-  it('shows each win with the player, the game and the amount, biggest first', async () => {
+  it('shows each win with the player, the game and the amount, newest first', async () => {
     server.use(
       http.get('*/api/v1/wins', () =>
         HttpResponse.json({
           data: [
             winFixture({
-              id: 1,
+              id: 'p1',
               amount: 150_000,
               player: { username: 'hrak', name: 'Hrak', avatar_url: null, level: 3 },
             }),
             winFixture({
-              id: 2,
+              id: 'p2',
               amount: 4_000,
               celebrate: false,
               game: { slug: 'blot', name: 'Blot' },
@@ -51,7 +55,7 @@ describe('Big Wins live', () => {
         'wins',
         'win.recorded',
         winFixture({
-          id: 9,
+          id: 'p9',
           amount: 200_000,
           player: { username: 'ani', name: 'Ani', avatar_url: null, level: 8 },
         }),
@@ -59,7 +63,7 @@ describe('Big Wins live', () => {
     )
 
     const feed = screen.getByRole('region', { name: 'BIG WINS LIVE' })
-    expect(await within(feed).findByText('+200,000')).toBeInTheDocument()
+    expect((await within(feed).findAllByText('+200,000')).length).toBeGreaterThan(0)
     const party = screen.getByRole('status', { name: '' })
     expect(within(party).getByText('Congratulations!')).toBeInTheDocument()
     expect(within(party).getByText('Ani')).toBeInTheDocument()
@@ -69,9 +73,72 @@ describe('Big Wins live', () => {
     renderRoute('/')
     await screen.findByText(/No wins yet this week/)
 
-    act(() => emit('wins', 'win.recorded', winFixture({ id: 3, amount: 900, celebrate: false })))
+    act(() => emit('wins', 'win.recorded', winFixture({ id: 'p3', amount: 900, celebrate: false })))
 
-    expect(await screen.findByText('+900')).toBeInTheDocument()
+    expect((await screen.findAllByText('+900')).length).toBeGreaterThan(0)
     expect(screen.queryByText('Congratulations!')).not.toBeInTheDocument()
+  })
+
+  it('marks an AI player’s win and never celebrates it', async () => {
+    renderRoute('/')
+    await screen.findByText(/No wins yet this week/)
+
+    act(() =>
+      emit(
+        'wins',
+        'win.recorded',
+        winFixture({
+          id: 'a4',
+          amount: 500_000,
+          is_ai: true,
+          celebrate: false,
+          player: { username: null, name: 'Aram', avatar_url: null, level: 30 },
+        }),
+      ),
+    )
+
+    const feed = screen.getByRole('region', { name: 'BIG WINS LIVE' })
+    const row = await within(feed).findByRole('listitem')
+    expect(within(row).getByText('AI')).toBeInTheDocument()
+    expect(
+      within(row).getByText('Aram (AI player) won 500,000 Fishkas in Blackjack'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('Congratulations!')).not.toBeInTheDocument()
+  })
+
+  it('puts the next win in the spotlight about every 5 seconds, and can be paused', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    server.use(
+      http.get('*/api/v1/wins', () =>
+        HttpResponse.json({
+          data: [
+            winFixture({
+              id: 'p1',
+              player: { username: 'ani', name: 'Ani', avatar_url: null, level: 3 },
+            }),
+            winFixture({
+              id: 'p2',
+              player: { username: 'vardan', name: 'Vardan', avatar_url: null, level: 5 },
+            }),
+          ],
+        }),
+      ),
+    )
+    renderRoute('/')
+
+    const spot = () => screen.getByText('Recent win').parentElement as HTMLElement
+    await screen.findByText('Recent win')
+    expect(within(spot()).getByText('Ani')).toBeInTheDocument()
+
+    act(() => {
+      vi.advanceTimersByTime(5000)
+    })
+    expect(within(spot()).getByText('Vardan')).toBeInTheDocument()
+
+    act(() => screen.getByRole('button', { name: 'Pause the wins' }).click())
+    act(() => {
+      vi.advanceTimersByTime(10_000)
+    })
+    expect(within(spot()).getByText('Vardan')).toBeInTheDocument()
   })
 })

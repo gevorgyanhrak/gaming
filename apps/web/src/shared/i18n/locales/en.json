@@ -1064,13 +1064,17 @@
   },
   "wins": {
     "title": "BIG WINS LIVE",
-    "subtitle": "The biggest wins of the week, by people — in Fishkas, the free play money.",
+    "subtitle": "The latest wins of the week, in Fishkas (free play money). AI players’ wins in real games are marked AI.",
     "empty": "No wins yet this week. The first big one will show here.",
     "error": "Big wins can’t be shown right now.",
     "line": "{{name}} won {{amount}} Fishkas in {{game}}",
     "congrats": "Congratulations!",
     "wonIn": "Won {{amount}} in {{game}}!",
-    "close": "Close"
+    "close": "Close",
+    "lineAi": "{{name}} (AI player) won {{amount}} Fishkas in {{game}}",
+    "spotlight": "Recent win",
+    "pause": "Pause the wins",
+    "play": "Show the wins in turn"
   },
   "leaders": {
     "title": "Leaderboards",

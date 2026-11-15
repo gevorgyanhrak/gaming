@@ -236,10 +236,11 @@ export function winFixture(
   overrides: Partial<Schemas['WinResource']> = {},
 ): Schemas['WinResource'] {
   return {
-    id: 1,
+    id: 'p1',
     amount: 150_000,
     won_at: new Date().toISOString(),
     celebrate: true,
+    is_ai: false,
     player: { username: 'hrak', name: 'Hrak', avatar_url: null, level: 12 },
     game: { slug: 'blackjack', name: 'Blackjack' },
     ...overrides,

@@ -1317,14 +1317,17 @@ export interface components {
         };
         /** WinResource */
         WinResource: {
-            id: number;
-            /** @description Fishkas won: the player's net for that game, from the ledger. */
+            /** @description "p…" for a person's win, "a…" for an AI player's. */
+            id: string;
+            /** @description Fishkas won: a person's net for that game from the ledger; an AI seat's pot share or chips gained. */
             amount: number;
             won_at: string;
             /** @description At or above the celebration amount (admin setting wins.celebrate_at). */
             celebrate: boolean;
+            /** @description An AI player (shown marked AI; no profile). */
+            is_ai: boolean;
             player: {
-                username: string;
+                username: string | null;
                 name: string;
                 avatar_url: string | null;
                 level: number;

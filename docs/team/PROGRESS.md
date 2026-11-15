@@ -15,7 +15,7 @@ Phase A — platform first:
 - [x] A1. Restore game categories and images on the home page (the casino home of 1ebcb25 dropped the lobby): every
       game with its picture, category filter, clickable cards, category banners; the top 3 (Blackjack, Poker, Blot)
       much larger, premium, TOP badge.
-- [ ] A2. Big Wins: works with real data and refreshes about every 5 s. Cause found: `game_wins` is empty — no person
+- [x] A2. Big Wins: works with real data and refreshes about every 5 s. Cause found: `game_wins` is empty — no person
       has had a net win since it shipped. Fix: real results only — people's Fishka wins, plus AI players' real wins
       from real games, marked AI; never invented (owner allows "clearly identified AI/demo"; we use real AI results).
 - [ ] A3. Online players counter at the top, from real connected sessions; live.

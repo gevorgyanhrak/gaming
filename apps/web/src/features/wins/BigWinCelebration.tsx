@@ -32,7 +32,7 @@ export function BigWinCelebration() {
     'win.recorded': (next: Win) => {
       queryClient.setQueryData<Win[]>(winsKey, (old) => withWin(old, next))
       queryClient.setQueryData(freshWinKey, next.id)
-      if (next.celebrate && !window.location.pathname.startsWith('/rooms/')) {
+      if (next.celebrate && !next.is_ai && !window.location.pathname.startsWith('/rooms/')) {
         setWin(next)
         playUiSound('fanfare')
       }

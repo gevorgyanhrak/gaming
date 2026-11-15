@@ -304,6 +304,10 @@ is not done or not verified, and how to check it manually. Keep it concise.
 - Home (2026-11-15): CasinoHero → "Top games" (`GameShowcase`, `features/casino/mainGames.ts`, TOP n `.top-badge`) →
   "All games" (`GameGrid banners exclude={MAIN_GAMES}` → `CategoryBanners`, aria-pressed filters; a category lists its
   top games too) → Big Wins + leaderboards → ranks. `/games` keeps the pills.
+- Big Wins (A2, 2026-11-15): `GET /wins` = `GameWins::recent()` — people's `game_wins` + AI's `ai_wins` (real games only:
+  `RoomStakes::aiWinnings` in `settle` → pot share or chips over `options.stacks`), newest first, ids `p…`/`a…`, `is_ai`.
+  AI rows never celebrate, never reach leaderboards/achievements. `LiveBigWins` spotlight steps every 5 s (pause on
+  hover/focus/button).
 - Local web tests time out at random when the Mac is loaded (Chrome/Docker, load > 20): run `npx vitest run --maxWorkers=2`.
 - Game catalog (TASK-056): `game_categories` + `games.game_category_id`, `category` on each game in `/games`; admin Games → Categories. Web: `GameGrid` → `features/catalog/components/GameLobby`
   (shelves come from the games; `_other` is reserved for uncategorised), `HomeArt` posters, `HomeBackdrop` (the fixed night-room picture on `/` and `/dashboard`, `PublicLayout` `isHome`,

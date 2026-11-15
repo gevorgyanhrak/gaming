@@ -21,3 +21,10 @@ shown. Never present bot activity as real-player activity."
 ## Consequences
 
 Players can tell people from AI at a glance; statistics stay about people only.
+
+## Addendum (2026-11-15): AI wins in the Big Wins feed
+
+The owner asked for Big Wins to stay lively when few people play, with AI activity "clearly identified". We
+show **AI players' real wins in real games** (`ai_wins`: the pot share that goes back to the house, or chips
+gained at a chip table), always with the AI tag and an "(AI player)" label for screen readers. Nothing is
+generated: no game, no entry. AI wins are never celebrated and never count on leaderboards or achievements.

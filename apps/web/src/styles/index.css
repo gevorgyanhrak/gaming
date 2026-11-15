@@ -890,3 +890,13 @@ html:lang(hy) {
       0 0;
   }
 }
+
+/* Big Wins spotlight: one light sweep as a win steps in. */
+@keyframes spot-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
