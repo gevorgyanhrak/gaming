@@ -5,7 +5,7 @@ import { Modal } from '@/shared/ui/Modal'
 import { CloseIcon } from '@/shared/ui/icons'
 import type { ReactionCatalog, ReactionKind } from '../api'
 import { emojiCategoryName, messageCategoryName, messageText } from '../labels'
-import { recentEmojis, rememberEmoji } from '../prefs'
+import { recentEmojis, rememberEmoji, setMuted, useReactionsMuted } from '../prefs'
 
 export type Recipient = { seat: number; name: string }
 
@@ -33,6 +33,7 @@ export function ReactionPicker({
   onClose: () => void
 }) {
   const { t } = useTranslation()
+  const muted = useReactionsMuted()
   const [tab, setTab] = useState<ReactionKind>(initialTab)
   // One opponent: it's for them; at a bigger table: for everyone until a player is chosen.
   const [to, setTo] = useState<number | null>(
@@ -324,6 +325,21 @@ export function ReactionPicker({
           ))}
         </div>
       )}
+      {/* The others' reactions without the flight across the table. */}
+      <div className="flex justify-end border-t border-border px-4 py-2.5">
+        <button
+          type="button"
+          aria-pressed={muted}
+          onClick={() => setMuted(!muted)}
+          className={`min-h-10 rounded-full border px-3.5 text-sm font-semibold ${
+            muted
+              ? 'border-gold bg-gold/15 text-gold-light'
+              : 'border-border text-muted hover:border-gold/50 hover:text-white'
+          }`}
+        >
+          {t('reactions.chat.mute')}
+        </button>
+      </div>
     </Modal>
   )
 }

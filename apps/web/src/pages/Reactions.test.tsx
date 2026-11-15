@@ -118,22 +118,19 @@ describe('Emojis and quick messages', () => {
     expect(sent[0]).toMatchObject({ kind: 'emoji', value: '😂', to_seat: 1 })
   })
 
-  it('counts new lines on the chat button until the chat is opened', async () => {
+  it('has no chat panel to open, and the picker turns the others’ animations off', async () => {
     serve()
     renderRoute('/rooms/room-1')
-    const chat = await screen.findByRole('button', { name: /^Table chat/ })
+    await screen.findByRole('button', { name: 'Send 😂' })
+    expect(screen.queryByRole('button', { name: /^Table chat/ })).not.toBeInTheDocument()
 
-    act(() =>
-      emit(
-        'user.1',
-        'room.reaction',
-        reaction({ id: 'r-9', seq: 9, from_seat: 1, kind: 'message', value: 'gg' }),
-      ),
-    )
-
-    expect(await screen.findByText('1 new message')).toBeInTheDocument()
-    await userEvent.click(chat)
-    expect(screen.queryByText('1 new message')).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Send an emoji' }))
+    const picker = await screen.findByRole('dialog', { name: 'Emojis and messages' })
+    const mute = within(picker).getByRole('button', { name: 'Mute animations' })
+    expect(mute).toHaveAttribute('aria-pressed', 'false')
+    await userEvent.click(mute)
+    expect(mute).toHaveAttribute('aria-pressed', 'true')
+    await userEvent.click(mute)
   })
 
   it('sends an emoji to the opponent; it flies from your seat towards theirs', async () => {
@@ -219,8 +216,7 @@ describe('Emojis and quick messages', () => {
     const sent = serve()
     renderRoute('/rooms/room-1')
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Table chat' }))
-    await userEvent.click(screen.getByRole('button', { name: 'GG!' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'GG!' }))
     await waitFor(() => expect(sent).toHaveLength(1))
     expect(sent[0]).toMatchObject({ kind: 'message', value: 'gg', to_seat: 1 })
     expect(await within(screen.getByRole('log')).findByText('GG!')).toBeInTheDocument()
@@ -241,8 +237,7 @@ describe('Emojis and quick messages', () => {
     const sent = serve()
     renderRoute('/rooms/room-1')
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Table chat' }))
-    await userEvent.dblClick(screen.getByRole('button', { name: 'GG!' }))
+    await userEvent.dblClick(await screen.findByRole('button', { name: 'GG!' }))
 
     expect(await within(screen.getByRole('log')).findByText('GG!')).toBeInTheDocument()
     expect(sent).toHaveLength(1)
@@ -286,8 +281,7 @@ describe('Emojis and quick messages', () => {
     )
     renderRoute('/rooms/room-1')
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Table chat' }))
-    await userEvent.click(screen.getByRole('button', { name: 'GG!' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'GG!' }))
 
     expect(await within(screen.getByRole('log')).findByText('GG!')).toBeInTheDocument()
     expect(ids).toHaveLength(2)
