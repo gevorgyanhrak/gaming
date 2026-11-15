@@ -11,7 +11,7 @@ const QUICK = ['good_luck', 'nice_move', 'gg'] as const
 
 /**
  * The table chat, a slim bar between the room's header and the board: a few emojis and phrases sent with one
- * tap, the pickers (＋ every emoji, 💬 every message), the latest line and a count of new ones; opened, the
+ * tap, the pickers (＋ every emoji, 💬 every message) and a count of new ones on the chevron; opened, the
  * chat as bubbles (yours on the right), the phrases and muting the others' animations. No typing: only what
  * the catalog offers.
  */
@@ -50,7 +50,6 @@ export function TableChat({
   const time = new Intl.DateTimeFormat(i18n.language, { hour: '2-digit', minute: '2-digit' })
   const who = (seat: number) => (seat === mySeat ? t('reactions.you') : (names[seat] ?? '?'))
   const unread = open ? 0 : Math.max(0, log.length - seen)
-  const latest = log.at(-1)
   if (open && seen !== log.length) setSeen(log.length)
 
   // Opened over the table: Escape closes it.
@@ -130,25 +129,7 @@ export function TableChat({
             <span aria-hidden="true">💬</span>
           </button>
 
-          {/* The latest line, small (closed); the whole chat below when open. */}
-          <div className="min-w-0 flex-1">
-            {!open && latest ? (
-              <button
-                type="button"
-                onClick={() => setOpen(true)}
-                className="flex w-full min-w-0 items-center gap-1.5 rounded-full bg-black/30 px-3 py-1.5 text-left text-sm"
-              >
-                <span
-                  className={`shrink-0 font-bold ${latest.from_seat === mySeat ? 'text-accent-text' : 'text-gold-light'}`}
-                >
-                  {who(latest.from_seat)}
-                </span>
-                <span className="min-w-0 truncate text-fg/90">
-                  {latest.kind === 'emoji' ? latest.value : messageText(t, latest.value)}
-                </span>
-              </button>
-            ) : null}
-          </div>
+          <div className="min-w-0 flex-1" />
 
           <button
             type="button"
@@ -170,7 +151,7 @@ export function TableChat({
           </button>
         </div>
 
-        {/* The log: hidden while closed (the latest line is in the bar), as chat bubbles when open. */}
+        {/* The log: hidden while closed (new lines are counted on the chevron), as chat bubbles when open. */}
         <ol
           ref={list}
           role="log"
