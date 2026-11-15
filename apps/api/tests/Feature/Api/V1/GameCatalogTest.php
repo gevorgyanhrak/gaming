@@ -48,7 +48,7 @@ it('seeds the launch games into their categories', function () {
     $this->seed(GameSeeder::class);
 
     expect(Game::query()->with('category')->get()->mapWithKeys(fn (Game $g) => [$g->slug => $g->category?->slug])->all())->toEqual([
-        'nardi' => 'board', 'chess' => 'board', 'checkers' => 'board', 'durak' => 'card', 'poker' => 'card', 'blackjack' => 'card', 'blot' => 'card', 'domino' => 'board', 'ludo' => 'board', 'pool' => 'board', 'rummy' => 'card',
+        'nardi' => 'board', 'chess' => 'board', 'checkers' => 'board', 'durak' => 'card', 'poker' => 'casino', 'blackjack' => 'casino', 'blot' => 'card', 'domino' => 'board', 'ludo' => 'board', 'pool' => 'board', 'rummy' => 'card',
     ]);
 });
 
@@ -133,4 +133,8 @@ it('says how many people play a game now — people only, never AI — where its
         // Two people at chess tables now: the bot, the AI-held seat and the finished table don't count.
         ->assertJsonPath('data.0.show_online', true)->assertJsonPath('data.0.playing_now', 2)
         ->assertJsonPath('data.1.show_online', false)->assertJsonPath('data.1.playing_now', null);
+});
+
+it('puts the Casino shelf first in the catalog', function () {
+    expect(GameCategory::query()->orderBy('sort_order')->value('slug'))->toBe('casino');
 });

@@ -34,7 +34,14 @@ Phase B — casino:
       date window, order; audited) and the home carousel (`PromoBanners`, nothing shown when none) — this commit.
 - [x] B2. Slot wallet (`Platform/Slots`: signed provider calls, unique tx ids, win cap, rollback; ADR 0023) + adapter
       contract (no adapter ships) + admin Casino → Slot providers / Slot games / Slot wallet calls — this commit.
-- [ ] B3. Top Winners from real transactions. · [ ] B4. Casino lobby (search, filters, recently played). · [ ] B5. Identity/sounds pass.
+- [x] B3. Top Winners: the leaderboards already rank real game wins (people only); slot wins join when a slot runs.
+- [x] B4. Casino shelf (Blackjack, Poker; first), lobby search over all games, "Recently played" — this commit.
+- [ ] B2b. Open-source slot provider (MIT Stake Engine Math SDK sample tables, drawn by our server): BLOCKED — running
+      the SDK (pip + third-party code) was denied by the permission classifier; needs the owner's permission.
+- [ ] B5. Identity/sounds pass (after the owner's homepage/AI/poker ticket below).
+- [ ] NEXT: owner ticket 2026-11-16 "Homepage UI Improvements" (compact welcome banner with daily bonus / gifts / wheel,
+      Durak in "Try also", human-like AI timing for all games + thinking indicator, poker deal/flip animations,
+      natural dealer lines, avatar popup: emoji to the recipient, quick message above me, my-avatar emoji 2 s).
 Phase B — casino (only after A): banners managed in admin; slot games from ready-made providers (research licences;
 no own slot engine; Fishka wallet server-side, no client-trusted results, replay-proof; document limits); slot admin;
 Top Winners; casino lobby (search, filters, carousel, recently played).

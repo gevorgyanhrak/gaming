@@ -17,16 +17,24 @@ use Illuminate\Database\Seeder;
  */
 class GameSeeder extends Seeder
 {
+    /** Games on the "Casino" shelf. */
+    private const CASINO_GAMES = ['poker', 'blackjack'];
+
     /** Games on the "Card games" shelf; the rest are board games. */
-    private const CARD_GAMES = ['durak', 'poker', 'blackjack', 'blot', 'rummy'];
+    private const CARD_GAMES = ['durak', 'blot', 'rummy'];
 
     public function run(): void
     {
+        $shelf = fn (string $slug) => match (true) {
+            in_array($slug, self::CASINO_GAMES, true) => 'casino',
+            in_array($slug, self::CARD_GAMES, true) => 'card',
+            default => 'board',
+        };
         foreach ($this->games() as $index => $game) {
             // New games start playable only if their engine exists; afterwards admins decide.
             Game::query()->firstOrCreate(
                 ['slug' => $game['slug']],
-                [...$game, 'game_category_id' => GameCategory::query()->where('slug', in_array($game['slug'], self::CARD_GAMES, true) ? 'card' : 'board')->value('id'), 'sort_order' => ($index + 1) * 10, 'is_enabled' => app(GameRegistry::class)->has($game['slug']), 'is_visible' => true],
+                [...$game, 'game_category_id' => GameCategory::query()->where('slug', $shelf($game['slug']))->value('id'), 'sort_order' => ($index + 1) * 10, 'is_enabled' => app(GameRegistry::class)->has($game['slug']), 'is_visible' => true],
             );
         }
     }

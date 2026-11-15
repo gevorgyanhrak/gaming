@@ -4,6 +4,7 @@ import { GameShowcase } from '@/features/casino/GameShowcase'
 import { MAIN_GAMES } from '@/features/casino/mainGames'
 import { PromoBanners } from '@/features/casino/PromoBanners'
 import { GameGrid } from '@/features/catalog/components/GameGrid'
+import { RecentlyPlayed } from '@/features/catalog/components/RecentlyPlayed'
 import { LiveBigWins } from '@/features/wins/LiveBigWins'
 import { LeaderboardCard } from '@/features/leaderboards/LeaderboardCard'
 import { RankLadder } from '@/features/levels/components/RankLadder'
@@ -32,6 +33,7 @@ export function LandingPage() {
             </h2>
             <GameShowcase />
           </section>
+          <RecentlyPlayed />
           <section id="games" aria-labelledby="all-games" className="mt-10 scroll-mt-24">
             <h2 id="all-games" className="mb-4 font-display text-2xl font-bold text-fg sm:text-3xl">
               {t('casino.allGames')}

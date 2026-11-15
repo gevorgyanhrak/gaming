@@ -1,4 +1,4 @@
-import { useId, useMemo } from 'react'
+import { useId, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 import type { GameSummary } from '../queries'
@@ -56,8 +56,15 @@ export function GameLobby({
       { replace: true, preventScrollReset: true },
     )
 
-  const shown = selected ? selected.games : games.filter((g) => !exclude.includes(g.slug))
-  const featured = !banners && !selected && shown.length >= 3
+  const [query, setQuery] = useState('')
+  const needle = query.trim().toLocaleLowerCase()
+  // A search looks through every game, the ones shown larger above too.
+  const shown = needle
+    ? games.filter((g) => g.name.toLocaleLowerCase().includes(needle))
+    : selected
+      ? selected.games
+      : games.filter((g) => !exclude.includes(g.slug))
+  const featured = !banners && !selected && !needle && shown.length >= 3
 
   return (
     <div>
@@ -78,6 +85,31 @@ export function GameLobby({
           />
         </div>
       )}
+      <div className="mb-4">
+        <label className="relative block max-w-sm">
+          <span className="sr-only">{t('lobby.search')}</span>
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="text-fg-muted pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 fill-none stroke-current stroke-2"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.5-3.5" />
+          </svg>
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t('lobby.search')}
+            className="placeholder:text-fg-muted min-h-11 w-full rounded-full border border-border bg-surface pr-4 pl-10 text-sm text-fg focus:border-accent-text focus:outline-none"
+          />
+        </label>
+      </div>
+      {needle && shown.length === 0 ? (
+        <p role="status" className="text-fg-muted py-8 text-center">
+          {t('lobby.noMatch', { query: query.trim() })}
+        </p>
+      ) : null}
       {/* "All": the first game (the admin's order) is featured, a double-width tile with wide art. */}
       <ul
         key={selected?.key ?? 'all'}

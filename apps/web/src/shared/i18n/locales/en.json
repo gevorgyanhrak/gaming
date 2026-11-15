@@ -761,7 +761,10 @@
     "all": "All games",
     "filterLabel": "Show games by category",
     "other": "More games",
-    "quickSeat": "Quick seat"
+    "quickSeat": "Quick seat",
+    "search": "Search games",
+    "noMatch": "No game matches “{{query}}”.",
+    "recent": "Recently played"
   },
   "ranks": {
     "title": "Club ranks",
