@@ -187,6 +187,17 @@ class ManageSettings extends Page
                         TextInput::make('levels.reward_default')->label('Fishkas for a level without its own reward')
                             ->numeric()->integer()->required()->minValue(0)->maxValue(1000000),
                     ]),
+                Section::make('Rankings')->columns(2)
+                    ->description('Each listed game has its own Top 10 by points, AI included; points change once per finished game.')
+                    ->schema([
+                        TagsInput::make('rankings.points_games')->label('Games ranked by points (slugs)'),
+                        TagsInput::make('rankings.chips_games')->label('Games ranked by Fishkas (slugs)'),
+                        TextInput::make('rankings.win_points')->label('Points for a win')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(1000),
+                        TextInput::make('rankings.loss_points')->label('Points taken for a loss')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(1000)
+                            ->helperText('Also for leaving or timing out. Points never go below 0.'),
+                    ]),
                 Section::make('Security')->columns(2)->schema([
                     TextInput::make('security.session_lifetime_minutes')->label('Session lifetime (minutes)')
                         ->numeric()->integer()->required()->minValue(15)->maxValue(43200)

@@ -1329,5 +1329,23 @@
     "label_few": "онлайн",
     "label_many": "онлайн",
     "label_other": "онлайн"
+  },
+  "rankings": {
+    "title": "Лучшие игроки",
+    "show": "Показать",
+    "byLevel": "Высший уровень",
+    "byChips": "Больше всего Фишек",
+    "gameTitle": "{{game}} — топ-10",
+    "pointsHint": "+10 очков за победу, −5 за поражение. ИИ-игроки тоже в рейтинге.",
+    "chipsHint": "Игроки с наибольшим количеством Фишек.",
+    "points_one": "{{formatted}} очко",
+    "points_few": "{{formatted}} очка",
+    "points_many": "{{formatted}} очков",
+    "points_other": "{{formatted}} очка",
+    "level": "Уровень {{level}}",
+    "place": "Место",
+    "openCard": "Карточка: {{name}}",
+    "empty": "В рейтинге пока никого. Сыграйте первым!",
+    "error": "Не удалось загрузить рейтинг."
   }
 }

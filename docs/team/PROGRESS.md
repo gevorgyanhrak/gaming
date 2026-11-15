@@ -51,9 +51,13 @@ Owner ticket 2026-11-16 "Homepage UI Improvements" (in progress):
       Rummy and Pool plates tappable (SeatTap) — this commit.
 - [x] Live check (headless Chrome, player1): compact strip on desktop/phone, poker deal order and flips counted in a
       real hand, AI thinking caption + dots, emoji to an AI's avatar, quick message over mine, my avatar emoji 2 s.
-Then owner ticket 2026-11-16 "Game-Specific Leaderboards & Ranking": per-game points (+10/−5, AI too, no duplicates)
-for Durak, Checkers, Nardi, Blot, Chess with Top 10 on each game page; Poker/Blackjack Top 10 by chips; home
-leaderboard with a Highest level / Most chips select; top-3 badges, profile popup on avatars.
+Owner ticket 2026-11-16 "Game-Specific Leaderboards & Ranking":
+- [x] Per-game points (`Platform/Rankings/Rankings`, `game_points` + unique `game_point_events`; settings
+      `rankings.*` in admin Settings → Rankings): +10 win / −5 loss (also leaving), never below 0, people and AI,
+      from `GameFinisher`; `rankings:backfill` scored past games (606 locally). API `GET /rankings/games/{slug}`
+      (kind points|chips|null), `GET /rankings/{level|chips}` (people only). Web: `features/rankings`
+      (`RankingList` medals + FLIP + profile popup, `GameRanking` on game pages, `HomeRankings` select on home and
+      dashboard, replacing the old LeaderboardCard) — this commit.
 Phase B — casino (only after A): banners managed in admin; slot games from ready-made providers (research licences;
 no own slot engine; Fishka wallet server-side, no client-trusted results, replay-proof; document limits); slot admin;
 Top Winners; casino lobby (search, filters, carousel, recently played).

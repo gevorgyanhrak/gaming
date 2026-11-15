@@ -12,6 +12,7 @@ use App\Models\GameRoom;
 use App\Models\UserGameStat;
 use App\Platform\Achievements\Achievements;
 use App\Platform\Levels\Levels;
+use App\Platform\Rankings\Rankings;
 use App\Platform\Settings\Settings;
 use App\Platform\Wins\GameWins;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +29,7 @@ class GameFinisher
         private readonly Settings $settings,
         private readonly GameWins $wins,
         private readonly Achievements $achievements,
+        private readonly Rankings $rankings,
     ) {}
 
     /**
@@ -54,6 +56,8 @@ class GameFinisher
                 'score' => $outcome->scores[$participant->seat] ?? null,
                 'is_active' => false,
             ])->save();
+            // Ranking points, people and AI alike (each game on its own; once per game and seat).
+            $this->rankings->record($room, $participant, $result);
 
             if ($participant->user_id !== null) {
                 $this->recordStats($participant, $room->game_id, $result);
@@ -87,6 +91,7 @@ class GameFinisher
     public function finishParticipant(GameParticipant $participant, int $gameId, ParticipantResult $result): void
     {
         $participant->forceFill(['result' => $result, 'is_active' => false])->save();
+        $this->rankings->record($participant->room, $participant, $result);
 
         if ($participant->user_id !== null) {
             $this->recordStats($participant, $gameId, $result);

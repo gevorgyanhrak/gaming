@@ -377,3 +377,8 @@ is not done or not verified, and how to check it manually. Keep it concise.
 - Live checks: Playwright's cached `chrome-headless-shell` with `--remote-debugging-port=9333` and a tiny CDP driver
   (Node's global WebSocket: Page.navigate, Runtime.evaluate, Page.captureScreenshot); log in via fetch to
   `/sanctum/csrf-cookie` + `/api/v1/auth/login` with the XSRF header. Read dialogs after a wait (React renders later).
+- Rankings (2026-11-16): `Platform/Rankings/Rankings` — per-game points for `rankings.points_games` (win/loss points
+  settings; never below 0; one `game_point_events` row per room+seat, so retries never double), AI by
+  `bot_profile_id`; `rankings.chips_games` (Poker, Blackjack) rank people by wallet balance; platform boards by level
+  / Fishkas are people only (AI has no wallet, its level is admin-set). Boards cached 30 s, cleared after commit.
+  Recorded in `GameFinisher::finish`/`finishParticipant`. After deploying: `php artisan rankings:backfill` once.

@@ -6,7 +6,7 @@ import { PromoBanners } from '@/features/casino/PromoBanners'
 import { GameGrid } from '@/features/catalog/components/GameGrid'
 import { RecentlyPlayed } from '@/features/catalog/components/RecentlyPlayed'
 import { LiveBigWins } from '@/features/wins/LiveBigWins'
-import { LeaderboardCard } from '@/features/leaderboards/LeaderboardCard'
+import { HomeRankings } from '@/features/rankings/HomeRankings'
 import { RankLadder } from '@/features/levels/components/RankLadder'
 import { usePublicConfig } from '@/features/platform/usePublicConfig'
 import { Container } from '@/shared/ui/Container'
@@ -43,7 +43,7 @@ export function LandingPage() {
           <div className="mt-10">
             <div className="grid gap-5 lg:grid-cols-2">
               <LiveBigWins />
-              <LeaderboardCard />
+              <HomeRankings />
             </div>
           </div>
         </Container>

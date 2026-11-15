@@ -536,6 +536,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/rankings/games/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The game's Top 10; `kind` says what it ranks by ('points' or 'chips'), null when the game has no board */
+        get: operations["v1.rankings.game"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/rankings/{board}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The platform's Top 10 people by level ('level') or by Fishkas ('chips') */
+        get: operations["v1.rankings.platform"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/rooms/{room}/reactions": {
         parameters: {
             query?: never;
@@ -1215,6 +1249,17 @@ export interface components {
                 value: number | null;
                 earned_at: string;
             }[];
+        };
+        /** RankingRowResource */
+        RankingRowResource: {
+            rank: number;
+            is_ai: boolean;
+            username: string | null;
+            name: string;
+            avatar_url: string | null;
+            level: number;
+            frame: string | null;
+            value: number;
         };
         /** RegisterRequest */
         RegisterRequest: {
@@ -2620,6 +2665,56 @@ export interface operations {
                     };
                 };
             };
+        };
+    };
+    "v1.rankings.game": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string|null} */
+                        kind: "points" | "chips" | null;
+                        data: components["schemas"]["RankingRowResource"][];
+                    };
+                };
+            };
+        };
+    };
+    "v1.rankings.platform": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                board: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `RankingRowResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["RankingRowResource"][];
+                    };
+                };
+            };
+            404: components["responses"]["ModelNotFoundException"];
         };
     };
     "v1.rooms.reactions.index": {

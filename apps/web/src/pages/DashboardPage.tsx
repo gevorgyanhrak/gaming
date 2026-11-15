@@ -4,7 +4,7 @@ import { useCurrentUser } from '@/features/auth/hooks'
 import { GamePoster } from '@/features/catalog/components/GamePoster'
 import { GameShowcase } from '@/features/casino/GameShowcase'
 import { LiveBigWins } from '@/features/wins/LiveBigWins'
-import { LeaderboardCard } from '@/features/leaderboards/LeaderboardCard'
+import { HomeRankings } from '@/features/rankings/HomeRankings'
 import { useGames, type GameSummary } from '@/features/catalog/queries'
 import { fetchMyStats, myStatsKey } from '@/features/play/api'
 import { FishkaIcon } from '@/features/wallet/components/FishkaIcon'
@@ -77,7 +77,7 @@ export function DashboardPage() {
           <div className="mt-5">
             <div className="grid gap-5 lg:grid-cols-2">
               <LiveBigWins />
-              <LeaderboardCard />
+              <HomeRankings />
             </div>
           </div>
         </section>

@@ -1239,5 +1239,21 @@
     "title": "People connected right now",
     "label_one": "online",
     "label_other": "online"
+  },
+  "rankings": {
+    "title": "Top players",
+    "show": "Show",
+    "byLevel": "Highest level",
+    "byChips": "Most Fishkas",
+    "gameTitle": "{{game}} — Top 10",
+    "pointsHint": "+10 points for a win, −5 for a loss. AI players are ranked too.",
+    "chipsHint": "The players with the most Fishkas.",
+    "points_one": "{{formatted}} pt",
+    "points_other": "{{formatted}} pts",
+    "level": "Level {{level}}",
+    "place": "Place",
+    "openCard": "{{name}}’s card",
+    "empty": "No one is ranked yet. Play a game to be the first!",
+    "error": "The ranking couldn’t be loaded."
   }
 }

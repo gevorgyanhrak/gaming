@@ -77,6 +77,7 @@ docker build -f docker/php/Dockerfile --target prod -t game-platform-api:<versio
 php artisan migrate --force
 php artisan db:seed --force          # reference data only; idempotent, never overwrites admin edits
 php artisan optimize                 # config, routes, events, views cached
+php artisan rankings:backfill        # once, on the release that adds rankings: scores past games (safe to repeat)
 
 # Then roll the API containers, and make long-running processes load the new code:
 php artisan horizon:terminate        # Horizon restarts under its supervisor with the new code

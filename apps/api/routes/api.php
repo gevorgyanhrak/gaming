@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\V1\Me\SettingsController;
 use App\Http\Controllers\Api\V1\Me\WalletController;
 use App\Http\Controllers\Api\V1\OnlineController;
 use App\Http\Controllers\Api\V1\PublicProfileController;
+use App\Http\Controllers\Api\V1\RankingController;
 use App\Http\Controllers\Api\V1\ReactionCatalogController;
 use App\Http\Controllers\Api\V1\Rooms\ActionController;
 use App\Http\Controllers\Api\V1\Rooms\ReactionController;
@@ -112,6 +113,8 @@ Route::prefix('v1')->name('v1.')->group(function () {
         Route::get('stats/online', OnlineController::class)->middleware('throttle:feeds')->name('stats.online');
         Route::get('wins', [WinController::class, 'index'])->middleware('throttle:feeds')->name('wins.index');
         Route::get('leaderboards', [LeaderboardController::class, 'index'])->middleware('throttle:feeds')->name('leaderboards.index');
+        Route::get('rankings/games/{slug}', [RankingController::class, 'game'])->middleware('throttle:feeds')->name('rankings.game');
+        Route::get('rankings/{board}', [RankingController::class, 'platform'])->whereIn('board', ['level', 'chips'])->middleware('throttle:feeds')->name('rankings.platform');
         Route::get('slots', [SlotController::class, 'index'])->middleware('throttle:feeds')->name('slots.index');
         Route::post('slots/{slug}/launch', [SlotController::class, 'launch'])
             ->middleware(['auth:sanctum', 'active', 'touch-last-active', 'throttle:game', 'verified-contact'])

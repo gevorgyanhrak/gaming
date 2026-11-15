@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { ViewTransition } from 'react'
 import { useTranslation } from 'react-i18next'
+import { GameRanking } from '@/features/rankings/GameRanking'
 import { Link, useParams } from 'react-router'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { GameArtwork } from '@/features/catalog/components/GameArtwork'
@@ -71,6 +72,7 @@ export function GamePage() {
             {/* Below the play area: the rules folded away (opened on demand); the modes only when the game
                 can't be played yet (otherwise the mode picker above already shows them). */}
             <div className="mt-5 space-y-3">
+              <GameRanking slug={game.data.slug} name={game.data.name} />
               {!game.data.is_playable && game.data.modes && game.data.modes.length > 0 ? (
                 <ul className="flex flex-wrap gap-2">
                   {game.data.modes.map((mode) => (
