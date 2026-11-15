@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { useMessage } from '@/features/auth/forms'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { useCountdown } from '@/features/play/useCountdown'
-import { FishkaIcon } from '@/features/wallet/components/FishkaIcon'
 import { walletKey } from '@/features/wallet/api'
 import { Alert } from '@/shared/ui/Alert'
 import { Button } from '@/shared/ui/Button'
@@ -19,10 +18,10 @@ const clock = (s: number) =>
     .join(':')
 
 /**
- * Free Fishkas besides the daily bonus: a gift every few hours (with the time to the next one) and the
- * daily lucky wheel. Gifts, never purchases: the server decides and credits them.
+ * Free Fishkas besides the daily bonus, as compact tiles for the welcome strip: a gift every few hours (with the
+ * time to the next one) and the daily lucky wheel. Gifts, never purchases: the server decides and credits them.
  */
-export function FreeGifts({ className = '' }: { className?: string }) {
+export function GiftTiles({ tileClassName }: { tileClassName: string }) {
   const { t } = useTranslation()
   const { data: user } = useCurrentUser()
   const queryClient = useQueryClient()
@@ -48,62 +47,78 @@ export function FreeGifts({ className = '' }: { className?: string }) {
   }, [due, queryClient])
 
   if (!user) return null
-  if (gifts.isLoading) return <Skeleton className={`h-36 rounded-panel ${className}`} />
+  if (gifts.isLoading) {
+    return (
+      <>
+        <Skeleton className="h-16 rounded-2xl" />
+        <Skeleton className="h-16 rounded-2xl" />
+      </>
+    )
+  }
   if (!gifts.data) return null
   const { gift, wheel } = gifts.data
 
   return (
-    <section className={`rounded-panel p-5 sm:p-6 ${className}`} aria-label={t('gifts.heading')}>
-      <h2 className="mb-4 text-xl font-bold">{t('gifts.heading')}</h2>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="flex items-center gap-3 rounded-2xl border border-gold/25 bg-black/25 p-3">
-          <span className="text-4xl" aria-hidden="true">
+    <>
+      <li>
+        <button
+          type="button"
+          className={tileClassName}
+          aria-disabled={!gift.available || undefined}
+          aria-busy={claim.isPending || undefined}
+          onClick={() => {
+            if (gift.available && !claim.isPending) claim.mutate()
+          }}
+        >
+          <span className="text-2xl leading-none" aria-hidden="true">
             🎁
           </span>
-          <div className="min-w-0 flex-1">
-            <p className="font-semibold">{t('gifts.next')}</p>
-            <p className="text-sm text-muted tabular-nums" role="timer">
-              {gift.available ? t('gifts.ready') : clock(giftLeft ?? 0)}
-            </p>
-          </div>
-          <span className="flex items-center gap-1 text-xl font-extrabold text-gold-light tabular-nums">
-            {gift.amount}
-            <FishkaIcon className="size-5" />
+          <span className="min-w-0 text-left">
+            <span className="block truncate text-xs font-semibold sm:text-sm">
+              {t('gifts.heading')}
+            </span>
+            <span
+              className={`block truncate text-[11px] tabular-nums sm:text-xs ${gift.available ? 'font-bold text-gold-light' : 'text-muted'}`}
+              role="timer"
+            >
+              {gift.available
+                ? t('gifts.collectShort', { amount: gift.amount })
+                : clock(giftLeft ?? 0)}
+            </span>
           </span>
-        </div>
-        <div className="flex items-center gap-3 rounded-2xl border border-gold/25 bg-black/25 p-3">
-          <WheelIcon className="size-11 shrink-0" />
-          <div className="min-w-0 flex-1">
-            <p className="font-semibold">{t('gifts.wheel')}</p>
-            <p className="text-sm text-muted">
-              {wheel.available ? t('gifts.wheelReady') : t('gifts.wheelTomorrow')}
-            </p>
+        </button>
+        {claim.error ? (
+          <div className="mt-2">
+            <Alert tone="danger">{message(claim.error.message)}</Alert>
           </div>
-          <Button
-            variant="secondary"
-            disabled={!wheel.available}
-            onClick={() => setWheelOpen(true)}
-          >
-            {t('gifts.spin')}
-          </Button>
-        </div>
-      </div>
-      {gift.available ? (
-        <Button
-          className="mt-4 w-full sm:w-auto"
-          onClick={() => claim.mutate()}
-          loading={claim.isPending}
+        ) : null}
+      </li>
+      <li>
+        <button
+          type="button"
+          className={tileClassName}
+          aria-disabled={!wheel.available || undefined}
+          onClick={() => {
+            if (wheel.available) setWheelOpen(true)
+          }}
         >
-          {t('gifts.collect', { amount: gift.amount })}
-        </Button>
-      ) : null}
-      {claim.error ? (
-        <div className="mt-3">
-          <Alert tone="danger">{message(claim.error.message)}</Alert>
-        </div>
-      ) : null}
-      {wheelOpen ? <LuckyWheel prizes={wheel.prizes} onClose={() => setWheelOpen(false)} /> : null}
-    </section>
+          <WheelIcon className="size-7 shrink-0" />
+          <span className="min-w-0 text-left">
+            <span className="block truncate text-xs font-semibold sm:text-sm">
+              {t('gifts.wheel')}
+            </span>
+            <span
+              className={`block truncate text-[11px] sm:text-xs ${wheel.available ? 'font-bold text-gold-light' : 'text-muted'}`}
+            >
+              {wheel.available ? t('gifts.spin') : t('gifts.wheelTomorrow')}
+            </span>
+          </span>
+        </button>
+        {wheelOpen ? (
+          <LuckyWheel prizes={wheel.prizes} onClose={() => setWheelOpen(false)} />
+        ) : null}
+      </li>
+    </>
   )
 }
 

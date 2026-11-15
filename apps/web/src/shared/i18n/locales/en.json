@@ -170,7 +170,8 @@
     "streak": "Win streak",
     "bestStreak": "Best streak",
     "statsNote": "Win rate counts every game played, timeouts included.",
-    "streakLine": "Win streak {{current}} · Best {{best}}"
+    "streakLine": "Win streak {{current}} · Best {{best}}",
+    "perks": "Today's free Fishkas"
   },
   "profile": {
     "country": "Country",
@@ -1069,7 +1070,8 @@
     "spin": "Spin",
     "collect": "Collect {{amount}} Fishkas",
     "won": "You won {{amount}} Fishkas!",
-    "done": "Great"
+    "done": "Great",
+    "collectShort": "Collect {{amount}}"
   },
   "casino": {
     "eyebrow": "Play-money card club",
