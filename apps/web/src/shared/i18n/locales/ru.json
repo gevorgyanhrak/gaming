@@ -1139,7 +1139,14 @@
     "playMoney": "Фишки — бесплатная игровая валюта: их нельзя купить, продать или вывести.",
     "playGame": "Играть: {{game}}",
     "moreGames": "Другие игры",
-    "mainGames": "Главные игры"
+    "mainGames": "Главные игры",
+    "topGames": "Топ игры",
+    "top": "ТОП {{n}}",
+    "allGames": "Все игры",
+    "gameCount_one": "{{count}} игра",
+    "gameCount_few": "{{count}} игры",
+    "gameCount_many": "{{count}} игр",
+    "gameCount_other": "{{count}} игры"
   },
   "wins": {
     "title": "КРУПНЫЕ ВЫИГРЫШИ",

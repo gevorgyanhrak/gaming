@@ -10,6 +10,27 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
+**Owner brief 2026-11-15 (strict order; casino only after phase A is done and tested; no asking — owner checks at the end):**
+Phase A — platform first:
+- [x] A1. Restore game categories and images on the home page (the casino home of 1ebcb25 dropped the lobby): every
+      game with its picture, category filter, clickable cards, category banners; the top 3 (Blackjack, Poker, Blot)
+      much larger, premium, TOP badge.
+- [ ] A2. Big Wins: works with real data and refreshes about every 5 s. Cause found: `game_wins` is empty — no person
+      has had a net win since it shipped. Fix: real results only — people's Fishka wins, plus AI players' real wins
+      from real games, marked AI; never invented (owner allows "clearly identified AI/demo"; we use real AI results).
+- [ ] A3. Online players counter at the top, from real connected sessions; live.
+- [ ] A4. AI opponents: personalities/styles (names and avatars exist: 100 bots), marked AI (ADR 0022).
+- [ ] A5. Blackjack dealer: dealer character + avatar, deal/flip animations from the shoe, reactions; optional
+      Fishka tip to the dealer after a win (server-side debit, ledger type `dealer_tip`, reactions by amount).
+      A tip goes to the house, never to a user (house rule holds).
+- [ ] A6. Design/animation polish (keep the direction): screen transitions, hover, animated cards, win effects,
+      animated balance.
+- [ ] A7. Test everything (owner's §16 list), report.
+Phase B — casino (only after A): banners managed in admin; slot games from ready-made providers (research licences;
+no own slot engine; Fishka wallet server-side, no client-trusted results, replay-proof; document limits); slot admin;
+Top Winners; casino lobby (search, filters, carousel, recently played).
+
+**Earlier queue (done):**
 **Owner queue (2026-11-14, in this order):**
 - [x] Bidding: the bazar comes back to the bidder, play starts on their OK — dd29ada.
 - [x] Cards redesign (CardFace, Fomin CC0 courts), Blot hand/table/avatar badges — 95a8d7e; matchmaking table — 653755a.

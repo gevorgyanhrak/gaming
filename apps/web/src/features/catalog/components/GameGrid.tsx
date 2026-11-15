@@ -5,7 +5,15 @@ import { useGames } from '../queries'
 import { GameLobby } from './GameLobby'
 
 /** The game catalogue by category, with its loading, error and empty states. */
-export function GameGrid() {
+export function GameGrid({
+  banners = false,
+  exclude,
+}: {
+  /** Category banners instead of pills (home page). */
+  banners?: boolean
+  /** Games left out of "All" (shown larger elsewhere on the page). */
+  exclude?: readonly string[]
+} = {}) {
   const { t } = useTranslation()
   const games = useGames()
 
@@ -34,5 +42,5 @@ export function GameGrid() {
     return <EmptyState title={t('catalog.empty')} />
   }
 
-  return <GameLobby games={games.data} />
+  return <GameLobby games={games.data} banners={banners} exclude={exclude} />
 }

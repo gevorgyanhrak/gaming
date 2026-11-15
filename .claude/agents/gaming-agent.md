@@ -301,6 +301,10 @@ is not done or not verified, and how to check it manually. Keep it concise.
 - Player popup: `GET /api/v1/users/{username}/card` (`Platform/Players/PlayerCard`: level/XP, balance, record, win rate, biggest win, favourite game, streak, online, playing now, latest achievements); web `features/players/PlayerProfilePopup` opened by RoomPage's document listener on `[data-player-seat]` — boards mark avatars with `seatTrigger(seat, label)` (PlayerList, Blot, Poker, Durak). AI gets a short card.
 - Lobby (TASK-048): in "All" the first game (admin order) is a double-width featured `GamePoster` (`featured`, wide art,
   `lg:grid-cols-6`); category views stay plain.
+- Home (2026-11-15): CasinoHero → "Top games" (`GameShowcase`, `features/casino/mainGames.ts`, TOP n `.top-badge`) →
+  "All games" (`GameGrid banners exclude={MAIN_GAMES}` → `CategoryBanners`, aria-pressed filters; a category lists its
+  top games too) → Big Wins + leaderboards → ranks. `/games` keeps the pills.
+- Local web tests time out at random when the Mac is loaded (Chrome/Docker, load > 20): run `npx vitest run --maxWorkers=2`.
 - Game catalog (TASK-056): `game_categories` + `games.game_category_id`, `category` on each game in `/games`; admin Games → Categories. Web: `GameGrid` → `features/catalog/components/GameLobby`
   (shelves come from the games; `_other` is reserved for uncategorised), `HomeArt` posters, `HomeBackdrop` (the fixed night-room picture on `/` and `/dashboard`, `PublicLayout` `isHome`,
   `.home-scope-night`). `GameArt` still serves game pages and the side nav.

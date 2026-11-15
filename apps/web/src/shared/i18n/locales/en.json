@@ -1055,7 +1055,12 @@
     "playMoney": "Fishkas are free play money: never bought, sold or cashed out.",
     "playGame": "Play {{game}}",
     "moreGames": "More games",
-    "mainGames": "Main games"
+    "mainGames": "Main games",
+    "topGames": "Top games",
+    "top": "TOP {{n}}",
+    "allGames": "All games",
+    "gameCount_one": "{{count}} game",
+    "gameCount_other": "{{count}} games"
   },
   "wins": {
     "title": "BIG WINS LIVE",
