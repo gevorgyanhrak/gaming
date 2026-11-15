@@ -247,7 +247,7 @@ export default function BlackjackBoard({
           >
             <div className="blackjack-felt relative h-full w-full overflow-hidden rounded-t-[1.2rem] rounded-b-[50%_60%]">
               {/* The lettering printed on the felt, round the arc under the dealer. */}
-              <div className="absolute inset-x-0 top-[24%] text-center min-[901px]:top-[34%]">
+              <div className="absolute inset-x-0 top-[37%] text-center min-[901px]:top-[47%]">
                 <p className="font-display text-sm font-extrabold tracking-[0.25em] text-gold-light/75 uppercase min-[901px]:text-xl">
                   {t('blackjack.pays')}
                 </p>

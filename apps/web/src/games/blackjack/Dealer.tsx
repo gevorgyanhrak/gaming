@@ -39,7 +39,7 @@ export function Dealer({
         <span
           key={lineKey}
           role="status"
-          className="absolute top-1/2 left-full z-30 ml-2 w-max max-w-40 -translate-y-1/2 rounded-2xl rounded-bl-sm border border-gold/40 bg-[#fff8e7] px-2.5 py-1.5 text-[0.7rem] leading-tight font-bold text-[#2a1b0c] shadow-lg motion-safe:animate-turn-pop min-[901px]:max-w-52 min-[901px]:text-xs"
+          className="absolute top-1/2 left-full z-30 ml-2 w-max max-w-40 -translate-y-1/2 rounded-2xl rounded-bl-sm border border-gold/40 bg-[#fff8e7] px-2.5 py-1.5 text-[0.7rem] leading-tight font-bold text-[#2a1b0c] shadow-lg motion-safe:animate-turn-pop min-[901px]:right-full min-[901px]:left-auto min-[901px]:mr-2 min-[901px]:ml-0 min-[901px]:max-w-52 min-[901px]:rounded-br-sm min-[901px]:rounded-bl-2xl min-[901px]:text-xs"
         >
           {line}
         </span>
