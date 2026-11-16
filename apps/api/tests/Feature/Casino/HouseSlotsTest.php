@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Platform\Fishka\FishkaWallets;
 use App\Platform\Slots\House\Games\ClassicThreeReels;
 use App\Platform\Slots\House\Games\DiscoveryVoyage;
+use App\Platform\Slots\House\Games\Fairytale;
 use App\Platform\Slots\House\Games\GoldenPapyrus;
 use App\Platform\Slots\House\Games\HouseOfRa;
 use App\Platform\Slots\House\Games\NitroHot;
@@ -452,6 +453,51 @@ it('deals The Dynasty at its published RTP of 94.138004 % (either heir calls, th
     }
 
     expect(round($rtp * 100, 6))->toBe(94.138004);
+});
+
+it('deals Fairytale at its published RTP of 95.566989 % (a drawn symbol covers the first reels), exactly', function () {
+    $scat = fn (array $law, array $values) => array_sum(array_map(fn ($n, $p) => $n > 0 ? $p * $values[min($n, 5) - 1] : 0, array_keys($law), $law));
+    $baseReels = array_map(fn ($strip) => Fairytale::strip($strip), Fairytale::BASE);
+    $base = boardLaw($baseReels, fn (array $l) => ($w = Fairytale::lineWin($l)) ? [0, 0, 0, $w[2]] : null, 'LANTERN');
+
+    $perFreeSpin = 0.0;
+    $again = 0.0;
+    foreach (Fairytale::EXPAND_POOL as $id) {
+        $symbol = Fairytale::SYMBOLS[$id - 1];
+        $covered = Fairytale::EXPAND_REELS[$symbol];
+        $column = Fairytale::coveredReel($symbol);
+        $laws = [];
+        $spun = [];
+        for ($x = 0; $x < 5; $x++) {
+            if ($x < $covered) {
+                for ($row = 0; $row < 3; $row++) {
+                    $laws[$x][$row] = [$column[$row] => 1.0];
+                }
+
+                continue;
+            }
+            $strip = Fairytale::strip(Fairytale::FREE[$x]);
+            $spun[] = $strip;
+            $cell = array_map(fn (int $n) => $n / count($strip), array_count_values($strip));
+            $laws[$x] = [$cell, $cell, $cell];
+        }
+        $lines = 0.0;
+        foreach (Fairytale::PAYLINES as $line) {
+            $lines += lineExpectation(array_map(fn ($row, $x) => $laws[$x][$row], $line, array_keys($line)), Fairytale::lineWin(...), 'ENCHANTRESS') / 10;
+        }
+        $lanterns = $symbol === 'LANTERN' ? $covered : 0;
+        $law = [];
+        foreach (cellCountLaw($spun, 'LANTERN') as $n => $p) {
+            $law[$n + $lanterns] = $p;
+        }
+        $perFreeSpin += ($lines + $scat($law, Fairytale::SCAT_PAY)) / count(Fairytale::EXPAND_POOL);
+        $again += $scat($law, Fairytale::SCAT_FREESPIN) / count(Fairytale::EXPAND_POOL);
+    }
+    $spins = $scat($base['scatters'], Fairytale::SCAT_FREESPIN) / (1 - $again);
+    $rtp = $base['line'] + $scat($base['scatters'], Fairytale::SCAT_PAY) + $spins * $perFreeSpin;
+
+    expect(round(($base['line'] + $scat($base['scatters'], Fairytale::SCAT_PAY)) * 100, 6))->toBe(54.040105)
+        ->and(round($rtp * 100, 6))->toBe(95.566989);
 });
 
 it('scores a Tropic Escape line as the original: wilds double a run, a banana run pays when it is worth more', function () {
