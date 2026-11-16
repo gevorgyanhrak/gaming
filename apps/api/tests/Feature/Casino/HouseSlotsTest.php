@@ -7,6 +7,9 @@ use App\Models\SlotProvider;
 use App\Models\SlotSpin;
 use App\Models\User;
 use App\Platform\Fishka\FishkaWallets;
+use App\Platform\Slots\House\Games\ClassicThreeReels;
+use App\Platform\Slots\House\Games\NitroHot;
+use App\Platform\Slots\House\Games\ScorchingHot;
 use App\Platform\Slots\House\Games\StellarSevens;
 use App\Platform\Slots\House\HouseSlots;
 use Database\Seeders\HouseSlotSeeder;
@@ -104,28 +107,77 @@ it('seeds the house games once and keeps an administrator\'s changes', function 
     $this->getJson('/api/v1/slots')->assertOk()->assertJsonMissing(['slug' => 'stellar-sevens']);
 });
 
-it('deals Stellar Sevens at its published RTP of 95.504233 %, proven over every stop combination', function () {
-    $length = count(StellarSevens::STRIP);
-    $symbols = array_map(fn (int $n) => StellarSevens::SYMBOLS[$n - 1], StellarSevens::STRIP);
-    $total = 0.0;
-    $best = 0.0;
-    for ($a = 0; $a < $length; $a++) {
-        for ($b = 0; $b < $length; $b++) {
-            for ($c = 0; $c < $length; $c++) {
-                $grid = [];
-                foreach ([$a, $b, $c] as $reel => $stop) {
-                    for ($row = 0; $row < 3; $row++) {
-                        $grid[$reel][$row] = $symbols[($stop + $row) % $length];
-                    }
-                }
-                $win = StellarSevens::evaluate($grid)['totalWin'];
-                $total += $win;
-                $best = max($best, $win);
-            }
+it('deals each classic 3x3 slot at its published RTP, proven over every stop combination', function (ClassicThreeReels $game, float $rtp) {
+    expect(round($game->exactRtp(), 6))->toBe($rtp);
+})->with([
+    'Stellar Sevens' => [new StellarSevens, 95.504233],
+    'Nitro Hot' => [new NitroHot, 95.658244],
+]);
+
+it('doubles every Nitro Hot line on a full screen of one fruit, but not of sevens', function () {
+    $cherries = (new NitroHot)->evaluate(array_fill(0, 3, array_fill(0, 3, 'CHERRY')));
+    $sevens = (new NitroHot)->evaluate(array_fill(0, 3, array_fill(0, 3, 'SEVEN')));
+    expect($cherries['fillMult'])->toBe(2)->and($cherries['totalWin'])->toBe(80.0)
+        ->and($sevens['fillMult'])->toBe(1)->and($sevens['totalWin'])->toBe(750.0);
+});
+
+/**
+ * The exact return of a lines-and-scatter slot with independent reels and no wild: a line's cell on a reel is
+ * uniform over that strip, so each line's expected pay follows from the symbol counts; the scatter's from each
+ * reel's count of scatters in its 3-row window, convolved over the reels.
+ *
+ * @param  list<list<string>>  $reels
+ * @param  array<string, array<int, int>>  $linePay  per line bet, run of 1…n (a line is LINES ⁻¹ of the bet, LINES lines)
+ * @param  list<int|float>  $scatPay  total bets for 1…n scatters
+ */
+function linesAndScatterRtp(array $reels, array $linePay, string $scatter, array $scatPay): float
+{
+    $p = array_map(fn (array $strip) => array_map(fn (int $n) => $n / count($strip), array_count_values($strip)), $reels);
+    $line = 0.0;
+    foreach ($linePay as $symbol => $pays) {
+        $run = 1.0;
+        foreach ($reels as $reel => $strip) {
+            $run *= $p[$reel][$symbol] ?? 0.0;
+            $next = $reel + 1 < count($reels) ? 1 - ($p[$reel + 1][$symbol] ?? 0.0) : 1.0;
+            $line += $run * $next * $pays[$reel];
         }
     }
 
-    expect(round($total / $length ** 3 * 100, 6))->toBe(95.504233)->and($best)->toBe(300.0);
+    $dist = [1.0];
+    foreach ($reels as $strip) {
+        $counts = [];
+        for ($stop = 0; $stop < count($strip); $stop++) {
+            $n = 0;
+            for ($row = 0; $row < 3; $row++) {
+                $n += $strip[($stop + $row) % count($strip)] === $scatter ? 1 : 0;
+            }
+            $counts[$n] = ($counts[$n] ?? 0) + 1 / count($strip);
+        }
+        $next = [];
+        foreach ($dist as $have => $pHave) {
+            foreach ($counts as $add => $pAdd) {
+                $next[$have + $add] = ($next[$have + $add] ?? 0) + $pHave * $pAdd;
+            }
+        }
+        $dist = $next;
+    }
+    $scat = 0.0;
+    foreach ($dist as $n => $pN) {
+        $scat += $n > 0 ? $pN * ($scatPay[min($n, count($scatPay)) - 1] ?? 0) : 0;
+    }
+
+    return ($line + $scat) * 100;
+}
+
+it('deals Scorching Hot at its published RTP of 95.655629 %, and scores runs and stars as the original', function () {
+    expect(round(linesAndScatterRtp(ScorchingHot::reels(), ScorchingHot::LINE_PAY, 'STAR', ScorchingHot::SCAT_PAY), 6))->toBe(95.655629);
+
+    $grid = [['CHERRY', 'STAR', 'SEVEN'], ['CHERRY', 'PLUM', 'STAR'], ['LEMON', 'STAR', 'PLUM'], ['LEMON', 'MELON', 'PLUM'], ['ORANGE', 'MELON', 'PLUM']];
+    $spin = ScorchingHot::evaluate($grid);
+    expect($spin['lineWins'])->toHaveCount(1)
+        ->and($spin['lineWins'][0])->toMatchArray(['line' => 1, 'symbol' => 'CHERRY', 'count' => 2, 'amount' => 1])
+        ->and($spin['scatterWin'])->toMatchArray(['count' => 3, 'amount' => 2])
+        ->and($spin['totalWin'])->toBe(3.0);
 });
 
 it('plays a Stellar Sevens round in the shape its client reads', function () {

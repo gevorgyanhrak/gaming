@@ -6,6 +6,8 @@ use App\Gameplay\GameRegistry;
 use App\Models\User;
 use App\Platform\Levels\Levels;
 use App\Platform\Settings\Settings;
+use App\Platform\Slots\House\Games\NitroHot;
+use App\Platform\Slots\House\Games\ScorchingHot;
 use App\Platform\Slots\House\Games\StellarSevens;
 use App\Platform\Slots\House\HouseSlotAdapter;
 use App\Platform\Slots\House\HouseSlots;
@@ -38,7 +40,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->tag([HouseSlotAdapter::class], 'slot-adapters');
         $this->app->bind(SlotAdapters::class, fn ($app) => new SlotAdapters($app->tagged('slot-adapters')));
         // House slots (ADR 0024): open-source games whose rounds our server deals.
-        $this->app->tag([StellarSevens::class], 'house-slots');
+        $this->app->tag([StellarSevens::class, NitroHot::class, ScorchingHot::class], 'house-slots');
         $this->app->bind(HouseSlots::class, fn ($app) => new HouseSlots($app->tagged('house-slots')));
 
         $this->app->singleton(SmsGateway::class, fn () => match (config('services.sms.driver')) {

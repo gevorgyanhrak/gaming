@@ -16,6 +16,8 @@ class HouseSlotSeeder extends Seeder
     /** id => [name, sort order]; every game's code is in App\Platform\Slots\House\Games. */
     public const GAMES = [
         'stellar-sevens' => ['Stellar Sevens', 10],
+        'nitro-hot' => ['Nitro Hot', 20],
+        'scorching-hot' => ['Scorching Hot', 30],
     ];
 
     public function run(HouseSlots $slots): void
