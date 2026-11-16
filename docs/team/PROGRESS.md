@@ -39,10 +39,11 @@ Phase B — casino:
 - [ ] B2c. House slots from APEXSLOTS open-source games (owner 2026-11-16: "find open-source casino code… copy slot
       to my code"; ADR 0024): [x] infrastructure (house provider, `HouseSpins`, `slot_spins`, `/slots/{slug}/play|spin`,
       `/casino/slots/:slug` iframe page, slots shelf, `play/shared/house.ts`) + Stellar Sevens (exact RTP test) —
-      b62f755; [x] Nitro Hot, Scorching Hot (exact RTP tests, live spins incl. a win) — this commit;
-      [ ] the 9 feature games (wilds/free games: tropic-escape, golden-papyrus, pearl-reef, discovery-voyage,
-      house-of-ra, fairytale, samurai, the-dynasty, bumper-crop), one at a time. Client copy: scratchpad
-      tools/vendor_slot.py (simple main.ts only; feature games need held-win handling).
+      b62f755; [x] Nitro Hot, Scorching Hot (exact RTP tests, live spins incl. a win) — 666c987; [x] Tropic Escape (free games;
+      exact RTP incl. free games via Wald; feature-client adapter `play/shared/apex.ts`) — this commit;
+      [ ] the 8 feature games left (golden-papyrus, pearl-reef, discovery-voyage,
+      house-of-ra, fairytale, samurai, the-dynasty, bumper-crop), one at a time. Client copy: apps/web/play/tools
+      (vendor_slot.py stateless, vendor_feature.py free games).
 - [ ] B2b. (superseded by B2c) Open-source slot provider (MIT Stake Engine Math SDK sample tables, drawn by our server): BLOCKED — running
       the SDK (pip + third-party code) was denied by the permission classifier; needs the owner's permission.
 - [ ] B5. Identity/sounds pass (after the owner's homepage/AI/poker ticket below).

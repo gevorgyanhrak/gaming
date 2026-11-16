@@ -15,3 +15,7 @@ Our changes to each client (kept small, upstream style):
 - `src/engine/` keeps only types, lines and paytable (for the info screen): no dealing in the browser.
 - Amounts are whole Fishkas; the bets are the server's (`setBets`); `asset()` and the CSS point at
   `/play/<id>/`.
+
+Adding a game: `APEX_SRC=<checkout> python3 tools/vendor_slot.py <id> '<opening grid>'` (stateless games) or
+`tools/vendor_feature.py <id> '<grid>' <engine files to keep>` (free games), then the PHP port with its RTP test,
+the tag in `AppServiceProvider` and a row in `HouseSlotSeeder::GAMES`.

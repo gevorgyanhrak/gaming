@@ -18,6 +18,7 @@ class HouseSlotSeeder extends Seeder
         'stellar-sevens' => ['Stellar Sevens', 10],
         'nitro-hot' => ['Nitro Hot', 20],
         'scorching-hot' => ['Scorching Hot', 30],
+        'tropic-escape' => ['Tropic Escape', 40],
     ];
 
     public function run(HouseSlots $slots): void

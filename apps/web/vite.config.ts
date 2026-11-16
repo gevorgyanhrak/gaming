@@ -1,5 +1,5 @@
 /// <reference types="vitest/config" />
-import { readdirSync } from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
@@ -20,7 +20,10 @@ export default defineConfig(({ mode }) => {
   const root = fileURLToPath(new URL('.', import.meta.url))
   const input: Record<string, string> = { main: `${root}index.html` }
   for (const entry of readdirSync(new URL('./play', import.meta.url), { withFileTypes: true })) {
-    if (entry.isDirectory() && entry.name !== 'shared') {
+    if (
+      entry.isDirectory() &&
+      existsSync(new URL(`./play/${entry.name}/index.html`, import.meta.url))
+    ) {
       input[`play/${entry.name}`] = `${root}play/${entry.name}/index.html`
     }
   }

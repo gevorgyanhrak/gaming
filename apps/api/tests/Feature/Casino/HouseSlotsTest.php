@@ -11,6 +11,7 @@ use App\Platform\Slots\House\Games\ClassicThreeReels;
 use App\Platform\Slots\House\Games\NitroHot;
 use App\Platform\Slots\House\Games\ScorchingHot;
 use App\Platform\Slots\House\Games\StellarSevens;
+use App\Platform\Slots\House\Games\TropicEscape;
 use App\Platform\Slots\House\HouseSlots;
 use Database\Seeders\HouseSlotSeeder;
 use Tests\Fixtures\Slots\FixedHouseSlot;
@@ -178,6 +179,76 @@ it('deals Scorching Hot at its published RTP of 95.655629 %, and scores runs and
         ->and($spin['lineWins'][0])->toMatchArray(['line' => 1, 'symbol' => 'CHERRY', 'count' => 2, 'amount' => 1])
         ->and($spin['scatterWin'])->toMatchArray(['count' => 3, 'amount' => 2])
         ->and($spin['totalWin'])->toBe(3.0);
+});
+
+/**
+ * Exact expectations of one board of independent reels: the pay of one line (every line has the same law: a cell
+ * is uniform over its strip), and the law of the scatter count (each reel's 3-row window, convolved).
+ *
+ * @param  list<list<string>>  $reels
+ * @param  Closure(list<string>): ?array  $lineWin  [symbol, count, mult, pay per line bet] or null
+ * @return array{line: float, scatters: array<int, float>}
+ */
+function boardLaw(array $reels, Closure $lineWin, string $scatter): array
+{
+    $p = array_map(fn (array $strip) => array_map(fn (int $n) => $n / count($strip), array_count_values($strip)), $reels);
+    $line = 0.0;
+    $walk = function (int $reel, array $symbols, float $prob) use (&$walk, &$line, $p, $lineWin, $reels) {
+        if ($reel === count($reels)) {
+            $line += $prob * ($lineWin($symbols)[3] ?? 0);
+
+            return;
+        }
+        foreach ($p[$reel] as $symbol => $q) {
+            $walk($reel + 1, [...$symbols, (string) $symbol], $prob * $q);
+        }
+    };
+    $walk(0, [], 1.0);
+
+    $dist = [1.0];
+    foreach ($reels as $strip) {
+        $counts = [];
+        for ($stop = 0; $stop < count($strip); $stop++) {
+            $n = 0;
+            for ($row = 0; $row < 3; $row++) {
+                $n += $strip[($stop + $row) % count($strip)] === $scatter ? 1 : 0;
+            }
+            $counts[$n] = ($counts[$n] ?? 0) + 1 / count($strip);
+        }
+        $next = [];
+        foreach ($dist as $have => $pHave) {
+            foreach ($counts as $add => $pAdd) {
+                $next[$have + $add] = ($next[$have + $add] ?? 0) + $pHave * $pAdd;
+            }
+        }
+        $dist = $next;
+    }
+
+    return ['line' => $line, 'scatters' => $dist];
+}
+
+it('deals Tropic Escape at its published RTP of 95.364527 % (base game, scatters and free games, exactly)', function () {
+    $scat = fn (array $law, array $pays) => array_sum(array_map(fn ($n, $pn) => $n > 0 ? $pn * $pays[min($n, 5) - 1] : 0, array_keys($law), $law));
+    $trigger = fn (array $law) => array_sum(array_filter($law, fn ($pn, $n) => $n >= 3, ARRAY_FILTER_USE_BOTH));
+    $lineWin = TropicEscape::lineWin(...);
+
+    $base = boardLaw(TropicEscape::reels(TropicEscape::BASE), $lineWin, 'SUITCASE');
+    $bonus = boardLaw(TropicEscape::reels(TropicEscape::BONUS), $lineWin, 'SUITCASE');
+    $perFreeSpin = $bonus['line'] + $scat($bonus['scatters'], TropicEscape::SCAT_PAY);
+    $spinsPerTrigger = 45 / (1 - 45 * $trigger($bonus['scatters'])); // Wald: every spin may add 45 more
+    $rtp = $base['line'] + $scat($base['scatters'], TropicEscape::SCAT_PAY) + $trigger($base['scatters']) * $spinsPerTrigger * $perFreeSpin;
+
+    expect(round($rtp * 100, 6))->toBe(95.364527)
+        ->and(round($spinsPerTrigger * $perFreeSpin / 45 * 100, 6))->toBe(210.461503); // the README's figure is per free spin
+});
+
+it('scores a Tropic Escape line as the original: wilds double a run, a banana run pays when it is worth more', function () {
+    expect(TropicEscape::lineWin(['BANANA', 'MELON', 'MELON', 'ACE', 'ACE']))->toBe(['MELON', 3, 2, 60])
+        ->and(TropicEscape::lineWin(['BANANA', 'BANANA', 'BANANA', 'NINE', 'ACE']))->toBe(['BANANA', 3, 1, 250])
+        ->and(TropicEscape::lineWin(['ACE', 'KING', 'ACE', 'ACE', 'ACE']))->toBeNull();
+
+    $dealt = (new TropicEscape)->play(fn (int $n) => 0);
+    expect($dealt['round'])->toHaveKeys(['baseSpin', 'totalWin'])->and($dealt['round']['baseSpin'])->toHaveKey('freeSpinsWon');
 });
 
 it('plays a Stellar Sevens round in the shape its client reads', function () {
