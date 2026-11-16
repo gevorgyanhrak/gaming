@@ -7,6 +7,7 @@ use App\Models\SlotProvider;
 use App\Models\SlotSpin;
 use App\Models\User;
 use App\Platform\Fishka\FishkaWallets;
+use App\Platform\Slots\House\Games\BumperCrop;
 use App\Platform\Slots\House\Games\ClassicThreeReels;
 use App\Platform\Slots\House\Games\DiscoveryVoyage;
 use App\Platform\Slots\House\Games\Fairytale;
@@ -498,6 +499,92 @@ it('deals Fairytale at its published RTP of 95.566989 % (a drawn symbol covers t
 
     expect(round(($base['line'] + $scat($base['scatters'], Fairytale::SCAT_PAY)) * 100, 6))->toBe(54.040105)
         ->and(round($rtp * 100, 6))->toBe(95.566989);
+});
+
+/** @return list<list<int>> every order of 0…n−1 */
+function permutations(int $n): array
+{
+    if ($n === 1) {
+        return [[0]];
+    }
+    $out = [];
+    foreach (permutations($n - 1) as $perm) {
+        for ($i = 0; $i < $n; $i++) {
+            $out[] = [...array_slice($perm, 0, $i), $n - 1, ...array_slice($perm, $i)];
+        }
+    }
+
+    return $out;
+}
+
+it('prices the Bumper Crop barn ladder at exactly 50 total bets, as slotopol\'s RTP tables assume', function () {
+    $mean = fn (array $values) => array_sum($values) / count($values);
+    // Values are drawn independently of the shuffle, so a prize cell is worth its list's mean wherever it lands.
+    $ladder = BumperCrop::ladder(fn (array $values) => $mean($values));
+    $states = [1 => [1.0, 0.0]]; // multiplier => [probability, probability × expected prizes], still climbing
+    $done = 0.0;
+    foreach ($ladder as $cells) {
+        $next = [];
+        $perms = permutations(count($cells));
+        foreach ($states as $m => [$p, $pe]) {
+            foreach ($perms as $order) {
+                $q = $p / count($perms);
+                $gain = 0.0;
+                $mult = $m;
+                $ended = true;
+                foreach ($order as $i) {
+                    $cell = $cells[$i];
+                    if ($cell['kind'] === 'bucket') {
+                        break;
+                    }
+                    if ($cell['kind'] === 'mult') {
+                        $mult++;
+                    } else {
+                        $gain += $cell['value'];
+                    }
+                    if ($cell['climbs']) {
+                        $ended = false;
+                        break;
+                    }
+                }
+                $expected = $pe / count($perms) + $q * $gain;
+                if ($ended) {
+                    $done += $expected * $mult;
+                } else {
+                    $next[$mult] = [($next[$mult][0] ?? 0) + $q, ($next[$mult][1] ?? 0) + $expected];
+                }
+            }
+        }
+        $states = $next;
+    }
+
+    expect($states)->toBe([])->and(round($done, 9))->toBe(50.0);
+});
+
+it('lets Bumper Crop columns fall into harvested cells from the strip above', function () {
+    $reels = BumperCrop::reels();
+    $grid = array_map(fn ($reel) => [$reel[5], $reel[6], $reel[7]], $reels);
+    [$fallen, $seed] = BumperCrop::pushFall($grid, [5, 5, 5, 5, 5], $reels, [[0, 2], [1, 0], [1, 1]]);
+
+    expect($fallen[0])->toBe([$reels[0][4], $reels[0][5], $reels[0][6]])
+        ->and($fallen[1])->toBe([$reels[1][3], $reels[1][4], $reels[1][7]])
+        ->and($fallen[2])->toBe($grid[2])
+        ->and($seed)->toBe([4, 3, 5, 5, 5]);
+});
+
+it('cascades Bumper Crop as often as slotopol\'s exact enumeration says (seeded sample)', function () {
+    // Once the reels stop the avalanche is fixed, so slotopol counts it exactly: 4,403,701 of 37^5 rounds cascade
+    // at least once (6.351 %). A 1,000,000-round run measured 6.363 % and the symbol return 67.76 ± 0.20 % against
+    // the exact 67.462352 % (ADR 0024); this sample keeps the mechanics honest in the suite.
+    mt_srand(2026);
+    $game = new BumperCrop;
+    $n = 30_000;
+    $cascaded = 0;
+    for ($i = 0; $i < $n; $i++) {
+        $cascaded += $game->play(fn (int $k) => mt_rand(0, $k - 1))['round']['cascades'] >= 1 ? 1 : 0;
+    }
+
+    expect(abs($cascaded / $n - 4403701 / 37 ** 5))->toBeLessThan(0.005); // ≈ 3.5 standard errors
 });
 
 it('scores a Tropic Escape line as the original: wilds double a run, a banana run pays when it is worth more', function () {

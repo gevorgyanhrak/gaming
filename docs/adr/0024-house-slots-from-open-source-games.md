@@ -41,6 +41,28 @@ owner then pointed at open-source projects:
 - Games are added one at a time, each with its port, RTP test and client. The seeder (`HouseSlotSeeder`) creates
   missing games switched on and never overrides an admin's changes.
 
+## The games and how each is proven
+
+All twelve APEXSLOTS games run (owner 2026-11-16: open-source slots only, no keno). Each PHP port is checked against
+the RTP its source publishes, exactly unless noted (tests in `tests/Feature/Casino/HouseSlotsTest.php`):
+
+| Game | Mechanic | RTP | How |
+|---|---|---|---|
+| Stellar Sevens, Nitro Hot | 3x3 lines (Nitro: full-screen fruit doubles) | 95.504233 %, 95.658244 % | every stop combination |
+| Scorching Hot | 5x3, cherries from 2, star scatter | 95.655629 % | per-line law + scatter convolution |
+| Tropic Escape, Pearl Reef, Discovery Voyage | doubling wild, free games (Pearl ×3, Discovery galleon wild) | 95.364527 %, 95.133189 %, 95.022795 % | lines + scatter + free games by Wald's identity |
+| Golden Papyrus | book: expanding symbol | 95.111967 % | averaged over the nine symbols |
+| House of Ra | best-way free games | 95.182099 % | dynamic programming over the reels |
+| Samurai | wild reels in free games | 95.388785 % | per reel-and-row laws |
+| The Dynasty | heirs call free games, the other is crowned | 94.138004 % | joint heir law |
+| Fairytale | a drawn symbol covers the first reels | 95.566989 % | per pool symbol |
+| Bumper Crop | avalanches + barn ladder | 95.548865 % | ladder exactly 50 bets; avalanches by a seeded sample and a 1,000,000-round run (symbols 67.76 ± 0.20 % vs 67.462352 %, ladder 1 in 178.22 vs 178.02) |
+
+Wins are paid in whole Fishkas (rounded down), so small bets on 9/10/20/25-line games return slightly less than
+the figure. Three clients keep a display-only helper the board needs to stage a free game (Samurai `wildReelsOf`,
+The Dynasty `callerOf`, Fairytale `expansionOf` + the pool for its info screen); they never decide a pay, which the
+server sends.
+
 ## Consequences
 
 - Real slots with Fishkas, no contract, no outside calls; results can't be changed from the browser.

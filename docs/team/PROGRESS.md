@@ -36,17 +36,15 @@ Phase B — casino:
       contract (no adapter ships) + admin Casino → Slot providers / Slot games / Slot wallet calls — this commit.
 - [x] B3. Top Winners: the leaderboards already rank real game wins (people only); slot wins join when a slot runs.
 - [x] B4. Casino shelf (Blackjack, Poker; first), lobby search over all games, "Recently played" — this commit.
-- [ ] B2c. House slots from APEXSLOTS open-source games (owner 2026-11-16: "find open-source casino code… copy slot
+- [x] B2c. House slots from APEXSLOTS open-source games (owner 2026-11-16: "find open-source casino code… copy slot
       to my code"; ADR 0024): [x] infrastructure (house provider, `HouseSpins`, `slot_spins`, `/slots/{slug}/play|spin`,
       `/casino/slots/:slug` iframe page, slots shelf, `play/shared/house.ts`) + Stellar Sevens (exact RTP test) —
       b62f755; [x] Nitro Hot, Scorching Hot (exact RTP tests, live spins incl. a win) — 666c987; [x] Tropic Escape (free games;
       exact RTP incl. free games via Wald; feature-client adapter `play/shared/apex.ts`) — 4ea6abb; [x] Pearl Reef (shared `WildLinesFreeGames`, exact RTP) —
       49d3a42; [x] Discovery Voyage (galleon wild in free games) — d7f5981; [x] Golden Papyrus (book: expanding symbol) —
       ebb4518; [x] House of Ra (best-way free games) — b2770b4; [x] Samurai (wild reels) — 2f913c0; [x] The Dynasty (heirs) — 1471e36; [x] Fairytale (covered reels; a free-games round
-      seen live: 10 games, 669 on a 10 bet) — this commit; (owner 2026-11-16: no keno, open-source slots only);
-      [ ] the last feature game (
-      bumper-crop), one at a time. Client copy: apps/web/play/tools
-      (vendor_slot.py stateless, vendor_feature.py free games).
+      seen live: 10 games, 669 on a 10 bet) — 9c6691d; [x] Bumper Crop (avalanches + ladder) — this commit. All 12 done. (owner 2026-11-16: no keno, open-source slots only);
+      Client copy: apps/web/play/tools (vendor_slot.py stateless, vendor_feature.py free games).
 - [ ] B2b. (superseded by B2c) Open-source slot provider (MIT Stake Engine Math SDK sample tables, drawn by our server): BLOCKED — running
       the SDK (pip + third-party code) was denied by the permission classifier; needs the owner's permission.
 - [ ] B5. Identity/sounds pass (after the owner's homepage/AI/poker ticket below).

@@ -78,7 +78,7 @@ patch('src/game/main.ts', [
      "import type { Grid, RoundResult } from '../engine';\nimport { setBets } from './hud';"),
     ("  fetchSession,\n", "  fetchSession,\n  offeredBets,\n"),
     ("const rng = mulberry32(randomSeed());\n", f"/** The frame's opening picture before the first spin (the browser never deals: ADR 0024). */\nconst OPENING: Grid = [\n{rows},\n];\n"),
-    ("board.land(playRound(mulberry32(7)).baseSpin.grid);", "board.land(OPENING);"),
+    (re.compile(r"board\.land\(playRound\(mulberry32\(7\)\)\.[\w.\[\]]+\);"), "board.land(OPENING);"),
     ("  let balance = 1000;", "  let balance = 0;"),
     ("      unfinished = session.pending;\n", "      unfinished = session.pending;\n      setBets(offeredBets());\n"),
     (re.compile(r"      \} else \{\n        hud\.setBalance\(hud\.balance - bet\);\n        const round = playRound\(rng\);\n.*?\n      \}\n", re.S), "      }\n"),

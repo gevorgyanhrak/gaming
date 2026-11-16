@@ -26,6 +26,7 @@ class HouseSlotSeeder extends Seeder
         'samurai' => ['Samurai', 90],
         'the-dynasty' => ['The Dynasty', 100],
         'fairytale' => ['Fairytale', 110],
+        'bumper-crop' => ['Bumper Crop', 120],
     ];
 
     public function run(HouseSlots $slots): void
