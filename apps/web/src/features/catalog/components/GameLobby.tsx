@@ -1,16 +1,25 @@
 import { useId, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
-import { SlotShelf } from '@/features/casino/SlotShelf'
+import { useQuery } from '@tanstack/react-query'
+import { SlotPoster } from '@/features/casino/SlotPoster'
+import { fetchSlots, slotsKey } from '@/features/casino/slots'
 import type { GameSummary } from '../queries'
 import { CategoryBanners } from './CategoryBanners'
 import { GamePoster } from './GamePoster'
 
 const OTHER = '_other'
-/** The casino category's slug (migration add_casino_category); its view also lists the slots. */
+/** The casino category's slug (migration add_casino_category); it also holds the slots. */
 const CASINO = 'casino'
 
-export type GameGroup = { key: string; name: string; order: number; games: GameSummary[] }
+export type GameGroup = {
+  key: string
+  name: string
+  order: number
+  games: GameSummary[]
+  /** How many the category holds when it lists more than its games (the casino's slots). */
+  count?: number
+}
 
 /** Shelves come from the games themselves: a category without games never appears. */
 function groupGames(games: GameSummary[], otherName: string): GameGroup[] {
@@ -46,7 +55,19 @@ export function GameLobby({
 }) {
   const { t } = useTranslation()
   const [params, setParams] = useSearchParams()
-  const groups = useMemo(() => groupGames(games, t('lobby.other')), [games, t])
+  // Slots are games of the Casino category (owner, 2026-11-16): counted and listed with it, and under All.
+  const slotList = useQuery({ queryKey: slotsKey, queryFn: ({ signal }) => fetchSlots(signal) })
+  const slots = useMemo(
+    () => (slotList.data ?? []).filter((slot) => slot.play_path !== null),
+    [slotList.data],
+  )
+  const groups = useMemo(
+    () =>
+      groupGames(games, t('lobby.other')).map((group) =>
+        group.key === CASINO ? { ...group, count: group.games.length + slots.length } : group,
+      ),
+    [games, t, slots.length],
+  )
   const selected = groups.find((group) => group.key === params.get('category')) ?? null
 
   const select = (key: string | null) =>
@@ -68,13 +89,19 @@ export function GameLobby({
       ? selected.games
       : games.filter((g) => !exclude.includes(g.slug))
   const featured = !banners && !selected && !needle && shown.length >= 3
+  const shownSlots =
+    selected && selected.key !== CASINO
+      ? []
+      : needle
+        ? slots.filter((slot) => slot.name.toLocaleLowerCase().includes(needle))
+        : slots
 
   return (
     <div>
       {banners ? (
         <CategoryBanners
           groups={groups}
-          total={games.length}
+          total={games.length + slots.length}
           selected={selected?.key ?? null}
           onSelect={select}
         />
@@ -82,7 +109,7 @@ export function GameLobby({
         <div className="surface-walnut mb-5 rounded-card px-4 py-2">
           <CategoryPills
             groups={groups}
-            total={games.length}
+            total={games.length + slots.length}
             selected={selected?.key ?? null}
             onSelect={select}
           />
@@ -108,7 +135,7 @@ export function GameLobby({
           />
         </label>
       </div>
-      {needle && shown.length === 0 ? (
+      {needle && shown.length === 0 && shownSlots.length === 0 ? (
         <p role="status" className="text-fg-muted py-8 text-center">
           {t('lobby.noMatch', { query: query.trim() })}
         </p>
@@ -129,9 +156,18 @@ export function GameLobby({
             </div>
           </li>
         ))}
+        {shownSlots.map((slot, i) => (
+          <li
+            key={`slot-${slot.slug}`}
+            className="flex motion-safe:animate-rise"
+            style={{ animationDelay: `${Math.min(shown.length + i, 8) * 45}ms` }}
+          >
+            <div className="flex w-full flex-col">
+              <SlotPoster slot={slot} />
+            </div>
+          </li>
+        ))}
       </ul>
-      {/* The slots belong to the Casino category (owner, 2026-11-16): shown under its games. */}
-      {selected?.key === CASINO && !needle ? <SlotShelf /> : null}
     </div>
   )
 }
@@ -151,7 +187,11 @@ function CategoryPills({
   const name = useId()
   const options: { key: string | null; label: string; count: number }[] = [
     { key: null, label: t('lobby.all'), count: total },
-    ...groups.map((group) => ({ key: group.key, label: group.name, count: group.games.length })),
+    ...groups.map((group) => ({
+      key: group.key,
+      label: group.name,
+      count: group.count ?? group.games.length,
+    })),
   ]
 
   return (

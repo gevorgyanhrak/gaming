@@ -35,7 +35,7 @@ describe('Casino lobby', () => {
     expect(within(all).getByRole('status')).toHaveTextContent('No game matches “pozzz”.')
   })
 
-  it('lists the slots the server offers in the Casino category, linking to each slot page', async () => {
+  it('lists the slots the server offers as games of the Casino category, counted with it', async () => {
     const casino = { slug: 'casino', name: 'Casino', sort_order: 5 }
     server.use(
       http.get('*/api/v1/games', () =>
@@ -64,12 +64,15 @@ describe('Casino lobby', () => {
     )
     renderRoute('/?category=casino')
 
-    const slots = await screen.findByRole('region', { name: 'Slots' })
-    expect(within(slots).getByRole('link', { name: /Stellar Sevens/ })).toHaveAttribute(
+    const all = await screen.findByRole('region', { name: 'All games' })
+    expect(await within(all).findByRole('link', { name: /Stellar Sevens/ })).toHaveAttribute(
       'href',
       '/casino/slots/stellar-sevens',
     )
-    expect(within(slots).getByText(/never real money/)).toBeInTheDocument()
+    expect(within(all).getByRole('link', { name: /Roulette/ })).toBeInTheDocument()
+    expect(within(all).queryByRole('link', { name: /Durak/ })).not.toBeInTheDocument()
+    // The Casino tile counts its slot with its game.
+    expect(within(all).getByRole('button', { name: /Casino/ })).toHaveTextContent('2 games')
   })
 
   it('shows the games the player played last, each once', async () => {

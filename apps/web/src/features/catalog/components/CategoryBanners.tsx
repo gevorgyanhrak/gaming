@@ -38,7 +38,7 @@ export function CategoryBanners({
     ...groups.map((g) => ({
       key: g.key,
       name: g.name,
-      count: g.games.length,
+      count: g.count ?? g.games.length,
       slugs: g.games.map((game) => game.slug),
       names: g.games.map((game) => game.name),
     })),
