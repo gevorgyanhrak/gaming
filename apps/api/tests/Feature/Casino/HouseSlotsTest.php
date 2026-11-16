@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Platform\Fishka\FishkaWallets;
 use App\Platform\Slots\House\Games\ClassicThreeReels;
 use App\Platform\Slots\House\Games\DiscoveryVoyage;
+use App\Platform\Slots\House\Games\GoldenPapyrus;
 use App\Platform\Slots\House\Games\NitroHot;
 use App\Platform\Slots\House\Games\PearlReef;
 use App\Platform\Slots\House\Games\ScorchingHot;
@@ -247,6 +248,56 @@ it('deals each wild-lines slot at its published RTP (base game, scatters and fre
     'Pearl Reef' => [PearlReef::class, 95.133189],
     'Discovery Voyage' => [DiscoveryVoyage::class, 95.022795],
 ]);
+
+/**
+ * The law of how many cells of one symbol a board shows (each reel's 3-row window, convolved).
+ *
+ * @param  list<list<string>>  $reels
+ * @return array<int, float>
+ */
+function cellCountLaw(array $reels, string $symbol): array
+{
+    $dist = [1.0];
+    foreach ($reels as $strip) {
+        $counts = [];
+        for ($stop = 0; $stop < count($strip); $stop++) {
+            $n = 0;
+            for ($row = 0; $row < 3; $row++) {
+                $n += $strip[($stop + $row) % count($strip)] === $symbol ? 1 : 0;
+            }
+            $counts[$n] = ($counts[$n] ?? 0) + 1 / count($strip);
+        }
+        $next = [];
+        foreach ($dist as $have => $pHave) {
+            foreach ($counts as $add => $pAdd) {
+                $next[$have + $add] = ($next[$have + $add] ?? 0) + $pHave * $pAdd;
+            }
+        }
+        $dist = $next;
+    }
+
+    return $dist;
+}
+
+it('deals Golden Papyrus at its published RTP of 95.111967 %, averaging the nine expanding symbols, exactly', function () {
+    $scatPay = fn (array $law) => array_sum(array_map(fn ($n, $p) => $n >= 3 ? $p * GoldenPapyrus::SCAT_PAY[min($n, 5) - 1] : 0, array_keys($law), $law));
+    $trigger = fn (array $law) => array_sum(array_filter($law, fn ($p, $n) => $n >= 3, ARRAY_FILTER_USE_BOTH));
+    $baseReels = GoldenPapyrus::reels(GoldenPapyrus::BASE);
+    $bonusReels = GoldenPapyrus::reels(GoldenPapyrus::BONUS);
+
+    $base = boardLaw($baseReels, fn (array $line) => ($w = GoldenPapyrus::lineWin($line, null)) ? [0, 0, 0, $w[2]] : null, 'PAPYRUS');
+    $bonusScatters = cellCountLaw($bonusReels, 'PAPYRUS');
+    $perFreeSpin = 0.0;
+    foreach (array_slice(GoldenPapyrus::SYMBOLS, 0, 9) as $es) {
+        $line = boardLaw($bonusReels, fn (array $l) => ($w = GoldenPapyrus::lineWin($l, $es)) ? [0, 0, 0, $w[2]] : null, 'PAPYRUS')['line'];
+        $expand = array_sum(array_map(fn ($c, $p) => $c >= 2 ? $p * (GoldenPapyrus::LINE_PAY[$es][$c - 1] ?? 0) : 0, array_keys($law = cellCountLaw($bonusReels, $es)), $law));
+        $perFreeSpin += ($line + $expand + $scatPay($bonusScatters)) / 9;
+    }
+    $spins = 10 / (1 - 10 * $trigger($bonusScatters));
+    $rtp = $base['line'] + $scatPay($base['scatters']) + $trigger($base['scatters']) * $spins * $perFreeSpin;
+
+    expect(round($rtp * 100, 6))->toBe(95.111967);
+});
 
 it('scores a Tropic Escape line as the original: wilds double a run, a banana run pays when it is worth more', function () {
     expect(TropicEscape::lineWin(['BANANA', 'MELON', 'MELON', 'ACE', 'ACE']))->toBe(['MELON', 3, 2, 60])
