@@ -23,6 +23,7 @@ class HouseSlotSeeder extends Seeder
         'discovery-voyage' => ['Discovery Voyage', 60],
         'golden-papyrus' => ['Golden Papyrus', 70],
         'house-of-ra' => ['House of Ra', 80],
+        'samurai' => ['Samurai', 90],
     ];
 
     public function run(HouseSlots $slots): void

@@ -13,6 +13,7 @@ use App\Platform\Slots\House\Games\GoldenPapyrus;
 use App\Platform\Slots\House\Games\HouseOfRa;
 use App\Platform\Slots\House\Games\NitroHot;
 use App\Platform\Slots\House\Games\PearlReef;
+use App\Platform\Slots\House\Games\Samurai;
 use App\Platform\Slots\House\Games\ScorchingHot;
 use App\Platform\Slots\House\Games\StellarSevens;
 use App\Platform\Slots\House\Games\TropicEscape;
@@ -344,6 +345,63 @@ it('deals House of Ra at its published RTP of 95.182099 % (lines, scatters, best
 
     expect(round(($base['line'] + $scat($base['scatters'], HouseOfRa::SCAT_PAY)) * 100, 6))->toBe(65.317603)
         ->and(round($rtp * 100, 6))->toBe(95.182099);
+});
+
+/**
+ * The expected pay of one line whose cell on each reel has its own law (symbol => probability), walking reel by
+ * reel and stopping as soon as the run is broken (the rest cannot change the pay).
+ *
+ * @param  list<array<string, float>>  $laws
+ * @param  Closure(list<string>): ?array  $lineWin  [symbol, count, pay] or null
+ */
+function lineExpectation(array $laws, Closure $lineWin, string $wild): float
+{
+    $walk = function (int $reel, array $symbols, ?string $syml, float $prob) use (&$walk, $laws, $lineWin, $wild): float {
+        if ($reel === count($laws)) {
+            return $prob * ($lineWin($symbols)[2] ?? 0);
+        }
+        $sum = 0.0;
+        foreach ($laws[$reel] as $symbol => $p) {
+            $symbol = (string) $symbol;
+            $broken = $symbol !== $wild && $syml !== null && $symbol !== $syml;
+            $line = [...$symbols, $symbol];
+            $sum += $broken
+                ? $prob * $p * ($lineWin(array_pad($line, count($laws), '-'))[2] ?? 0)
+                : $walk($reel + 1, $line, $syml ?? ($symbol === $wild ? null : $symbol), $prob * $p);
+        }
+
+        return $sum;
+    };
+
+    return $walk(0, [], null, 1.0);
+}
+
+it('deals Samurai at its published RTP of 95.388785 % (wild reels in the free games), exactly', function () {
+    $scat = fn (array $law, array $values) => array_sum(array_map(fn ($n, $p) => $n > 0 ? $p * $values[min($n, 5) - 1] : 0, array_keys($law), $law));
+    $base = boardLaw(Samurai::reels(Samurai::BASE), fn (array $l) => ($w = Samurai::lineWin($l)) ? [0, 0, 0, $w[2]] : null, 'GONG');
+
+    // In a free game a cell reads wild when its reel shows a samurai anywhere: one law per reel and row.
+    $freeReels = Samurai::reels(Samurai::FREE);
+    $laws = [];
+    foreach ($freeReels as $x => $strip) {
+        for ($row = 0; $row < 3; $row++) {
+            foreach (array_keys($strip) as $stop) {
+                $window = [$strip[$stop], $strip[($stop + 1) % count($strip)], $strip[($stop + 2) % count($strip)]];
+                $cell = in_array('SAMURAI', $window, true) ? 'SAMURAI' : $window[$row];
+                $laws[$x][$row][$cell] = ($laws[$x][$row][$cell] ?? 0) + 1 / count($strip);
+            }
+        }
+    }
+    $freeLines = 0.0;
+    foreach (Samurai::PAYLINES as $line) {
+        $freeLines += lineExpectation(array_map(fn ($row, $x) => $laws[$x][$row], $line, array_keys($line)), Samurai::lineWin(...), 'SAMURAI') / 20;
+    }
+    $freeScatters = cellCountLaw($freeReels, 'GONG');
+    $perFreeSpin = $freeLines + $scat($freeScatters, Samurai::SCAT_PAY);
+    $spins = $scat($base['scatters'], Samurai::SCAT_FREESPIN) / (1 - $scat($freeScatters, Samurai::SCAT_FREESPIN));
+    $rtp = $base['line'] + $scat($base['scatters'], Samurai::SCAT_PAY) + $spins * $perFreeSpin;
+
+    expect(round($rtp * 100, 6))->toBe(95.388785);
 });
 
 it('scores a Tropic Escape line as the original: wilds double a run, a banana run pays when it is worth more', function () {
