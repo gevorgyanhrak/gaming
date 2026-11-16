@@ -16,6 +16,7 @@ use App\Platform\Slots\House\Games\PearlReef;
 use App\Platform\Slots\House\Games\Samurai;
 use App\Platform\Slots\House\Games\ScorchingHot;
 use App\Platform\Slots\House\Games\StellarSevens;
+use App\Platform\Slots\House\Games\TheDynasty;
 use App\Platform\Slots\House\Games\TropicEscape;
 use App\Platform\Slots\House\Games\WildLinesFreeGames;
 use App\Platform\Slots\House\HouseSlots;
@@ -402,6 +403,55 @@ it('deals Samurai at its published RTP of 95.388785 % (wild reels in the free ga
     $rtp = $base['line'] + $scat($base['scatters'], Samurai::SCAT_PAY) + $spins * $perFreeSpin;
 
     expect(round($rtp * 100, 6))->toBe(95.388785);
+});
+
+it('deals The Dynasty at its published RTP of 94.138004 % (either heir calls, the other is crowned), exactly', function () {
+    $baseReels = TheDynasty::reels(TheDynasty::BASE);
+    $freeReels = TheDynasty::reels(TheDynasty::FREE);
+    $base = boardLaw($baseReels, fn (array $l) => TheDynasty::lineWin($l), 'HEIRESS');
+
+    // The joint law of (heiresses, heirs) on a base board: the heiress is checked first.
+    $joint = [json_encode([0, 0]) => 1.0];
+    foreach ($baseReels as $strip) {
+        $counts = [];
+        foreach (array_keys($strip) as $stop) {
+            $window = [$strip[$stop], $strip[($stop + 1) % count($strip)], $strip[($stop + 2) % count($strip)]];
+            $k = json_encode([count(array_keys($window, 'HEIRESS')), count(array_keys($window, 'HEIR'))]);
+            $counts[$k] = ($counts[$k] ?? 0) + 1 / count($strip);
+        }
+        $next = [];
+        foreach ($joint as $have => $p) {
+            foreach ($counts as $add => $q) {
+                [$a, $b] = json_decode($have);
+                [$c, $d] = json_decode($add);
+                $k = json_encode([$a + $c, $b + $d]);
+                $next[$k] = ($next[$k] ?? 0) + $p * $q;
+            }
+        }
+        $joint = $next;
+    }
+    $calls = ['HEIRESS' => 0.0, 'HEIR' => 0.0];
+    foreach ($joint as $k => $p) {
+        [$heiress, $heir] = json_decode($k);
+        if ($heiress >= 3) {
+            $calls['HEIRESS'] += $p;
+        } elseif ($heir >= 3) {
+            $calls['HEIR'] += $p;
+        }
+    }
+
+    $draw = array_sum(TheDynasty::FREE_GAMES_DRAW) / count(TheDynasty::FREE_GAMES_DRAW);
+    $rtp = $base['line'];
+    foreach ($calls as $caller => $pCall) {
+        $crowned = TheDynasty::otherHeir($caller);
+        $line = boardLaw($freeReels, fn (array $l) => TheDynasty::lineWin($l, $crowned), $caller)['line'];
+        $law = cellCountLaw($freeReels, $caller);
+        $scat = array_sum(array_map(fn ($n, $p) => $n >= 3 ? $p * TheDynasty::SCAT_PAY[min($n, 5) - 1] : 0, array_keys($law), $law));
+        $again = array_sum(array_filter($law, fn ($p, $n) => $n >= 3, ARRAY_FILTER_USE_BOTH));
+        $rtp += $pCall * $draw / (1 - $draw * $again) * ($line + $scat);
+    }
+
+    expect(round($rtp * 100, 6))->toBe(94.138004);
 });
 
 it('scores a Tropic Escape line as the original: wilds double a run, a banana run pays when it is worth more', function () {
