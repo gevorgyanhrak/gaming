@@ -36,7 +36,11 @@ Phase B — casino:
       contract (no adapter ships) + admin Casino → Slot providers / Slot games / Slot wallet calls — this commit.
 - [x] B3. Top Winners: the leaderboards already rank real game wins (people only); slot wins join when a slot runs.
 - [x] B4. Casino shelf (Blackjack, Poker; first), lobby search over all games, "Recently played" — this commit.
-- [ ] B2b. Open-source slot provider (MIT Stake Engine Math SDK sample tables, drawn by our server): BLOCKED — running
+- [ ] B2c. House slots from APEXSLOTS open-source games (owner 2026-11-16: "find open-source casino code… copy slot
+      to my code"; ADR 0024): [x] infrastructure (house provider, `HouseSpins`, `slot_spins`, `/slots/{slug}/play|spin`,
+      `/casino/slots/:slug` iframe page, slots shelf, `play/shared/house.ts`) + Stellar Sevens (exact RTP test) —
+      this commit; [ ] the other 11 games, one at a time (port + RTP test + client).
+- [ ] B2b. (superseded by B2c) Open-source slot provider (MIT Stake Engine Math SDK sample tables, drawn by our server): BLOCKED — running
       the SDK (pip + third-party code) was denied by the permission classifier; needs the owner's permission.
 - [ ] B5. Identity/sounds pass (after the owner's homepage/AI/poker ticket below).
 Owner ticket 2026-11-16 "Homepage UI Improvements" (in progress):

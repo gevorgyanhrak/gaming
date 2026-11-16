@@ -382,3 +382,10 @@ is not done or not verified, and how to check it manually. Keep it concise.
   `bot_profile_id`; `rankings.chips_games` (Poker, Blackjack) rank people by wallet balance; platform boards by level
   / Fishkas are people only (AI has no wallet, its level is admin-set). Boards cached 30 s, cleared after commit.
   Recorded in `GameFinisher::finish`/`finishParticipant`. After deploying: `php artisan rankings:backfill` once.
+- House slots (ADR 0024): APEXSLOTS open-source games (MIT code, CC BY art, slotopol maths). Maths ported to PHP in
+  `app/Platform/Slots/House/Games/<Game>` (`HouseSlot::play($random)` returns the client's RoundResult shape; tag
+  `house-slots`; RTP test per game), dealt by `HouseSpins` (`/slots/{slug}/play|spin`, key = one-time ticket,
+  `slot_spins`, money via `SlotWallet::handleSession`). Clients vendored in `apps/web/play/<id>/` (own tsconfig.play,
+  excluded from lint/format; art in `public/play/<id>/`; engine copy keeps only types/lines/paytable; wallet over
+  `play/shared/house.ts`); shown by `SlotPage` iframe; the Slots row lives in the lobby's Casino category.
+  Seeder `HouseSlotSeeder::GAMES` lists the games.

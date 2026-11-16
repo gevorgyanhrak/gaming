@@ -1,4 +1,5 @@
 /// <reference types="vitest/config" />
+import { readdirSync } from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
@@ -15,7 +16,17 @@ export default defineConfig(({ mode }) => {
     ['/api', '/sanctum', '/broadcasting'].map((path) => [path, { target: apiTarget }]),
   )
 
+  // Each house slot (play/<id>/index.html, ADR 0024) is a page of its own next to the SPA, served at /play/<id>/.
+  const root = fileURLToPath(new URL('.', import.meta.url))
+  const input: Record<string, string> = { main: `${root}index.html` }
+  for (const entry of readdirSync(new URL('./play', import.meta.url), { withFileTypes: true })) {
+    if (entry.isDirectory() && entry.name !== 'shared') {
+      input[`play/${entry.name}`] = `${root}play/${entry.name}/index.html`
+    }
+  }
+
   return {
+    build: { rollupOptions: { input } },
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },

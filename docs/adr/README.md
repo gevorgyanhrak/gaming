@@ -28,3 +28,4 @@ Records are immutable once accepted; a changed decision gets a new record that s
 | [0021](0021-ai-players-platform-wide.md) | AI players platform-wide: one level, people first, AI stands in for people | Accepted |
 | [0022](0022-ai-players-are-marked.md) | AI players are marked wherever identity shows; AI never counts as people | Accepted |
 | [0023](0023-casino-slots-through-a-signed-fishka-wallet.md) | Casino slots only through a provider adapter and a signed, replay-proof Fishka wallet | Accepted |
+| [0024](0024-house-slots-from-open-source-games.md) | House slots: open-source games (APEXSLOTS, MIT/CC BY) ported to PHP and dealt by our server | Accepted |

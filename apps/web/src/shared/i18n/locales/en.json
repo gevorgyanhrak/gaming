@@ -1,4 +1,11 @@
 {
+  "slots": {
+    "title": "Slots",
+    "playMoney": "Played with Fishkas: free play money, never real money.",
+    "back": "Back to the casino",
+    "unavailable": "This slot isn't available right now.",
+    "credit": "Game by {{provider}}: code MIT, art CC BY 4.0 by APEXSLOTS, maths from slotopol (MIT). Every round is dealt by our server."
+  },
   "nav": {
     "main": "Main",
     "home": "Home",

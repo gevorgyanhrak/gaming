@@ -2,3 +2,6 @@ dist
 node_modules
 src/shared/api/schema.d.ts
 package-lock.json
+# House slot clients copied from APEXSLOTS (ADR 0024): kept in their upstream style.
+play/*/src
+play/*/index.html

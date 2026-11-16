@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\CasinoBannerController;
 use App\Http\Controllers\Api\V1\ConfigController;
 use App\Http\Controllers\Api\V1\ContentPageController;
 use App\Http\Controllers\Api\V1\GameController;
+use App\Http\Controllers\Api\V1\HouseSlotController;
 use App\Http\Controllers\Api\V1\LeaderboardController;
 use App\Http\Controllers\Api\V1\MatchmakingController;
 use App\Http\Controllers\Api\V1\Me\AvatarController;
@@ -119,6 +120,11 @@ Route::prefix('v1')->name('v1.')->group(function () {
         Route::post('slots/{slug}/launch', [SlotController::class, 'launch'])
             ->middleware(['auth:sanctum', 'active', 'touch-last-active', 'throttle:game', 'verified-contact'])
             ->name('slots.launch');
+        // House slots (ADR 0024): our server deals every round.
+        Route::middleware(['auth:sanctum', 'active', 'touch-last-active'])->group(function () {
+            Route::get('slots/{slug}/play', [HouseSlotController::class, 'show'])->middleware('throttle:account')->name('slots.play');
+            Route::post('slots/{slug}/spin', [HouseSlotController::class, 'spin'])->middleware('throttle:slot-spin')->name('slots.spin');
+        });
 
         Route::middleware(['auth:sanctum', 'active', 'touch-last-active', 'throttle:game'])
             ->prefix('matchmaking')

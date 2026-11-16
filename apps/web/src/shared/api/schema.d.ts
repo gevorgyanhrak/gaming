@@ -297,6 +297,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/slots/{slug}/play": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1.slots.play"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/slots/{slug}/spin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1.slots.spin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/leaderboards": {
         parameters: {
             query?: never;
@@ -1132,6 +1164,14 @@ export interface components {
             best_streak: number;
             last_played_at: string | null;
         };
+        /**
+         * HouseSpinRequest
+         * @description A house slot spin: the bet in Fishkas and the client's one-time key for this spin (a retry sends it again).
+         */
+        HouseSpinRequest: {
+            bet: number;
+            key: string;
+        };
         /** LeaderboardRowResource */
         LeaderboardRowResource: {
             rank: number;
@@ -1353,6 +1393,8 @@ export interface components {
             image_url: string | null;
             min_bet: number;
             max_bet: number;
+            /** @description Where the web app shows a house slot (ADR 0024); null for an outside provider (opened by launch). */
+            play_path: string | null;
         };
         /** SubmitActionRequest */
         SubmitActionRequest: {
@@ -2132,6 +2174,73 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.slots.play": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            slug: string;
+                            name: string;
+                            balance: number;
+                            bets: unknown[];
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.slots.spin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HouseSpinRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            round_id: string;
+                            round: {
+                                [key: string]: unknown;
+                            };
+                            bet: number;
+                            win: number;
+                            balance: number;
+                            replay: boolean;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "v1.leaderboards.index": {

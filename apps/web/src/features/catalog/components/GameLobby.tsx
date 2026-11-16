@@ -1,11 +1,14 @@
 import { useId, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
+import { SlotShelf } from '@/features/casino/SlotShelf'
 import type { GameSummary } from '../queries'
 import { CategoryBanners } from './CategoryBanners'
 import { GamePoster } from './GamePoster'
 
 const OTHER = '_other'
+/** The casino category's slug (migration add_casino_category); its view also lists the slots. */
+const CASINO = 'casino'
 
 export type GameGroup = { key: string; name: string; order: number; games: GameSummary[] }
 
@@ -127,6 +130,8 @@ export function GameLobby({
           </li>
         ))}
       </ul>
+      {/* The slots belong to the Casino category (owner, 2026-11-16): shown under its games. */}
+      {selected?.key === CASINO && !needle ? <SlotShelf /> : null}
     </div>
   )
 }

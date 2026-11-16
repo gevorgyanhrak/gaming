@@ -82,6 +82,12 @@ for free. Therefore, per the owner's rule:
      server, shown by an MIT renderer (johakr) with art we are licensed to use. No own math, but it is
      integration work close to "building a slot", so it waits for the owner's OK.
 
+## Update 2026-11-16 — the owner chose open-source code
+
+The owner asked for open-source slots copied into our code. [Z1000k/open-source-slots](https://github.com/Z1000k/open-source-slots)
+(APEXSLOTS: code MIT, art CC BY 4.0, maths from slotopol MIT) is used: each game's maths is ported to PHP and dealt
+by our server, its client copied and fed by our API. jcapshaw/slots is AGPL-3.0 and is not used. See ADR 0024.
+
 ## Security checklist for any adapter
 - The browser never sends an amount won or a result; only "spin with bet X" goes to the provider (or our
   server), and the win is credited by the provider's signed server call or our server's draw.

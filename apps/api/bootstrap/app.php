@@ -11,6 +11,7 @@ use App\Http\Middleware\SetLocaleFromRequest;
 use App\Http\Middleware\TouchLastActive;
 use App\Platform\Fishka\FishkaBonusUnavailable;
 use App\Platform\Fishka\InsufficientFishkas;
+use App\Platform\Slots\House\HouseSpinRefused;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -61,6 +62,17 @@ return Application::configure(basePath: dirname(__DIR__))
             'balance' => $e->balance,
             'needed' => $e->needed,
         ], 422));
+        // A house slot spin the server would not deal (ADR 0024): nothing was charged.
+        $exceptions->dontReport([HouseSpinRefused::class]);
+        $exceptions->render(function (HouseSpinRefused $e) {
+            $known = ['game_off' => 'unavailable', 'insufficient_fishkas' => 'insufficient_fishkas', 'bet_limits' => 'bet_limits', 'key_conflict' => 'key_conflict'];
+
+            return response()->json([
+                'message' => __('platform.slots.'.($known[$e->reason] ?? 'refused')),
+                'code' => $e->reason === 'insufficient_fishkas' ? 'insufficient_fishkas' : 'slot_'.$e->reason,
+                'balance' => $e->balance,
+            ], 422);
+        });
         $exceptions->render(fn (FishkaBonusUnavailable $e) => response()->json([
             'message' => $e->getMessage(),
             'code' => 'fishka_bonus_unavailable',

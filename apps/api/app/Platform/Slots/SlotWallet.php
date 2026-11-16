@@ -38,6 +38,18 @@ final class SlotWallet
             return $this->refuseWithoutSession($provider, $call, 'bad_session');
         }
 
+        return $this->handleSession($provider, $session, $call);
+    }
+
+    /**
+     * A call for a session already identified: the provider's signed call once its token matched, or the house
+     * slots' own server (ADR 0024), which holds the player's session itself.
+     *
+     * @param  array{action: string, session?: string, tx_id?: string|null, round_id?: string|null, amount?: int|null, reference_tx_id?: string|null}  $call
+     * @return array{status: string, error: string|null, balance: int|null, tx_id: string|null}
+     */
+    public function handleSession(SlotProvider $provider, SlotSession $session, array $call): array
+    {
         if ($call['action'] === 'balance') {
             return $this->answer(SlotTransaction::OK, null, $this->wallets->wallet($session->user)->balance, null);
         }

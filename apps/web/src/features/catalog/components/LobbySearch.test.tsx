@@ -35,6 +35,43 @@ describe('Casino lobby', () => {
     expect(within(all).getByRole('status')).toHaveTextContent('No game matches “pozzz”.')
   })
 
+  it('lists the slots the server offers in the Casino category, linking to each slot page', async () => {
+    const casino = { slug: 'casino', name: 'Casino', sort_order: 5 }
+    server.use(
+      http.get('*/api/v1/games', () =>
+        HttpResponse.json({
+          data: [
+            gameFixture({ slug: 'roulette', name: 'Roulette', category: casino }),
+            gameFixture({ slug: 'durak', name: 'Durak', category: card }),
+          ],
+        }),
+      ),
+      http.get('*/api/v1/slots', () =>
+        HttpResponse.json({
+          data: [
+            {
+              slug: 'stellar-sevens',
+              name: 'Stellar Sevens',
+              provider: 'APEXSLOTS (open source)',
+              image_url: '/play/stellar-sevens/tile.webp',
+              min_bet: 10,
+              max_bet: 1000,
+              play_path: '/play/stellar-sevens/',
+            },
+          ],
+        }),
+      ),
+    )
+    renderRoute('/?category=casino')
+
+    const slots = await screen.findByRole('region', { name: 'Slots' })
+    expect(within(slots).getByRole('link', { name: /Stellar Sevens/ })).toHaveAttribute(
+      'href',
+      '/casino/slots/stellar-sevens',
+    )
+    expect(within(slots).getByText(/never real money/)).toBeInTheDocument()
+  })
+
   it('shows the games the player played last, each once', async () => {
     serveGames()
     server.use(

@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             GameModeSeeder::class,
             BotSeeder::class,
             ContentPageSeeder::class,
+            HouseSlotSeeder::class,
         ]);
     }
 }

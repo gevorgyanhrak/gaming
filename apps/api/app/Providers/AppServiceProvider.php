@@ -6,6 +6,9 @@ use App\Gameplay\GameRegistry;
 use App\Models\User;
 use App\Platform\Levels\Levels;
 use App\Platform\Settings\Settings;
+use App\Platform\Slots\House\Games\StellarSevens;
+use App\Platform\Slots\House\HouseSlotAdapter;
+use App\Platform\Slots\House\HouseSlots;
 use App\Platform\Slots\SlotAdapters;
 use App\Platform\Sms\LogSmsGateway;
 use App\Platform\Sms\SmsGateway;
@@ -32,7 +35,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(GameRegistry::class);
 
         // Slot provider adapters register under the "slot-adapters" tag (none yet: docs/research/casino-slots.md).
+        $this->app->tag([HouseSlotAdapter::class], 'slot-adapters');
         $this->app->bind(SlotAdapters::class, fn ($app) => new SlotAdapters($app->tagged('slot-adapters')));
+        // House slots (ADR 0024): open-source games whose rounds our server deals.
+        $this->app->tag([StellarSevens::class], 'house-slots');
+        $this->app->bind(HouseSlots::class, fn ($app) => new HouseSlots($app->tagged('house-slots')));
 
         $this->app->singleton(SmsGateway::class, fn () => match (config('services.sms.driver')) {
             'log' => new LogSmsGateway,
@@ -71,6 +78,8 @@ class AppServiceProvider extends ServiceProvider
         // page polls a little; by player when signed in, so people sharing an IP (a café, an office) don't starve.
         RateLimiter::for('feeds', fn (Request $request) => Limit::perMinute(120)->by($byUserOrIp($request)));
         // A slot provider's wallet calls: many per second at busy times, counted per provider.
+        // House slot spins: a fast player spins about once a second; autoplay stays under this.
+        RateLimiter::for('slot-spin', fn (Request $request) => Limit::perMinute(120)->by('spin:'.$request->user()?->id));
         RateLimiter::for('slot-wallet', fn (Request $request) => Limit::perMinute(3000)->by('slot:'.$request->route('provider')));
         RateLimiter::for('verification', fn (Request $request) => Limit::perMinute(10)->by($byUserOrIp($request)));
         // The player's own account: /me and /me/* (wallet, rooms, stats) together. Every page load reads

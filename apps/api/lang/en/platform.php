@@ -67,6 +67,10 @@ return [
     ],
     'slots' => [
         'unavailable' => 'This game isn\'t available right now.',
+        'insufficient_fishkas' => 'Not enough Fishkas for this bet.',
+        'bet_limits' => 'Choose one of the bets the game offers.',
+        'key_conflict' => 'That spin was already played with another bet. Spin again.',
+        'refused' => 'The spin was refused. Nothing was charged.',
     ],
     'play' => [
         'group_unavailable' => 'This group is not available for this game.',
