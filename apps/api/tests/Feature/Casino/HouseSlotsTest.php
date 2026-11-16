@@ -10,6 +10,7 @@ use App\Platform\Fishka\FishkaWallets;
 use App\Platform\Slots\House\Games\ClassicThreeReels;
 use App\Platform\Slots\House\Games\DiscoveryVoyage;
 use App\Platform\Slots\House\Games\GoldenPapyrus;
+use App\Platform\Slots\House\Games\HouseOfRa;
 use App\Platform\Slots\House\Games\NitroHot;
 use App\Platform\Slots\House\Games\PearlReef;
 use App\Platform\Slots\House\Games\ScorchingHot;
@@ -297,6 +298,52 @@ it('deals Golden Papyrus at its published RTP of 95.111967 %, averaging the nine
     $rtp = $base['line'] + $scatPay($base['scatters']) + $trigger($base['scatters']) * $spins * $perFreeSpin;
 
     expect(round($rtp * 100, 6))->toBe(95.111967);
+});
+
+it('deals House of Ra at its published RTP of 95.182099 % (lines, scatters, best-way free games), exactly', function () {
+    $scat = fn (array $law, array $values) => array_sum(array_map(fn ($n, $p) => $n > 0 ? $p * $values[min($n, 5) - 1] : 0, array_keys($law), $law));
+    $base = boardLaw(HouseOfRa::reels(HouseOfRa::BASE), fn (array $l) => ($w = HouseOfRa::lineWin($l)) ? [0, 0, 0, $w[2]] : null, 'SUNDISC');
+    $freeReels = HouseOfRa::reels(HouseOfRa::FREE);
+
+    // Best way, by dynamic programming over the reels: a state is the symbols still running from reel 1 and the
+    // best pay of the runs that already ended; each reel's law is the set of symbols its window shows.
+    $states = [json_encode([array_keys(HouseOfRa::LINE_PAY), 0]) => 1.0];
+    foreach ($freeReels as $x => $strip) {
+        $sets = [];
+        for ($stop = 0; $stop < count($strip); $stop++) {
+            $window = array_unique([$strip[$stop % count($strip)], $strip[($stop + 1) % count($strip)], $strip[($stop + 2) % count($strip)]]);
+            sort($window);
+            $sets[json_encode($window)] = ($sets[json_encode($window)] ?? 0) + 1 / count($strip);
+        }
+        $next = [];
+        foreach ($states as $key => $p) {
+            [$alive, $dead] = json_decode($key, true);
+            foreach ($sets as $setKey => $q) {
+                $set = json_decode($setKey, true);
+                $stay = array_values(array_intersect($alive, $set));
+                $best = $dead;
+                foreach (array_diff($alive, $set) as $gone) {
+                    $best = max($best, $x > 0 ? HouseOfRa::LINE_PAY[$gone][$x - 1] : 0);
+                }
+                $k = json_encode([$stay, $best]);
+                $next[$k] = ($next[$k] ?? 0) + $p * $q;
+            }
+        }
+        $states = $next;
+    }
+    $way = 0.0;
+    foreach ($states as $key => $p) {
+        [$alive, $dead] = json_decode($key, true);
+        $five = array_map(fn (string $symbol) => HouseOfRa::LINE_PAY[$symbol][4], $alive); // runs alive after reel 5
+        $way += $p * max([$dead, ...$five]);
+    }
+    $freeScatters = cellCountLaw($freeReels, 'SUNDISC');
+    $perFreeSpin = $way + $scat($freeScatters, HouseOfRa::SCAT_PAY);
+    $spins = $scat($base['scatters'], HouseOfRa::SCAT_FREESPIN) / (1 - $scat($freeScatters, HouseOfRa::SCAT_FREESPIN));
+    $rtp = $base['line'] + $scat($base['scatters'], HouseOfRa::SCAT_PAY) + $spins * $perFreeSpin;
+
+    expect(round(($base['line'] + $scat($base['scatters'], HouseOfRa::SCAT_PAY)) * 100, 6))->toBe(65.317603)
+        ->and(round($rtp * 100, 6))->toBe(95.182099);
 });
 
 it('scores a Tropic Escape line as the original: wilds double a run, a banana run pays when it is worth more', function () {
