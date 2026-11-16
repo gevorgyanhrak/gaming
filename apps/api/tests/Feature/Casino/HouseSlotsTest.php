@@ -9,9 +9,11 @@ use App\Models\User;
 use App\Platform\Fishka\FishkaWallets;
 use App\Platform\Slots\House\Games\ClassicThreeReels;
 use App\Platform\Slots\House\Games\NitroHot;
+use App\Platform\Slots\House\Games\PearlReef;
 use App\Platform\Slots\House\Games\ScorchingHot;
 use App\Platform\Slots\House\Games\StellarSevens;
 use App\Platform\Slots\House\Games\TropicEscape;
+use App\Platform\Slots\House\Games\WildLinesFreeGames;
 use App\Platform\Slots\House\HouseSlots;
 use Database\Seeders\HouseSlotSeeder;
 use Tests\Fixtures\Slots\FixedHouseSlot;
@@ -227,20 +229,22 @@ function boardLaw(array $reels, Closure $lineWin, string $scatter): array
     return ['line' => $line, 'scatters' => $dist];
 }
 
-it('deals Tropic Escape at its published RTP of 95.364527 % (base game, scatters and free games, exactly)', function () {
-    $scat = fn (array $law, array $pays) => array_sum(array_map(fn ($n, $pn) => $n > 0 ? $pn * $pays[min($n, 5) - 1] : 0, array_keys($law), $law));
-    $trigger = fn (array $law) => array_sum(array_filter($law, fn ($pn, $n) => $n >= 3, ARRAY_FILTER_USE_BOTH));
-    $lineWin = TropicEscape::lineWin(...);
+it('deals each wild-lines slot at its published RTP (base game, scatters and free games, exactly)', function (string $game, float $rtp) {
+    /** @var class-string<WildLinesFreeGames> $game */
+    $expect = fn (array $law, array $values) => array_sum(array_map(fn ($n, $pn) => $n > 0 ? $pn * $values[min($n, 5) - 1] : 0, array_keys($law), $law));
+    $base = boardLaw($game::reels($game::baseStrips()), $game::lineWin(...), $game::scatter());
+    $bonus = boardLaw($game::reels($game::bonusStrips()), $game::lineWin(...), $game::scatter());
 
-    $base = boardLaw(TropicEscape::reels(TropicEscape::BASE), $lineWin, 'SUITCASE');
-    $bonus = boardLaw(TropicEscape::reels(TropicEscape::BONUS), $lineWin, 'SUITCASE');
-    $perFreeSpin = $bonus['line'] + $scat($bonus['scatters'], TropicEscape::SCAT_PAY);
-    $spinsPerTrigger = 45 / (1 - 45 * $trigger($bonus['scatters'])); // Wald: every spin may add 45 more
-    $rtp = $base['line'] + $scat($base['scatters'], TropicEscape::SCAT_PAY) + $trigger($base['scatters']) * $spinsPerTrigger * $perFreeSpin;
+    $perFreeSpin = ($bonus['line'] + $expect($bonus['scatters'], $game::scatPay())) * $game::FREE_MULT;
+    // Wald: a session's expected length is its first award over (1 − the spins each free spin adds on average).
+    $spins = $expect($base['scatters'], $game::scatFreeSpins()) / (1 - $expect($bonus['scatters'], $game::scatFreeSpins()));
+    $total = $base['line'] + $expect($base['scatters'], $game::scatPay()) + $spins * $perFreeSpin;
 
-    expect(round($rtp * 100, 6))->toBe(95.364527)
-        ->and(round($spinsPerTrigger * $perFreeSpin / 45 * 100, 6))->toBe(210.461503); // the README's figure is per free spin
-});
+    expect(round($total * 100, 6))->toBe($rtp);
+})->with([
+    'Tropic Escape' => [TropicEscape::class, 95.364527],
+    'Pearl Reef' => [PearlReef::class, 95.133189],
+]);
 
 it('scores a Tropic Escape line as the original: wilds double a run, a banana run pays when it is worth more', function () {
     expect(TropicEscape::lineWin(['BANANA', 'MELON', 'MELON', 'ACE', 'ACE']))->toBe(['MELON', 3, 2, 60])
