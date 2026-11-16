@@ -41,8 +41,8 @@ Phase B — casino:
       `/casino/slots/:slug` iframe page, slots shelf, `play/shared/house.ts`) + Stellar Sevens (exact RTP test) —
       b62f755; [x] Nitro Hot, Scorching Hot (exact RTP tests, live spins incl. a win) — 666c987; [x] Tropic Escape (free games;
       exact RTP incl. free games via Wald; feature-client adapter `play/shared/apex.ts`) — 4ea6abb; [x] Pearl Reef (shared `WildLinesFreeGames`, exact RTP) —
-      this commit;
-      [ ] the 7 feature games left (golden-papyrus, discovery-voyage,
+      49d3a42; [x] Discovery Voyage (galleon wild in free games) — this commit;
+      [ ] the 6 feature games left (golden-papyrus,
       house-of-ra, fairytale, samurai, the-dynasty, bumper-crop), one at a time. Client copy: apps/web/play/tools
       (vendor_slot.py stateless, vendor_feature.py free games).
 - [ ] B2b. (superseded by B2c) Open-source slot provider (MIT Stake Engine Math SDK sample tables, drawn by our server): BLOCKED — running

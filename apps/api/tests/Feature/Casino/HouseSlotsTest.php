@@ -8,6 +8,7 @@ use App\Models\SlotSpin;
 use App\Models\User;
 use App\Platform\Fishka\FishkaWallets;
 use App\Platform\Slots\House\Games\ClassicThreeReels;
+use App\Platform\Slots\House\Games\DiscoveryVoyage;
 use App\Platform\Slots\House\Games\NitroHot;
 use App\Platform\Slots\House\Games\PearlReef;
 use App\Platform\Slots\House\Games\ScorchingHot;
@@ -233,7 +234,7 @@ it('deals each wild-lines slot at its published RTP (base game, scatters and fre
     /** @var class-string<WildLinesFreeGames> $game */
     $expect = fn (array $law, array $values) => array_sum(array_map(fn ($n, $pn) => $n > 0 ? $pn * $values[min($n, 5) - 1] : 0, array_keys($law), $law));
     $base = boardLaw($game::reels($game::baseStrips()), $game::lineWin(...), $game::scatter());
-    $bonus = boardLaw($game::reels($game::bonusStrips()), $game::lineWin(...), $game::scatter());
+    $bonus = boardLaw($game::reels($game::bonusStrips()), fn (array $line) => $game::lineWin($line, true), $game::scatter());
 
     $perFreeSpin = ($bonus['line'] + $expect($bonus['scatters'], $game::scatPay())) * $game::FREE_MULT;
     // Wald: a session's expected length is its first award over (1 − the spins each free spin adds on average).
@@ -244,6 +245,7 @@ it('deals each wild-lines slot at its published RTP (base game, scatters and fre
 })->with([
     'Tropic Escape' => [TropicEscape::class, 95.364527],
     'Pearl Reef' => [PearlReef::class, 95.133189],
+    'Discovery Voyage' => [DiscoveryVoyage::class, 95.022795],
 ]);
 
 it('scores a Tropic Escape line as the original: wilds double a run, a banana run pays when it is worth more', function () {

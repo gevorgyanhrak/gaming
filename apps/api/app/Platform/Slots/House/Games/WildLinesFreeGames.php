@@ -120,7 +120,7 @@ abstract class WildLinesFreeGames implements HouseSlot
      * @param  list<string>  $symbols  the line's symbol on each reel
      * @return array{string, int, int, int}|null
      */
-    public static function lineWin(array $symbols): ?array
+    public static function lineWin(array $symbols, bool $freeGame = false): ?array
     {
         $wild = static::wild();
         $pays = static::linePay();
@@ -130,7 +130,7 @@ abstract class WildLinesFreeGames implements HouseSlot
         $mw = 1;
         foreach ($symbols as $index => $symbol) {
             $x = $index + 1;
-            if ($symbol === $wild) {
+            if (static::isWild($symbol, $freeGame)) {
                 if ($syml === null) {
                     $numw = $x;
                 }
@@ -155,6 +155,12 @@ abstract class WildLinesFreeGames implements HouseSlot
         return null;
     }
 
+    /** Whether a symbol stands in for others on a line (a game may add one in its free games). */
+    protected static function isWild(string $symbol, bool $freeGame): bool
+    {
+        return $symbol === static::wild();
+    }
+
     /**
      * @param  array<int, array<int, string>>  $grid  [reel][row]
      * @return array<string, mixed>
@@ -165,7 +171,7 @@ abstract class WildLinesFreeGames implements HouseSlot
         $lines = count(static::paylines());
         $wins = [];
         foreach (static::paylines() as $index => $line) {
-            $win = static::lineWin(array_map(fn (int $row, int $reel) => $grid[$reel][$row], $line, array_keys($line)));
+            $win = static::lineWin(array_map(fn (int $row, int $reel) => $grid[$reel][$row], $line, array_keys($line)), $freeGame);
             if ($win === null) {
                 continue;
             }

@@ -110,16 +110,24 @@ for path in glob.glob(os.path.join(dst, 'src', 'game', '*.ts')):
     if 'toFixed(2)' not in s and '0.00' not in s:
         continue
     s = re.sub(r"\(\(([^()]*)\) \* bet\)\.toFixed\(2\)", r"fishkas((\1) * bet)", s)
-    s = re.sub(r"\(([^()]+?)\)\.toFixed\(2\)(?!%)", r"fishkas(\1)", s)
-    s = re.sub(r"([A-Za-z_][\w.]*(?:\[[^\]]+\])?)\.toFixed\(2\)(?!%)", r"fishkas(\1)", s)
+    s = re.sub(r"\(([^()]+?)\)\.toFixed\(2\)(?!\}?%)", r"fishkas(\1)", s)
+    s = re.sub(r"([A-Za-z_][\w.]*(?:\[[^\]]+\])?)\.toFixed\(2\)(?!\}?%)", r"fishkas(\1)", s)
     s = s.replace('>0.00<', '>0<')
-    if re.search(r"toFixed\(2\)(?!%)", s):
+    if re.search(r"toFixed\(2\)(?!\}?%)", s):
         sys.exit(f'{path}: toFixed(2) left')
     if 'fishkas(' in s and "from '../../../shared/house'" not in s:
         anchor = re.search(r"^import 'pixi.js/unsafe-eval';\n", s, re.M)
         first_import = anchor.end() if anchor else re.search(r'^import ', s, re.M).start()
         s = s[:first_import] + "import { fishkas } from '../../../shared/house';\n" + s[first_import:]
     open(path, 'w').write(s)
+
+# A screen that prints the dealt set's RTP gets the figure itself (the reel sets stay on the server).
+gi = os.path.join(dst, 'src', 'game', 'gameinfo.ts')
+g = open(gi).read()
+if 'ACTIVE_REELS' in g:
+    rtp = os.environ['RTP']
+    g = re.sub(r"\n\s*ACTIVE_REELS,", "", g).replace('ACTIVE_REELS.rtp', rtp)
+    open(gi, 'w').write(g)
 
 patch('src/game/assets.ts', [("import.meta.env.BASE_URL + path", f"'/play/{gid}/' + path")])
 p = os.path.join(dst, 'src', 'game', 'style.css')
