@@ -326,7 +326,8 @@ is not done or not verified, and how to check it manually. Keep it concise.
   utilities like `absolute` still win), page rise-in on `::view-transition-new(root)`. All off under reduced motion.
 - Local web tests time out at random when the Mac is loaded (Chrome/Docker, load > 20): run `npx vitest run --maxWorkers=2`.
 - Game catalog (TASK-056): `game_categories` + `games.game_category_id`, `category` on each game in `/games`; admin Games → Categories. Web: `GameGrid` → `features/catalog/components/GameLobby`
-  (shelves come from the games; `_other` is reserved for uncategorised), `HomeArt` posters, `HomeBackdrop` (the fixed night-room picture on `/` and `/dashboard`, `PublicLayout` `isHome`,
+  (shelves come from the games; `_other` is reserved for uncategorised; on home/dashboard a banner opens `CategoryPopup` —
+  `?category=<slug>|_all`, pushed so Back closes it, `Modal fullScreenOnPhone` — while /games keeps filter pills), `HomeArt` posters, `HomeBackdrop` (the fixed night-room picture on `/` and `/dashboard`, `PublicLayout` `isHome`,
   `.home-scope-night`). `GameArt` still serves game pages and the side nav.
 - New games (owner, 2026-11-11; order in `docs/team/PROGRESS.md`): follow `.claude/skills/game-platform-development`.
   Blackjack (ADR 0019): the dealer is the engine, `PlaysForChips`, rounds + pause, `Outcome::HOUSE` when nobody ends ahead;

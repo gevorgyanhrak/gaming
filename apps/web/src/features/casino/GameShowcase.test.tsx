@@ -47,7 +47,7 @@ describe('Casino home', () => {
     expect(screen.getByText(/Fishkas are free play money/)).toBeInTheDocument()
   })
 
-  it('lists every other game with its poster, and filters them by category banner', async () => {
+  it('lists every other game with its poster, and opens a category banner in a popup', async () => {
     serveGames()
     renderRoute('/')
 
@@ -61,19 +61,12 @@ describe('Casino home', () => {
     // The top games are above, not repeated under "All".
     expect(within(all).queryByRole('link', { name: /Poker/ })).not.toBeInTheDocument()
 
+    // A banner opens its category in a popup, the top games too; the list below stays as it was.
     const filters = within(all).getByRole('group', { name: 'Show games by category' })
-    expect(within(filters).getByRole('button', { name: /All games/ })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
     await userEvent.click(within(filters).getByRole('button', { name: /Card games/ }))
-    expect(within(filters).getByRole('button', { name: /Card games/ })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
-    // A category lists all of its games, the top ones too.
-    expect(within(all).getByRole('link', { name: /Poker/ })).toBeInTheDocument()
-    expect(within(all).getByRole('link', { name: /Durak/ })).toBeInTheDocument()
-    expect(within(all).queryByRole('link', { name: /Chess/ })).not.toBeInTheDocument()
+    const popup = await screen.findByRole('dialog', { name: 'Card games' })
+    expect(within(popup).getByRole('link', { name: /Poker/ })).toBeInTheDocument()
+    expect(within(popup).getByRole('link', { name: /Durak/ })).toBeInTheDocument()
+    expect(within(popup).queryByRole('link', { name: /Chess/ })).not.toBeInTheDocument()
   })
 })

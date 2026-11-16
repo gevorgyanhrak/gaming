@@ -62,17 +62,34 @@ describe('Casino lobby', () => {
         }),
       ),
     )
-    renderRoute('/?category=casino')
+    renderRoute('/')
 
     const all = await screen.findByRole('region', { name: 'All games' })
-    expect(await within(all).findByRole('link', { name: /Stellar Sevens/ })).toHaveAttribute(
+    // The Casino banner counts its slot with its game and opens them in a popup.
+    const banner = await within(all).findByRole('button', { name: /Casino/ })
+    expect(banner).toHaveTextContent('2 games')
+    await userEvent.click(banner)
+
+    const popup = await screen.findByRole('dialog', { name: 'Casino' })
+    expect(within(popup).getByRole('link', { name: /Stellar Sevens/ })).toHaveAttribute(
       'href',
       '/casino/slots/stellar-sevens',
     )
-    expect(within(all).getByRole('link', { name: /Roulette/ })).toBeInTheDocument()
-    expect(within(all).queryByRole('link', { name: /Durak/ })).not.toBeInTheDocument()
-    // The Casino tile counts its slot with its game.
-    expect(within(all).getByRole('button', { name: /Casino/ })).toHaveTextContent('2 games')
+    expect(within(popup).getByRole('link', { name: /Roulette/ })).toBeInTheDocument()
+    expect(within(popup).queryByRole('link', { name: /Durak/ })).not.toBeInTheDocument()
+
+    await userEvent.click(within(popup).getByRole('button', { name: 'Close' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('opens every game in a popup from the All banner', async () => {
+    serveGames()
+    renderRoute('/')
+    const all = await screen.findByRole('region', { name: 'All games' })
+    await userEvent.click(await within(all).findByRole('button', { name: /All games/ }))
+
+    const popup = await screen.findByRole('dialog', { name: 'All games' })
+    expect(within(popup).getAllByRole('link')).toHaveLength(5)
   })
 
   it('shows the games the player played last, each once', async () => {

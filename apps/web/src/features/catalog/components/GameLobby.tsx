@@ -6,11 +6,14 @@ import { SlotPoster } from '@/features/casino/SlotPoster'
 import { fetchSlots, slotsKey } from '@/features/casino/slots'
 import type { GameSummary } from '../queries'
 import { CategoryBanners } from './CategoryBanners'
+import { CategoryPopup } from './CategoryPopup'
 import { GamePoster } from './GamePoster'
 
 const OTHER = '_other'
 /** The casino category's slug (migration add_casino_category); it also holds the slots. */
 const CASINO = 'casino'
+/** `?category=` for the "All" banner's popup (category slugs never start with "_"). */
+const ALL = '_all'
 
 export type GameGroup = {
   key: string
@@ -68,7 +71,18 @@ export function GameLobby({
       ),
     [games, t, slots.length],
   )
-  const selected = groups.find((group) => group.key === params.get('category')) ?? null
+  const category = params.get('category')
+  const chosen = groups.find((group) => group.key === category) ?? null
+  // On the home page a banner opens its games in a popup (`?category=`, so Back closes it); the grid below
+  // keeps showing every game. Elsewhere the pills filter the grid.
+  const selected = banners ? null : chosen
+  const popup = !banners
+    ? null
+    : category === ALL
+      ? { name: t('casino.allGames'), games, slots }
+      : chosen
+        ? { name: chosen.name, games: chosen.games, slots: chosen.key === CASINO ? slots : [] }
+        : null
 
   const select = (key: string | null) =>
     setParams(
@@ -77,7 +91,8 @@ export function GameLobby({
         else current.delete('category')
         return current
       },
-      { replace: true, preventScrollReset: true },
+      // A popup opens as a new history entry, so the phone's Back button closes it; closing replaces it.
+      { replace: !banners || !key, preventScrollReset: true },
     )
 
   const [query, setQuery] = useState('')
@@ -102,8 +117,7 @@ export function GameLobby({
         <CategoryBanners
           groups={groups}
           total={games.length + slots.length}
-          selected={selected?.key ?? null}
-          onSelect={select}
+          onSelect={(key) => select(key ?? ALL)}
         />
       ) : groups.length < 2 ? null : (
         <div className="surface-walnut mb-5 rounded-card px-4 py-2">
@@ -168,6 +182,14 @@ export function GameLobby({
           </li>
         ))}
       </ul>
+      {popup ? (
+        <CategoryPopup
+          name={popup.name}
+          games={popup.games}
+          slots={popup.slots}
+          onClose={() => select(null)}
+        />
+      ) : null}
     </div>
   )
 }

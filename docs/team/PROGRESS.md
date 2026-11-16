@@ -60,6 +60,9 @@ Owner ticket 2026-11-16 "Homepage UI Improvements" (in progress):
       Rummy and Pool plates tappable (SeatTap) — this commit.
 - [x] Live check (headless Chrome, player1): compact strip on desktop/phone, poker deal order and flips counted in a
       real hand, AI thinking caption + dots, emoji to an AI's avatar, quick message over mine, my avatar emoji 2 s.
+Owner request 2026-11-16 (category popup):
+- [x] On home/dashboard a category banner (and "All") opens its games in a popup (`CategoryPopup`, `?category=`,
+      Back closes it), the whole screen on phones (`Modal fullScreenOnPhone`); the games page keeps its pills — this commit.
 Owner request 2026-11-16 (dashboard screenshot):
 - [x] Level card moved into the welcome strip (compact); under "Top games" the full catalogue by category
       ("All games", as on the landing page), then Try next, Big Wins / rankings — this commit.

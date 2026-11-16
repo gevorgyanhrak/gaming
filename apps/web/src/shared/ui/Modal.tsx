@@ -14,6 +14,7 @@ export function Modal({
   label,
   size = 'md',
   sheetOnPhone = false,
+  fullScreenOnPhone = false,
   scrolls = true,
   lockScroll = true,
   className = '',
@@ -28,6 +29,8 @@ export function Modal({
   label?: string
   size?: keyof typeof sizes
   sheetOnPhone?: boolean
+  /** The whole screen on phones (below `sm`), a popup from there up. */
+  fullScreenOnPhone?: boolean
   /** False when the content has its own scrolling area. */
   scrolls?: boolean
   /** False for a popup that leaves the page's scroll position alone (the emoji picker). */
@@ -67,7 +70,7 @@ export function Modal({
     <div
       className={
         rootClassName ??
-        `fixed inset-0 z-50 flex items-end justify-center ${sheetOnPhone ? 'p-0 sm:items-center sm:p-4' : 'p-3 sm:items-center sm:p-4'}`
+        `fixed inset-0 z-50 flex items-end justify-center ${sheetOnPhone || fullScreenOnPhone ? 'p-0 sm:items-center sm:p-4' : 'p-3 sm:items-center sm:p-4'}`
       }
     >
       <div
@@ -86,10 +89,12 @@ export function Modal({
         aria-describedby={describedBy}
         aria-label={label}
         tabIndex={-1}
-        className={`club-frame relative mb-[env(safe-area-inset-bottom)] w-full outline-none ${sizes[size]} ${scrolls ? 'overflow-y-auto' : 'overflow-hidden'} ${
-          sheetOnPhone
-            ? 'max-h-[85dvh] rounded-t-modal rounded-b-none motion-safe:animate-[sheet-up_260ms_cubic-bezier(0.2,0.8,0.2,1)] sm:rounded-modal'
-            : 'max-h-[calc(100dvh-1.5rem)] rounded-modal motion-safe:animate-rise'
+        className={`club-frame relative w-full outline-none ${sizes[size]} ${fullScreenOnPhone ? 'pb-[env(safe-area-inset-bottom)] sm:pb-0' : 'mb-[env(safe-area-inset-bottom)]'} ${scrolls ? 'overflow-y-auto' : 'overflow-hidden'} ${
+          fullScreenOnPhone
+            ? 'h-dvh max-h-dvh rounded-none pt-[env(safe-area-inset-top)] motion-safe:animate-[sheet-up_260ms_cubic-bezier(0.2,0.8,0.2,1)] sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:rounded-modal sm:pt-0'
+            : sheetOnPhone
+              ? 'max-h-[85dvh] rounded-t-modal rounded-b-none motion-safe:animate-[sheet-up_260ms_cubic-bezier(0.2,0.8,0.2,1)] sm:rounded-modal'
+              : 'max-h-[calc(100dvh-1.5rem)] rounded-modal motion-safe:animate-rise'
         } ${className}`}
       >
         {children}

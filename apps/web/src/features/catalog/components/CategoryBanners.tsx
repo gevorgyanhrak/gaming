@@ -12,18 +12,16 @@ const TINTS = [
 ]
 
 /**
- * The home page's category filter as banners: each category with a fan of its games' posters, its name and how
- * many games it has. One is chosen at a time (pressed); "All" first. They filter the posters below.
+ * The home page's categories as banners: each with a fan of its games' posters, its name and how many games it
+ * has; "All" first. Each opens its games in a popup.
  */
 export function CategoryBanners({
   groups,
   total,
-  selected,
   onSelect,
 }: {
   groups: GameGroup[]
   total: number
-  selected: string | null
   onSelect: (key: string | null) => void
 }) {
   const { t } = useTranslation()
@@ -51,18 +49,13 @@ export function CategoryBanners({
       className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3"
     >
       {options.map((option, i) => {
-        const pressed = selected === option.key
         return (
           <button
             key={option.key ?? 'all'}
             type="button"
-            aria-pressed={pressed}
+            aria-haspopup="dialog"
             onClick={() => onSelect(option.key)}
-            className={`group hover-shine relative flex min-h-32 overflow-hidden rounded-3xl border bg-linear-to-br p-4 text-left shadow-[0_14px_30px_rgb(0_0_0/0.45)] transition duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-text motion-safe:hover:-translate-y-1 sm:min-h-32 ${TINTS[i % TINTS.length]} ${
-              pressed
-                ? 'border-gold shadow-[0_14px_30px_rgb(0_0_0/0.45),0_0_0_2px_rgb(226_184_79/0.6),0_0_30px_rgb(226_184_79/0.3)]'
-                : 'border-gold/25 hover:border-gold/60'
-            } ${i === 0 ? 'col-span-2 lg:col-span-1' : ''}`}
+            className={`group hover-shine relative flex min-h-32 overflow-hidden rounded-3xl border bg-linear-to-br p-4 text-left shadow-[0_14px_30px_rgb(0_0_0/0.45)] transition duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-text motion-safe:hover:-translate-y-1 sm:min-h-32 ${TINTS[i % TINTS.length]} border-gold/25 hover:border-gold/60 ${i === 0 ? 'col-span-2 lg:col-span-1' : ''}`}
           >
             {/* A fan of the category's posters on the right, lifting on hover. */}
             <span
@@ -94,12 +87,6 @@ export function CategoryBanners({
                 {t('casino.gameCount', { count: option.count })}
               </span>
             </span>
-            {pressed ? (
-              <span
-                aria-hidden="true"
-                className="absolute top-3 left-3 size-2.5 rounded-full bg-gold shadow-[0_0_10px_rgb(226_184_79/0.9)]"
-              />
-            ) : null}
           </button>
         )
       })}

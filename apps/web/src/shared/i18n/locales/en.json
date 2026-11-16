@@ -778,6 +778,7 @@
     "quickSeat": "Quick seat",
     "search": "Search games",
     "noMatch": "No game matches “{{query}}”.",
+    "close": "Close",
     "recent": "Recently played"
   },
   "ranks": {
