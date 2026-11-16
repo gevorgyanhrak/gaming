@@ -8,23 +8,36 @@ import { itemLabel } from '../items'
 import { offerLevelUp } from '../popup'
 import { LevelProgress } from './LevelProgress'
 
-/** The signed-in player's level card: the progress bar and what the next level gives. */
-export function LevelCard({ className = '' }: { className?: string }) {
+/**
+ * The signed-in player's level card: the progress bar and what the next level gives. `compact` is the slim
+ * version that sits in the dashboard's welcome strip.
+ */
+export function LevelCard({
+  className = '',
+  compact = false,
+}: {
+  className?: string
+  compact?: boolean
+}) {
   const { t, i18n } = useTranslation()
   const level = useLevel()
   const { data: user } = useCurrentUser()
   // Same height while loading (isLoading: the query is off for guests), so the page doesn't jump when it arrives; a failed level just isn't shown.
-  if (level.isLoading) return <Skeleton className={`h-28 w-full rounded-2xl ${className}`} />
+  if (level.isLoading) {
+    return <Skeleton className={`w-full rounded-2xl ${compact ? 'h-20' : 'h-28'} ${className}`} />
+  }
   if (!level.data) return null
   const next = level.data.next_reward
 
   return (
     <section
       aria-label={t('level.card')}
-      className={`club-panel rounded-2xl border border-gold/25 p-4 sm:p-5 ${className}`}
+      className={`club-panel rounded-2xl border border-gold/25 ${compact ? 'px-3 py-2.5' : 'p-4 sm:p-5'} ${className}`}
     >
       {level.data.pending.length > 0 && user ? (
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-gold/40 bg-gold/10 px-3 py-2">
+        <div
+          className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border border-gold/40 bg-gold/10 px-3 ${compact ? 'mb-2 py-1' : 'mb-3 py-2'}`}
+        >
           <p className="text-sm font-semibold text-gold-light">{t('level.pendingReward')}</p>
           <Button
             variant="gold"
@@ -37,7 +50,9 @@ export function LevelCard({ className = '' }: { className?: string }) {
       ) : null}
       <LevelProgress status={level.data} />
       {next ? (
-        <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
+        <p
+          className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-muted ${compact ? 'mt-1.5 text-xs' : 'mt-3 text-sm'}`}
+        >
           <span>{t('level.nextReward', { level: next.level })}:</span>
           <span className="inline-flex items-center gap-1 font-semibold text-gold-light tabular-nums">
             <FishkaIcon className="size-4" />

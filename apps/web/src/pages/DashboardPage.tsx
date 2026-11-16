@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { GamePoster } from '@/features/catalog/components/GamePoster'
 import { GameShowcase } from '@/features/casino/GameShowcase'
+import { MAIN_GAMES } from '@/features/casino/mainGames'
+import { GameGrid } from '@/features/catalog/components/GameGrid'
 import { LiveBigWins } from '@/features/wins/LiveBigWins'
 import { HomeRankings } from '@/features/rankings/HomeRankings'
 import { useGames, type GameSummary } from '@/features/catalog/queries'
@@ -34,7 +36,7 @@ export function DashboardPage() {
   return (
     <>
       <title>{t('dashboard.title')}</title>
-      {/* A compact welcome strip: who you are, your level, and today's free Fishkas side by side. */}
+      {/* A compact welcome strip: who you are, your level (owner: in the banner), and today's free Fishkas. */}
       <section className="home-hero border-b border-gold/20">
         <Container className="py-3 lg:py-4">
           <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
@@ -55,6 +57,7 @@ export function DashboardPage() {
                 </p>
               </div>
             </div>
+            <LevelCard compact className="w-full bg-black/25 sm:w-80 lg:w-96" />
             <ButtonLink to="/games" variant="gold" className="shrink-0">
               {t('dashboard.play')}
             </ButtonLink>
@@ -67,20 +70,23 @@ export function DashboardPage() {
       </section>
 
       <Container className="space-y-5 pt-5 pb-12">
-        <div className="grid gap-5 lg:grid-cols-[1fr_1.4fr]">
-          <LevelCard className="club-panel-glass" />
-          <TryNext />
-        </div>
-        <section id="showcase" className="scroll-mt-24">
-          <h2 className="mb-3 text-2xl font-bold text-fg">{t('dashboard.gamesHeading')}</h2>
+        <section id="showcase" aria-labelledby="top-games" className="scroll-mt-24">
+          <h2 id="top-games" className="mb-3 text-2xl font-bold text-fg">
+            {t('casino.topGames')}
+          </h2>
           <GameShowcase />
-          <div className="mt-5">
-            <div className="grid gap-5 lg:grid-cols-2">
-              <LiveBigWins />
-              <HomeRankings />
-            </div>
-          </div>
         </section>
+        <section id="games" aria-labelledby="all-games" className="scroll-mt-24">
+          <h2 id="all-games" className="mb-3 text-2xl font-bold text-fg">
+            {t('casino.allGames')}
+          </h2>
+          <GameGrid banners exclude={MAIN_GAMES} />
+        </section>
+        <TryNext />
+        <div className="grid gap-5 lg:grid-cols-2">
+          <LiveBigWins />
+          <HomeRankings />
+        </div>
         <DashboardGames />
       </Container>
     </>
