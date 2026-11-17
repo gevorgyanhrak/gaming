@@ -15,6 +15,7 @@ decisions are in `ARCHITECTURE.md` and `adr/`.
 | MySQL 8.4 | managed service or own instance, InnoDB, utf8mb4 | primary (+ replica for backups) |
 | Redis A | `maxmemory-policy noeviction`, AOF on: queues, Horizon, locks, matchmaking, live game state | one |
 | Redis B | `maxmemory-policy allkeys-lru`: cache, sessions, rate limits | one |
+| Slot engine | `services/slot-engine/Dockerfile` (`slot-engine serve`, port 8090), ADR 0026 | stateless, any number; private network only |
 
 The scheduler sweeps matchmaking and ends games for players who left their game page (both every 5
 seconds), lifts expired bans every minute and prunes old
@@ -104,8 +105,10 @@ middle of games is fine.
 - For the SPA host, a Content Security Policy along the lines of `default-src 'self'; connect-src 'self'
   https://api.example.com wss://ws.example.com; img-src 'self' data: https:; style-src 'self'
   'unsafe-inline'; frame-ancestors 'none'`.
-- Expose only nginx (HTTPS) and Reverb (WSS). MySQL, both Redis instances and php-fpm stay on the
-  private network; set Redis passwords.
+- Expose only nginx (HTTPS) and Reverb (WSS). MySQL, both Redis instances, php-fpm and the slot engine stay on
+  the private network; set Redis passwords. The slot engine needs `SLOT_ENGINE_KEY` (a long random value, the
+  same for the engine and the API) and the API `SLOT_ENGINE_URL`; after a release with engine changes run
+  `php artisan slots:engine-sync`.
 - Rate limits (login, codes, lookups, gameplay) are per IP or user; with a proxy in front they only work
   when `TRUSTED_PROXIES` is right.
 - Horizon's dashboard (`/horizon`) and the admin panel are for staff only (`viewHorizon` gate, admin
