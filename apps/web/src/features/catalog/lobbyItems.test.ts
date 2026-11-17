@@ -23,6 +23,8 @@ const slot = (slug: string): LobbyItem => ({
     slug,
     name: slug,
     provider: 'APEXSLOTS',
+    studio: null,
+    kind: 'house',
     image_url: null,
     min_bet: 10,
     max_bet: 1000,

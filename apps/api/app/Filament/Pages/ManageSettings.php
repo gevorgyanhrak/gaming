@@ -187,6 +187,12 @@ class ManageSettings extends Page
                         TextInput::make('levels.reward_default')->label('Fishkas for a level without its own reward')
                             ->numeric()->integer()->required()->minValue(0)->maxValue(1000000),
                     ]),
+                Section::make('Engine slots')->columns(2)
+                    ->description('Slots run by the internal slot engine (ADR 0026). Each game uses its reel set closest to this RTP.')
+                    ->schema([
+                        TextInput::make('slots.engine_rtp')->label('Return to player, %')
+                            ->numeric()->integer()->required()->minValue(85)->maxValue(99),
+                    ]),
                 Section::make('Rankings')->columns(2)
                     ->description('Each listed game has its own Top 10 by points, AI included; points change once per finished game.')
                     ->schema([

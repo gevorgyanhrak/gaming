@@ -1,7 +1,8 @@
 # Slotopol server — source audit (2026-11-17)
 
 Source: https://github.com/slotopol/server, commit `db45081` ("independent EvD & Efs."), cloned with `--depth 1` into
-`services/slot-engine/` (not committed yet — waiting on the owner's decision below). 1,069 files, 9.7 MB.
+`services/slot-engine/`. **Outcome:** the owner chose option 3 (makers' names) — ADR 0026; the removals below were
+done (`services/slot-engine/UPSTREAM.md`), the integration is in `SLOT_ENGINE_INTEGRATION.md`. 1,069 files, 9.7 MB.
 
 ## Licence
 
@@ -13,7 +14,7 @@ Source: https://github.com/slotopol/server, commit `db45081` ("independent EvD &
   matching the originals (comments link to the commercial games). The MIT licence lets us use the author's *code*; it
   cannot grant rights to Novomatic's, NetEnt's, IGT's, Aristocrat's, Playtech's, Play'n GO's, BetSoft's, AGT's,
   CT Interactive's or Megajack's trademarks and game designs. Showing these games under those names and providers
-  would present them as those companies' products. **Not integrated until the owner decides** (see "Decision").
+  would present them as those companies' products. Decided by the owner: names kept (ADR 0026).
 - The repository has no artwork: it is a server only. Every game would need our own symbols and screens.
 
 ## What the repository contains

@@ -153,6 +153,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/slots/{slug}/engine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1.slots.engine.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/slots/{slug}/engine/spin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1.slots.engine.spin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/me/favorites": {
         parameters: {
             query?: never;
@@ -1103,6 +1135,16 @@ export interface components {
             group?: string | null;
             bet?: number | null;
         };
+        /**
+         * EngineSpinRequest
+         * @description An engine slot spin (ADR 0026): the bet per line in Fishkas, the lines (for games that let you choose), and the
+         *     client's one-time key for this spin (a retry sends it again). In free games both are ignored: the game keeps its own.
+         */
+        EngineSpinRequest: {
+            bet: number;
+            lines?: number;
+            key: string;
+        };
         /** FishkaTransactionResource */
         FishkaTransactionResource: {
             id: number;
@@ -1425,6 +1467,13 @@ export interface components {
             slug: string;
             name: string;
             provider: string;
+            /** @description Who made the game (engine slots: its original maker, e.g. "Novomatic"); null when not known. */
+            studio: string | null;
+            /**
+             * @description How the web app plays it: house (its own client page), engine (our slot screen), external (launch).
+             * @enum {string}
+             */
+            kind: "house" | "engine" | "external";
             image_url: string | null;
             min_bet: number;
             max_bet: number;
@@ -1968,6 +2017,88 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.slots.engine.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            slug: string;
+                            name: string;
+                            studio: string | null;
+                            reels: number;
+                            rows: number;
+                            symbols: number;
+                            features: string;
+                            balance: number;
+                            bets: unknown[];
+                            lines: {
+                                min: number;
+                                max: number;
+                                fixed: boolean;
+                                default: number;
+                            };
+                            unit: unknown;
+                            state: {
+                                [key: string]: unknown;
+                            } | string;
+                            free: boolean;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.slots.engine.spin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EngineSpinRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            round_id: string | unknown;
+                            bet: number | unknown;
+                            win: number | unknown;
+                            balance: number | unknown;
+                            replay: boolean | unknown;
+                        } & {
+                            [key: string]: unknown;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "v1.me.favorites.index": {

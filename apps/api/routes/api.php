@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\Auth\VerificationController;
 use App\Http\Controllers\Api\V1\CasinoBannerController;
 use App\Http\Controllers\Api\V1\ConfigController;
 use App\Http\Controllers\Api\V1\ContentPageController;
+use App\Http\Controllers\Api\V1\EngineSlotController;
 use App\Http\Controllers\Api\V1\GameController;
 use App\Http\Controllers\Api\V1\HouseSlotController;
 use App\Http\Controllers\Api\V1\LeaderboardController;
@@ -128,6 +129,9 @@ Route::prefix('v1')->name('v1.')->group(function () {
         Route::middleware(['auth:sanctum', 'active', 'touch-last-active'])->group(function () {
             Route::get('slots/{slug}/play', [HouseSlotController::class, 'show'])->middleware('throttle:account')->name('slots.play');
             Route::post('slots/{slug}/spin', [HouseSlotController::class, 'spin'])->middleware('throttle:slot-spin')->name('slots.spin');
+            // Engine slots (ADR 0026): the internal slot engine decides, our wallet pays.
+            Route::get('slots/{slug}/engine', [EngineSlotController::class, 'show'])->middleware('throttle:account')->name('slots.engine.show');
+            Route::post('slots/{slug}/engine/spin', [EngineSlotController::class, 'spin'])->middleware('throttle:slot-spin')->name('slots.engine.spin');
         });
 
         Route::middleware(['auth:sanctum', 'active', 'touch-last-active', 'throttle:game'])

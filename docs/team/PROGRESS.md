@@ -64,9 +64,13 @@ Owner brief 2026-11-17 "Slotopol slot engine integration":
 - [x] Phase 1–2: cloned slotopol/server (db45081, MIT) into `services/slot-engine/` (untracked), audited →
       `docs/casino/SLOT_ENGINE_AUDIT.md` (e1a8096): engine = game/ + prng/ (+ util); platform parts to drop = api/,
       core/, config/, appdata/ (users, clubs, wallet, JWT, SQL, Brevo e-mail — the only outgoing request).
-- [ ] BLOCKED on the owner: the 353 games are re-creations of commercial slots under the makers' trademarks
-      (Novomatic, NetEnt, IGT…); the MIT licence covers the code, not those names/designs. Options in the audit's
-      "Decision"; Slotopol's own 2 games are keno (excluded). No art in the repo.
+- [x] Owner chose: keep the makers' names (ADR 0026). Engine service `services/slot-engine` (Go, internal network,
+      key; platform parts removed — UPSTREAM.md; Fairy Queen index bug patched), `App\Platform\Slots\Engine`
+      (sync, EngineSpins: rounds, free games, state per player, replay), `slots:engine-sync`, setting
+      `slots.engine_rtp`; 347 games measured through our path → 322 verified/on, 25 off (GAME_FEATURES_AUDIT.md);
+      live: all 322 spun via the API, balances exact; Go/Pest tests; CI `slot-engine.yml` — this commit.
+- [ ] Casino frontend for engine slots: generic slot screen (`/casino/slots/:slug` for kind=engine), makers as
+      shelves/filters, search, favourites, recently played.
 Owner brief 2026-11-17 "complete redesign + Latin transliteration search":
 - [x] Search (critical): `features/search/gameSearch.ts` — one alias table by slug (`GAME_ALIASES`), Armenian/Cyrillic →
       Latin, sound folding (kh/h/x, sh, ch, y/i, doubles), prefix / word / inside / one-slip matches (first letter

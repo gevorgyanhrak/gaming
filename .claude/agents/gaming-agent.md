@@ -380,6 +380,11 @@ is not done or not verified, and how to check it manually. Keep it concise.
   simulates; one action `{type:'shoot', angle, power, x?, y?}`; a pause while the balls roll. Actions may carry decimals.
   Rummy: melds are `{type:'meld', cards:'7S,7H,7D'}` in the server's order — the board matches the selection against
   the listed melds, never builds one. Run bot-only games in a loop when adding a game: they find stalls (Rummy had two).
+- Engine slots (ADR 0026): `services/slot-engine` (Go; build/test only in Docker: `docker run … golang:1.27-bookworm`;
+  `go test ./engine`, `slot-engine list|measure`), internal only (`SLOT_ENGINE_URL/KEY`). Laravel side
+  `App\Platform\Slots\Engine` (`EngineSpins`, `EngineSlots::sync` ← `php artisan slots:engine-sync`). After changing
+  the engine: rebuild the container, re-run `measure` into `engine/measured.json`, regenerate GAME_FEATURES_AUDIT.md.
+  Recreating api containers needs `docker compose restart nginx` (502 otherwise).
 - Game search: every name match goes through `features/search/gameSearch` (`search`, `matchTerms`, `termsOf`); a new
   game's other names (Latin spellings of its hy/ru name, English names) go in `GAME_ALIASES` under its slug — never
   a second game entry.

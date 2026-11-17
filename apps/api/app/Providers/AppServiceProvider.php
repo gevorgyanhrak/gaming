@@ -6,6 +6,7 @@ use App\Gameplay\GameRegistry;
 use App\Models\User;
 use App\Platform\Levels\Levels;
 use App\Platform\Settings\Settings;
+use App\Platform\Slots\Engine\EngineSlotAdapter;
 use App\Platform\Slots\House\Games\BumperCrop;
 use App\Platform\Slots\House\Games\DiscoveryVoyage;
 use App\Platform\Slots\House\Games\Fairytale;
@@ -46,7 +47,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(GameRegistry::class);
 
         // Slot provider adapters register under the "slot-adapters" tag (none yet: docs/research/casino-slots.md).
-        $this->app->tag([HouseSlotAdapter::class], 'slot-adapters');
+        $this->app->tag([HouseSlotAdapter::class, EngineSlotAdapter::class], 'slot-adapters');
         $this->app->bind(SlotAdapters::class, fn ($app) => new SlotAdapters($app->tagged('slot-adapters')));
         // House slots (ADR 0024): open-source games whose rounds our server deals.
         $this->app->tag([StellarSevens::class, NitroHot::class, ScorchingHot::class, TropicEscape::class, PearlReef::class, DiscoveryVoyage::class, GoldenPapyrus::class, HouseOfRa::class, Samurai::class, TheDynasty::class, Fairytale::class, BumperCrop::class], 'house-slots');

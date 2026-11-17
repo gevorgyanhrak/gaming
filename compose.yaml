@@ -29,6 +29,9 @@ x-php: &php
     REVERB_HOST: reverb
     REVERB_PORT: 8080
     REVERB_SCHEME: http
+    # The slot engine (ADR 0026), reached on the internal network only.
+    SLOT_ENGINE_URL: http://slot-engine:8090
+    SLOT_ENGINE_KEY: ${SLOT_ENGINE_KEY:-local-dev-slot-engine-key-0123456789abcdef}
   depends_on:
     mysql:
       condition: service_healthy
@@ -100,6 +103,14 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+    restart: unless-stopped
+
+  # Slot engine (ADR 0026): the Slotopol games behind an internal API. No published port: only the API calls it.
+  slot-engine:
+    build:
+      context: ./services/slot-engine
+    environment:
+      SLOT_ENGINE_KEY: ${SLOT_ENGINE_KEY:-local-dev-slot-engine-key-0123456789abcdef}
     restart: unless-stopped
 
   mailpit:
