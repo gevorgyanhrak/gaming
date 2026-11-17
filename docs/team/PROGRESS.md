@@ -60,6 +60,16 @@ Owner ticket 2026-11-16 "Homepage UI Improvements" (in progress):
       Rummy and Pool plates tappable (SeatTap) — this commit.
 - [x] Live check (headless Chrome, player1): compact strip on desktop/phone, poker deal order and flips counted in a
       real hand, AI thinking caption + dots, emoji to an AI's avatar, quick message over mine, my avatar emoji 2 s.
+Owner brief 2026-11-17 "poker turn, bets, AI avatars, chat/emoji":
+- [x] Turn: the "waiting for X" line is gone; `games/poker/Controls.tsx` `TurnHeader` (Your turn · Action required /
+      Thinking time + the actor's face / Waiting for players / Next hand) with a run-down bar (red under 10 s), the
+      acting chair breathes (`turn-glow`), a light glides to the acting seat, seconds on the seat's plate; the room's
+      caption steps aside for poker (trait `turnOnBoard`). Bets: chips 10/20/50/100 (first tap at least the minimum,
+      next taps add; clamp to max), MORE opens a big slider above the chips (min/max, ±big blind, ½ pot / pot,
+      Confirm); only server-offered actions incl. ALL-IN. AI faces: 200 Avataaars portraits in `public/ai`
+      (`shared/lib/aiPortraits`, `tableFaces` keeps them distinct at a table). Reactions: sends worked in a live
+      check (201 for every avatar, mine and AI); quick-message bubbles now name the recipient ("player1 → Levon").
+      Live: chips raise 180, MORE custom amount, check, call, fold, all-in — all accepted; desktop + 390 px.
 Owner brief 2026-11-17 "mobile QA, counter, card hover, logo":
 - [x] Mobile QA at 375/390/414/768/1024/1440 (guest 9 pages, signed in 14 pages, 11 game tables vs AI at 375–768):
       header fits at 375 with the logo, poker side seats on screen on phones, 44 px tap targets for the back /

@@ -71,6 +71,8 @@ export interface GameTraits {
   modeCards?: (bet: number, seats: number) => number
   /** A winner's score of 2 is a double win (Nardi's mars); elsewhere the score is just points. */
   mars?: boolean
+  /** The board shows whose turn it is itself (poker's turn header and seat clock): the room page's caption stays away. */
+  turnOnBoard?: boolean
 }
 
 const pieces = (view: View) =>
@@ -109,6 +111,7 @@ export const traits: Partial<Record<string, GameTraits>> = {
     },
     nextRound: 'poker.nextHand',
     buyIn: 'play.pokerBuyIn',
+    turnOnBoard: true,
   },
   blackjack: {
     seatsOnBoard: true,

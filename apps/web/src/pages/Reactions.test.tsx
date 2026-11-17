@@ -155,6 +155,8 @@ describe('Emojis and quick messages', () => {
     // Your seat is low on the screen (600), Bob's high (100): the bubble stays down by yours.
     await waitFor(() => expect(flights.some((f) => f.text.includes('GG!'))).toBe(true))
     const bubble = flights.find((f) => f.text.includes('GG!'))!
+    // …and says whom it is for.
+    expect(bubble.text).toMatch(/→ Bob/)
     expect(yOf(bubble.frames.at(-1))).toBeGreaterThan(400)
     expect(yOf(bubble.frames[0])).toBeGreaterThan(400)
   })

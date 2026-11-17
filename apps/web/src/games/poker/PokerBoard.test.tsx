@@ -91,11 +91,13 @@ describe('PokerBoard', () => {
       />,
     )
 
+    // More: the slider's presets, then the confirmation.
+    await userEvent.click(screen.getByRole('button', { name: 'More' }))
+    expect(screen.getByRole('button', { name: 'Less' })).toHaveAttribute('aria-expanded', 'true')
     await userEvent.click(screen.getByRole('button', { name: 'Pot' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Raise to 35' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Confirm 35' }))
     expect(onAction).toHaveBeenLastCalledWith({ type: 'raise', amount: 35 })
 
-    await userEvent.click(screen.getByRole('button', { name: 'All-in' }))
     await userEvent.click(screen.getByRole('button', { name: 'All-in 1,000' }))
     expect(onAction).toHaveBeenLastCalledWith({ type: 'raise', amount: 1000 })
   })
@@ -123,7 +125,9 @@ describe('PokerBoard', () => {
       />,
     )
 
-    expect(screen.getByText('Waiting for Aram.')).toBeInTheDocument()
+    // Whose turn it is: the acting player under "Thinking time".
+    expect(screen.getByText('Thinking time')).toBeInTheDocument()
+    expect(screen.getAllByText('Aram').length).toBeGreaterThan(1)
     expect(screen.getByText(/You won 200 chips — a pair/)).toBeInTheDocument()
     expect(screen.getByRole('img', { name: 'Queen of diamonds' })).toBeInTheDocument()
   })
@@ -172,7 +176,7 @@ describe('PokerBoard', () => {
       expect(screen.getByRole('status')).toHaveTextContent(
         'Hand 4: You win 150 chips — with a pair',
       )
-      expect(screen.getByText(/^Next hand in \d+ seconds?$/)).toBeInTheDocument()
+      expect(document.querySelector('[data-turn="next"]')).toHaveTextContent(/^Next hand/)
     })
 
     it('names another winner, and a fold win shows no cards', () => {

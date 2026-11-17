@@ -109,6 +109,6 @@ describe('Player card', () => {
     // Its character, and its drawn face (never a photo).
     expect(within(card).getByText('Style: Bold')).toBeInTheDocument()
     expect(within(card).getByText(/raises and bets big/)).toBeInTheDocument()
-    expect(card.querySelector('svg rect')).not.toBeNull()
+    expect(card.querySelector('img[src*="/ai/"]')).not.toBeNull()
   })
 })

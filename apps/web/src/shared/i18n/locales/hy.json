@@ -562,7 +562,30 @@
     "nextHandIn_one": "Հաջորդ բաժանումը {{count}} վայրկյանից",
     "nextHandIn_other": "Հաջորդ բաժանումը {{count}} վայրկյանից",
     "infoBlinds": "Բլայնդներ",
-    "infoHand": "Բաժանում"
+    "infoHand": "Բաժանում",
+    "turn": {
+      "yours": "Ձեր քայլն է",
+      "action": "Ընտրեք գործողությունը",
+      "thinking": "Մտածելու ժամանակ",
+      "waiting": "Սպասում ենք խաղացողներին",
+      "nextHand": "Հաջորդ բաժանումը",
+      "seconds": "{{count}} վ",
+      "left_one": "Մնաց {{count}} վայրկյան",
+      "left_other": "Մնաց {{count}} վայրկյան"
+    },
+    "bets": {
+      "add": "Ավելացնել {{amount, number}}",
+      "more": "Ավելին",
+      "less": "Թաքցնել",
+      "clear": "Զրոյացնել",
+      "yours": "Ձեր խաղադրույքը",
+      "min": "Նվազ.",
+      "max": "Առավ.",
+      "confirm": "Հաստատել",
+      "custom": "Ընտրեք գումարը",
+      "decrease": "Պակասեցնել {{amount, number}}-ով",
+      "increase": "Ավելացնել {{amount, number}}-ով"
+    }
   },
   "activeGame": {
     "playing": "Դուք խաղի մեջ եք՝ {{game}}։",

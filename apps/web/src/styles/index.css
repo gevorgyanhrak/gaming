@@ -281,6 +281,42 @@
     }
   }
 
+  /* The player to act: their chair breathes in the turn colour. */
+  @keyframes turn-glow {
+    50% {
+      box-shadow:
+        0 0 0 3px var(--color-turn),
+        0 0 40px rgb(242 193 78 / 0.85);
+    }
+  }
+
+  /* A betting chip tapped: it jumps and settles; its "+N" rises off it. */
+  @keyframes chip-pop {
+    40% {
+      transform: translateY(-7px) scale(1.12);
+    }
+  }
+  @keyframes chip-plus {
+    from {
+      opacity: 0;
+      transform: translate(-50%, 4px);
+    }
+    25% {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+      transform: translate(-50%, -26px);
+    }
+  }
+
+  /* A changed amount: the number pops a little. */
+  @keyframes amount-pop {
+    40% {
+      transform: scale(1.12);
+    }
+  }
+
   /* An all-in seat: its chair pulses red while its chips are all in the pot. */
   @keyframes all-in-pulse {
     50% {
@@ -991,6 +1027,102 @@
       0 6px 14px rgb(7 30 24 / 0.55),
       inset 0 2px 2px rgb(255 214 160 / 0.18),
       inset 0 -6px 10px rgb(0 0 0 / 0.4);
+  }
+
+  /* The large bet slider under "More": a gold fill up to the amount (--fill), a chip-like thumb. */
+  .poker-range {
+    appearance: none;
+    height: 2.75rem;
+    background: transparent;
+    cursor: pointer;
+  }
+  .poker-range::-webkit-slider-runnable-track {
+    height: 0.6rem;
+    border-radius: 9999px;
+    background: linear-gradient(
+      90deg,
+      var(--color-gold-light),
+      var(--color-gold) var(--fill, 0%),
+      rgb(255 255 255 / 0.14) var(--fill, 0%)
+    );
+    box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.5);
+  }
+  .poker-range::-moz-range-track {
+    height: 0.6rem;
+    border-radius: 9999px;
+    background: linear-gradient(
+      90deg,
+      var(--color-gold-light),
+      var(--color-gold) var(--fill, 0%),
+      rgb(255 255 255 / 0.14) var(--fill, 0%)
+    );
+  }
+  .poker-range::-webkit-slider-thumb {
+    appearance: none;
+    margin-top: -0.7rem;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+    border: 3px dashed #f4f1e8;
+    background: radial-gradient(circle at 35% 30%, #fff6 0, transparent 55%), #1d1a20;
+    box-shadow:
+      0 0 0 2px var(--color-gold),
+      0 4px 10px rgb(0 0 0 / 0.5);
+    transition: transform 150ms;
+  }
+  .poker-range::-moz-range-thumb {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+    border: 3px dashed #f4f1e8;
+    background: #1d1a20;
+    box-shadow:
+      0 0 0 2px var(--color-gold),
+      0 4px 10px rgb(0 0 0 / 0.5);
+  }
+  .poker-range:active::-webkit-slider-thumb {
+    transform: scale(1.12);
+  }
+  .poker-range:focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 4px;
+    border-radius: 9999px;
+  }
+
+  /* A casino chip: striped edge, inset ring, the value on its face (--chip: its colour; --chip-edge: the stripes). */
+  .poker-chip {
+    --chip: #2f6fd6;
+    --chip-edge: #f4f1e8;
+    position: relative;
+    display: grid;
+    place-items: center;
+    border-radius: 9999px;
+    background: repeating-conic-gradient(
+      from 11.25deg,
+      var(--chip) 0deg 22.5deg,
+      var(--chip-edge) 22.5deg 33.75deg,
+      var(--chip) 33.75deg 45deg
+    );
+    box-shadow:
+      0 3px 0 color-mix(in oklab, var(--chip) 55%, black),
+      0 7px 12px rgb(0 0 0 / 0.45),
+      inset 0 0 0 1.5px rgb(0 0 0 / 0.25);
+  }
+  .poker-chip::before {
+    content: '';
+    position: absolute;
+    inset: 15%;
+    border-radius: inherit;
+    background:
+      radial-gradient(circle at 35% 30%, rgb(255 255 255 / 0.35), transparent 55%), var(--chip);
+    box-shadow:
+      0 0 0 2px color-mix(in oklab, var(--chip) 60%, black),
+      inset 0 0 0 2px rgb(255 255 255 / 0.55);
+    outline: 1.5px dashed rgb(255 255 255 / 0.65);
+    outline-offset: -5px;
+  }
+  .poker-chip > * {
+    position: relative;
   }
 }
 

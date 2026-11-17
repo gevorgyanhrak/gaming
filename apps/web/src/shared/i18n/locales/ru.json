@@ -596,7 +596,32 @@
     "nextHandIn_many": "Следующая раздача через {{count}} секунд",
     "nextHandIn_other": "Следующая раздача через {{count}} секунды",
     "infoBlinds": "Блайнды",
-    "infoHand": "Раздача"
+    "infoHand": "Раздача",
+    "turn": {
+      "yours": "Ваш ход",
+      "action": "Выберите действие",
+      "thinking": "Время на раздумье",
+      "waiting": "Ожидание игроков",
+      "nextHand": "Следующая раздача",
+      "seconds": "{{count}} с",
+      "left_one": "Осталась {{count}} секунда",
+      "left_few": "Осталось {{count}} секунды",
+      "left_many": "Осталось {{count}} секунд",
+      "left_other": "Осталось {{count}} секунды"
+    },
+    "bets": {
+      "add": "Добавить {{amount, number}}",
+      "more": "Ещё",
+      "less": "Скрыть",
+      "clear": "Сбросить",
+      "yours": "Ваша ставка",
+      "min": "Мин.",
+      "max": "Макс.",
+      "confirm": "Подтвердить",
+      "custom": "Выберите сумму",
+      "decrease": "Меньше на {{amount, number}}",
+      "increase": "Больше на {{amount, number}}"
+    }
   },
   "activeGame": {
     "playing": "У вас идёт партия: {{game}}.",

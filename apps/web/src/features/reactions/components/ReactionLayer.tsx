@@ -115,6 +115,11 @@ export function ReactionLayer({
             key={reaction.id}
             reaction={reaction}
             sender={names[reaction.from_seat] ?? ''}
+            recipient={
+              reaction.to_seat !== null && reaction.to_seat !== reaction.from_seat
+                ? names[reaction.to_seat]
+                : undefined
+            }
             onLanded={onLanded}
           />
         ),
@@ -132,10 +137,13 @@ function Skip({ id, onLanded }: { id: string; onLanded: (id: string) => void }) 
 function Flight({
   reaction,
   sender,
+  recipient,
   onLanded,
 }: {
   reaction: Reaction
   sender: string
+  /** Whom a message was sent to (a message always shows over its sender, so it names them). */
+  recipient?: string
   onLanded: (id: string) => void
 }) {
   const { t } = useTranslation()
@@ -298,7 +306,9 @@ function Flight({
     >
       {message ? (
         <>
-          <span className="block truncate text-xs font-bold text-gold-light">{sender}</span>
+          <span className="block truncate text-xs font-bold text-gold-light">
+            {recipient ? `${sender} → ${recipient}` : sender}
+          </span>
           {messageText(t, reaction.value)}
         </>
       ) : (

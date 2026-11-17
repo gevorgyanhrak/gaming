@@ -5,6 +5,7 @@ import { Avatar } from '@/shared/ui/Avatar'
 import { Badge } from '@/shared/ui/Badge'
 import type { ParticipantResult, Room } from '../api'
 import { resultLabel, resultTone } from '../labels'
+import { tableFaces } from '@/shared/lib/aiPortraits'
 
 /** 4:05, 0:09 */
 const formatClock = (seconds: number) =>
@@ -31,6 +32,9 @@ export function PlayerList({
 }) {
   const { t } = useTranslation()
   const duel = room.participants.length === 2
+  const faces = tableFaces(
+    room.participants.filter((p) => p.is_bot).map((p) => ({ seat: p.seat, name: p.name ?? '' })),
+  )
   // You first: on the left of a duel.
   const players = [...room.participants].sort(
     (a, b) => Number(b.seat === mySeat) - Number(a.seat === mySeat) || a.seat - b.seat,
@@ -53,6 +57,7 @@ export function PlayerList({
           <Avatar
             url={player.avatar_url}
             ai={player.is_bot}
+            face={faces[player.seat]}
             name={player.name ?? '?'}
             size="md"
             level={player.level}

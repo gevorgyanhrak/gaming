@@ -15,6 +15,7 @@ import { useCardLabel } from '../cards/cards'
 import { dealCard, flipCard, settleCards } from '../cards/motion'
 import { CardBack, PlayingCard } from '../cards/PlayingCard'
 import type { BoardProps } from '../registry'
+import { BetControls, TurnHeader, type Raise } from './Controls'
 import { ChipFlight, ResultPlate } from './HandResult'
 import { handKeys, summarize, type LastHand } from './result'
 
@@ -60,10 +61,7 @@ export default function PokerBoard({
   const view = state.view as unknown as PokerView
   const me = state.seat ?? 0
   const actions = state.legal_actions as unknown as PokerAction[]
-  const raise = actions.find(
-    (a): a is Extract<PokerAction, { type: 'raise' }> => a.type === 'raise',
-  )
-  const [amount, setAmount] = useState<number | null>(null)
+  const raise = actions.find((a): a is Raise => a.type === 'raise')
   const [handOnLoad] = useState(() => view.last_hand?.number ?? 0)
 
   // Moments between one view and the next (React's "props changed" pattern, during render): who went all-in,
@@ -115,19 +113,13 @@ export default function PokerBoard({
 
   const owe = Math.max(0, view.current_bet - (view.bets[me] ?? 0))
   const callAmount = Math.min(owe, view.stacks[me] ?? 0)
-  const raiseTo = raise ? Math.min(raise.max, Math.max(raise.min, amount ?? raise.min)) : 0
   const name = (seat: number) =>
     seat === me ? t('poker.you') : players[seat] || t('poker.seat', { seat: seat + 1 })
   const has = (type: PokerAction['type']) => actions.some((a) => a.type === type)
-  const send = (action: Parameters<BoardProps['onAction']>[0]) => {
-    setAmount(null)
-    onAction(action)
-  }
   const presets = raise
     ? [
         { label: t('poker.halfPot'), value: view.current_bet + Math.round(view.pot / 2) },
         { label: t('poker.pot'), value: view.current_bet + view.pot + owe },
-        { label: t('poker.allIn'), value: raise.max },
       ]
     : []
 
@@ -282,7 +274,7 @@ export default function PokerBoard({
     <div ref={tableRef} className="space-y-5 text-white">
       {/* The room: a dark patterned stage, the table on it, the table's info in the corner. */}
       <div className="poker-stage relative rounded-3xl px-7 pt-14 pb-12 min-[901px]:px-14 min-[901px]:pt-[4.5rem] min-[901px]:pb-12">
-        <div className="relative mx-auto aspect-[3/4] w-full max-w-[max(18rem,min(36rem,calc((100dvh-24rem)*0.75)))] min-[901px]:aspect-[2.45/1] min-[901px]:max-w-[min(64rem,calc((100dvh-25.5rem)*2.45))]">
+        <div className="relative mx-auto aspect-[3/4] w-full max-w-[max(18rem,min(36rem,calc((100dvh-24rem)*0.75)))] min-[901px]:aspect-[2.45/1] min-[901px]:max-w-[min(64rem,calc((100dvh-29rem)*2.45))]">
           <div aria-hidden="true" className="poker-rail absolute inset-0 rounded-[50%]">
             <div className="poker-felt relative h-full w-full overflow-hidden rounded-[50%]">
               <SpadeMark />
@@ -360,6 +352,14 @@ export default function PokerBoard({
                 </ChipFlight>
               ))
             : null}
+          {/* A soft light under the player to act; it glides round the table as the turn moves. */}
+          <span
+            aria-hidden="true"
+            className={`pointer-events-none absolute size-36 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgb(242_193_78/0.38),rgb(242_193_78/0.12)_45%,transparent_70%)] transition-[left,top,opacity] duration-500 ease-soft motion-reduce:transition-none min-[901px]:size-48 ${
+              view.to_act === null || view.street === 'over' ? 'opacity-0' : 'opacity-100'
+            }`}
+            style={spot(view.to_act ?? me, narrow ? 44 : 50, 50)}
+          />
           <ul aria-label={t('poker.seats')}>
             {view.stacks.map((stack, seat) => {
               const acting = view.to_act === seat
@@ -412,7 +412,7 @@ export default function PokerBoard({
                           // The player to act: their chair lights up in the turn colour (the ring
                           // round the frame is the timer; a hand winner glows gold instead).
                           acting
-                            ? 'shadow-[0_0_0_2px_var(--color-turn),0_0_26px_rgb(242_193_78/0.65)]'
+                            ? 'shadow-[0_0_0_2px_var(--color-turn),0_0_26px_rgb(242_193_78/0.65)] motion-safe:animate-[turn-glow_1.6s_ease-in-out_infinite]'
                             : allIn
                               ? 'shadow-[0_0_0_2px_#ff7a45,0_0_18px_rgb(255_90_50/0.5)] motion-safe:animate-[all-in-pulse_1.4s_ease-in-out_infinite]'
                               : ''
@@ -496,7 +496,15 @@ export default function PokerBoard({
                       <span className="block text-xs font-bold text-gold tabular-nums">
                         {stack.toLocaleString(i18n.language)}
                       </span>
-                      {status ? (
+                      {acting && secondsLeft !== null && !status ? (
+                        // The acting player's clock on their plate (red in the last seconds).
+                        <span
+                          aria-hidden="true"
+                          className={`absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-2 py-0.5 text-[0.7rem] font-extrabold whitespace-nowrap tabular-nums shadow ${secondsLeft <= 10 ? 'bg-[#d8412f] text-white' : 'bg-[var(--color-turn)] text-black'}`}
+                        >
+                          {t('poker.turn.seconds', { count: secondsLeft })}
+                        </span>
+                      ) : status ? (
                         <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-black/80 px-2 py-0.5 text-[0.65rem] font-semibold whitespace-nowrap uppercase">
                           {status}
                         </span>
@@ -553,95 +561,39 @@ export default function PokerBoard({
             : [0, 1].map((i) => <CardBack key={i} size="lg" />)}
         </div>
 
-        {actions.length > 0 ? (
-          <div className="flex w-full flex-col gap-3">
-            <div className="grid grid-cols-3 gap-2">
-              {has('fold') ? (
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={() => send({ type: 'fold' })}
-                  className={`${actionButton} border-[#a8473c]/60 bg-linear-to-b from-[#8e3a31] to-[#5e211b] text-white`}
-                >
-                  {t('poker.fold')}
-                </button>
-              ) : null}
-              {has('check') ? (
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={() => send({ type: 'check' })}
-                  className={`${actionButton} border-gold/40 bg-linear-to-b from-gold-light to-gold text-black`}
-                >
-                  {t('poker.check')}
-                </button>
-              ) : null}
-              {has('call') ? (
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={() => send({ type: 'call' })}
-                  className={`${actionButton} border-gold/40 bg-linear-to-b from-gold-light to-gold text-black`}
-                >
-                  {t('poker.call', { amount: callAmount })}
-                </button>
-              ) : null}
-              {raise ? (
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={() => send({ type: 'raise', amount: raiseTo })}
-                  className={`${actionButton} border-white/20 bg-linear-to-b from-accent-light to-accent text-white`}
-                >
-                  {raiseTo === raise.max
-                    ? t('poker.allInAmount', { amount: raiseTo })
-                    : view.current_bet === 0
-                      ? t('poker.betTo', { amount: raiseTo })
-                      : t('poker.raiseTo', { amount: raiseTo })}
-                </button>
-              ) : null}
-            </div>
-            {raise && raise.max > raise.min ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <input
-                  type="range"
-                  min={raise.min}
-                  max={raise.max}
-                  step={1}
-                  value={raiseTo}
-                  onChange={(e) => setAmount(Number(e.target.value))}
-                  aria-label={t('poker.amount')}
-                  className="min-w-32 flex-1 accent-[var(--color-gold)]"
-                />
-                {presets.map((preset) => (
-                  <button
-                    key={preset.label}
-                    type="button"
-                    onClick={() => setAmount(preset.value)}
-                    className="rounded-full border border-gold/35 bg-black/30 px-3 py-1 text-xs font-semibold hover:border-gold"
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        ) : (
-          <p
-            className="w-full rounded-md bg-ivory-100 px-3 py-2 text-center text-sm text-ink"
-            aria-live="polite"
-          >
-            {view.street === 'over' && !state.result
-              ? secondsLeft !== null
-                ? t('poker.nextHandIn', { count: secondsLeft })
-                : t('poker.nextHand')
-              : view.to_act === null
-                ? ' '
-                : faces[view.to_act] !== undefined
-                  ? t('room.thinking', { name: name(view.to_act) })
-                  : t('poker.waitingFor', { name: name(view.to_act) })}
-          </p>
-        )}
+        <div className="flex w-full min-w-0 flex-col gap-3">
+          {/* Whose turn it is (the plain "waiting for…" line is gone, owner 2026-11-17). */}
+          {view.street === 'over' && !state.result ? (
+            <TurnHeader mode="next" secondsLeft={secondsLeft} share={null} />
+          ) : state.result ? null : actions.length > 0 ? (
+            <TurnHeader mode="mine" secondsLeft={secondsLeft} share={turnShare} />
+          ) : view.to_act === null ? (
+            <TurnHeader mode="waiting" secondsLeft={null} share={null} />
+          ) : (
+            <TurnHeader
+              mode="other"
+              name={name(view.to_act)}
+              face={faces[view.to_act]}
+              secondsLeft={secondsLeft}
+              share={turnShare}
+            />
+          )}
+          {actions.length > 0 ? (
+            <BetControls
+              // A new decision starts from the minimum again.
+              key={`${view.hand}-${view.street}-${view.current_bet}`}
+              raise={raise}
+              has={has}
+              callAmount={callAmount}
+              stack={view.stacks[me] ?? 0}
+              opening={view.current_bet === 0}
+              presets={presets}
+              step={Math.max(1, view.blinds[1])}
+              pending={pending}
+              onSend={onAction}
+            />
+          ) : null}
+        </div>
       </div>
 
       {view.last_hand ? (
@@ -773,9 +725,6 @@ function Avatar({
 /** A bet in front of a seat. */
 const betChip =
   'flex items-center gap-1.5 rounded-full bg-black/55 py-0.5 pr-2.5 pl-1 text-xs font-bold whitespace-nowrap tabular-nums motion-safe:animate-card-in'
-
-const actionButton =
-  'rounded-xl border px-3 py-3 text-sm font-bold shadow-lg shadow-black/40 transition hover:brightness-110 active:translate-y-px disabled:opacity-60 min-[901px]:text-base'
 
 /** The house mark in the middle of the felt. */
 function SpadeMark() {

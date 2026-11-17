@@ -13,6 +13,7 @@ import { canReact } from '@/features/reactions/open'
 import { GroupBadge } from '@/features/play/components/GroupBadge'
 import { SHORT_LANDSCAPE } from '@/features/play/FitStage'
 import { PlayerProfilePopup } from '@/features/players/PlayerProfilePopup'
+import { tableFaces } from '@/shared/lib/aiPortraits'
 import { GameBackdrop } from '@/features/play/components/GameBackdrop'
 import { TableBar } from '@/features/play/components/TableBar'
 import { PlayerList } from '@/features/play/components/PlayerList'
@@ -144,8 +145,9 @@ export function RoomPage() {
     ]),
   )
   // AI seats and the name each one's drawn face is made from.
-  const aiFaces: Partial<Record<number, string>> = Object.fromEntries(
-    data.participants.filter((p) => p.is_bot).map((p) => [p.seat, p.name ?? '']),
+  // Distinct at the table: two AI players never share a portrait (tableFaces).
+  const aiFaces = tableFaces(
+    data.participants.filter((p) => p.is_bot).map((p) => ({ seat: p.seat, name: p.name ?? '' })),
   )
   // Left a multi-player game that goes on without you.
   const leftTable = data.status === 'active' && myResult != null
@@ -184,7 +186,7 @@ export function RoomPage() {
 
   // Whose turn it is: in the bar on wide screens, under it on phones and tablets.
   const turnStatus =
-    data.status === 'active' && view && !leftTable ? (
+    data.status === 'active' && view && !leftTable && !traitsOf(data.game.slug).turnOnBoard ? (
       <div
         // Keyed by whose turn it is: the pill pops once when your turn starts.
         key={myTurn ? 'mine' : 'theirs'}
@@ -222,6 +224,7 @@ export function RoomPage() {
               personality: p.personality,
               level: p.level,
               avatar_url: p.avatar_url,
+              face: aiFaces[p.seat],
             }}
             onClose={() => {
               setCardSeat(null)

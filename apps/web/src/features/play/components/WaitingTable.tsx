@@ -5,6 +5,7 @@ import { LevelBadge } from '@/shared/ui/LevelBadge'
 import { Button } from '@/shared/ui/Button'
 import { FriendsIcon, LinkIcon, ShareIcon } from '@/shared/ui/icons'
 import type { Room } from '../api'
+import { tableFaces } from '@/shared/lib/aiPortraits'
 
 /**
  * A private room before the game: the oval table with a seat for everyone (empty ones still
@@ -21,6 +22,9 @@ export function WaitingTable({
 }) {
   const { t } = useTranslation()
   const bySeat = new Map(room.participants.map((p) => [p.seat, p]))
+  const faces = tableFaces(
+    room.participants.filter((p) => p.is_bot).map((p) => ({ seat: p.seat, name: p.name ?? '' })),
+  )
   const code = room.invite_code
   const link = code ? `${window.location.origin}/join/${code}` : ''
   const canShare = typeof navigator.share === 'function'
@@ -97,6 +101,7 @@ export function WaitingTable({
                       <Avatar
                         url={player.avatar_url}
                         ai={player.is_bot}
+                        face={faces[player.seat]}
                         name={player.name ?? '?'}
                         size="md"
                         frame={player.frame}

@@ -562,7 +562,30 @@
     "nextHandIn_one": "Next hand in {{count}} second",
     "nextHandIn_other": "Next hand in {{count}} seconds",
     "infoBlinds": "Blinds",
-    "infoHand": "Hand"
+    "infoHand": "Hand",
+    "turn": {
+      "yours": "Your turn",
+      "action": "Action required",
+      "thinking": "Thinking time",
+      "waiting": "Waiting for players",
+      "nextHand": "Next hand",
+      "seconds": "{{count}}s",
+      "left_one": "{{count}} second left",
+      "left_other": "{{count}} seconds left"
+    },
+    "bets": {
+      "add": "Add {{amount, number}}",
+      "more": "More",
+      "less": "Less",
+      "clear": "Clear",
+      "yours": "Your bet",
+      "min": "Min",
+      "max": "Max",
+      "confirm": "Confirm",
+      "custom": "Choose an amount",
+      "decrease": "Less by {{amount, number}}",
+      "increase": "More by {{amount, number}}"
+    }
   },
   "activeGame": {
     "playing": "You are in a game of {{game}}.",

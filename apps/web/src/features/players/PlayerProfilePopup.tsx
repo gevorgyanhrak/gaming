@@ -18,6 +18,8 @@ export interface PopupPlayer {
   name: string
   username: string | null
   is_bot: boolean
+  /** An AI's face key at the table it was opened from (`tableFaces`). */
+  face?: string
   /** An AI player's character (cautious, bold, tricky, steady). */
   personality?: string | null
   level: number
@@ -80,6 +82,7 @@ export function PlayerProfilePopup({
               level={player.level}
               size="md"
               ai={player.is_bot}
+              face={player.face}
             />
             {c?.online ? (
               <span

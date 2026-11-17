@@ -22,11 +22,14 @@ export function Avatar({
   level,
   frame,
   ai = false,
+  face: faceKey,
 }: {
   url: string | null
   name: string
   /** An AI player: its drawn face when it has no picture. */
   ai?: boolean
+  /** The AI's face key at its table (`tableFaces`), when it differs from its name. */
+  face?: string
   size?: keyof typeof sizes
   level?: number | null
   frame?: string | null
@@ -37,7 +40,7 @@ export function Avatar({
     <span
       className={`${sizes[size]} inline-flex shrink-0 overflow-hidden rounded-full border border-sky-300/40`}
     >
-      <AiFace name={name} className="size-full" />
+      <AiFace name={faceKey ?? name} className="size-full" />
     </span>
   ) : (
     <span
