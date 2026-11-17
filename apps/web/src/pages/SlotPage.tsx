@@ -35,7 +35,10 @@ export function SlotPage() {
     <Container className="py-4">
       {slot ? <title>{slot.name}</title> : null}
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <Link to="/" className="text-sm font-semibold text-accent-text hover:underline">
+        <Link
+          to="/"
+          className="inline-flex min-h-11 items-center text-sm font-semibold text-accent-text hover:underline"
+        >
           ← {t('slots.back')}
         </Link>
         <p className="text-xs text-muted">{t('slots.playMoney')}</p>

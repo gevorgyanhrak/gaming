@@ -44,7 +44,7 @@ export function GameShowcase() {
             >
               <Link
                 to={`/games/${game.slug}`}
-                className="group hover-shine relative flex h-full flex-col overflow-hidden rounded-[1.6rem] border border-white/10 bg-night-800 shadow-[0_24px_50px_-20px_rgb(0_0_0/0.85)] transition duration-300 hover:border-gold/60 hover:shadow-[0_30px_60px_-20px_rgb(0_0_0/0.9),0_0_0_1px_rgb(245_192_79/0.35),0_0_48px_-8px_rgb(245_192_79/0.4)] focus-visible:outline-2 focus-visible:outline-accent-text motion-safe:hover:-translate-y-2"
+                className="group hover-shine relative flex h-full flex-col overflow-hidden rounded-[1.6rem] border border-white/10 bg-night-800 shadow-[0_24px_50px_-20px_rgb(0_0_0/0.85)] transition duration-300 hover:border-gold/60 hover:shadow-[0_30px_60px_-20px_rgb(0_0_0/0.9),0_0_0_1px_rgb(245_192_79/0.35),0_0_48px_-8px_rgb(245_192_79/0.4)] focus-visible:outline-2 focus-visible:outline-accent-text motion-safe:hover:scale-[1.02]"
               >
                 {theme ? (
                   <span

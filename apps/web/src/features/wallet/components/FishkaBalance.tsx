@@ -15,6 +15,15 @@ export function FishkaBalance() {
   const wallet = useWallet()
   const balance = wallet.data === undefined ? undefined : wallet.data.balance + wallet.data.at_table
   const format = (n: number) => n.toLocaleString(i18n.language)
+  // Phones: from 10,000 the pill says 18.5K, so a big balance never pushes the header off the screen (the exact
+  // amount stays in the label and on the wallet page).
+  const short = (n: number) =>
+    n < 10_000
+      ? format(n)
+      : new Intl.NumberFormat(i18n.language, {
+          notation: 'compact',
+          maximumFractionDigits: 1,
+        }).format(n)
 
   // The last change, derived while rendering: a new balance after a known one is a change to show.
   const [seen, setSeen] = useState<{ balance?: number; delta: number; id: number }>({
@@ -54,7 +63,8 @@ export function FishkaBalance() {
         key={id}
         className={`tabular-nums ${delta ? 'motion-safe:animate-[fishka-bump_450ms_ease-out]' : ''}`}
       >
-        {format(shownBalance)}
+        <span className="hidden sm:inline">{format(shownBalance)}</span>
+        <span className="sm:hidden">{short(shownBalance)}</span>
       </span>
       {delta ? (
         <span

@@ -55,7 +55,7 @@ export function CategoryBanners({
             type="button"
             aria-haspopup="dialog"
             onClick={() => onSelect(option.key)}
-            className={`group hover-shine relative flex min-h-32 overflow-hidden rounded-3xl border bg-linear-to-br p-4 text-left shadow-[0_14px_30px_rgb(0_0_0/0.45)] transition duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-text motion-safe:hover:-translate-y-1 sm:min-h-32 ${TINTS[i % TINTS.length]} border-gold/25 hover:border-gold/60 ${i === 0 ? 'col-span-2 lg:col-span-1' : ''}`}
+            className={`group hover-shine relative flex min-h-32 overflow-hidden rounded-3xl border bg-linear-to-br p-4 text-left shadow-[0_14px_30px_rgb(0_0_0/0.45)] transition duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-text motion-safe:hover:scale-[1.02] sm:min-h-32 ${TINTS[i % TINTS.length]} border-gold/25 hover:border-gold/60 ${i === 0 ? 'col-span-2 lg:col-span-1' : ''}`}
           >
             {/* A fan of the category's posters on the right, lifting on hover. */}
             <span

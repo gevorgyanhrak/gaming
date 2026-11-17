@@ -97,7 +97,10 @@ export function LoginPage() {
             />
             {t('auth.remember')}
           </label>
-          <Link to="/forgot-password" className="font-medium text-accent-text hover:underline">
+          <Link
+            to="/forgot-password"
+            className="inline-flex min-h-11 items-center font-medium text-accent-text hover:underline"
+          >
             {t('auth.forgot')}
           </Link>
         </div>

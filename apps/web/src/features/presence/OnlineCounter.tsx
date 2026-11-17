@@ -12,7 +12,7 @@ export function OnlineCounter({ className = '' }: { className?: string }) {
 
   return (
     <p
-      className={`flex items-center gap-1.5 rounded-full border border-[#3ddc84]/35 bg-black/30 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-fg ${className}`}
+      className={`flex items-center gap-1.5 rounded-full border border-[#3ddc84]/35 bg-black/30 px-2 py-1 text-xs font-semibold whitespace-nowrap text-fg sm:px-2.5 ${className}`}
       title={t('online.title')}
     >
       <span aria-hidden="true" className="relative flex size-2">

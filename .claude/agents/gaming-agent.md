@@ -165,6 +165,11 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
 - AI is marked (ADR 0022, supersedes ADR 0021's "never marked"): `shared/ui/AiTag` in player lists and the matchmaking
   table (`table[].is_bot`), and RoomPage's `players` map gives every board "Name · AI" (`play.aiName`). AI never counts
   in people statistics (playing now, Big Wins, leaderboards, achievements).
+- Hover on cards: grow (`scale`), never lift (`-translate-y`): a lifted card slides out from under the pointer at its
+  bottom edge and shakes; anything that floats moves an inner layer while the hovered box stays still. Tailwind 4
+  `scale-*` is the `scale` property: list `scale` in `transition-[…]`. The logo always links to `/`.
+  Mobile QA scripts (scratchpad pattern): one session, load a route once, resize through the widths (spares the
+  `account` limiter); scan for elements past the viewport outside scroll containers and tap targets under 24 px.
 - Phones held sideways (`SHORT_LANDSCAPE` = max-height 520 px, landscape; `features/play/FitStage`): RoomPage moves the
   group and the turn into `TableBar compact` and drops its row; a board laid out for desktop height draws at a design
   size (Blot 800×500) inside `FitStage` and is scaled to fit — sizes inside must not use `vw` there. Grid/flex children

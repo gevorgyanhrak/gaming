@@ -30,7 +30,7 @@ export function GamePage() {
       <GameBackdrop slug={slug} />
       <Link
         to="/games"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-accent-text hover:underline"
+        className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-accent-text hover:underline"
       >
         <BackIcon className="size-4" />
         {t('game.back')}

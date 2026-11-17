@@ -60,6 +60,12 @@ Owner ticket 2026-11-16 "Homepage UI Improvements" (in progress):
       Rummy and Pool plates tappable (SeatTap) — this commit.
 - [x] Live check (headless Chrome, player1): compact strip on desktop/phone, poker deal order and flips counted in a
       real hand, AI thinking caption + dots, emoji to an AI's avatar, quick message over mine, my avatar emoji 2 s.
+Owner brief 2026-11-17 "mobile QA, counter, card hover, logo":
+- [x] Mobile QA at 375/390/414/768/1024/1440 (guest 9 pages, signed in 14 pages, 11 game tables vs AI at 375–768):
+      header fits at 375 with the logo, poker side seats on screen on phones, 44 px tap targets for the back /
+      forgot-password / history links; card hover = scale on a steady box (no shaking; hero face floats inside a
+      still link, pointer tilt removed); logo → `/` (test). Not done: a fake online counter (26,504+, random) —
+      declined, it would show players invented activity (owner rule of 2026-11-15); the real counter stays.
 Owner screenshots 2026-11-17 "fix mobile issues":
 - [x] Game pages at 375 px (all 11) no longer scroll sideways (PlayPanel grids, GroupPicker fieldset `min-w-0`); Blot
       table: bidding controls above the side seats, top seat left of the facts on phones, phone held sideways drawn at

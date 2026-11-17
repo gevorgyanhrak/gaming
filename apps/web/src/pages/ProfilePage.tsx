@@ -130,7 +130,7 @@ export function ProfilePage() {
                 {games.data.meta.total > RECENT ? (
                   <Link
                     to="/history"
-                    className="mt-4 inline-block text-sm font-medium text-accent-text hover:underline"
+                    className="mt-2 inline-flex min-h-11 items-center text-sm font-medium text-accent-text hover:underline"
                   >
                     {t('dashboard.history')}
                   </Link>

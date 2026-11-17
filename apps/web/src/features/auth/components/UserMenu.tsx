@@ -45,7 +45,7 @@ export function UserMenu({ user }: { user: CurrentUser }) {
         aria-controls={menuId}
         aria-label={t('nav.account')}
         onClick={() => setOpen((value) => !value)}
-        className="flex min-h-11 items-center gap-2 rounded-full p-1 pr-3 hover:bg-white/8"
+        className="flex min-h-11 items-center gap-2 rounded-full p-1 hover:bg-white/8 sm:pr-3"
       >
         <Avatar
           url={user.profile.avatar_url}

@@ -389,7 +389,8 @@ export default function PokerBoard({
                     className={`absolute z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center transition-opacity ${
                       gone ? 'opacity-50' : ''
                     }`}
-                    style={spot(seat, 50)}
+                    // Phones: the side seats come in a little so their plates stay on screen.
+                    style={spot(seat, narrow ? 44 : 50, 50)}
                   >
                     {bet > 0 && narrow ? (
                       // On a phone the chip says "bet": only the amount is written (long words

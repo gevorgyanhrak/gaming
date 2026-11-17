@@ -119,7 +119,7 @@ export function DashboardGames() {
           <p className="mt-3 text-xs text-muted">{t('dashboard.statsNote')}</p>
           <Link
             to="/history"
-            className="mt-4 inline-block text-sm font-medium text-accent-text hover:underline"
+            className="mt-2 inline-flex min-h-11 items-center text-sm font-medium text-accent-text hover:underline"
           >
             {t('dashboard.history')}
           </Link>

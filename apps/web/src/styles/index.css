@@ -1056,19 +1056,29 @@ html:lang(hy) {
   }
 }
 
-/* A card of the hero's fan: placed by --fan-x/y/r, floating gently, lifting on hover. */
+/* A card of the hero's fan: the link is placed by --fan-x/y/r and never moves (so the pointer's hover is steady);
+   its face floats gently and grows a touch under the pointer. */
 .hero-card {
   transform: translate(-50%, -50%) translate(var(--fan-x), var(--fan-y)) rotate(var(--fan-r));
-  transition: scale 300ms var(--ease-soft);
 }
 .hero-card:hover,
 .hero-card:focus-visible {
-  scale: 1.05;
   z-index: 5 !important;
 }
+.hero-card-face {
+  transition:
+    scale 300ms var(--ease-soft),
+    border-color 300ms,
+    box-shadow 300ms;
+}
+.hero-card:hover .hero-card-face,
+.hero-card:focus-visible .hero-card-face {
+  scale: 1.05;
+}
 @media (prefers-reduced-motion: no-preference) {
-  .hero-card {
+  .hero-card-face {
     animation: hero-float 6s ease-in-out infinite;
+    animation-delay: inherit;
   }
 }
 @keyframes hero-float {

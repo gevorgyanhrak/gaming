@@ -164,7 +164,7 @@ export function PublicLayout() {
       <div className={`flex min-h-dvh min-w-0 flex-1 flex-col ${showBar ? 'pb-tabbar' : ''}`}>
         {/* At a table the room draws its own bar (TableBar); during maintenance the header stays. */}
         {atTable && !inMaintenance ? null : (
-          <header className="sticky top-0 z-20 flex h-header items-center justify-between gap-1.5 border-b border-white/6 bg-night-900/75 px-3 backdrop-blur-xl backdrop-saturate-150 sm:gap-3 sm:px-6">
+          <header className="sticky top-0 z-20 flex h-header items-center justify-between gap-1.5 border-b border-white/6 bg-night-900/75 px-2.5 backdrop-blur-xl backdrop-saturate-150 sm:gap-3 sm:px-6">
             {/* A thin gold light along the bottom edge. */}
             <span
               aria-hidden="true"
@@ -188,17 +188,20 @@ export function PublicLayout() {
                   <MenuIcon />
                 </button>
               )}
-              {/* Under 380 px the logo gives way to search and the balance (☰ and the tab bar lead home). */}
+              {/* The logo always leads to the home page (owner, 2026-11-17); under 375 px it gives way. */}
               <Link
-                to={home}
-                className="flex min-w-0 items-center gap-2.5 font-display text-[0.95rem] font-semibold tracking-tight text-fg max-[379px]:hidden"
+                to="/"
+                className="flex min-w-0 items-center gap-2.5 font-display text-[0.95rem] font-semibold tracking-tight text-fg max-[374px]:hidden"
               >
                 {brand}
               </Link>
             </div>
             {atTable ? null : <SectionLinks home={home} />}
             {atTable ? null : <SiteSearch />}
-            <nav aria-label={t('nav.main')} className="flex items-center gap-1 sm:gap-2">
+            <nav
+              aria-label={t('nav.main')}
+              className="flex items-center gap-0.5 min-[390px]:gap-1 sm:gap-2"
+            >
               <OnlineCounter />
               <SoundToggle />
               {user.isPending ? (
@@ -382,7 +385,7 @@ function MenuDrawer({
       >
         <div className="flex items-center justify-between gap-2 px-1">
           <Link
-            to={home}
+            to="/"
             onClick={onClose}
             className="flex min-w-0 items-center gap-2.5 font-bold text-fg"
           >

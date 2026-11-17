@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useRef, type CSSProperties, type PointerEvent } from 'react'
+import type { CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { useCurrentUser } from '@/features/auth/hooks'
@@ -22,8 +22,8 @@ const FAN = [
 
 /**
  * The top of the home page (Midnight Gold, 2026-11-17): a big title with a passing light, the way in, live numbers
- * that are all real (people online, games, slots), and the three main games fanned out in 3D, leaning after the
- * pointer, under the night sky (NightSky). Every motion stops under reduced motion.
+ * that are all real (people online, games, slots), and the three main games fanned out, floating gently, under the
+ * night sky (NightSky). Every motion stops under reduced motion.
  */
 export function HomeHero() {
   const { t, i18n } = useTranslation()
@@ -31,7 +31,6 @@ export function HomeHero() {
   const games = useGames()
   const slots = useQuery({ queryKey: slotsKey, queryFn: ({ signal }) => fetchSlots(signal) })
   const online = useOnlineCount()
-  const sectionRef = useRef<HTMLElement>(null)
   const number = (n: number) => n.toLocaleString(i18n.language)
 
   const main = MAIN_GAMES.map((slug) => games.data?.find((g) => g.slug === slug)).filter(
@@ -40,20 +39,8 @@ export function HomeHero() {
   const gameCount = games.data?.length
   const slotCount = slots.data?.filter((s) => s.play_path !== null).length
 
-  // The fan leans a little after the pointer (−1…1 on each axis); nothing on touch-only screens.
-  const lean = (event: PointerEvent<HTMLElement>) => {
-    const box = event.currentTarget.getBoundingClientRect()
-    const style = sectionRef.current?.style
-    style?.setProperty('--px', (((event.clientX - box.left) / box.width) * 2 - 1).toFixed(3))
-    style?.setProperty('--py', (((event.clientY - box.top) / box.height) * 2 - 1).toFixed(3))
-  }
-
   return (
-    <section
-      ref={sectionRef}
-      onPointerMove={(e) => e.pointerType === 'mouse' && lean(e)}
-      className="relative isolate overflow-hidden border-b border-white/6 [--px:0] [--py:0]"
-    >
+    <section className="relative isolate overflow-hidden border-b border-white/6">
       <NightSky />
 
       <Container className="grid items-center gap-10 py-12 sm:py-16 lg:min-h-[34rem] lg:grid-cols-[1.05fr_1fr] lg:py-20">
@@ -115,12 +102,7 @@ export function HomeHero() {
 
         {main.length === 3 ? (
           <div className="relative mx-auto hidden h-[25rem] w-full max-w-[34rem] [perspective:1400px] lg:block">
-            <div
-              className="absolute inset-0 transition-transform duration-500 ease-out [transform-style:preserve-3d]"
-              style={{
-                transform: 'rotateY(calc(var(--px) * 7deg)) rotateX(calc(var(--py) * -6deg))',
-              }}
-            >
+            <div className="absolute inset-0">
               {main.map((game, i) => {
                 const fan = FAN[i]!
                 return (
@@ -139,7 +121,8 @@ export function HomeHero() {
                       } as CSSProperties
                     }
                   >
-                    <span className="hover-shine block overflow-hidden rounded-[1.4rem] border border-white/15 bg-night-800 shadow-[0_30px_60px_-20px_rgb(0_0_0/0.85),0_0_0_1px_rgb(245_192_79/0.18)] transition duration-300 group-hover:border-gold/70 group-hover:shadow-[0_34px_70px_-20px_rgb(0_0_0/0.9),0_0_40px_rgb(245_192_79/0.35)]">
+                    {/* The link stays put (a steady hover); the face inside floats and grows. */}
+                    <span className="hero-card-face hover-shine block overflow-hidden rounded-[1.4rem] border border-white/15 bg-night-800 shadow-[0_30px_60px_-20px_rgb(0_0_0/0.85),0_0_0_1px_rgb(245_192_79/0.18)] transition duration-300 group-hover:border-gold/70 group-hover:shadow-[0_34px_70px_-20px_rgb(0_0_0/0.9),0_0_40px_rgb(245_192_79/0.35)]">
                       <GameArtwork game={game} className="aspect-[3/3.6] w-full" />
                       <span className="flex items-center justify-between gap-2 px-3.5 py-3">
                         <span className="truncate font-display text-sm font-semibold text-fg">
