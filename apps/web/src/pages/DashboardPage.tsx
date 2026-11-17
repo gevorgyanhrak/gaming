@@ -87,7 +87,7 @@ export function DashboardPage() {
           <GameGrid banners exclude={MAIN_GAMES} />
         </section>
         <TryNext />
-        <div className="grid gap-5 lg:grid-cols-2">
+        <div className="grid gap-5 lg:grid-cols-2 [&>*]:min-w-0">
           <LiveBigWins />
           <HomeRankings />
         </div>

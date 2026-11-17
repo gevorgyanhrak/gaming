@@ -62,7 +62,7 @@ function SectionLinks({ home }: { home: string }) {
     { to: '/games', label: t('nav.games'), active: pathname.startsWith('/games') && !casino },
     { to: '/games?category=casino', label: t('nav.casino'), active: casino },
     { to: '/ranks', label: t('nav.ranks'), active: pathname === '/ranks' },
-    { to: '/leaderboards', label: t('nav.leaderboards'), active: pathname === '/leaderboards' },
+    { to: '/leaderboards', label: t('leaders.title'), active: pathname === '/leaderboards' },
   ]
 
   return (
@@ -213,7 +213,8 @@ export function PublicLayout() {
                 <>
                   <NavLink
                     to="/login"
-                    className="flex min-h-11 items-center rounded-lg px-3 text-sm font-medium whitespace-nowrap text-fg hover:text-gold-light"
+                    // Phones have "Log in" in the tab bar: the header keeps room for Sign up.
+                    className="flex min-h-11 items-center rounded-lg px-3 text-sm font-medium whitespace-nowrap text-fg hover:text-gold-light max-sm:hidden"
                   >
                     {t('nav.login')}
                   </NavLink>

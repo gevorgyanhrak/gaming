@@ -339,7 +339,7 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
           aria-describedby={`${id}-search`}
           disabled={busy || modeId === undefined}
           onClick={() => modeId !== undefined && search.mutate(modeId)}
-          className="group mx-auto flex w-full max-w-lg flex-col items-center rounded-2xl border border-white/20 bg-linear-to-b from-[#3f9d57] via-accent-light to-accent px-6 py-4 text-white shadow-[0_10px_30px_rgb(0_0_0/0.45),inset_0_1px_0_rgb(255_255_255/0.25)] transition [animation-delay:180ms] hover:brightness-110 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 motion-safe:animate-rise"
+          className="group mx-auto flex w-full max-w-lg flex-col items-center rounded-2xl border border-white/20 bg-(image:--btn-play) px-6 py-4 text-white shadow-(--btn-play-shadow) transition [animation-delay:180ms] hover:brightness-110 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 motion-safe:animate-rise"
         >
           <span className="flex items-center gap-3 text-2xl font-extrabold tracking-wide uppercase sm:text-3xl">
             <PlayIcon className="size-7 transition-transform motion-safe:group-hover:scale-110" />

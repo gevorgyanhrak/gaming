@@ -22,10 +22,7 @@ export function GameRanking({ slug, name }: { slug: string; name: string }) {
   const format = (n: number) => n.toLocaleString(i18n.language)
 
   return (
-    <section
-      aria-labelledby={`ranking-${slug}`}
-      className="rounded-3xl border border-gold/30 bg-[linear-gradient(180deg,#120c06,#0a0f0c)] p-4 shadow-[0_18px_40px_rgb(0_0_0/0.5)] sm:p-5"
-    >
+    <section aria-labelledby={`ranking-${slug}`} className="club-panel rounded-[1.6rem] p-4 sm:p-6">
       <h2
         id={`ranking-${slug}`}
         className="mb-1 flex items-center gap-2 font-display text-xl font-bold"

@@ -53,7 +53,7 @@ export function BigWinCelebration() {
       <div
         role="status"
         aria-live="polite"
-        className="pointer-events-auto relative flex w-full max-w-md items-center gap-4 overflow-visible rounded-3xl border border-gold bg-[radial-gradient(ellipse_at_30%_0%,rgb(240_196_98/0.3),transparent_60%),linear-gradient(180deg,#2a1c0b,#120c06)] px-4 py-3 shadow-[0_20px_60px_rgb(0_0_0/0.6),0_0_40px_rgb(240_196_98/0.35)] motion-safe:animate-rise"
+        className="pointer-events-auto relative flex w-full max-w-md items-center gap-4 overflow-visible rounded-3xl border border-gold bg-[radial-gradient(ellipse_at_30%_0%,rgb(245_192_79/0.3),transparent_60%),linear-gradient(180deg,#1b2441,#10162a)] px-4 py-3 shadow-[0_20px_60px_rgb(0_0_0/0.6),0_0_40px_rgb(240_196_98/0.35)] motion-safe:animate-rise"
       >
         <span aria-hidden="true" className="pointer-events-none absolute top-1/2 left-12">
           {SPARKS.map((s, i) => (

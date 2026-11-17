@@ -158,14 +158,14 @@ function Dialog({ status }: { status: LevelStatus }) {
           </div>
         </div>
 
-        <div className="surface-ivory rounded-none px-5 pt-4 pb-1 shadow-none">
+        <div className="surface-reward rounded-none border-x-0 px-5 pt-4 pb-1 shadow-none">
           <div className="relative z-[2]">
             <h3 className="text-xs font-semibold tracking-wider text-gold-light/80 uppercase">
               {t('level.rewards')}
             </h3>
             <p
               ref={chips}
-              className="mt-2 flex items-center justify-center gap-2 text-3xl font-extrabold text-ink tabular-nums"
+              className="mt-2 flex items-center justify-center gap-2 font-display text-3xl font-extrabold text-gold-light tabular-nums"
             >
               <FishkaIcon className="size-8" />+{format(fishkas)}
               <span className="sr-only">{t('level.fishkas')}</span>
@@ -175,7 +175,7 @@ function Dialog({ status }: { status: LevelStatus }) {
                 {items.map(({ item, level }) => (
                   <li
                     key={`${level}-${item.kind}-${item.key}`}
-                    className="rounded-full border border-gold-700/40 bg-ivory-50 px-3 py-1 text-sm font-semibold"
+                    className="rounded-full border border-gold/40 bg-white/8 px-3 py-1 text-sm font-semibold text-fg"
                   >
                     {itemLabel(t, item)}
                     {item.kind === 'emoji_pack' ? (

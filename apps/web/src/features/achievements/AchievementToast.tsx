@@ -37,7 +37,7 @@ export function AchievementToast() {
       <div
         role="status"
         aria-live="polite"
-        className="pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-2xl border border-gold bg-[linear-gradient(180deg,#2a1c0b,#120c06)] px-3 py-2.5 shadow-[0_16px_40px_rgb(0_0_0/0.6),0_0_30px_rgb(240_196_98/0.3)] motion-safe:animate-rise"
+        className="pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-2xl border border-gold bg-[radial-gradient(ellipse_at_20%_0%,rgb(245_192_79/0.22),transparent_60%),linear-gradient(180deg,#1b2441,#10162a)] px-3 py-2.5 shadow-[0_16px_40px_rgb(0_0_0/0.6),0_0_30px_rgb(240_196_98/0.3)] motion-safe:animate-rise"
       >
         <AchievementBadge achievement={current} size="sm" />
         <span className="min-w-0 flex-1">

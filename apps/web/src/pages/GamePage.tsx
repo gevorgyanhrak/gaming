@@ -55,7 +55,7 @@ export function GamePage() {
             {game.data.is_playable && !game.data.maintenance ? (
               <PlayPanel game={game.data} hero={<GameHero game={game.data} />} />
             ) : (
-              <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:items-start">
+              <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:items-start [&>*]:min-w-0">
                 <GameHero game={game.data} />
                 <p
                   className="club-panel rounded-panel px-5 py-4 text-muted motion-safe:animate-rise"

@@ -26,7 +26,7 @@ export function RankLadder() {
 
   return (
     <div className="space-y-4">
-      <ol className="grid grid-cols-5 gap-2 text-center">
+      <ol className="grid grid-cols-5 gap-1.5 text-center sm:gap-2 [&>li]:min-w-0">
         {tiers.map(({ level, to }) => {
           const key = tierOf(level).key
           const here = key === mine
@@ -44,7 +44,7 @@ export function RankLadder() {
               <span className="text-[0.8125rem] font-semibold text-fg sm:text-base">
                 {t(`ranks.${key}`)}
               </span>
-              <span className="text-xs text-muted">
+              <span className="text-[0.65rem] leading-tight [overflow-wrap:anywhere] text-muted sm:text-xs">
                 {to === null
                   ? t('ranks.levelsUp', { from: level })
                   : t('ranks.levels', { from: level, to })}

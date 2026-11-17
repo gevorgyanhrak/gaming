@@ -66,7 +66,11 @@ Owner brief 2026-11-17 "platform redesign, never the games" (ADR 0025, docs/desi
       section links, gold edge), home (HomeHero with real numbers + 3D fan, NightSky, SectionHeading), promo banners
       (Ken Burns, progress segments, glass arrows), top-game and lobby cards, wins/rankings panels, tab bar, footer,
       dashboard sky — this commit.
-- [ ] Next passes: wallet, profile, ranks, leaderboards, auth pages and dialogs reviewed one by one in the new look.
+- [x] Page-by-page pass (desktop + 390 px, hy/en/ru): wallet balance and profile rank on the new reward plate
+      (`.surface-reward`), daily-bonus and level-up dialogs, green PLAY (`--btn-play`, classic at tables), game ranking,
+      achievement and big-win notices on night; header link = page title (Leaders); guest phone header fits (Log in in
+      the tab bar); phone overflow fixed on home (wins/rankings grid), rank ladder (hy) and game pages (older bug) —
+      this commit. Rooms re-checked: unchanged.
 Owner brief 2026-11-17 "gaming platform redesign" (identity kept — the club look of TASK-048 — the work went into the
 game moments; see `docs/research/game-moments.md`):
 - [x] Table banners (`features/play/banners`: one at a time, majors first, minors dropped, no clicks taken, over the

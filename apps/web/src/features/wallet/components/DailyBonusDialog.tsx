@@ -115,13 +115,13 @@ function Dialog({ bonus }: { bonus: DailyBonus }) {
         </p>
       </div>
 
-      <div className="surface-ivory relative rounded-none px-4 pt-2 pb-6 sm:px-7">
+      <div className="surface-reward relative rounded-none border-x-0 px-4 pt-2 pb-6 sm:px-7">
         <div className="flex items-center justify-center gap-4 sm:gap-6">
           <div ref={chest} className="relative">
             <Chest open={!done || collected > 0} />
           </div>
           <p
-            className="flex items-center gap-2 text-4xl font-extrabold text-ink tabular-nums sm:text-5xl"
+            className="flex items-center gap-2 font-display text-4xl font-extrabold text-gold-light tabular-nums sm:text-5xl"
             aria-live="polite"
           >
             <FishkaIcon className="size-10 sm:size-12" />

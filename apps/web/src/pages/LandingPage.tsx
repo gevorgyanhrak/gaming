@@ -46,7 +46,7 @@ export function LandingPage() {
           />
           <GameGrid banners exclude={MAIN_GAMES} />
         </section>
-        <div className="mt-14 grid gap-5 lg:grid-cols-2">
+        <div className="mt-14 grid gap-5 lg:grid-cols-2 [&>*]:min-w-0">
           <LiveBigWins />
           <HomeRankings />
         </div>

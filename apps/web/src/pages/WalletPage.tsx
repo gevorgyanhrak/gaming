@@ -35,11 +35,11 @@ export function WalletPage() {
         <QueryErrorState error={wallet.error} onRetry={() => void wallet.refetch()} />
       ) : (
         <section className="club-panel grid gap-4 rounded-panel p-5 sm:grid-cols-3 sm:p-6">
-          <div className="surface-ivory flex flex-wrap items-center gap-3 rounded-card p-4 sm:col-span-3">
-            <FishkaIcon className="size-12" />
+          <div className="surface-reward flex flex-wrap items-center gap-4 rounded-card p-5 sm:col-span-3">
+            <FishkaIcon className="size-14 drop-shadow-[0_6px_16px_rgb(245_192_79/0.45)]" />
             <div>
               <p className="text-xs font-semibold text-muted">{t('fishka.balance')}</p>
-              <p className="text-4xl font-bold text-ink tabular-nums">
+              <p className="text-gold-gradient font-display text-4xl font-bold tabular-nums sm:text-5xl">
                 {format(wallet.data.balance)}
               </p>
             </div>

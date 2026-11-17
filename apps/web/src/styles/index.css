@@ -555,6 +555,10 @@
   --btn-2-active: rgb(255 255 255 / 0.04);
   --btn-2-edge: rgb(255 255 255 / 0.16);
   --chrome-edge: rgb(255 255 255 / 0.06); /* the footer's top edge */
+  /* The big PLAY (matchmaking): a green "go", apart from the gold actions. */
+  --btn-play: linear-gradient(180deg, #0f9f6e 0%, #047857 55%, #064e3b 100%);
+  --btn-play-shadow:
+    0 14px 32px -10px rgb(16 185 129 / 0.65), inset 0 1px 0 rgb(255 255 255 / 0.35);
 }
 
 /*
@@ -609,6 +613,8 @@
   --btn-2-active: #0e3b30;
   --btn-2-edge: rgb(134 184 168 / 0.7);
   --chrome-edge: rgb(226 184 79 / 0.2);
+  --btn-play: linear-gradient(to bottom, #3f9d57, #24917a, #1c7a62);
+  --btn-play-shadow: 0 10px 30px rgb(0 0 0 / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.25);
   font-family: var(--font-sans);
 }
 
@@ -854,6 +860,17 @@
     background: linear-gradient(180deg, var(--color-gold-300) 20%, var(--color-gold-500));
     background-clip: text;
     color: transparent;
+  }
+
+  /* A reward or balance plate (Midnight Gold): night, lit gold from above, with a gold edge. */
+  .surface-reward {
+    background:
+      radial-gradient(120% 90% at 50% 0%, rgb(245 192 79 / 0.22), transparent 60%),
+      linear-gradient(180deg, #1b2441, #121a30);
+    border: 1px solid rgb(245 192 79 / 0.35);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.08),
+      var(--shadow-panel);
   }
 
   /* An ivory object: name plate, "how it works" tile, reward plate. Re-points the tokens inside it. */

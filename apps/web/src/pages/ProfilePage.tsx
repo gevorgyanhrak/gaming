@@ -56,9 +56,9 @@ export function ProfilePage() {
         }
       />
       <div className="grid gap-4 lg:grid-cols-[1fr_2fr]">
-        <div className="surface-ivory flex flex-col items-center justify-center gap-2 rounded-card p-5 text-center">
+        <div className="surface-reward flex flex-col items-center justify-center gap-2 rounded-card p-5 text-center">
           <LevelBadge level={user.level} size="xl" />
-          <p className="font-display text-2xl font-bold text-ink">
+          <p className="text-gold-gradient font-display text-2xl font-bold">
             {t(`ranks.${tierOf(user.level).key}`)}
           </p>
         </div>
