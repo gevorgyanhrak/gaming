@@ -1,6 +1,7 @@
 import type { Slot } from '@/features/casino/slots'
 import type { Favorite } from '@/features/favorites/favorites'
 import type { GameSummary } from './queries'
+import { matchTerms, termsOf } from '@/features/search/gameSearch'
 
 /** One card in the lobby: a table game or a slot (a one-player game of the Casino category). */
 export type LobbyItem = { kind: 'game'; game: GameSummary } | { kind: 'slot'; slot: Slot }
@@ -46,12 +47,11 @@ export function arrange(
   items: LobbyItem[],
   { query = '', players, sort = 'recommended' }: { query?: string; players?: Players; sort?: Sort },
 ): LobbyItem[] {
-  const needle = query.trim().toLocaleLowerCase()
+  const needle = query.trim()
   const kept = items.filter((item) => {
-    // The Latin slug too, so "durak" finds Դուրակ in any language.
+    // By any of its names (gameSearch): "shaxmat" finds Chess in any language, "durak" Դուրակ.
     const slug = item.kind === 'game' ? item.game.slug : item.slot.slug
-    if (needle && !itemName(item).toLocaleLowerCase().includes(needle) && !slug.includes(needle))
-      return false
+    if (needle && !matchTerms(needle, termsOf(slug, itemName(item)))) return false
     const [min, max] = seats(item)
     if (players === 'two' && !(min! <= 2 && max! >= 2)) return false
     if (players === 'many' && max! < 3) return false

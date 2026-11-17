@@ -380,6 +380,9 @@ is not done or not verified, and how to check it manually. Keep it concise.
   simulates; one action `{type:'shoot', angle, power, x?, y?}`; a pause while the balls roll. Actions may carry decimals.
   Rummy: melds are `{type:'meld', cards:'7S,7H,7D'}` in the server's order — the board matches the selection against
   the listed melds, never builds one. Run bot-only games in a loop when adding a game: they find stalls (Rummy had two).
+- Game search: every name match goes through `features/search/gameSearch` (`search`, `matchTerms`, `termsOf`); a new
+  game's other names (Latin spellings of its hy/ru name, English names) go in `GAME_ALIASES` under its slug — never
+  a second game entry.
 - Poker controls (2026-11-17): `games/poker/Controls.tsx` — `TurnHeader` (the board shows whose turn it is; trait
   `turnOnBoard` keeps RoomPage's caption away) and `BetControls` (chips 10/20/50/100: first tap = max(min, chip), next
   taps add, clamped; MORE = slider + ±big blind + presets + Confirm; only `legal_actions`, all-in = raise to `max`).

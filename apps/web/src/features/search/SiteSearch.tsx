@@ -7,7 +7,7 @@ import { GamePosterScene } from '@/features/catalog/components/HomeArt'
 import { useGames } from '@/features/catalog/queries'
 import { Modal } from '@/shared/ui/Modal'
 import { CloseIcon } from '@/shared/ui/icons'
-import { rank } from './rank'
+import { search, termsOf } from './gameSearch'
 
 /** Few suggestions on purpose: long lists slow people down (Baymard, autocomplete research). */
 const LIMIT = 6
@@ -114,8 +114,9 @@ function SearchBox({
     [games.data, slots.data, t],
   )
   const needle = query.trim().toLocaleLowerCase()
-  const matches = needle ? rank(all, needle) : []
-  const shown = matches.slice(0, LIMIT)
+  // Latin spellings of Armenian and Russian names, other names and small slips too (gameSearch).
+  const matches = needle ? search(all, needle, (item) => termsOf(item.alt, item.name)) : []
+  const shown = matches.slice(0, LIMIT).map(({ item, match }) => ({ ...item, term: match.term }))
   // The last row: every match on the games page.
   const rows = needle ? shown.length + 1 : 0
   const showList = expanded && needle.length > 0
@@ -199,7 +200,9 @@ function SearchBox({
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => go(item.to)}
             onMouseEnter={() => setActive(i)}
-            className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-xl px-2 py-1.5 ${active === i ? 'bg-white/10' : ''}`}
+            // The rows rise in one after another (a few ms apart, so typing never waits on them).
+            style={{ animationDelay: `${i * 35}ms` }}
+            className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-xl px-2 py-1.5 transition-colors motion-safe:animate-rise ${active === i ? 'bg-white/10' : ''}`}
           >
             <span className="size-10 shrink-0 overflow-hidden rounded-lg border border-gold/30 bg-black">
               {item.art.image ? (
@@ -214,9 +217,18 @@ function SearchBox({
             </span>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-semibold text-fg">
-                <Highlight text={item.name} needle={needle} />
+                <Highlight text={item.name} needle={needle} whole={item.term === item.name} />
               </span>
-              <span className="text-fg-muted block truncate text-xs">{item.group}</span>
+              <span className="text-fg-muted block truncate text-xs">
+                {item.group}
+                {/* Found by another of its names ("shaxmat" → Chess): that name, so the match is plain. */}
+                {item.term !== item.name && !item.name.toLocaleLowerCase().includes(needle) ? (
+                  <>
+                    {' · '}
+                    <Highlight text={item.term} needle={needle} />
+                  </>
+                ) : null}
+              </span>
             </span>
           </li>
         ))}
@@ -245,8 +257,19 @@ function SearchBox({
 }
 
 /** The matched part in bold, so people see why a suggestion is there. */
-function Highlight({ text, needle }: { text: string; needle: string }) {
+function Highlight({
+  text,
+  needle,
+  whole = false,
+}: {
+  text: string
+  needle: string
+  whole?: boolean
+}) {
   const at = text.toLocaleLowerCase().indexOf(needle)
+  // Found by its sound in another script ("shaxmat" → Շախմատ): the whole name is the match.
+  if (at < 0 && whole)
+    return <mark className="bg-transparent font-extrabold text-gold-light">{text}</mark>
   if (at < 0) return text
   return (
     <>

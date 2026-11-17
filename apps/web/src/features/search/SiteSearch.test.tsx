@@ -14,6 +14,8 @@ function serve() {
           gameFixture({ slug: 'poker', name: 'Poker' }),
           gameFixture({ slug: 'durak', name: 'Durak' }),
           gameFixture({ slug: 'domino', name: 'Domino' }),
+          gameFixture({ slug: 'chess', name: 'Chess' }),
+          gameFixture({ slug: 'nardi', name: 'Backgammon' }),
         ],
       }),
     ),
@@ -73,5 +75,29 @@ describe('Header search', () => {
     expect(router.state.location.pathname).toBe('/games')
     expect(router.state.location.search).toBe('?q=sev')
     expect(await screen.findByRole('link', { name: /Stellar Sevens/ })).toBeInTheDocument()
+  })
+
+  it('finds games by their Armenian names typed in Latin letters and opens the right one', async () => {
+    serve()
+    const { router } = renderRoute('/')
+    const box = (await screen.findAllByRole('combobox', { name: 'Search games and slots' }))[0]!
+    await userEvent.type(box, 'shaxmat')
+    const list = screen.getByRole('listbox', { name: 'Search games and slots' })
+    const first = within(list).getAllByRole('option')[0]!
+    expect(first).toHaveTextContent('Chess')
+    // The name it was found by, with the typed part marked.
+    expect(within(first).getByText('shaxmat', { selector: 'mark' })).toBeInTheDocument()
+    await userEvent.click(first)
+    expect(router.state.location.pathname).toBe('/games/chess')
+
+    await userEvent.type(box, 'nard')
+    expect(within(list).getAllByRole('option')[0]).toHaveTextContent('Backgammon')
+  })
+
+  it('the games page filters by the same names', async () => {
+    serve()
+    renderRoute('/games?q=shahmat')
+    expect(await screen.findByRole('link', { name: /Chess/ })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Poker/ })).not.toBeInTheDocument()
   })
 })

@@ -60,6 +60,11 @@ Owner ticket 2026-11-16 "Homepage UI Improvements" (in progress):
       Rummy and Pool plates tappable (SeatTap) — this commit.
 - [x] Live check (headless Chrome, player1): compact strip on desktop/phone, poker deal order and flips counted in a
       real hand, AI thinking caption + dots, emoji to an AI's avatar, quick message over mine, my avatar emoji 2 s.
+Owner brief 2026-11-17 "complete redesign + Latin transliteration search":
+- [x] Search (critical): `features/search/gameSearch.ts` — one alias table by slug (`GAME_ALIASES`), Armenian/Cyrillic →
+      Latin, sound folding (kh/h/x, sh, ch, y/i, doubles), prefix / word / inside / one-slip matches (first letter
+      right); header search and the /games filter use it; a row found in another script is marked whole, one found by
+      an alias shows that alias. All brief examples tested (unit + UI + live desktop/375) — this commit.
 Owner brief 2026-11-17 "poker turn, bets, AI avatars, chat/emoji":
 - [x] Turn: the "waiting for X" line is gone; `games/poker/Controls.tsx` `TurnHeader` (Your turn · Action required /
       Thinking time + the actor's face / Waiting for players / Next hand) with a run-down bar (red under 10 s), the
