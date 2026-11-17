@@ -11,6 +11,7 @@ import { usePublicConfig } from '@/features/platform/usePublicConfig'
 import { RoomReactions } from '@/features/reactions/components/RoomReactions'
 import { canReact } from '@/features/reactions/open'
 import { GroupBadge } from '@/features/play/components/GroupBadge'
+import { SHORT_LANDSCAPE } from '@/features/play/FitStage'
 import { PlayerProfilePopup } from '@/features/players/PlayerProfilePopup'
 import { GameBackdrop } from '@/features/play/components/GameBackdrop'
 import { TableBar } from '@/features/play/components/TableBar'
@@ -42,6 +43,8 @@ export function RoomPage() {
   const config = usePublicConfig()
   const [confirmResign, setConfirmResign] = useState(false)
   const wide = useMediaQuery('(min-width: 768px)')
+  // A phone held sideways: every row of height goes to the table, so the bar carries the group and the turn.
+  const short = useMediaQuery(SHORT_LANDSCAPE)
   const secondsLeft = useCountdown(state.data?.deadline, state.data?.server_time)
   // Report presence while playing: leaving the page for too long loses the game.
   const playing = room.data?.status === 'active' && state.data?.seat != null && !state.data?.result
@@ -227,14 +230,15 @@ export function RoomPage() {
           />
         ) : null
       })()}
-      <TableBar room={data} status={wide ? turnStatus : null} />
+      <TableBar room={data} status={wide || short ? turnStatus : null} compact={short && !wide} />
       <TableBanners />
       <Container className="space-y-4 py-4 sm:space-y-5 sm:py-6">
         <title>{tabTitle}</title>
         {/* Phones and tablets: the group and whose turn it is, under the bar (wider screens have both in it). */}
-        {!wide && (turnStatus || data.group) ? (
-          <div className="flex items-center justify-between gap-3">
-            <span className="min-w-0">
+        {!wide && !short && (turnStatus || data.group) ? (
+          // When both don't fit, the turn moves under the group rather than squeezing its name away.
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="max-w-full">
               <GroupBadge room={data} />
             </span>
             {turnStatus}

@@ -165,6 +165,10 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
 - AI is marked (ADR 0022, supersedes ADR 0021's "never marked"): `shared/ui/AiTag` in player lists and the matchmaking
   table (`table[].is_bot`), and RoomPage's `players` map gives every board "Name · AI" (`play.aiName`). AI never counts
   in people statistics (playing now, Big Wins, leaderboards, achievements).
+- Phones held sideways (`SHORT_LANDSCAPE` = max-height 520 px, landscape; `features/play/FitStage`): RoomPage moves the
+  group and the turn into `TableBar compact` and drops its row; a board laid out for desktop height draws at a design
+  size (Blot 800×500) inside `FitStage` and is scaled to fit — sizes inside must not use `vw` there. Grid/flex children
+  holding scrollers need `min-w-0` (and `<fieldset>` has min-content width by default) or the page scrolls sideways.
 - Table banners (`features/play/banners`): `showBanner({kind, title, detail})` from anywhere at a table; `TableBanners`
   (RoomPage) shows one at a time over the table bar, `allIn`/`winner` jump the queue, minor ones drop when two wait;
   `useSeatBanners` gives joined/left for every game. Fire banners from effects, never during render. Boards detect

@@ -60,6 +60,10 @@ Owner ticket 2026-11-16 "Homepage UI Improvements" (in progress):
       Rummy and Pool plates tappable (SeatTap) — this commit.
 - [x] Live check (headless Chrome, player1): compact strip on desktop/phone, poker deal order and flips counted in a
       real hand, AI thinking caption + dots, emoji to an AI's avatar, quick message over mine, my avatar emoji 2 s.
+Owner screenshots 2026-11-17 "fix mobile issues":
+- [x] Game pages at 375 px (all 11) no longer scroll sideways (PlayPanel grids, GroupPicker fieldset `min-w-0`); Blot
+      table: bidding controls above the side seats, top seat left of the facts on phones, phone held sideways drawn at
+      800×500 and scaled (`FitStage`), group + turn in the table bar; group badge no longer squeezed — this commit.
 Owner brief 2026-11-17 "platform redesign, never the games" (ADR 0025, docs/design/MIDNIGHT_GOLD.md):
 - [x] Midnight Gold identity (tokens, Unbounded + Manrope, radii, shadows), `.classic-scope` keeps the game rooms
       exactly (pixel diff of chess/poker rooms: 0.019 % / 0.005 %, animation frame and anti-aliasing), header (glass,

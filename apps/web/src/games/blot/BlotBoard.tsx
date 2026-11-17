@@ -4,6 +4,7 @@ import { useCurrentUser } from '@/features/auth/hooks'
 import { playSound } from '@/shared/lib/sounds'
 import { useTranslation } from 'react-i18next'
 import { useCountdown } from '@/features/play/useCountdown'
+import { FitStage, SHORT_LANDSCAPE } from '@/features/play/FitStage'
 import { useMediaQuery } from '@/shared/lib/useMediaQuery'
 import { AiFace } from '@/shared/ui/AiFace'
 import { LevelBadge } from '@/shared/ui/LevelBadge'
@@ -160,6 +161,8 @@ export default function BlotBoard({
     ? Math.min(bidRange.max, Math.max(bidRange.min, value ?? bidRange.min))
     : 0
   const narrow = useMediaQuery('(max-width: 640px)')
+  // A phone held sideways: the table is drawn at desktop size and scaled to fit (FitStage).
+  const short = useMediaQuery(SHORT_LANDSCAPE) && !narrow
   const format = (n: number) => n.toLocaleString(i18n.language)
   const name = (seat: number) =>
     seat === me ? t('blot.you') : players[seat] || t('blot.seat', { seat: seat + 1 })
@@ -423,7 +426,8 @@ export default function BlotBoard({
   const SEAT_POS = [
     'left-[1%] bottom-[24%] min-[641px]:bottom-[3%]',
     'left-[1%] top-[36%]',
-    'left-1/2 top-[1%] -translate-x-1/2',
+    // On a phone the top seat sits left of centre: the scoreboard and the deal's facts take the top right.
+    'left-[38%] top-[1%] -translate-x-1/2 min-[641px]:left-1/2',
     'right-[1%] top-[36%]',
   ]
   // Where a played card comes from (towards the trick in the middle).
@@ -439,394 +443,411 @@ export default function BlotBoard({
       <div className="relative overflow-hidden rounded-3xl border border-gold/25 bg-[radial-gradient(ellipse_at_50%_35%,rgb(58_36_24/0.55)_0%,rgb(36_21_13/0.7)_55%,rgb(20_11_6/0.85)_100%)] shadow-[inset_0_0_80px_rgb(0_0_0/0.55)] backdrop-blur-[2px]">
         <TableAnnouncement view={view} name={name} levels={levels} describe={describe} />
 
-        <div
-          ref={tableRef}
-          className="relative mx-auto aspect-[10/16] w-full max-w-[min(30rem,calc((100dvh-9rem)*0.625))] min-[641px]:aspect-[16/10] min-[641px]:max-w-[min(72rem,calc((100dvh-10rem)*1.6))]"
-        >
-          {/* The oval table: a wood rim round green felt. */}
+        <FitStage width={800} height={500} enabled={short}>
           <div
-            aria-hidden="true"
-            className="absolute inset-x-[12%] top-[15%] bottom-[30%] rounded-[50%] bg-[linear-gradient(160deg,#8a5a2b,#5a3416_45%,#3d220d)] p-[1.6%] shadow-[0_24px_60px_rgb(0_0_0/0.65),inset_0_2px_0_rgb(255_220_160/0.35)] min-[641px]:inset-x-[11%] min-[641px]:top-[19%] min-[641px]:bottom-[17%] min-[641px]:p-[1.1%]"
+            ref={tableRef}
+            className={
+              short
+                ? 'relative size-full'
+                : 'relative mx-auto aspect-[10/16] w-full max-w-[min(30rem,calc((100dvh-9rem)*0.625))] min-[641px]:aspect-[16/10] min-[641px]:max-w-[min(72rem,calc((100dvh-10rem)*1.6))]'
+            }
           >
-            <div className="relative h-full w-full rounded-[50%] bg-[radial-gradient(ellipse_at_50%_40%,#2f7a4c_0%,#1f5e39_55%,#15452a_100%)] shadow-[inset_0_0_0_2px_rgb(0_0_0/0.35),inset_0_14px_50px_rgb(0_0_0/0.45)]">
-              <span className="absolute inset-0 flex items-center justify-center text-center font-display text-xl font-extrabold tracking-[0.25em] text-white/[0.07] uppercase min-[641px]:text-4xl">
-                {t('blot.bazar')}
-              </span>
-            </div>
-          </div>
-
-          {/* The middle of the felt: the deck while dealing, the bazar, the trick, or the deal's result. */}
-          <div className="absolute inset-x-[16%] top-[19%] bottom-[34%] flex items-center justify-center min-[641px]:inset-x-[22%] min-[641px]:top-[24%] min-[641px]:bottom-[22%]">
-            {dealing ? (
-              <div
-                className="relative size-16"
-                aria-label={t('blot.dealing')}
-                role="status"
-                data-deal-deck
-              >
-                {/* The deck: a closed stack, lower as the cards leave it. */}
-                {Array.from(
-                  { length: Math.max(1, Math.ceil((DEAL_CARDS - launched) / 4)) },
-                  (_, i) => (
-                    <span
-                      key={i}
-                      className="absolute left-1/2 -translate-x-1/2"
-                      style={{ top: `${-i * 1.5}px`, zIndex: i }}
-                    >
-                      <CardBack size="sm" />
-                    </span>
-                  ),
-                )}
-                {/* Cards in the air, from the deck to the players; each lands where its player sits. */}
-                {flying.map(({ c, seat }) => {
-                  const to = targets[place(seat)] ?? { x: 0, y: 0 }
-                  const spin = (c % 2 === 0 ? 1 : -1) * (300 + (c % 5) * 25)
-                  return (
-                    <span
-                      key={`${view.hand_no}-${c}`}
-                      aria-hidden="true"
-                      className="pointer-events-none absolute top-1/2 left-1/2 z-30 animate-deal-fly"
-                      style={
-                        {
-                          '--tx': `${to.x}px`,
-                          '--ty': `${to.y}px`,
-                          '--spin': `${spin}deg`,
-                          '--land': `${(place(seat) % 2 === 1 ? 90 : 0) + (c % 3) * 4 - 4}deg`,
-                        } as CSSProperties
-                      }
-                    >
-                      <CardBack size="sm" />
-                    </span>
-                  )
-                })}
+            {/* The oval table: a wood rim round green felt. */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-[12%] top-[15%] bottom-[30%] rounded-[50%] bg-[linear-gradient(160deg,#8a5a2b,#5a3416_45%,#3d220d)] p-[1.6%] shadow-[0_24px_60px_rgb(0_0_0/0.65),inset_0_2px_0_rgb(255_220_160/0.35)] min-[641px]:inset-x-[11%] min-[641px]:top-[19%] min-[641px]:bottom-[17%] min-[641px]:p-[1.1%]"
+            >
+              <div className="relative h-full w-full rounded-[50%] bg-[radial-gradient(ellipse_at_50%_40%,#2f7a4c_0%,#1f5e39_55%,#15452a_100%)] shadow-[inset_0_0_0_2px_rgb(0_0_0/0.35),inset_0_14px_50px_rgb(0_0_0/0.45)]">
+                <span className="absolute inset-0 flex items-center justify-center text-center font-display text-xl font-extrabold tracking-[0.25em] text-white/[0.07] uppercase min-[641px]:text-4xl">
+                  {t('blot.bazar')}
+                </span>
               </div>
-            ) : result ? (
-              <HandSummary
-                result={result}
-                myTeam={myTeam}
-                name={name}
-                format={format}
-                contractText={contractText}
-                target={view.target}
-                matchOver={!!state.result}
-              />
-            ) : bidding ? (
-              bidControls()
-            ) : (
-              <section
-                aria-label={showingLast ? t('blot.lastTrick') : t('blot.trick')}
-                className={`relative h-full w-full ${showingLast ? 'opacity-70' : ''}`}
-              >
-                {trick.map(({ seat, card }) => {
-                  const where = place(seat)
-                  const spot = [
-                    'bottom-[2%] left-1/2 -translate-x-1/2',
-                    'left-[8%] top-1/2 -translate-y-1/2 -rotate-6',
-                    'top-[2%] left-1/2 -translate-x-1/2',
-                    'right-[8%] top-1/2 -translate-y-1/2 rotate-6',
-                  ][where]
-                  const won = showingLast && view.last_trick?.winner === seat
-                  const from = FROM[where] ?? FROM[0]
-                  return (
-                    <span key={`${view.hand_no}-${card}`} className={`absolute ${spot}`}>
+            </div>
+
+            {/* The middle of the felt: the deck while dealing, the bazar, the trick, or the deal's result. */}
+            {/* While bidding, its controls sit over the seats (on a phone the side seats reach into it). */}
+            <div
+              className={`absolute inset-x-[16%] top-[19%] bottom-[34%] flex items-center justify-center min-[641px]:inset-x-[22%] min-[641px]:top-[24%] min-[641px]:bottom-[22%] ${bidding ? 'z-[25]' : ''}`}
+            >
+              {dealing ? (
+                <div
+                  className="relative size-16"
+                  aria-label={t('blot.dealing')}
+                  role="status"
+                  data-deal-deck
+                >
+                  {/* The deck: a closed stack, lower as the cards leave it. */}
+                  {Array.from(
+                    { length: Math.max(1, Math.ceil((DEAL_CARDS - launched) / 4)) },
+                    (_, i) => (
                       <span
-                        className={`block rounded-[calc(var(--card-w)*0.072)] motion-safe:animate-card-from ${won ? 'ring-2 ring-gold' : ''}`}
+                        key={i}
+                        className="absolute left-1/2 -translate-x-1/2"
+                        style={{ top: `${-i * 1.5}px`, zIndex: i }}
+                      >
+                        <CardBack size="sm" />
+                      </span>
+                    ),
+                  )}
+                  {/* Cards in the air, from the deck to the players; each lands where its player sits. */}
+                  {flying.map(({ c, seat }) => {
+                    const to = targets[place(seat)] ?? { x: 0, y: 0 }
+                    const spin = (c % 2 === 0 ? 1 : -1) * (300 + (c % 5) * 25)
+                    return (
+                      <span
+                        key={`${view.hand_no}-${c}`}
+                        aria-hidden="true"
+                        className="pointer-events-none absolute top-1/2 left-1/2 z-30 animate-deal-fly"
                         style={
                           {
-                            '--fx': from?.x,
-                            '--fy': from?.y,
-                            '--card-w': narrow
-                              ? 'clamp(44px, 13vw, 60px)'
-                              : 'clamp(60px, 6.6vw, 96px)',
+                            '--tx': `${to.x}px`,
+                            '--ty': `${to.y}px`,
+                            '--spin': `${spin}deg`,
+                            '--land': `${(place(seat) % 2 === 1 ? 90 : 0) + (c % 3) * 4 - 4}deg`,
                           } as CSSProperties
                         }
                       >
-                        <PlayingCard card={card} label={labels.card(card)} size="fluid" />
+                        <CardBack size="sm" />
                       </span>
-                    </span>
-                  )
-                })}
-              </section>
-            )}
-          </div>
-
-          {/* The four players. */}
-          <ul aria-label={t('blot.seats')}>
-            {[0, 1, 2, 3].map((seat) => {
-              const where = place(seat)
-              const acting = view.to_act === seat && !dealing
-              const declared = view.declared[seat] ?? []
-              const said = bubble(seat) ?? fresh[seat] ?? null
-              return (
-                <li
-                  key={seat}
-                  aria-current={acting ? 'step' : undefined}
-                  aria-label={`${name(seat)}, ${teamName(seat % 2)}`}
-                  className={`absolute z-20 flex flex-col items-center ${SEAT_POS[where]}`}
-                  data-deal-target={where === 0 ? undefined : where}
+                    )
+                  })}
+                </div>
+              ) : result ? (
+                <HandSummary
+                  result={result}
+                  myTeam={myTeam}
+                  name={name}
+                  format={format}
+                  contractText={contractText}
+                  target={view.target}
+                  matchOver={!!state.result}
+                />
+              ) : bidding ? (
+                bidControls()
+              ) : (
+                <section
+                  aria-label={showingLast ? t('blot.lastTrick') : t('blot.trick')}
+                  className={`relative h-full w-full ${showingLast ? 'opacity-70' : ''}`}
                 >
-                  <span className="relative">
-                    <span {...seatTrigger(seat, t('playerCard.open', { name: name(seat) }))}>
-                      <Avatar
-                        name={name(seat)}
-                        acting={acting}
-                        share={acting ? turnShare : null}
-                        level={levels[seat]}
-                        ours={seat % 2 === myTeam}
-                        ai={faces[seat]}
-                      />
-                    </span>
-                    <AvatarBadges badges={badgesOf(seat)} name={name(seat)} end={where === 3} />
-                    {view.dealer === seat ? (
-                      <span
-                        title={t('blot.dealer')}
-                        className="absolute -top-1 -left-1 flex size-6 items-center justify-center rounded-full border-2 border-[#c9c2b0] bg-white text-[0.65rem] font-extrabold text-black shadow"
-                      >
-                        D
-                      </span>
-                    ) : null}
-                    {/* The speech bubble: their last bazar call, or "thinking" while it's their turn. */}
-                    {thinking(seat) || said ? (
-                      <span
-                        className={`absolute z-30 flex min-h-9 min-w-12 items-center justify-center rounded-2xl border-2 border-[#e8c66a] bg-[#fdf3d0] px-3 py-1 text-base font-extrabold whitespace-nowrap text-[#2a1b0c] shadow-[0_6px_14px_rgb(0_0_0/0.45)] motion-safe:animate-card-in ${
-                          where === 3
-                            ? 'top-0 right-full mr-3'
-                            : where === 2
-                              ? 'top-2 right-full mr-3'
-                              : 'top-0 left-full ml-3'
-                        }`}
-                      >
-                        {thinking(seat) ? (
-                          <span
-                            className="flex gap-1"
-                            aria-label={t('blot.thinking', { name: name(seat) })}
-                            role="img"
-                          >
-                            {[0, 1, 2].map((i) => (
-                              <span
-                                key={i}
-                                className="size-1.5 rounded-full bg-[#2a1b0c] motion-safe:animate-thinking"
-                                style={{ animationDelay: `${i * 160}ms` }}
-                              />
-                            ))}
-                          </span>
-                        ) : (
-                          said
-                        )}
-                      </span>
-                    ) : null}
-                  </span>
-                  <span
-                    className={`relative -mt-1 block max-w-28 min-w-20 truncate rounded-lg border px-3 py-0.5 text-center text-xs font-bold shadow-lg min-[641px]:min-w-28 min-[641px]:text-sm ${
-                      acting
-                        ? 'border-[#e8c66a] bg-linear-to-b from-[#fbe3a0] to-[#e3b955] text-[#2a1b0c]'
-                        : 'border-white/15 bg-[#2a1a12]/95 text-white'
-                    }`}
-                  >
-                    {name(seat)}
-                    {acting && turnShare !== null ? (
-                      <span
-                        aria-hidden="true"
-                        className="absolute inset-x-1 -bottom-1 h-1 overflow-hidden rounded-full bg-black/30"
-                      >
+                  {trick.map(({ seat, card }) => {
+                    const where = place(seat)
+                    const spot = [
+                      'bottom-[2%] left-1/2 -translate-x-1/2',
+                      'left-[8%] top-1/2 -translate-y-1/2 -rotate-6',
+                      'top-[2%] left-1/2 -translate-x-1/2',
+                      'right-[8%] top-1/2 -translate-y-1/2 rotate-6',
+                    ][where]
+                    const won = showingLast && view.last_trick?.winner === seat
+                    const from = FROM[where] ?? FROM[0]
+                    return (
+                      <span key={`${view.hand_no}-${card}`} className={`absolute ${spot}`}>
                         <span
-                          className="block h-full rounded-full bg-[#3ccf6e] transition-[width] duration-1000 ease-linear"
-                          style={{ width: `${turnShare * 100}%` }}
+                          className={`block rounded-[calc(var(--card-w)*0.072)] motion-safe:animate-card-from ${won ? 'ring-2 ring-gold' : ''}`}
+                          style={
+                            {
+                              '--fx': from?.x,
+                              '--fy': from?.y,
+                              '--card-w': narrow
+                                ? 'clamp(44px, 13vw, 60px)'
+                                : 'clamp(60px, 6.6vw, 96px)',
+                            } as CSSProperties
+                          }
+                        >
+                          <PlayingCard card={card} label={labels.card(card)} size="fluid" />
+                        </span>
+                      </span>
+                    )
+                  })}
+                </section>
+              )}
+            </div>
+
+            {/* The four players. */}
+            <ul aria-label={t('blot.seats')}>
+              {[0, 1, 2, 3].map((seat) => {
+                const where = place(seat)
+                const acting = view.to_act === seat && !dealing
+                const declared = view.declared[seat] ?? []
+                const said = bubble(seat) ?? fresh[seat] ?? null
+                return (
+                  <li
+                    key={seat}
+                    aria-current={acting ? 'step' : undefined}
+                    aria-label={`${name(seat)}, ${teamName(seat % 2)}`}
+                    className={`absolute z-20 flex flex-col items-center ${SEAT_POS[where]}`}
+                    data-deal-target={where === 0 ? undefined : where}
+                  >
+                    <span className="relative">
+                      <span {...seatTrigger(seat, t('playerCard.open', { name: name(seat) }))}>
+                        <Avatar
+                          name={name(seat)}
+                          acting={acting}
+                          share={acting ? turnShare : null}
+                          level={levels[seat]}
+                          ours={seat % 2 === myTeam}
+                          ai={faces[seat]}
                         />
                       </span>
-                    ) : null}
-                  </span>
-                  {/* Card backs (not for the partner on a phone: the facts column needs that room). */}
-                  {seat !== me &&
-                  (view.phase === 'playing' || dealing) &&
-                  !(narrow && where === 2) ? (
-                    <span aria-hidden="true" className="mt-1 flex">
-                      {Array.from({ length: Math.min(8, dealtTo(seat)) }, (_, i) => (
-                        <CardBack key={i} size="xs" className={i > 0 ? '-ml-6' : ''} />
-                      ))}
+                      <AvatarBadges badges={badgesOf(seat)} name={name(seat)} end={where === 3} />
+                      {view.dealer === seat ? (
+                        <span
+                          title={t('blot.dealer')}
+                          className="absolute -top-1 -left-1 flex size-6 items-center justify-center rounded-full border-2 border-[#c9c2b0] bg-white text-[0.65rem] font-extrabold text-black shadow"
+                        >
+                          D
+                        </span>
+                      ) : null}
+                      {/* The speech bubble: their last bazar call, or "thinking" while it's their turn. */}
+                      {thinking(seat) || said ? (
+                        <span
+                          className={`absolute z-30 flex min-h-9 min-w-12 items-center justify-center rounded-2xl border-2 border-[#e8c66a] bg-[#fdf3d0] px-3 py-1 text-base font-extrabold whitespace-nowrap text-[#2a1b0c] shadow-[0_6px_14px_rgb(0_0_0/0.45)] motion-safe:animate-card-in ${
+                            where === 3
+                              ? 'top-0 right-full mr-3'
+                              : where === 2
+                                ? 'top-2 right-full mr-3'
+                                : 'top-0 left-full ml-3'
+                          }`}
+                        >
+                          {thinking(seat) ? (
+                            <span
+                              className="flex gap-1"
+                              aria-label={t('blot.thinking', { name: name(seat) })}
+                              role="img"
+                            >
+                              {[0, 1, 2].map((i) => (
+                                <span
+                                  key={i}
+                                  className="size-1.5 rounded-full bg-[#2a1b0c] motion-safe:animate-thinking"
+                                  style={{ animationDelay: `${i * 160}ms` }}
+                                />
+                              ))}
+                            </span>
+                          ) : (
+                            said
+                          )}
+                        </span>
+                      ) : null}
                     </span>
-                  ) : null}
-                  {view.phase === 'playing' && declared.length > 0 ? (
                     <span
-                      className={`flex flex-col items-center gap-1 ${
-                        where === 2
-                          ? 'absolute top-2 left-full ml-24'
-                          : where === 0
-                            ? 'absolute bottom-full left-0 mb-2 min-[641px]:top-2 min-[641px]:bottom-auto min-[641px]:left-full min-[641px]:mb-0 min-[641px]:ml-24'
-                            : 'mt-1'
+                      className={`relative -mt-1 block max-w-28 min-w-20 truncate rounded-lg border px-3 py-0.5 text-center text-xs font-bold shadow-lg min-[641px]:min-w-28 min-[641px]:text-sm ${
+                        acting
+                          ? 'border-[#e8c66a] bg-linear-to-b from-[#fbe3a0] to-[#e3b955] text-[#2a1b0c]'
+                          : 'border-white/15 bg-[#2a1a12]/95 text-white'
                       }`}
                     >
-                      {declared.map((d, i) => (
+                      {name(seat)}
+                      {acting && turnShare !== null ? (
                         <span
-                          key={i}
-                          className="flex items-center gap-1 rounded-lg bg-black/60 p-1"
-                          aria-label={t('blot.declaredWith', {
-                            what: `${t(`blot.declaration.${d.kind}`)} +${d.points}`,
-                            cards: d.cards.map(labels.card).join(', '),
-                          })}
+                          aria-hidden="true"
+                          className="absolute inset-x-1 -bottom-1 h-1 overflow-hidden rounded-full bg-black/30"
                         >
-                          <span className="rounded-full bg-gold px-1.5 py-0.5 text-[0.65rem] font-extrabold whitespace-nowrap text-black">
-                            {t(`blot.declaration.${d.kind}`)} +{d.points}
-                          </span>
-                          <span className="flex" aria-hidden="true">
-                            {d.cards.map((card, j) => (
-                              <span key={card} className={j > 0 ? '-ml-5' : ''}>
-                                <PlayingCard card={card} label={labels.card(card)} size="xs" />
-                              </span>
-                            ))}
-                          </span>
+                          <span
+                            className="block h-full rounded-full bg-[#3ccf6e] transition-[width] duration-1000 ease-linear"
+                            style={{ width: `${turnShare * 100}%` }}
+                          />
                         </span>
-                      ))}
+                      ) : null}
                     </span>
-                  ) : null}
-                </li>
-              )
-            })}
-          </ul>
-
-          {/* The scoreboard (Us | You) and the deal's facts, top right. */}
-          <div className="absolute top-[1.5%] right-[1.5%] z-20 flex flex-col items-end gap-1.5">
-            <dl
-              aria-label={t('blot.score')}
-              className="grid grid-cols-2 overflow-hidden rounded-xl border border-gold/35 bg-[#1c120d]/90 text-center shadow-lg"
-            >
-              {[myTeam, 1 - myTeam].map((team, i) => (
-                <div key={team} className={`px-3 py-1 ${i === 0 ? 'border-r border-gold/25' : ''}`}>
-                  <dt className="text-[0.7rem] font-bold text-gold-light min-[641px]:text-xs">
-                    {teamName(team)}
-                  </dt>
-                  <dd className="text-lg font-extrabold tabular-nums min-[641px]:text-xl">
-                    {format(view.scores[team] ?? 0)}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-            <p className="rounded-full bg-black/50 px-2 py-0.5 text-[0.65rem] text-white/70 min-[641px]:text-xs">
-              {t('blot.target')} {format(view.target)} · {t('blot.deal')} {view.hand_no}
-            </p>
-            {contract ? (
-              <p className="flex items-center gap-1.5 rounded-full border border-gold/40 bg-black/60 px-2 py-0.5 text-[0.7rem] min-[641px]:text-xs">
-                {/* During the bazar it's only the highest bid so far; trump once the bazar is over. */}
-                <span className="text-white/70">
-                  {view.phase === 'bidding' ? t('blot.highestBid') : t('blot.trump')}
-                </span>
-                <span
-                  className={`rounded bg-card px-1 font-extrabold ${red(contract.suit) ? 'text-suit-red' : 'text-suit-black'}`}
-                >
-                  {contractText(contract)}
-                </span>
-                <span className="font-bold text-gold-light">×{multiplier(contract)}</span>
-              </p>
-            ) : null}
-            {view.phase === 'playing' ? (
-              <p className="rounded-full bg-black/50 px-2 py-0.5 text-[0.65rem] text-white/80 min-[641px]:text-xs">
-                {t('blot.tricksWon', {
-                  us: view.tricks[myTeam] ?? 0,
-                  them: view.tricks[1 - myTeam] ?? 0,
-                })}{' '}
-                · {t('blot.tricksLeft', { count: tricksLeft })}
-              </p>
-            ) : null}
-            {(view.phase === 'bidding' || view.phase === 'answer') &&
-            view.opener !== null &&
-            !dealing ? (
-              <p className="rounded-full bg-black/50 px-2 py-0.5 text-[0.65rem] text-white/80 min-[641px]:text-xs">
-                {t('blot.openedBy', { name: name(view.opener) })}
-              </p>
-            ) : null}
-          </div>
-
-          {/* Quansh: said against the contract, from your seat. */}
-          {has('contra') && !dealing ? (
-            <button
-              type="button"
-              disabled={pending}
-              onClick={() => send({ type: 'contra' })}
-              className="absolute bottom-[25%] left-1/2 z-30 -translate-x-1/2 rounded-2xl border-2 border-[#f0a090]/60 bg-linear-to-b from-[#a8473c] to-[#6e2620] px-8 py-2.5 text-lg font-extrabold text-white shadow-[0_10px_24px_rgb(0_0_0/0.5)] transition hover:brightness-110 active:translate-y-px min-[641px]:bottom-[19%]"
-            >
-              {t('blot.call.contra')}
-            </button>
-          ) : null}
-
-          {/* Your combinations, to announce before your first card. */}
-          {declares.length > 0 ? (
-            <section
-              aria-label={t('blot.yourDeclarations')}
-              className="absolute bottom-[25%] left-1/2 z-30 flex w-max max-w-[92%] -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-2xl border border-gold/40 bg-black/70 px-3 py-2 min-[641px]:bottom-[19%]"
-            >
-              <span className="text-xs font-semibold text-gold-light">
-                {t('blot.yourDeclarations')}
-              </span>
-              {view.my_declarations.map((d) => {
-                const action = declares.find((a) => a.index === d.index)
-                const text = `${t(`blot.declaration.${d.kind}`)} +${d.points}`
-                return action ? (
-                  <button
-                    key={d.index}
-                    type="button"
-                    disabled={pending}
-                    onClick={() => send(action)}
-                    aria-label={t('blot.declareIt', {
-                      what: text,
-                      cards: d.cards.map(labels.card).join(', '),
-                    })}
-                    className="min-h-9 rounded-full border border-gold bg-gold/20 px-3 text-xs font-bold text-gold-light hover:bg-gold/30"
-                  >
-                    {t('blot.declare')} · {text}
-                  </button>
-                ) : null
-              })}
-            </section>
-          ) : null}
-
-          {/* Your hand, fanned along the bottom; the cards you may play stand up. */}
-          <section
-            aria-label={t('blot.yourCards')}
-            className="absolute inset-x-0 bottom-0 z-20 flex justify-center pb-1"
-            data-deal-target="0"
-            // Large cards sized to the screen, as in a hand held up: about half of each shows.
-            style={
-              {
-                '--card-w': narrow ? 'clamp(52px, 15vw, 76px)' : 'clamp(76px, 8.4vw, 128px)',
-              } as CSSProperties
-            }
-          >
-            <div className="flex items-end">
-              {shownHand.map((card, i) => {
-                const canPlay = playable.has(card) && !dealing
-                const mid = (shownHand.length - 1) / 2
-                const offset = i - mid
-                return (
-                  <button
-                    key={card}
-                    type="button"
-                    disabled={!canPlay || pending}
-                    onClick={() => send({ type: 'play', card })}
-                    aria-label={labels.card(card)}
-                    className={`relative origin-bottom rounded-[calc(var(--card-w)*0.072)] transition-transform duration-200 ${
-                      canPlay
-                        ? 'z-10 hover:z-20 focus-visible:z-20'
-                        : view.phase === 'playing' && view.to_act === me
-                          ? 'brightness-[0.88]'
-                          : ''
-                    } ${dealing ? 'motion-safe:animate-card-flip' : ''}`}
-                    style={{
-                      marginLeft:
-                        i > 0 ? `calc(var(--card-w) * ${narrow ? -0.58 : -0.5})` : undefined,
-                      transform: `translateY(calc(var(--card-w) * ${(offset * offset * 0.035).toFixed(3)} - ${canPlay ? 'var(--card-w) * 0.12' : '0px'})) rotate(${offset * (narrow ? 4 : 3.5)}deg)`,
-                    }}
-                  >
-                    <span
-                      className={`block ${canPlay ? 'motion-safe:transition-transform motion-safe:hover:-translate-y-4' : ''}`}
-                    >
-                      <PlayingCard card={card} label={labels.card(card)} size="fluid" />
-                    </span>
-                  </button>
+                    {/* Card backs (not for the partner on a phone: the facts column needs that room). */}
+                    {seat !== me &&
+                    (view.phase === 'playing' || dealing) &&
+                    !(narrow && where === 2) ? (
+                      <span aria-hidden="true" className="mt-1 flex">
+                        {Array.from({ length: Math.min(8, dealtTo(seat)) }, (_, i) => (
+                          <CardBack key={i} size="xs" className={i > 0 ? '-ml-6' : ''} />
+                        ))}
+                      </span>
+                    ) : null}
+                    {view.phase === 'playing' && declared.length > 0 ? (
+                      <span
+                        className={`flex flex-col items-center gap-1 ${
+                          where === 2
+                            ? 'absolute top-2 left-full ml-24'
+                            : where === 0
+                              ? 'absolute bottom-full left-0 mb-2 min-[641px]:top-2 min-[641px]:bottom-auto min-[641px]:left-full min-[641px]:mb-0 min-[641px]:ml-24'
+                              : 'mt-1'
+                        }`}
+                      >
+                        {declared.map((d, i) => (
+                          <span
+                            key={i}
+                            className="flex items-center gap-1 rounded-lg bg-black/60 p-1"
+                            aria-label={t('blot.declaredWith', {
+                              what: `${t(`blot.declaration.${d.kind}`)} +${d.points}`,
+                              cards: d.cards.map(labels.card).join(', '),
+                            })}
+                          >
+                            <span className="rounded-full bg-gold px-1.5 py-0.5 text-[0.65rem] font-extrabold whitespace-nowrap text-black">
+                              {t(`blot.declaration.${d.kind}`)} +{d.points}
+                            </span>
+                            <span className="flex" aria-hidden="true">
+                              {d.cards.map((card, j) => (
+                                <span key={card} className={j > 0 ? '-ml-5' : ''}>
+                                  <PlayingCard card={card} label={labels.card(card)} size="xs" />
+                                </span>
+                              ))}
+                            </span>
+                          </span>
+                        ))}
+                      </span>
+                    ) : null}
+                  </li>
                 )
               })}
+            </ul>
+
+            {/* The scoreboard (Us | You) and the deal's facts, top right. */}
+            <div className="absolute top-[1.5%] right-[1.5%] z-20 flex max-w-[46%] flex-col items-end gap-1.5 min-[641px]:max-w-none">
+              <dl
+                aria-label={t('blot.score')}
+                className="grid grid-cols-2 overflow-hidden rounded-xl border border-gold/35 bg-[#1c120d]/90 text-center shadow-lg"
+              >
+                {[myTeam, 1 - myTeam].map((team, i) => (
+                  <div
+                    key={team}
+                    className={`px-3 py-1 ${i === 0 ? 'border-r border-gold/25' : ''}`}
+                  >
+                    <dt className="text-[0.7rem] font-bold text-gold-light min-[641px]:text-xs">
+                      {teamName(team)}
+                    </dt>
+                    <dd className="text-lg font-extrabold tabular-nums min-[641px]:text-xl">
+                      {format(view.scores[team] ?? 0)}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="rounded-full bg-black/50 px-2 py-0.5 text-[0.65rem] text-white/70 min-[641px]:text-xs">
+                {t('blot.target')} {format(view.target)} · {t('blot.deal')} {view.hand_no}
+              </p>
+              {contract ? (
+                <p className="flex items-center gap-1.5 rounded-full border border-gold/40 bg-black/60 px-2 py-0.5 text-[0.7rem] min-[641px]:text-xs">
+                  {/* During the bazar it's only the highest bid so far; trump once the bazar is over. */}
+                  <span className="text-white/70">
+                    {view.phase === 'bidding' ? t('blot.highestBid') : t('blot.trump')}
+                  </span>
+                  <span
+                    className={`rounded bg-card px-1 font-extrabold ${red(contract.suit) ? 'text-suit-red' : 'text-suit-black'}`}
+                  >
+                    {contractText(contract)}
+                  </span>
+                  <span className="font-bold text-gold-light">×{multiplier(contract)}</span>
+                </p>
+              ) : null}
+              {view.phase === 'playing' ? (
+                <p className="rounded-full bg-black/50 px-2 py-0.5 text-[0.65rem] text-white/80 min-[641px]:text-xs">
+                  {t('blot.tricksWon', {
+                    us: view.tricks[myTeam] ?? 0,
+                    them: view.tricks[1 - myTeam] ?? 0,
+                  })}{' '}
+                  · {t('blot.tricksLeft', { count: tricksLeft })}
+                </p>
+              ) : null}
+              {(view.phase === 'bidding' || view.phase === 'answer') &&
+              view.opener !== null &&
+              !dealing ? (
+                <p className="rounded-full bg-black/50 px-2 py-0.5 text-[0.65rem] text-white/80 min-[641px]:text-xs">
+                  {t('blot.openedBy', { name: name(view.opener) })}
+                </p>
+              ) : null}
             </div>
-          </section>
-        </div>
+
+            {/* Quansh: said against the contract, from your seat. */}
+            {has('contra') && !dealing ? (
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => send({ type: 'contra' })}
+                className="absolute bottom-[25%] left-1/2 z-30 -translate-x-1/2 rounded-2xl border-2 border-[#f0a090]/60 bg-linear-to-b from-[#a8473c] to-[#6e2620] px-8 py-2.5 text-lg font-extrabold text-white shadow-[0_10px_24px_rgb(0_0_0/0.5)] transition hover:brightness-110 active:translate-y-px min-[641px]:bottom-[19%]"
+              >
+                {t('blot.call.contra')}
+              </button>
+            ) : null}
+
+            {/* Your combinations, to announce before your first card. */}
+            {declares.length > 0 ? (
+              <section
+                aria-label={t('blot.yourDeclarations')}
+                className="absolute bottom-[25%] left-1/2 z-30 flex w-max max-w-[92%] -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-2xl border border-gold/40 bg-black/70 px-3 py-2 min-[641px]:bottom-[19%]"
+              >
+                <span className="text-xs font-semibold text-gold-light">
+                  {t('blot.yourDeclarations')}
+                </span>
+                {view.my_declarations.map((d) => {
+                  const action = declares.find((a) => a.index === d.index)
+                  const text = `${t(`blot.declaration.${d.kind}`)} +${d.points}`
+                  return action ? (
+                    <button
+                      key={d.index}
+                      type="button"
+                      disabled={pending}
+                      onClick={() => send(action)}
+                      aria-label={t('blot.declareIt', {
+                        what: text,
+                        cards: d.cards.map(labels.card).join(', '),
+                      })}
+                      className="min-h-9 rounded-full border border-gold bg-gold/20 px-3 text-xs font-bold text-gold-light hover:bg-gold/30"
+                    >
+                      {t('blot.declare')} · {text}
+                    </button>
+                  ) : null
+                })}
+              </section>
+            ) : null}
+
+            {/* Your hand, fanned along the bottom; the cards you may play stand up. */}
+            <section
+              aria-label={t('blot.yourCards')}
+              className="absolute inset-x-0 bottom-0 z-20 flex justify-center pb-1"
+              data-deal-target="0"
+              // Large cards sized to the screen, as in a hand held up: about half of each shows.
+              style={
+                {
+                  // Scaled with the table when held sideways: a size of the drawn table, not of the screen.
+                  '--card-w': short
+                    ? '92px'
+                    : narrow
+                      ? 'clamp(52px, 15vw, 76px)'
+                      : 'clamp(76px, 8.4vw, 128px)',
+                } as CSSProperties
+              }
+            >
+              <div className="flex items-end">
+                {shownHand.map((card, i) => {
+                  const canPlay = playable.has(card) && !dealing
+                  const mid = (shownHand.length - 1) / 2
+                  const offset = i - mid
+                  return (
+                    <button
+                      key={card}
+                      type="button"
+                      disabled={!canPlay || pending}
+                      onClick={() => send({ type: 'play', card })}
+                      aria-label={labels.card(card)}
+                      className={`relative origin-bottom rounded-[calc(var(--card-w)*0.072)] transition-transform duration-200 ${
+                        canPlay
+                          ? 'z-10 hover:z-20 focus-visible:z-20'
+                          : view.phase === 'playing' && view.to_act === me
+                            ? 'brightness-[0.88]'
+                            : ''
+                      } ${dealing ? 'motion-safe:animate-card-flip' : ''}`}
+                      style={{
+                        marginLeft:
+                          i > 0 ? `calc(var(--card-w) * ${narrow ? -0.58 : -0.5})` : undefined,
+                        transform: `translateY(calc(var(--card-w) * ${(offset * offset * 0.035).toFixed(3)} - ${canPlay ? 'var(--card-w) * 0.12' : '0px'})) rotate(${offset * (narrow ? 4 : 3.5)}deg)`,
+                      }}
+                    >
+                      <span
+                        className={`block ${canPlay ? 'motion-safe:transition-transform motion-safe:hover:-translate-y-4' : ''}`}
+                      >
+                        <PlayingCard card={card} label={labels.card(card)} size="fluid" />
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </section>
+          </div>
+        </FitStage>
       </div>
       {playable.size > 0 && !dealing ? (
         <p className="text-center text-sm font-semibold text-gold-light" aria-live="polite">

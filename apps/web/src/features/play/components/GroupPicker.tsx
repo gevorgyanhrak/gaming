@@ -29,7 +29,7 @@ export function GroupPicker({
     )
 
   return (
-    <fieldset>
+    <fieldset className="min-w-0">
       <legend className="mb-1.5 text-xs font-semibold tracking-wider text-muted uppercase">
         {t('play.group')}
       </legend>

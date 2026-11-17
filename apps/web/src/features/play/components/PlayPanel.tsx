@@ -122,7 +122,7 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
   // don't tell a signed-in player to log in.
   if (user === undefined) {
     return (
-      <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:items-start">
+      <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:items-start [&>*]:min-w-0">
         {hero}
         <Skeleton className="h-40 w-full rounded-2xl" />
       </div>
@@ -131,7 +131,7 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
 
   if (!user) {
     return (
-      <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:items-start">
+      <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:items-start [&>*]:min-w-0">
         {hero}
         <ModeCard index={0} Icon={BoltIcon} title={t('play.title')}>
           <ButtonLink
@@ -152,7 +152,7 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
   const modeId = mode?.id
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.15fr_1fr] lg:items-start">
+    <div className="grid gap-4 lg:grid-cols-[1.15fr_1fr] lg:items-start [&>*]:min-w-0">
       <div className="space-y-3">
         {hero}
 
@@ -160,7 +160,7 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 [animation-delay:120ms] motion-safe:animate-rise">
             {modes.length > 1 && Preview ? (
               // Modes that look different (Nardi: Long and Short) are chosen by their picture.
-              <fieldset className="w-full">
+              <fieldset className="w-full min-w-0">
                 <legend className="mb-2 text-center text-sm font-semibold text-gold-light">
                   {t('play.whatToPlay')}
                 </legend>
@@ -189,7 +189,7 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
             ) : modes.length > 1 && traits.modeCards ? (
               // Modes by how long the match runs (Blot: to 101, 151, 301): compact pills; what a win brings and
               // the bet are the same for each, so they're said once, under PLAY.
-              <fieldset className="w-full">
+              <fieldset className="w-full min-w-0">
                 <legend className="sr-only">{t('play.whatToPlay')}</legend>
                 <div className="grid grid-cols-3 gap-2">
                   {modes.map((m) => (

@@ -15,7 +15,16 @@ import { GroupBadge } from './GroupBadge'
  * the group with what the table plays for, whose turn it is (wide screens), and your Fishkas (the chips
  * that fly to the balance aim at it). Without a room yet (loading, an error): the way back and the balance.
  */
-export function TableBar({ room, status = null }: { room?: Room; status?: ReactNode }) {
+export function TableBar({
+  room,
+  status = null,
+  compact = false,
+}: {
+  room?: Room
+  status?: ReactNode
+  /** A phone held sideways: the group shows here too (the room drops its row under the bar). */
+  compact?: boolean
+}) {
   const { t } = useTranslation()
   const { data: user } = useCurrentUser()
 
@@ -39,7 +48,7 @@ export function TableBar({ room, status = null }: { room?: Room; status?: ReactN
             </h1>
             <p className="truncate text-xs text-muted">{room.mode.name}</p>
           </div>
-          <span className="ml-1 hidden min-w-0 md:inline-flex">
+          <span className={`ml-1 min-w-0 ${compact ? 'inline-flex' : 'hidden md:inline-flex'}`}>
             <GroupBadge room={room} />
           </span>
         </div>
