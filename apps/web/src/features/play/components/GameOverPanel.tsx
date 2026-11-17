@@ -22,6 +22,8 @@ import { endReasonLabel, outcomeLabel } from '../labels'
 import { traitsOf } from '@/games/registry'
 import { GameResult } from '@/features/wallet/components/GameResult'
 import { MatchmakingStatus } from './MatchmakingStatus'
+import { useWallet } from '@/features/wallet/hooks'
+import { openOutOfFishkas } from '@/features/wallet/outOfFishkas'
 
 /**
  * How the game ended, with one tap into the same kind of game: a new bot table with the same mode, size
@@ -119,14 +121,29 @@ export function GameOverPanel({
     .filter(Boolean)
     .join(' · ')
 
+  // Out of chips at a chip table: a rebuy takes a new seat with your Fishkas (the server buys you in); with none
+  // left, the free top-up comes first (the same popup as anywhere a game can't start for lack of Fishkas).
+  const wallet = useWallet()
+  const balance = wallet.data?.balance
+  const broke = outOfChips && balance === 0
   const playAgain = canPlayAgain ? (
-    <Button
-      onClick={() => again.mutate()}
-      loading={again.isPending}
-      className="min-h-11 w-full sm:w-auto"
-    >
-      {t('room.playAgain')}
-    </Button>
+    broke ? (
+      <Button onClick={openOutOfFishkas} className="min-h-11 w-full sm:w-auto">
+        {t('room.rebuy.getFishkas')}
+      </Button>
+    ) : (
+      <Button
+        onClick={() => again.mutate()}
+        loading={again.isPending}
+        className="min-h-11 w-full sm:w-auto"
+      >
+        {outOfChips
+          ? balance !== undefined
+            ? t('room.rebuy.withAmount', { amount: balance.toLocaleString(i18n.language) })
+            : t('room.rebuy.label')
+          : t('room.playAgain')}
+      </Button>
+    )
   ) : null
 
   if (folded) {

@@ -370,7 +370,12 @@
     "nextRound": "Հաջորդ խաղափուլը",
     "rewardFishkas": "Ֆիշկաներ",
     "rewardXp": "միավոր",
-    "thinking": "{{name}}-ը մտածում է…"
+    "thinking": "{{name}}-ը մտածում է…",
+    "rebuy": {
+      "label": "Նոր գնում",
+      "withAmount": "Նոր գնում · {{amount}} ֆիշկա",
+      "getFishkas": "Ստանալ անվճար ֆիշկաներ"
+    }
   },
   "history": {
     "title": "Խաղերի պատմություն",
@@ -585,6 +590,11 @@
       "custom": "Ընտրեք գումարը",
       "decrease": "Պակասեցնել {{amount, number}}-ով",
       "increase": "Ավելացնել {{amount, number}}-ով"
+    },
+    "history": {
+      "earlier_one": "Նախորդ բաժանումներ ({{count}})",
+      "earlier_other": "Նախորդ բաժանումներ ({{count}})",
+      "note": "Բաժանումները՝ այս սեղանը բացելուց ի վեր։"
     }
   },
   "activeGame": {

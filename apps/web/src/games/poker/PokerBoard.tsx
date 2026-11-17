@@ -83,8 +83,13 @@ export default function PokerBoard({
     hand: view.hand,
     chips: startOf(view),
   }))
+  // The table's hand history: every hand result seen since the page opened, newest first (real results from the
+  // server's views; the last ten).
+  const [hands, setHands] = useState<LastHand[]>(() => (view.last_hand ? [view.last_hand] : []))
   if (prevView !== view) {
     setPrevView(view)
+    if (view.last_hand && view.last_hand.number !== hands[0]?.number)
+      setHands([view.last_hand, ...hands].slice(0, 10))
     const sameHand = prevView.hand === view.hand
     if (!sameHand) setHandStart({ hand: view.hand, chips: startOf(view) })
     const allIn =
@@ -253,6 +258,16 @@ export default function PokerBoard({
   // room for that next to the board, so there a bet sits at its own seat, on the side facing the
   // middle: under the top seat and seats level with the board, above yours, beside the others.
   const narrow = useMediaQuery('(max-width: 900px)')
+  // On a phone the controls sit under the table: when your turn starts and they're off screen, they come into view.
+  const controlsRef = useRef<HTMLDivElement>(null)
+  const myTurnNow = actions.length > 0
+  useEffect(() => {
+    const panel = controlsRef.current
+    if (!myTurnNow || !narrow || !panel) return
+    if (panel.getBoundingClientRect().bottom <= window.innerHeight) return
+    const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    panel.scrollIntoView?.({ block: 'end', behavior: still ? 'auto' : 'smooth' })
+  }, [myTurnNow, narrow])
   // The dealer's tray sits at the top of the felt, unless a player's seat is there.
   const dealerFree = view.stacks.every((_, seat) => {
     const angle = (Math.PI / 2 + ((seat - me) * 2 * Math.PI) / seats) % (2 * Math.PI)
@@ -546,7 +561,10 @@ export default function PokerBoard({
         </dl>
       </div>
 
-      <div className="club-panel mx-auto flex max-w-4xl flex-col items-center gap-4 rounded-3xl p-4 min-[901px]:flex-row min-[901px]:p-5">
+      <div
+        ref={controlsRef}
+        className="club-panel mx-auto flex max-w-4xl scroll-mb-3 flex-col items-center gap-4 rounded-3xl p-4 min-[901px]:flex-row min-[901px]:p-5"
+      >
         <div className="flex shrink-0 gap-2" aria-label={t('poker.yourCards')}>
           {view.hand_cards.length > 0
             ? view.hand_cards.map((card, i) => (
@@ -596,41 +614,33 @@ export default function PokerBoard({
         </div>
       </div>
 
-      {view.last_hand ? (
+      {hands.length > 0 ? (
         <section
           aria-label={t('poker.lastHand')}
           className="club-panel mx-auto max-w-4xl rounded-3xl p-4 text-sm"
         >
-          <h2 className="mb-2 font-semibold text-gold-light">
-            {t('poker.lastHandTitle', { hand: view.last_hand.number })}
-          </h2>
-          <ul className="space-y-1">
-            {view.last_hand.pots.map((pot, i) => (
-              <li
-                key={i}
-                className={
-                  state.seat !== null && pot.winners.includes(state.seat) ? 'text-gold-light' : ''
-                }
-              >
-                {t('poker.won', {
-                  names: pot.winners.map(name).join(', '),
-                  count: pot.amount,
-                })}
-                {pot.hand ? ` — ${t(handKeys[pot.hand as keyof typeof handKeys])}` : ''}
-              </li>
-            ))}
-          </ul>
-          {Object.keys(view.last_hand.shown).length > 0 ? (
-            <ul className="mt-3 flex flex-wrap gap-4">
-              {Object.entries(view.last_hand.shown).map(([seat, cards]) => (
-                <li key={seat} className="flex items-center gap-2">
-                  <span className="text-muted">{name(Number(seat))}</span>
-                  {cards.map((card) => (
-                    <PlayingCard key={card} card={card} label={labels.card(card)} small />
-                  ))}
-                </li>
-              ))}
-            </ul>
+          <HandRecord hand={hands[0]!} name={name} me={state.seat} />
+          {hands.length > 1 ? (
+            // Earlier hands at this table, folded away.
+            <details className="group mt-3 border-t border-gold/15 pt-3">
+              <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between font-semibold text-gold-light [&::-webkit-details-marker]:hidden">
+                {t('poker.history.earlier', { count: hands.length - 1 })}
+                <span aria-hidden="true" className="transition-transform group-open:rotate-180">
+                  ▾
+                </span>
+              </summary>
+              <ol className="mt-2 space-y-3">
+                {hands.slice(1).map((hand) => (
+                  <li
+                    key={hand.number}
+                    className="rounded-2xl bg-black/20 p-3 motion-safe:animate-rise"
+                  >
+                    <HandRecord hand={hand} name={name} me={state.seat} />
+                  </li>
+                ))}
+              </ol>
+              <p className="mt-2 text-xs text-muted">{t('poker.history.note')}</p>
+            </details>
           ) : null}
         </section>
       ) : null}
@@ -765,5 +775,53 @@ function DealerTray({ label }: { label: string }) {
         ))}
       </span>
     </div>
+  )
+}
+
+/** One finished hand: who won each pot, with what, the board and the cards shown down. */
+function HandRecord({
+  hand,
+  name,
+  me,
+}: {
+  hand: LastHand
+  name: (seat: number) => string
+  me: number | null
+}) {
+  const { t } = useTranslation()
+  const labels = useCardLabel()
+  return (
+    <>
+      <h2 className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-semibold text-gold-light">
+        {t('poker.lastHandTitle', { hand: hand.number })}
+        {hand.board.length > 0 ? (
+          <span className="flex gap-1" aria-label={t('poker.board')}>
+            {hand.board.map((card) => (
+              <PlayingCard key={card} card={card} label={labels.card(card)} small />
+            ))}
+          </span>
+        ) : null}
+      </h2>
+      <ul className="space-y-1">
+        {hand.pots.map((pot, i) => (
+          <li key={i} className={me !== null && pot.winners.includes(me) ? 'text-gold-light' : ''}>
+            {t('poker.won', { names: pot.winners.map(name).join(', '), count: pot.amount })}
+            {pot.hand ? ` — ${t(handKeys[pot.hand as keyof typeof handKeys])}` : ''}
+          </li>
+        ))}
+      </ul>
+      {Object.keys(hand.shown).length > 0 ? (
+        <ul className="mt-3 flex flex-wrap gap-4">
+          {Object.entries(hand.shown).map(([seat, cards]) => (
+            <li key={seat} className="flex items-center gap-2">
+              <span className="text-muted">{name(Number(seat))}</span>
+              {cards.map((card) => (
+                <PlayingCard key={card} card={card} label={labels.card(card)} small />
+              ))}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </>
   )
 }

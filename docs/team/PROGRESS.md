@@ -64,7 +64,13 @@ Owner brief 2026-11-17 "complete redesign + Latin transliteration search":
 - [x] Search (critical): `features/search/gameSearch.ts` — one alias table by slug (`GAME_ALIASES`), Armenian/Cyrillic →
       Latin, sound folding (kh/h/x, sh, ch, y/i, doubles), prefix / word / inside / one-slip matches (first letter
       right); header search and the /games filter use it; a row found in another script is marked whole, one found by
-      an alias shows that alias. All brief examples tested (unit + UI + live desktop/375) — this commit.
+      an alias shows that alias. All brief examples tested (unit + UI + live desktop/375) — 68ccf58.
+- [x] Poker journey: rebuy after busting (`room.rebuy.*`: "Rebuy · N Fishkas", or the free top-up first at 0),
+      a table hand history (hands seen since the page opened, newest first, earlier ones folded; real `last_hand`s),
+      on phones the controls scroll into view when your turn starts — this commit. Re-checked: guest and signed-in
+      pages at 375–1440 and the poker room at 375–1024 with More open — no overflow, no small targets.
+- [ ] Not redone: the platform identity (Midnight Gold, ADR 0025, shipped today) and the game rooms (each game already
+      has its own scene and board; chess/checkers share the classic board by the owner's earlier request).
 Owner brief 2026-11-17 "poker turn, bets, AI avatars, chat/emoji":
 - [x] Turn: the "waiting for X" line is gone; `games/poker/Controls.tsx` `TurnHeader` (Your turn · Action required /
       Thinking time + the actor's face / Waiting for players / Next hand) with a run-down bar (red under 10 s), the

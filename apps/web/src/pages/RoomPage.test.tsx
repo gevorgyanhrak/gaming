@@ -2,7 +2,13 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it, vi } from 'vitest'
-import { roomFixture, roomStateFixture, signedInAs, userFixture } from '@/test/handlers'
+import {
+  roomFixture,
+  roomStateFixture,
+  signedInAs,
+  userFixture,
+  walletFixture,
+} from '@/test/handlers'
 import { emit } from '@/test/realtime'
 import { renderRoute } from '@/test/render'
 import { server } from '@/test/server'
@@ -295,6 +301,52 @@ describe('Room', () => {
     // Out of the game: no "Waiting for…" turn status for them (there is a seat to act).
     expect(screen.queryByText(/^Waiting for/)).not.toBeInTheDocument()
     expect(roomCalls).toBe(2)
+    // A rebuy with the Fishkas left (5,000 in the wallet fixture).
+    expect(await screen.findByRole('button', { name: 'Rebuy · 5,000 Fishkas' })).toBeInTheDocument()
+  })
+
+  it('with no Fishkas left, a busted player is offered the free top-up first', async () => {
+    let roomCalls = 0
+    serveRoom()
+    server.use(
+      http.get('*/api/v1/me/wallet', () =>
+        HttpResponse.json({
+          data: walletFixture({
+            balance: 0,
+            refill: { available: true, available_at: null, amount: 5000 },
+          }),
+        }),
+      ),
+      http.get('*/api/v1/rooms/room-1', () => {
+        roomCalls++
+        // The room shows the result once the player's game is over (the first read is from before).
+        const result = roomCalls === 1 ? null : ('loss' as const)
+        return HttpResponse.json({
+          data: roomFixture({
+            game: { ...roomFixture().game, slug: 'cardtable' },
+            participants: [
+              { ...roomFixture().participants[0]!, result },
+              roomFixture().participants[1]!,
+            ],
+          }),
+        })
+      }),
+      http.get('*/api/v1/rooms/room-1/state', () =>
+        HttpResponse.json({
+          data: roomStateFixture({
+            playing: false,
+            seats_to_act: [1],
+            legal_actions: [],
+            view: { stacks: [0, 2000] },
+          }),
+        }),
+      ),
+    )
+    renderRoute('/rooms/room-1')
+
+    expect(await screen.findByRole('heading', { name: "You're out of chips." })).toBeInTheDocument()
+    await userEvent.click(await screen.findByRole('button', { name: 'Get free Fishkas to rebuy' }))
+    expect(await screen.findByRole('dialog', { name: /Fishkas/ })).toBeInTheDocument()
   })
 
   it('calls Nardi’s mars by its name, without promising double Fishkas', async () => {

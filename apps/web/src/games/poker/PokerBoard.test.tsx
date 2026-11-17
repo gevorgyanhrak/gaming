@@ -171,7 +171,11 @@ describe('PokerBoard', () => {
           name: 'Queen of spades',
         }),
       ).toBeInTheDocument()
-      expect(screen.getByRole('img', { name: 'Jack of clubs' })).toBeInTheDocument()
+      expect(
+        within(screen.getByRole('region', { name: 'Board' })).getByRole('img', {
+          name: 'Jack of clubs',
+        }),
+      ).toBeInTheDocument()
       expect(screen.queryByText(/^Pot:/)).not.toBeInTheDocument()
       expect(screen.getByRole('status')).toHaveTextContent(
         'Hand 4: You win 150 chips — with a pair',
@@ -228,6 +232,39 @@ describe('PokerBoard', () => {
 describe('summarize', () => {
   const t = i18n.getFixedT('en')
   const name = (seat: number) => ['Aram', 'Levon', 'You'][seat]!
+
+  it('keeps the hands seen at the table, newest first, the earlier ones folded away', () => {
+    const hand = (number: number) => ({
+      number,
+      board: ['2C', '7D', '9H'],
+      shown: {},
+      pots: [{ amount: 20 * number, winners: [0], hand: null }],
+    })
+    const at = (number: number) =>
+      roomStateFixture({
+        seat: 2,
+        seats_to_act: [0],
+        view: view({ hand: number + 1, to_act: 0, last_hand: hand(number) }),
+      })
+    const { rerender } = render(
+      <PokerBoard state={at(1)} onAction={vi.fn()} pending={false} players={players} />,
+    )
+    rerender(<PokerBoard state={at(2)} onAction={vi.fn()} pending={false} players={players} />)
+    rerender(<PokerBoard state={at(3)} onAction={vi.fn()} pending={false} players={players} />)
+
+    const history = screen.getByRole('region', { name: 'Last hand' })
+    expect(
+      within(history)
+        .getAllByRole('heading')
+        .map((h) => h.textContent),
+    ).toEqual([
+      expect.stringContaining('Hand 3'),
+      expect.stringContaining('Hand 2'),
+      expect.stringContaining('Hand 1'),
+    ])
+    expect(within(history).getByText('Earlier hands (2)')).toBeInTheDocument()
+    expect(within(history).getByText('Aram won 60 chips')).toBeInTheDocument()
+  })
 
   it('splits a pot, giving each winner a number only when it is exact', () => {
     const split = {

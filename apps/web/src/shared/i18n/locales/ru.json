@@ -382,7 +382,12 @@
     "nextRound": "Следующий раунд",
     "rewardFishkas": "Фишки",
     "rewardXp": "опыта",
-    "thinking": "{{name}} думает…"
+    "thinking": "{{name}} думает…",
+    "rebuy": {
+      "label": "Докупиться",
+      "withAmount": "Докупиться · {{amount}} фишек",
+      "getFishkas": "Получить бесплатные фишки"
+    }
   },
   "history": {
     "title": "История игр",
@@ -621,6 +626,13 @@
       "custom": "Выберите сумму",
       "decrease": "Меньше на {{amount, number}}",
       "increase": "Больше на {{amount, number}}"
+    },
+    "history": {
+      "earlier_one": "Предыдущие раздачи ({{count}})",
+      "earlier_few": "Предыдущие раздачи ({{count}})",
+      "earlier_many": "Предыдущие раздачи ({{count}})",
+      "earlier_other": "Предыдущие раздачи ({{count}})",
+      "note": "Раздачи с момента, когда вы открыли этот стол."
     }
   },
   "activeGame": {
