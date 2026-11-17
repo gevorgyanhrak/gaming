@@ -187,6 +187,18 @@ it('prices a ways game per spin at the game\'s own cost', function () {
     expect($this->sent[0])->not->toHaveKey('sel');
 });
 
+it('lists the slots the player spun last, newest first', function () {
+    $other = SlotGame::query()->where('provider_game_id', 'novomatic/powerstars')->firstOrFail();
+    $other->update(['is_enabled' => true]);
+    $other->update(['meta' => [...$other->meta, 'cost' => 10, 'lines' => 10, 'state' => ['sel' => 10, 'bet' => 1]]]);
+    foreach (['novomatic-powerstars', 'novomatic-bookofradeluxe'] as $i => $slug) {
+        $this->actingAs($this->user)->postJson("/api/v1/slots/{$slug}/engine/spin", ['bet' => 1, 'key' => "spin-000{$i}"])->assertOk();
+    }
+    $this->actingAs($this->user)->getJson('/api/v1/me/slots/recent')->assertOk()
+        ->assertJsonPath('data.0.slug', 'novomatic-bookofradeluxe')
+        ->assertJsonPath('data.1.slug', 'novomatic-powerstars');
+});
+
 it('needs a signed-in player', function () {
     $this->postJson('/api/v1/slots/novomatic-bookofradeluxe/engine/spin', ['bet' => 2, 'key' => 'spin-0001'])->assertUnauthorized();
     $this->getJson('/api/v1/slots/novomatic-bookofradeluxe/engine')->assertUnauthorized();

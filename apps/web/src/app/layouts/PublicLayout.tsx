@@ -55,12 +55,13 @@ const iconButton =
 /** The header's sections (from 1280 px; phones and tablets have the tab bar and the ☰ menu). */
 function SectionLinks({ home }: { home: string }) {
   const { t } = useTranslation()
-  const { pathname, search } = useLocation()
-  const casino = pathname === '/games' && new URLSearchParams(search).get('category') === 'casino'
+  const { pathname } = useLocation()
+  // The casino link opens the slot hall (ADR 0026).
+  const casino = pathname === '/casino' || pathname.startsWith('/casino/')
   const links = [
     { to: home, label: t('nav.home'), active: pathname === home },
     { to: '/games', label: t('nav.games'), active: pathname.startsWith('/games') && !casino },
-    { to: '/games?category=casino', label: t('nav.casino'), active: casino },
+    { to: '/casino', label: t('nav.casino'), active: casino },
     { to: '/ranks', label: t('nav.ranks'), active: pathname === '/ranks' },
     { to: '/leaderboards', label: t('leaders.title'), active: pathname === '/leaderboards' },
   ]

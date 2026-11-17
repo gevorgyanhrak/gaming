@@ -111,6 +111,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
                 Route::post('gifts/spin', [FreeGiftsController::class, 'spin'])->name('gifts.spin');
                 Route::get('level', [LevelController::class, 'show'])->name('level.show');
                 Route::post('level-ups/claim', [LevelController::class, 'claim'])->name('level-ups.claim');
+                Route::get('slots/recent', [SlotController::class, 'recent'])->name('slots.recent');
                 Route::get('favorites', [FavoritesController::class, 'index'])->name('favorites.index');
                 Route::put('favorites/{kind}/{slug}', [FavoritesController::class, 'store'])->whereIn('kind', ['game', 'slot'])->name('favorites.store');
                 Route::delete('favorites/{kind}/{slug}', [FavoritesController::class, 'destroy'])->whereIn('kind', ['game', 'slot'])->name('favorites.destroy');

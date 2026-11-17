@@ -90,6 +90,10 @@ export const routes: RouteObject[] = [
             lazy: () => import('@/pages/RoomPage').then((m) => ({ Component: m.RoomPage })),
           },
           {
+            path: 'casino',
+            lazy: () => import('@/pages/SlotHallPage').then((m) => ({ Component: m.SlotHallPage })),
+          },
+          {
             path: 'casino/slots/:slug',
             lazy: () => import('@/pages/SlotPage').then((m) => ({ Component: m.SlotPage })),
           },

@@ -36,7 +36,7 @@ final class EngineSpins
      * The game as the player finds it: their balance, the bets and lines they can choose, and the screen and free
      * games where they left it.
      *
-     * @return array<string, mixed>
+     * @return array{balance: int, bets: list<int>, lines: array{min: int, max: int, fixed: bool, default: int}, unit: int, state: array<string, mixed>, free: bool}
      *
      * @throws HouseSpinRefused
      */
@@ -55,7 +55,7 @@ final class EngineSpins
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{round_id: string, bet: int, win: int, balance: int, replay: bool, screen: array<string, mixed>, wins: list<array{pay?: float, mp?: float, sym?: int, num?: int, li?: int, xy?: list<list<int>>, fs?: int, bid?: int, jid?: int}>, free: bool, next: bool, free_left: int, series_win: int, round: string}
      *
      * @throws HouseSpinRefused
      */
@@ -213,17 +213,38 @@ final class EngineSpins
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{round_id: string, bet: int, win: int, balance: int, replay: bool, screen: array<string, mixed>, wins: list<array{pay?: float, mp?: float, sym?: int, num?: int, li?: int, xy?: list<list<int>>, fs?: int, bid?: int, jid?: int}>, free: bool, next: bool, free_left: int, series_win: int, round: string}
      */
     private function answer(SlotSpin $spin, int $balance, bool $replay): array
     {
+        /** @var array<string, mixed> $r */
+        $r = $spin->result;
+
         return [
             'round_id' => $spin->public_id,
             'bet' => $spin->bet,
             'win' => $spin->win,
             'balance' => $balance,
             'replay' => $replay,
-            ...$spin->result,
+            /**
+             * The game's screen as the engine left it: `grid` (reels, each a column of symbol numbers from the top;
+             * 0 is an empty cell) and whatever the game adds (expanding symbol, multipliers, cascade level…).
+             *
+             * @var array<string, mixed>
+             */
+            'screen' => (array) ($r['screen'] ?? []),
+            /**
+             * The engine's win items: pay (Fishkas), mp (multiplier), sym, num (symbols), li (line, 0 for scatters),
+             * xy (1-based [reel, row] positions), fs (free games won).
+             *
+             * @var list<array{pay?: float, mp?: float, sym?: int, num?: int, li?: int, xy?: list<list<int>>, fs?: int}>
+             */
+            'wins' => array_values((array) ($r['wins'] ?? [])),
+            'free' => (bool) ($r['free'] ?? false),
+            'next' => (bool) ($r['next'] ?? false),
+            'free_left' => (int) ($r['free_left'] ?? 0),
+            'series_win' => (int) ($r['series_win'] ?? 0),
+            'round' => (string) ($r['round'] ?? ''),
         ];
     }
 }

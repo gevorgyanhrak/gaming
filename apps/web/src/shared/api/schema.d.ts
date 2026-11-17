@@ -908,6 +908,23 @@ export interface paths {
         patch: operations["v1.me.settings.update"];
         trace?: never;
     };
+    "/v1/me/slots/recent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The slots this player spun last (newest first, each once; only ones still offered) */
+        get: operations["v1.me.slots.recent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/slots": {
         parameters: {
             query?: never;
@@ -2043,19 +2060,23 @@ export interface operations {
                             reels: number;
                             rows: number;
                             symbols: number;
-                            features: string;
+                            /** @description The game's features as the engine flags them (free_games, cascade, wilds, scatters, …). */
+                            features: string[];
                             balance: number;
-                            bets: unknown[];
+                            bets: number[];
                             lines: {
                                 min: number;
                                 max: number;
                                 fixed: boolean;
                                 default: number;
                             };
-                            unit: unknown;
+                            /** @description What a spin costs at bet 1 when the lines are fixed (the game's own price, e.g. 25 for 243 ways). */
+                            unit: number;
+                            /** @description The screen where the player left it (`grid`: reels as columns of symbol numbers) and the game's extras. */
                             state: {
                                 [key: string]: unknown;
-                            } | string;
+                            };
+                            /** @description In free games or cascade falls: the next spin costs nothing. */
                             free: boolean;
                         };
                     };
@@ -2086,13 +2107,36 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: {
-                            round_id: string | unknown;
-                            bet: number | unknown;
-                            win: number | unknown;
-                            balance: number | unknown;
-                            replay: boolean | unknown;
-                        } & {
-                            [key: string]: unknown;
+                            round_id: string;
+                            bet: number;
+                            win: number;
+                            balance: number;
+                            replay: boolean;
+                            /**
+                             * @description The game's screen as the engine left it: `grid` (reels, each a column of symbol numbers from the top;
+                             *     0 is an empty cell) and whatever the game adds (expanding symbol, multipliers, cascade level…).
+                             */
+                            screen: {
+                                [key: string]: unknown;
+                            };
+                            /**
+                             * @description The engine's win items: pay (Fishkas), mp (multiplier), sym, num (symbols), li (line, 0 for scatters),
+                             *     xy (1-based [reel, row] positions), fs (free games won).
+                             */
+                            wins: {
+                                pay?: number;
+                                mp?: number;
+                                sym?: number;
+                                num?: number;
+                                li?: number;
+                                xy?: number[][];
+                                fs?: number;
+                            }[];
+                            free: boolean;
+                            next: boolean;
+                            free_left: number;
+                            series_win: number;
+                            round: string;
                         };
                     };
                 };
@@ -3520,6 +3564,29 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.me.slots.recent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `SlotGameResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SlotGameResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
         };
     };
     "v1.slots.index": {
