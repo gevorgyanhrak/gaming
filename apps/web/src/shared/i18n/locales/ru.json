@@ -29,7 +29,9 @@
     "ranks": "Ранги",
     "menu": "Меню",
     "closeMenu": "Закрыть меню",
-    "language": "Язык"
+    "language": "Язык",
+    "casino": "Казино",
+    "leaderboards": "Рейтинги"
   },
   "landing": {
     "title": "Садитесь за стол.\nВаша игра уже ждёт.",
@@ -852,7 +854,25 @@
     "progress": "Путь к следующему рангу"
   },
   "home": {
-    "tryNext": "Попробуйте ещё"
+    "tryNext": "Попробуйте ещё",
+    "explore": "Все игры",
+    "onlineNow": "сейчас онлайн",
+    "games_one": "игра",
+    "games_few": "игры",
+    "games_many": "игр",
+    "games_other": "игры",
+    "slots_one": "слот",
+    "slots_few": "слота",
+    "slots_many": "слотов",
+    "slots_other": "слота",
+    "seeAll": "Смотреть все",
+    "eyebrows": {
+      "top": "В центре внимания",
+      "recent": "С возвращением",
+      "lobby": "Лобби",
+      "live": "В прямом эфире",
+      "ranks": "Прогресс"
+    }
   },
   "blackjack": {
     "you": "Вы",

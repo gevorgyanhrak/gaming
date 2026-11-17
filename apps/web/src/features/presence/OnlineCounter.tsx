@@ -1,11 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { apiRequest } from '@/shared/api/http'
-
-type Online = { online: number | null }
-
-/** How often the counter asks; the server asks Reverb at most every 10 s. */
-const EVERY_MS = 30_000
+import { useOnlineCount } from './useOnlineCount'
 
 /**
  * The live online counter at the top: people connected right now, as Reverb counts them on the "online" presence
@@ -13,14 +7,8 @@ const EVERY_MS = 30_000
  */
 export function OnlineCounter({ className = '' }: { className?: string }) {
   const { t, i18n } = useTranslation()
-  const online = useQuery({
-    queryKey: ['online'],
-    queryFn: ({ signal }) =>
-      apiRequest<{ data: Online }>('/api/v1/stats/online', { signal }).then((r) => r.data),
-    refetchInterval: EVERY_MS,
-  })
-  const count = online.data?.online
-  if (count === null || count === undefined) return null
+  const count = useOnlineCount()
+  if (count === null) return null
 
   return (
     <p

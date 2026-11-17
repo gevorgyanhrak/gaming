@@ -140,7 +140,14 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   the Fishka pot is not doubled — owner Q16). The view adds `pips`. NardiBoard turns seat 1's Long view by
   half a board (no bar column). A game with several modes can show a picture picker: `modePreviews[slug]` in
   `games/registry.ts` (lazy preview component, `mode` prop); others keep the Segmented switch.
-- Club look (modelled on bazarblot.am): the app is a brass-edged window (`.club-frame`) over a lamp-lit
+- Platform look = Midnight Gold (ADR 0025, docs/design/MIDNIGHT_GOLD.md): night surfaces, gold primary, violet second
+  light, titles Unbounded / text Manrope (Noto Sans for Armenian); `emerald-*` tokens now alias the night shades.
+  Game rooms keep the Lamplit Room: `PublicLayout` puts `.classic-scope` on `<body>` at `/rooms/*`, resetting tokens,
+  fonts and the component variables (`--panel-*`, `--frame-*`, `--btn-*`, `--chrome-edge`). Anything that can show at a
+  table must read those, never fixed night colours; check by pixel-diffing a finished room before/after.
+  Home: `features/home/HomeHero` (real numbers only) + `NightSky`; section titles `shared/ui/SectionHeading`; lobby
+  cards `posterStyles`; header `SectionLinks` from 1280 px.
+- Lamplit Room (TASK-048; since ADR 0025 the game rooms only, plus the menus/shell vocabulary below; modelled on bazarblot.am): the app was a brass-edged window (`.club-frame`) over a lamp-lit
   wood room (`.club-room`); panels are `.club-panel`, icon medallions `.club-medal`. Warm tokens in
   `index.css`: accent is the green "play" colour, accent-text/gold is brass. Navigation is a ☰ menu
   (`MenuDrawer` in PublicLayout: home, games, leaderboards, the account's pages, the language — no games list, no side rail; owner 2026-11-14; a back arrow on `/rooms/*`) plus a phone tab bar. Games are

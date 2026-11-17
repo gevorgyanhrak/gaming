@@ -5,7 +5,6 @@ import { updateSettings } from '@/features/account/api'
 import { UserMenu } from '@/features/auth/components/UserMenu'
 import { VerificationBanner } from '@/features/auth/components/VerificationBanner'
 import { useCurrentUser } from '@/features/auth/hooks'
-import { HomeBackdrop } from '@/features/catalog/components/HomeBackdrop'
 import { BigWinCelebration } from '@/features/wins/BigWinCelebration'
 import { AchievementToast } from '@/features/achievements/AchievementToast'
 import { SiteSearch } from '@/features/search/SiteSearch'
@@ -44,12 +43,52 @@ import { Skeleton } from '@/shared/ui/Skeleton'
 import { useRefreshOnLanguageChange } from '../useRefreshOnLanguageChange'
 
 const tabLink = ({ isActive }: { isActive: boolean }) =>
-  `flex min-h-16 flex-1 flex-col items-center justify-center gap-1 text-xs font-medium ${
-    isActive ? 'text-gold-light' : 'text-muted'
+  `relative flex min-h-16 flex-1 flex-col items-center justify-center gap-1 text-xs font-semibold transition-colors ${
+    isActive
+      ? 'text-gold-light before:absolute before:top-0 before:h-0.5 before:w-8 before:rounded-full before:bg-gold before:shadow-[0_0_12px_var(--color-gold)]'
+      : 'text-muted hover:text-fg'
   }`
 
 const iconButton =
-  'flex size-11 shrink-0 items-center justify-center rounded-control border border-border-strong/50 bg-emerald-800 text-fg transition-colors hover:border-gold-light'
+  'flex size-11 shrink-0 items-center justify-center rounded-control border border-white/10 bg-white/5 text-fg transition-colors hover:border-gold/50 hover:bg-white/10'
+
+/** The header's sections (from 1280 px; phones and tablets have the tab bar and the ☰ menu). */
+function SectionLinks({ home }: { home: string }) {
+  const { t } = useTranslation()
+  const { pathname, search } = useLocation()
+  const casino = pathname === '/games' && new URLSearchParams(search).get('category') === 'casino'
+  const links = [
+    { to: home, label: t('nav.home'), active: pathname === home },
+    { to: '/games', label: t('nav.games'), active: pathname.startsWith('/games') && !casino },
+    { to: '/games?category=casino', label: t('nav.casino'), active: casino },
+    { to: '/ranks', label: t('nav.ranks'), active: pathname === '/ranks' },
+    { to: '/leaderboards', label: t('nav.leaderboards'), active: pathname === '/leaderboards' },
+  ]
+
+  return (
+    <nav aria-label={t('nav.sections')} className="hidden items-center gap-0.5 xl:flex">
+      {links.map((link) => (
+        <Link
+          key={link.to}
+          to={link.to}
+          aria-current={link.active ? 'page' : undefined}
+          className={`relative rounded-full px-3.5 py-2 text-sm font-semibold whitespace-nowrap transition-colors duration-150 ${
+            link.active ? 'bg-white/8 text-fg' : 'text-muted hover:bg-white/5 hover:text-fg'
+          }`}
+        >
+          {link.label}
+          {/* The current section: a short gold line under it. */}
+          <span
+            aria-hidden="true"
+            className={`absolute inset-x-4 -bottom-[0.55rem] h-0.5 rounded-full bg-linear-to-r from-gold-light to-gold shadow-[0_0_10px_var(--color-gold)] transition-opacity duration-200 ${
+              link.active ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+        </Link>
+      ))}
+    </nav>
+  )
+}
 
 /**
  * The app's shell (TASK-048): a header with the ☰ menu (MenuDrawer), the balance and account, the page,
@@ -70,8 +109,11 @@ export function PublicLayout() {
 
   const home = user.data ? '/dashboard' : '/'
   const atTable = pathname.startsWith('/rooms/')
-  // The landing page and a signed-in player's home show the one big picture.
-  const isHome = !inMaintenance && (pathname === '/' || pathname === '/dashboard')
+  // A game table keeps its own look (owner, 2026-11-17): the classic tokens for the whole page, popups included.
+  useEffect(() => {
+    document.body.classList.toggle('classic-scope', atTable)
+    return () => document.body.classList.remove('classic-scope')
+  }, [atTable])
   const showBar = !wide && !atTable
   // The ☰ menu (owner, 2026-11-14: no side bar of games; the account's pages and the language, in a menu).
   const [menuOpen, setMenuOpen] = useState(false)
@@ -110,9 +152,6 @@ export function PublicLayout() {
     <div className="club-room isolate flex min-h-dvh">
       <BigWinCelebration />
       <AchievementToast />
-      {isHome ? (
-        <HomeBackdrop className="pointer-events-none fixed inset-x-0 top-0 -z-10 h-lvh w-full" />
-      ) : null}
 
       <MenuDrawer
         open={menuOpen}
@@ -125,7 +164,12 @@ export function PublicLayout() {
       <div className={`flex min-h-dvh min-w-0 flex-1 flex-col ${showBar ? 'pb-tabbar' : ''}`}>
         {/* At a table the room draws its own bar (TableBar); during maintenance the header stays. */}
         {atTable && !inMaintenance ? null : (
-          <header className="sticky top-0 z-20 flex h-header items-center justify-between gap-1.5 border-b border-gold/20 bg-emerald-900 px-3 sm:gap-3 sm:px-6">
+          <header className="sticky top-0 z-20 flex h-header items-center justify-between gap-1.5 border-b border-white/6 bg-night-900/75 px-3 backdrop-blur-xl backdrop-saturate-150 sm:gap-3 sm:px-6">
+            {/* A thin gold light along the bottom edge. */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 -bottom-px h-px bg-linear-to-r from-transparent via-gold/45 to-transparent"
+            />
             {/* Phones show the logo alone, which must not shrink; from sm the name may truncate. */}
             <div className="flex shrink-0 items-center gap-2 sm:min-w-0 sm:shrink sm:gap-3">
               {atTable ? (
@@ -147,11 +191,12 @@ export function PublicLayout() {
               {/* Under 380 px the logo gives way to search and the balance (☰ and the tab bar lead home). */}
               <Link
                 to={home}
-                className="flex min-w-0 items-center gap-2.5 font-bold text-fg max-[379px]:hidden"
+                className="flex min-w-0 items-center gap-2.5 font-display text-[0.95rem] font-semibold tracking-tight text-fg max-[379px]:hidden"
               >
                 {brand}
               </Link>
             </div>
+            {atTable ? null : <SectionLinks home={home} />}
             {atTable ? null : <SiteSearch />}
             <nav aria-label={t('nav.main')} className="flex items-center gap-1 sm:gap-2">
               <OnlineCounter />
@@ -202,7 +247,7 @@ export function PublicLayout() {
           )}
         </main>
 
-        <footer className="border-t border-gold/20 bg-emerald-900 py-6">
+        <footer className="border-t border-(--chrome-edge) bg-emerald-900 py-8">
           <Container className="flex flex-col items-center justify-between gap-4 text-sm text-muted sm:flex-row">
             <div className="flex flex-col items-center gap-2 sm:flex-row sm:gap-6">
               <span>
@@ -232,7 +277,7 @@ export function PublicLayout() {
         <nav
           aria-label={t('nav.shortcuts')}
           data-tabbar
-          className="fixed inset-x-0 bottom-0 z-20 flex border-t border-gold/20 bg-emerald-900 pb-[env(safe-area-inset-bottom)]"
+          className="fixed inset-x-0 bottom-0 z-20 flex border-t border-white/8 bg-night-900/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl"
         >
           <NavLink to={home} end className={tabLink}>
             <HomeIcon />

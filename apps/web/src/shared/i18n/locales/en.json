@@ -29,7 +29,9 @@
     "ranks": "Ranks",
     "menu": "Menu",
     "closeMenu": "Close the menu",
-    "language": "Language"
+    "language": "Language",
+    "casino": "Casino",
+    "leaderboards": "Leaderboards"
   },
   "landing": {
     "title": "Pull up a chair.\nYour game is waiting.",
@@ -796,7 +798,21 @@
     "progress": "Progress to the next rank"
   },
   "home": {
-    "tryNext": "Try next"
+    "tryNext": "Try next",
+    "explore": "Explore games",
+    "onlineNow": "online now",
+    "games_one": "game",
+    "games_other": "games",
+    "slots_one": "slot",
+    "slots_other": "slots",
+    "seeAll": "See all",
+    "eyebrows": {
+      "top": "Featured",
+      "recent": "Welcome back",
+      "lobby": "The lobby",
+      "live": "Live",
+      "ranks": "Progress"
+    }
   },
   "blackjack": {
     "you": "You",

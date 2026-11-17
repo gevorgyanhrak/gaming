@@ -2,8 +2,9 @@ import { playUiSound } from '@/shared/lib/sounds'
 import type { ComponentProps, ReactNode } from 'react'
 import { Link, type LinkProps } from 'react-router'
 
+// Looks come from variables (styles/index.css), so a button at a game table keeps the table's look.
 const gold =
-  'hover-shine bg-linear-to-b from-gold-light to-gold text-ink shadow-gold hover:brightness-105 active:scale-[0.98] active:brightness-95'
+  'hover-shine bg-(image:--btn-gold) text-(--btn-gold-ink) shadow-(--btn-gold-shadow) hover:brightness-108 active:scale-[0.98] active:brightness-95'
 
 const variants = {
   /** The one main action of a view: gold. */
@@ -15,7 +16,7 @@ const variants = {
     'border border-gold/60 bg-transparent text-accent-text hover:border-gold-light hover:bg-gold/12 active:bg-gold/20',
   /** Everything else. */
   secondary:
-    'border border-border-strong/70 bg-emerald-800 text-cream hover:bg-emerald-650 active:bg-emerald-900',
+    'border border-(--btn-2-edge) bg-(--btn-2-bg) text-fg hover:bg-(--btn-2-hover) active:bg-(--btn-2-active)',
   ghost: 'text-fg hover:bg-white/8 active:bg-white/12',
   /** Resign and other destructive confirmations. */
   danger: 'border border-danger/60 bg-danger/14 text-fg hover:bg-danger/24',

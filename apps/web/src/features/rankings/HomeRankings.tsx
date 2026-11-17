@@ -28,10 +28,7 @@ export function HomeRankings() {
   const title = board === 'level' ? t('rankings.byLevel') : t('rankings.byChips')
 
   return (
-    <section
-      aria-labelledby="home-rankings"
-      className="rounded-3xl border border-gold/30 bg-[linear-gradient(180deg,#120c06,#0a0f0c)] p-4 shadow-[0_18px_40px_rgb(0_0_0/0.5)] sm:p-5"
-    >
+    <section aria-labelledby="home-rankings" className="club-panel rounded-[1.6rem] p-4 sm:p-6">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h2
           id="home-rankings"
@@ -47,7 +44,7 @@ export function HomeRankings() {
           id={selectId}
           value={board}
           onChange={(e) => setBoard(e.target.value as PlatformBoard)}
-          className="min-h-10 rounded-full border border-gold/40 bg-black/50 px-4 text-sm font-semibold text-gold-light focus:border-gold focus:outline-none"
+          className="min-h-10 rounded-full border border-white/15 bg-white/5 px-4 text-sm font-semibold text-fg focus:border-gold focus:outline-none"
         >
           <option value="level">{t('rankings.byLevel')}</option>
           <option value="chips">{t('rankings.byChips')}</option>

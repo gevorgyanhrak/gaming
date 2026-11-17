@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { SectionHeading } from '@/shared/ui/SectionHeading'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { fetchMyGames, myGamesKey } from '@/features/play/api'
 import { useGames } from '../queries'
@@ -29,15 +30,18 @@ export function RecentlyPlayed() {
   if (!user || recent.length === 0) return null
 
   return (
-    <section aria-labelledby="recently-played" className="mt-10">
-      <h2 id="recently-played" className="mb-4 font-display text-2xl font-bold text-fg sm:text-3xl">
-        {t('lobby.recent')}
-      </h2>
+    <section aria-labelledby="recently-played" className="mt-14">
+      <SectionHeading
+        id="recently-played"
+        eyebrow={t('home.eyebrows.recent')}
+        title={t('lobby.recent')}
+      />
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         {recent.map((game) => (
           <li key={game.slug} className="flex">
             <div className="flex w-full flex-col">
-              <GamePoster game={game} />
+              {/* The lobby below shows these games too: only its posters travel to the game page. */}
+              <GamePoster game={game} morph={false} />
             </div>
           </li>
         ))}

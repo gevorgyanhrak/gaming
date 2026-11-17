@@ -19,6 +19,7 @@ import { LevelCard } from '@/features/levels/components/LevelCard'
 import { Avatar } from '@/shared/ui/Avatar'
 import { ButtonLink } from '@/shared/ui/Button'
 import { Container } from '@/shared/ui/Container'
+import { NightSky } from '@/features/home/NightSky'
 
 /**
  * Signed-in home: games to resume, statistics, and the catalog.
@@ -38,7 +39,8 @@ export function DashboardPage() {
     <>
       <title>{t('dashboard.title')}</title>
       {/* A compact welcome strip: who you are, your level (owner: in the banner), and today's free Fishkas. */}
-      <section className="home-hero border-b border-gold/20">
+      <section className="relative isolate overflow-hidden border-b border-white/6">
+        <NightSky />
         <Container className="py-3 lg:py-4">
           <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
             <div className="flex min-w-0 flex-1 items-center gap-3">

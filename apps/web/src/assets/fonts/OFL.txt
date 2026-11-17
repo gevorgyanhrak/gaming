@@ -1,4 +1,9 @@
 Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)
+Copyright 2018 The Manrope Project Authors (https://github.com/sharanda/manrope)
+Copyright 2022 The Unbounded Project Authors (https://github.com/w3f/unbounded)
+
+All of the fonts in this folder (Noto Sans, Noto Serif Display, Noto Sans/Serif Armenian, Manrope, Unbounded)
+are under the licence below.
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:

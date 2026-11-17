@@ -60,6 +60,13 @@ Owner ticket 2026-11-16 "Homepage UI Improvements" (in progress):
       Rummy and Pool plates tappable (SeatTap) — this commit.
 - [x] Live check (headless Chrome, player1): compact strip on desktop/phone, poker deal order and flips counted in a
       real hand, AI thinking caption + dots, emoji to an AI's avatar, quick message over mine, my avatar emoji 2 s.
+Owner brief 2026-11-17 "platform redesign, never the games" (ADR 0025, docs/design/MIDNIGHT_GOLD.md):
+- [x] Midnight Gold identity (tokens, Unbounded + Manrope, radii, shadows), `.classic-scope` keeps the game rooms
+      exactly (pixel diff of chess/poker rooms: 0.019 % / 0.005 %, animation frame and anti-aliasing), header (glass,
+      section links, gold edge), home (HomeHero with real numbers + 3D fan, NightSky, SectionHeading), promo banners
+      (Ken Burns, progress segments, glass arrows), top-game and lobby cards, wins/rankings panels, tab bar, footer,
+      dashboard sky — this commit.
+- [ ] Next passes: wallet, profile, ranks, leaderboards, auth pages and dialogs reviewed one by one in the new look.
 Owner brief 2026-11-17 "gaming platform redesign" (identity kept — the club look of TASK-048 — the work went into the
 game moments; see `docs/research/game-moments.md`):
 - [x] Table banners (`features/play/banners`: one at a time, majors first, minors dropped, no clicks taken, over the

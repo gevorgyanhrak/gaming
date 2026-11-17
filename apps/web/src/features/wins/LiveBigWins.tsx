@@ -55,7 +55,7 @@ export function LiveBigWins() {
   return (
     <section
       aria-labelledby="big-wins"
-      className="relative overflow-hidden rounded-3xl border border-gold/30 bg-[radial-gradient(ellipse_at_50%_0%,rgb(240_196_98/0.14),transparent_60%),linear-gradient(180deg,#120c06,#0a0f0c)] p-4 shadow-[0_18px_40px_rgb(0_0_0/0.5)] sm:p-5"
+      className="club-panel relative overflow-hidden rounded-[1.6rem] p-4 sm:p-6"
     >
       <h2
         id="big-wins"

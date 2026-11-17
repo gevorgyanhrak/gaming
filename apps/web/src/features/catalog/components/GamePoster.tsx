@@ -11,6 +11,7 @@ import { useGame, type GameSummary } from '../queries'
 import { artTransition, titleTransition } from '../transitions'
 import { GamePosterScene } from './HomeArt'
 import { PlayerCount } from './PlayerCount'
+import { posterArt, posterCard, posterPlate } from './posterStyles'
 
 const quickPlace =
   'absolute right-2.5 bottom-[3.75rem] opacity-100 transition-opacity duration-150 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-focus-within:opacity-100 [@media(hover:hover)]:group-hover:opacity-100'
@@ -38,7 +39,7 @@ export function GamePoster({
   const [seating, setSeating] = useState(false)
 
   return (
-    <div className="group hover-shine relative flex flex-1 flex-col overflow-hidden rounded-card border border-gold/30 bg-emerald-800 shadow-raised transition-[transform,border-color,box-shadow] duration-150 ease-soft hover:border-gold hover:shadow-[var(--shadow-raised),0_0_0_1px_var(--color-gold)] motion-safe:hover:-translate-y-1.5">
+    <div className={posterCard}>
       <Link to={`/games/${game.slug}`} data-game-card="" className="flex flex-1 flex-col">
         <ViewTransition name={morph ? artTransition(game.slug) : undefined}>
           <div
@@ -49,27 +50,31 @@ export function GamePoster({
                 src={game.thumbnail_url}
                 alt=""
                 loading="lazy"
-                className="size-full object-cover"
+                className={`size-full object-cover ${posterArt}`}
               />
             ) : (
-              <GamePosterScene slug={game.slug} name={game.name} className="block size-full" />
+              <GamePosterScene
+                slug={game.slug}
+                name={game.name}
+                className={`block size-full ${posterArt}`}
+              />
             )}
             {game.is_playable ? null : (
-              <span className="absolute top-2.5 left-2.5 rounded-full bg-ivory-50 px-2.5 py-1 text-xs font-bold text-ink shadow-sm">
+              <span className="absolute top-2.5 left-2.5 rounded-full border border-white/15 bg-black/65 px-2.5 py-1 text-xs font-bold text-fg shadow-sm backdrop-blur">
                 {t('catalog.comingSoon')}
               </span>
             )}
           </div>
         </ViewTransition>
-        <div className="surface-ivory flex-1 rounded-none px-3 pt-2.5 pb-3 shadow-none">
+        <div className={posterPlate}>
           <ViewTransition name={morph ? titleTransition(game.slug) : undefined}>
             <h3
-              className={`font-bold text-ink ${featured ? 'text-lg leading-6 sm:text-xl' : 'text-base leading-[1.375rem]'}`}
+              className={`font-bold text-fg ${featured ? 'text-lg leading-6 sm:text-xl' : 'text-base leading-[1.375rem]'}`}
             >
               {game.name}
             </h3>
           </ViewTransition>
-          <p className="text-xs text-ink-soft">
+          <p className="text-xs text-muted">
             <PlayerCount game={game} />
           </p>
         </div>
