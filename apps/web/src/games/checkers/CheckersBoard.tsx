@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { waitingCaption } from '@/features/play/turnCaption'
 import { useBoardFit } from '@/features/play/useBoardFit'
+import { useSlidePiece } from '../motion/useSlidePiece'
 import type { BoardProps } from '../registry'
 
 type Piece = 'w' | 'W' | 'b' | 'B'
@@ -73,6 +74,8 @@ export default function CheckersBoard({ state, onAction, pending, players, faces
 
   // The board's bottom edge (your home row) stays on screen whatever sits above it.
   const [boardRef, boardStyle] = useBoardFit()
+  // The last move slides from its square (server's `last`; nothing decided here).
+  useSlidePiece(boardRef, view.last, JSON.stringify(view.board))
 
   return (
     <div
@@ -134,6 +137,7 @@ export default function CheckersBoard({ state, onAction, pending, players, faces
             return (
               <button
                 key={square}
+                data-cell={square}
                 type="button"
                 onClick={() => click(square)}
                 disabled={pending || (!isTarget && (!isSource || view.capturing !== null))}
@@ -155,6 +159,7 @@ export default function CheckersBoard({ state, onAction, pending, players, faces
                 {labels}
                 {piece ? (
                   <span
+                    data-piece=""
                     aria-hidden="true"
                     className={`relative flex size-[80%] items-center justify-center rounded-full text-[min(5vw,1.9rem)] leading-none transition-transform duration-150 ${
                       piece === 'w' || piece === 'W'

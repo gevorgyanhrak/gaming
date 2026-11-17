@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCountdown } from '@/features/play/useCountdown'
+import { showBanner } from '@/features/play/banners/store'
 import { walletKey } from '@/features/wallet/api'
 import { flyFishkas } from '@/features/wallet/flyFishkas'
 import { useMediaQuery } from '@/shared/lib/useMediaQuery'
@@ -65,6 +66,53 @@ export default function PokerBoard({
   const [amount, setAmount] = useState<number | null>(null)
   const [handOnLoad] = useState(() => view.last_hand?.number ?? 0)
 
+  // Moments between one view and the next (React's "props changed" pattern, during render): who went all-in,
+  // bets swept into the pot at the end of a betting round, players who just sat down. Only what happens while the
+  // page is open; never on the first view.
+  const [prevView, setPrevView] = useState(view)
+  const [prevPlayers, setPrevPlayers] = useState(players)
+  const [moments, setMoments] = useState<{
+    id: number
+    allIn: { seat: number; amount: number }[]
+    sweep: { seat: number; amount: number }[]
+  } | null>(null)
+  const [arrived, setArrived] = useState<number[]>([])
+  // Each seat's chips when this hand's first view arrived pre-flop (null: joined mid-hand, so a loss isn't known).
+  // Pre-flop every chip a seat has put in this hand is still in its bet, so stack + bet is where it started.
+  const startOf = (v: PokerView) =>
+    v.street === 'preflop' ? v.stacks.map((stack, seat) => stack + (v.bets[seat] ?? 0)) : null
+  const [handStart, setHandStart] = useState<{ hand: number; chips: number[] | null }>(() => ({
+    hand: view.hand,
+    chips: startOf(view),
+  }))
+  if (prevView !== view) {
+    setPrevView(view)
+    const sameHand = prevView.hand === view.hand
+    if (!sameHand) setHandStart({ hand: view.hand, chips: startOf(view) })
+    const allIn =
+      sameHand && view.street !== 'over'
+        ? view.stacks.flatMap((stack, seat) => {
+            const before = prevView.stacks[seat] ?? 0
+            return before > 0 && stack === 0 && !view.folded[seat] && !view.out[seat]
+              ? [{ seat, amount: before + (prevView.bets[seat] ?? 0) }]
+              : []
+          })
+        : []
+    const swept =
+      sameHand && view.bets.every((bet) => bet === 0)
+        ? prevView.bets.flatMap((amount, seat) => (amount > 0 ? [{ seat, amount }] : []))
+        : []
+    if (allIn.length > 0 || swept.length > 0)
+      setMoments({ id: (moments?.id ?? 0) + 1, allIn, sweep: swept })
+  }
+  if (prevPlayers !== players) {
+    setPrevPlayers(players)
+    const fresh = Object.keys(players)
+      .map(Number)
+      .filter((seat) => players[seat] && !prevPlayers[seat])
+    if (fresh.length > 0) setArrived(fresh)
+  }
+
   const owe = Math.max(0, view.current_bet - (view.bets[me] ?? 0))
   const callAmount = Math.min(owe, view.stacks[me] ?? 0)
   const raiseTo = raise ? Math.min(raise.max, Math.max(raise.min, amount ?? raise.min)) : 0
@@ -112,6 +160,56 @@ export default function PokerBoard({
     }
     refresh()
   }, [endedHand, iWon, queryClient])
+  useEffect(() => {
+    for (const { seat, amount } of moments?.allIn ?? [])
+      showBanner({
+        kind: 'allIn',
+        title: t('banners.allIn'),
+        detail: t('banners.allInDetail', {
+          name: name(seat),
+          amount: amount.toLocaleString(i18n.language),
+        }),
+      })
+    // `name` and `t` change with the language only; one banner per moment.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [moments?.id])
+
+  // The hand's outcome as a banner: a win (yours or another's) with what it took; a loss at the showdown, quietly.
+  // Folding is your own call, so it gets none.
+  useEffect(() => {
+    if (endedHand === null || !result || !last) return
+    const [first] = [...result.winners]
+    if (result.mine) {
+      const won = result.winners.get(me)
+      showBanner({
+        kind: 'winner',
+        title: t('banners.youWin'),
+        detail: won != null ? `+${won.toLocaleString(i18n.language)}` : undefined,
+      })
+    } else if (first) {
+      const [seat, chips] = first
+      showBanner({
+        kind: 'winner',
+        title: t('banners.winner'),
+        detail:
+          chips != null
+            ? t('banners.won', { name: name(seat), amount: chips.toLocaleString(i18n.language) })
+            : name(seat),
+      })
+      const lost =
+        handStart.hand === last.number && handStart.chips
+          ? (handStart.chips[me] ?? 0) - (view.stacks[me] ?? 0)
+          : 0
+      if (state.seat !== null && !view.folded[me] && !view.out[me] && lost > 0)
+        showBanner({
+          kind: 'lost',
+          title: t('banners.lost'),
+          detail: t('banners.lostDetail', { amount: lost.toLocaleString(i18n.language) }),
+        })
+    }
+    // Once per finished hand.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [endedHand])
   const boardCards = result && last ? last.board : view.board
 
   // Dealing, from the deck in the middle: a new hand's hole cards go round the table one at a time from the seat
@@ -250,6 +348,18 @@ export default function PokerBoard({
               ))
             : null}
 
+          {/* The round's bets slide into the pot; an all-in's stack goes in with a heavier stack. */}
+          {moments
+            ? moments.sweep.map(({ seat, amount }, i) => (
+                <ChipFlight
+                  key={`sweep-${moments.id}-${seat}`}
+                  from={spot(seat, 38)}
+                  delay={i * 60}
+                >
+                  <ChipStack amount={amount} />
+                </ChipFlight>
+              ))
+            : null}
           <ul aria-label={t('poker.seats')}>
             {view.stacks.map((stack, seat) => {
               const acting = view.to_act === seat
@@ -258,6 +368,9 @@ export default function PokerBoard({
               const gain = result?.winners.get(seat)
               const shown = result ? last?.shown[String(seat)] : undefined
               const bet = view.bets[seat] ?? 0
+              // Every chip in the pot and still in the hand: the chair glows red until the hand is settled.
+              const allIn =
+                stack === 0 && !view.folded[seat] && !view.out[seat] && view.street !== 'over'
               const status = view.out[seat]
                 ? t('poker.out')
                 : view.folded[seat]
@@ -287,7 +400,10 @@ export default function PokerBoard({
                         <span className="sr-only">{t('poker.bet', { amount: bet })}</span>
                       </span>
                     ) : null}
-                    <div className="relative isolate" data-seat-anchor={seat}>
+                    <div
+                      className={`relative isolate ${arrived.includes(seat) ? 'motion-safe:animate-[seat-in_520ms_cubic-bezier(0.2,0.9,0.3,1.2)_both]' : ''}`}
+                      data-seat-anchor={seat}
+                    >
                       {/* The chair's back behind the player. */}
                       <span
                         aria-hidden="true"
@@ -296,7 +412,9 @@ export default function PokerBoard({
                           // round the frame is the timer; a hand winner glows gold instead).
                           acting
                             ? 'shadow-[0_0_0_2px_var(--color-turn),0_0_26px_rgb(242_193_78/0.65)]'
-                            : ''
+                            : allIn
+                              ? 'shadow-[0_0_0_2px_#ff7a45,0_0_18px_rgb(255_90_50/0.5)] motion-safe:animate-[all-in-pulse_1.4s_ease-in-out_infinite]'
+                              : ''
                         }`}
                       />
                       <span {...seatTrigger(seat, t('playerCard.open', { name: name(seat) }))}>

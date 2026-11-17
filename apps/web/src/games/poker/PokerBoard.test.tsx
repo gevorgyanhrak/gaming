@@ -5,6 +5,8 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { roomStateFixture } from '@/test/handlers'
 import PokerBoard from './PokerBoard'
+import { clearBanners, DURATION, useBanner } from '@/features/play/banners/store'
+import { act, renderHook } from '@testing-library/react'
 
 // The board refreshes the wallet after a hand, so it needs a query client.
 const render = (ui: ReactNode) =>
@@ -322,5 +324,131 @@ describe('summarize', () => {
 
     vi.unstubAllGlobals()
     vi.useRealTimers()
+  })
+
+  it('calls an all-in, lights the seat, and announces the winner of a hand that ends while watching', () => {
+    // The dealing test above leaves its animate() stand-in behind; this one runs without animations.
+    Reflect.deleteProperty(HTMLElement.prototype, 'animate')
+    clearBanners()
+    const banner = renderHook(() => useBanner())
+    const legal = { legal_actions: [], seats_to_act: [] }
+    const { rerender } = render(
+      <PokerBoard
+        state={roomStateFixture({ seat: 2, ...legal, view: view({ hand: 3 }) })}
+        onAction={vi.fn()}
+        pending={false}
+        players={players}
+      />,
+    )
+    // Aram pushes his whole 990.
+    rerender(
+      <PokerBoard
+        state={roomStateFixture({
+          seat: 2,
+          ...legal,
+          view: view({
+            hand: 3,
+            stacks: [0, 995, 1000],
+            bets: [1000, 5, 0],
+            current_bet: 1000,
+            pot: 1005,
+          }),
+        })}
+        onAction={vi.fn()}
+        pending={false}
+        players={players}
+      />,
+    )
+    expect(banner.result.current).toMatchObject({
+      kind: 'allIn',
+      title: 'All-in',
+      detail: 'Aram · 1,000',
+    })
+
+    // The hand ends: Levon takes it.
+    rerender(
+      <PokerBoard
+        state={roomStateFixture({
+          seat: 2,
+          ...legal,
+          view: view({
+            hand: 3,
+            street: 'over',
+            stacks: [0, 2000, 1000],
+            bets: [0, 0, 0],
+            folded: [false, false, true],
+            last_hand: {
+              number: 3,
+              board: ['2C', '3D', '9H', 'JS', 'QD'],
+              shown: { 0: ['4C', '5C'], 1: ['QS', 'QH'] },
+              pots: [{ amount: 2000, winners: [1], hand: 'three_of_a_kind' }],
+              payouts: [0, 2000, 0],
+            },
+          }),
+        })}
+        onAction={vi.fn()}
+        pending={false}
+        players={players}
+      />,
+    )
+    // The all-in banner is still up; the winner's waits for it (one at a time). Folding gets no "lost" banner.
+    expect(banner.result.current?.kind).toBe('allIn')
+    clearBanners()
+  })
+
+  it('says quietly that you lost a hand you played to the showdown, with what it cost', () => {
+    Reflect.deleteProperty(HTMLElement.prototype, 'animate')
+    vi.useFakeTimers()
+    clearBanners()
+    const seen: string[] = []
+    const banner = renderHook(() => {
+      const current = useBanner()
+      if (current && !seen.includes(current.kind)) seen.push(current.kind)
+      return current
+    })
+    const board = (extra: object) => (
+      <PokerBoard
+        state={roomStateFixture({
+          seat: 2,
+          legal_actions: [],
+          seats_to_act: [],
+          view: view(extra),
+        })}
+        onAction={vi.fn()}
+        pending={false}
+        players={players}
+      />
+    )
+    // Hand 3 opens pre-flop with you on 1,000.
+    const { rerender } = render(board({ hand: 3 }))
+    rerender(
+      board({
+        hand: 3,
+        street: 'over',
+        stacks: [990, 1600, 400],
+        bets: [0, 0, 0],
+        folded: [true, false, false],
+        last_hand: {
+          number: 3,
+          board: ['2C', '3D', '9H', 'JS', 'QD'],
+          shown: { 1: ['QS', 'QH'], 2: ['AS', 'KH'] },
+          pots: [{ amount: 1200, winners: [1], hand: 'three_of_a_kind' }],
+          payouts: [0, 1200, 0],
+        },
+      }),
+    )
+    expect(banner.result.current).toMatchObject({ kind: 'winner', detail: 'Levon · +1,200' })
+    // Then, quietly, what it cost you: 1,000 at the start, 400 now.
+    act(() => {
+      vi.advanceTimersByTime(DURATION.winner)
+    })
+    expect(banner.result.current).toMatchObject({
+      kind: 'lost',
+      title: 'Hand lost',
+      detail: '−600',
+    })
+    clearBanners()
+    vi.useRealTimers()
+    expect(seen).toEqual(['winner', 'lost'])
   })
 })

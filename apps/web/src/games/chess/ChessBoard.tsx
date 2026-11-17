@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/shared/ui/Button'
 import { waitingCaption } from '@/features/play/turnCaption'
 import { useBoardFit } from '@/features/play/useBoardFit'
+import { useSlidePiece } from '../motion/useSlidePiece'
 import type { BoardProps } from '../registry'
 
 type Piece = 'K' | 'Q' | 'R' | 'B' | 'N' | 'P' | 'k' | 'q' | 'r' | 'b' | 'n' | 'p'
@@ -96,6 +97,8 @@ export default function ChessBoard({ state, onAction, pending, players, faces }:
 
   // The board's bottom edge (your home rank) stays on screen whatever sits above it.
   const [boardRef, boardStyle] = useBoardFit()
+  // The last move slides from its square (server's `last`; nothing decided here).
+  useSlidePiece(boardRef, view.last, JSON.stringify(view.board))
 
   return (
     <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center">
@@ -136,6 +139,7 @@ export default function ChessBoard({ state, onAction, pending, players, faces }:
               return (
                 <button
                   key={square}
+                  data-cell={square}
                   type="button"
                   onClick={() => click(square)}
                   disabled={pending || (!isTarget && !sources.has(square))}
@@ -178,6 +182,7 @@ export default function ChessBoard({ state, onAction, pending, players, faces }:
                   ) : null}
                   {piece ? (
                     <span
+                      data-piece=""
                       aria-hidden="true"
                       className={`relative text-[min(9.5vw,3.3rem)] leading-none transition-transform duration-150 select-none ${
                         isWhite(piece)

@@ -158,6 +158,13 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
 - AI is marked (ADR 0022, supersedes ADR 0021's "never marked"): `shared/ui/AiTag` in player lists and the matchmaking
   table (`table[].is_bot`), and RoomPage's `players` map gives every board "Name · AI" (`play.aiName`). AI never counts
   in people statistics (playing now, Big Wins, leaderboards, achievements).
+- Table banners (`features/play/banners`): `showBanner({kind, title, detail})` from anywhere at a table; `TableBanners`
+  (RoomPage) shows one at a time over the table bar, `allIn`/`winner` jump the queue, minor ones drop when two wait;
+  `useSeatBanners` gives joined/left for every game. Fire banners from effects, never during render. Boards detect
+  moments by comparing the previous view in state during render (poker `moments`, Nardi `step`).
+  Piece motion: `games/motion/useSlidePiece(rootRef, last, positionKey)` with `data-cell` squares and one `data-piece`
+  per cell (chess, checkers, Nardi via `pointMove`). PokerBoard tests: the dealing test leaves an `animate` stub —
+  later tests `Reflect.deleteProperty(HTMLElement.prototype, 'animate')`.
 - Sounds: `shared/lib/sounds.ts` synthesizes them (game sounds + casino UI sounds: deal, chips, click, fanfare, unlock — `playUiSound` follows the player's on/off via `features/sound/useSoundSetting`; `SoundToggle` in the header and TableBar) with Web Audio (no files); `useGameSounds` picks
   at most one per new state version via the pure `soundFor` (result > your turn when hidden or > 2
   seats > capture > move) plus a low-time warning at 10 s; honours `preferences.sound`. The room tab

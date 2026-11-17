@@ -1391,5 +1391,17 @@
     "results_few": "{{count}} игры",
     "results_many": "{{count}} игр",
     "results_other": "{{count}} игры"
+  },
+  "banners": {
+    "someone": "Игрок",
+    "joined": "{{name}} присоединился",
+    "left": "{{name}} вышел",
+    "allIn": "Ва-банк",
+    "winner": "Победитель",
+    "youWin": "Вы выиграли",
+    "lost": "Раздача проиграна",
+    "won": "{{name}} · +{{amount}}",
+    "allInDetail": "{{name}} · {{amount}}",
+    "lostDetail": "−{{amount}}"
   }
 }

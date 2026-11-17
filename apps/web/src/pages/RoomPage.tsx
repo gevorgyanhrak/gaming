@@ -19,6 +19,8 @@ import { WaitingTable } from '@/features/play/components/WaitingTable'
 import { useMarkGameInProgress } from '@/features/play/gameInProgress'
 import { waitingCaption } from '@/features/play/turnCaption'
 import { useCountdown } from '@/features/play/useCountdown'
+import { TableBanners } from '@/features/play/banners/TableBanners'
+import { useSeatBanners } from '@/features/play/banners/useSeatBanners'
 import { useGameSounds } from '@/features/play/useGameSounds'
 import { usePresence } from '@/features/play/usePresence'
 import { useRoom } from '@/features/play/useRoom'
@@ -73,6 +75,7 @@ export function RoomPage() {
   const mySeat = state.data?.seat
   const stillPlaying =
     mySeat != null && room.data?.participants.find((p) => p.seat === mySeat)?.result == null
+  useSeatBanners(room.data?.participants, mySeat ?? null)
   useGameSounds({
     roomId: id,
     state: state.data,
@@ -225,6 +228,7 @@ export function RoomPage() {
         ) : null
       })()}
       <TableBar room={data} status={wide ? turnStatus : null} />
+      <TableBanners />
       <Container className="space-y-4 py-4 sm:space-y-5 sm:py-6">
         <title>{tabTitle}</title>
         {/* Phones and tablets: the group and whose turn it is, under the bar (wider screens have both in it). */}

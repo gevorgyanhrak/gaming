@@ -60,6 +60,16 @@ Owner ticket 2026-11-16 "Homepage UI Improvements" (in progress):
       Rummy and Pool plates tappable (SeatTap) — this commit.
 - [x] Live check (headless Chrome, player1): compact strip on desktop/phone, poker deal order and flips counted in a
       real hand, AI thinking caption + dots, emoji to an AI's avatar, quick message over mine, my avatar emoji 2 s.
+Owner brief 2026-11-17 "gaming platform redesign" (identity kept — the club look of TASK-048 — the work went into the
+game moments; see `docs/research/game-moments.md`):
+- [x] Table banners (`features/play/banners`: one at a time, majors first, minors dropped, no clicks taken, over the
+      table bar): ALL-IN, WINNER / YOU WIN, quiet "Hand lost −N" at a showdown, "X joined / left" at every table.
+- [x] Poker: all-in chair pulse, bets swept into the pot at each round's end (`ChipFlight from`), seat-in animation for
+      new players; live: a real all-in hand (banner + red chair, then WINNER for the AI).
+- [x] Chess, checkers, Nardi: the moved piece slides from its square (`games/motion/useSlidePiece`; Nardi's step from
+      `pointMove`, a pure diff) — live: e2–e4 and the AI's reply both slid — this commit.
+- [ ] Not done from the brief: a new visual identity (kept by choice), tournaments (none exist), daily challenges,
+      friends, hand history, Blot/Durak extra effects (both already animate deals and bouts).
 Owner brief 2026-11-17 "marketplace research → apply" (research and what was left out: `docs/research/marketplace-patterns.md`):
 - [x] Header search with suggestions (`features/search`), favourites (♥ on cards, `favorites` table, `/me/favorites`,
       dashboard shelf, Favourites pill), `/games` filters (players, sort) with applied chips; fixes: duplicate

@@ -1297,5 +1297,17 @@
     "remove": "Remove filter: {{label}}",
     "results_one": "{{count}} game",
     "results_other": "{{count}} games"
+  },
+  "banners": {
+    "someone": "A player",
+    "joined": "{{name}} joined",
+    "left": "{{name}} left",
+    "allIn": "All-in",
+    "winner": "Winner",
+    "youWin": "You win",
+    "lost": "Hand lost",
+    "won": "{{name}} · +{{amount}}",
+    "allInDetail": "{{name}} · {{amount}}",
+    "lostDetail": "−{{amount}}"
   }
 }

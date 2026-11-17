@@ -33,11 +33,15 @@ const reducedMotion = () =>
  * skipped under reduced motion and where the browser can't animate.
  */
 export function ChipFlight({
-  to,
+  from = { left: '50%', top: '50%' },
+  to = { left: '50%', top: '50%' },
   delay,
   children,
 }: {
-  to: { left: string; top: string }
+  /** Where the chips start; the pot (the table's centre) when not given. */
+  from?: { left: string; top: string }
+  /** Where they land; the pot when not given. */
+  to?: { left: string; top: string }
   delay: number
   children: ReactNode
 }) {
@@ -47,15 +51,15 @@ export function ChipFlight({
     if (!node || typeof node.animate !== 'function' || reducedMotion()) return
     const flight = node.animate(
       [
-        { left: '50%', top: '50%', opacity: 0 },
-        { left: '50%', top: '50%', opacity: 1, offset: 0.1 },
+        { left: from.left, top: from.top, opacity: 0 },
+        { left: from.left, top: from.top, opacity: 1, offset: 0.1 },
         { left: to.left, top: to.top, opacity: 1, offset: 0.85 },
         { left: to.left, top: to.top, opacity: 0 },
       ],
       { duration: 700, delay, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'both' },
     )
     return () => flight.cancel()
-  }, [to.left, to.top, delay])
+  }, [from.left, from.top, to.left, to.top, delay])
 
   return (
     <span

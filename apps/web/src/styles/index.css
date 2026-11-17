@@ -189,6 +189,71 @@
     }
   }
 
+  /* Table banners (features/play/banners): the whole life of one, in, hold, out, over --banner-ms. */
+  @keyframes banner-in {
+    0% {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.6);
+    }
+    10% {
+      opacity: 1;
+      transform: translateY(0) scale(1.08);
+    }
+    16% {
+      transform: scale(1);
+    }
+    86% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.96);
+    }
+  }
+
+  @keyframes banner-sweep {
+    to {
+      transform: translateX(450%) skewX(-20deg);
+    }
+  }
+
+  @keyframes pill-in {
+    0% {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    12%,
+    85% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  /* An all-in seat: its chair pulses red while its chips are all in the pot. */
+  @keyframes all-in-pulse {
+    50% {
+      box-shadow:
+        0 0 0 3px #ff7a45,
+        0 0 34px rgb(255 90 50 / 0.75);
+    }
+  }
+
+  /* A player taking a seat: the avatar comes in from the rail and settles. */
+  @keyframes seat-in {
+    from {
+      opacity: 0;
+      transform: scale(0.55) translateY(14px);
+    }
+    70% {
+      opacity: 1;
+      transform: scale(1.06);
+    }
+  }
+
   /* A heart filling on a card when it is saved to favourites. */
   @keyframes heart-pop {
     40% {

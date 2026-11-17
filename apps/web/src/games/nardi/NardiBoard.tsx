@@ -2,6 +2,8 @@ import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { waitingCaption } from '@/features/play/turnCaption'
 import { useCountdown } from '@/features/play/useCountdown'
+import { pointMove } from '../motion/pointMove'
+import { useSlidePiece } from '../motion/useSlidePiece'
 import type { BoardProps } from '../registry'
 
 interface NardiView {
@@ -38,6 +40,14 @@ export default function NardiBoard({ state, onAction, pending, players, faces }:
   const [selected, setSelected] = useState<number | 'bar' | null>(null)
   const secondsLeft = useCountdown(state.deadline, state.server_time)
   const board = useRef<HTMLDivElement>(null)
+  // The checker just moved slides along the board: the step comes from the two positions (`pointMove`), no rules.
+  const [prevPoints, setPrevPoints] = useState(view.points)
+  const [step, setStep] = useState<{ from: number; to: number } | null>(null)
+  if (prevPoints !== view.points) {
+    setPrevPoints(view.points)
+    setStep(pointMove(prevPoints, view.points))
+  }
+  useSlidePiece(board, step, JSON.stringify(view.points))
 
   const sources = new Set(steps.map((s) => s.from))
   const targets = steps.filter((s) => s.from === selected)
@@ -93,6 +103,7 @@ export default function NardiBoard({ state, onAction, pending, players, faces }:
     return (
       <button
         key={p}
+        data-cell={p}
         type="button"
         onClick={() => clickPoint(p)}
         disabled={pending || (!isSource && !isTarget)}
@@ -126,7 +137,8 @@ export default function NardiBoard({ state, onAction, pending, players, faces }:
             <Stone
               key={i}
               mine={who === me}
-              // The outermost stone: the end of the stack that reaches into the board.
+              // The outermost stone: the end of the stack that reaches into the board (and the one that slides in).
+              outer={i === (row === 'top' ? shown - 1 : 0)}
               ready={isSource && i === (row === 'top' ? shown - 1 : 0)}
             />
           ))}
@@ -261,9 +273,18 @@ export default function NardiBoard({ state, onAction, pending, players, faces }:
   )
 }
 
-function Stone({ mine, ready = false }: { mine: boolean; ready?: boolean }) {
+function Stone({
+  mine,
+  ready = false,
+  outer = false,
+}: {
+  mine: boolean
+  ready?: boolean
+  outer?: boolean
+}) {
   return (
     <span
+      data-piece={outer ? '' : undefined}
       aria-hidden="true"
       className={`relative size-[var(--nardi-stone)] shrink-0 rounded-full ${mine ? 'nardi-stone-light' : 'nardi-stone-dark'} ${
         ready ? 'nardi-ready' : ''
