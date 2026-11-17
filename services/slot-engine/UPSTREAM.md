@@ -9,7 +9,8 @@ The original `README.md` is kept as it was; it describes the full upstream serve
 - `game/` — the algorithm registry, loader and maths; `game/slot/<maker>/<game>/` — 174 algorithms for 347 slot
   games: rules (`*_rule.go`), reels and paytables (`*_data.yaml`), RTP scanners (`*_scan.go`), Lua RTP worksheets.
 - `prng/` — ChaCha20 (the spins' generator), PCG, wyrand, xoshiro256++.
-- `util/` — except `batcher.go` (a database batch writer).
+- `util/` — except `batcher.go` (a database batch writer), `safemap.go` and the file-path/environment helpers in
+  `strutil.go` (removed in the security audit, 2026-11-18: unused, see `docs/casino/SLOT_ENGINE_REMOVED_CODE.md`).
 - `config/logger.go` — the log helpers the games call.
 
 ## Removed (platform parts our platform owns, or nothing needs)
@@ -28,6 +29,9 @@ them: gin, golang-jwt, xorm and the MySQL/Postgres/SQLite drivers, uasurfer, go-
   `core/links.go` without keno), `spin.go` (one stateless spin: the original `api/slot.go` steps without users, clubs
   or the bank), `server.go` (internal API with a shared key), `measure.go` + `measured.json` (the RTP each game pays
   through our path), tests.
+- Security audit 2026-11-18 (`docs/casino/SLOT_ENGINE_SECURITY_AUDIT.md`): fixed error answers, input bounds,
+  hashed key comparison, minimal `/health`, server limits; `engine/golden_test.go` + `engine/testdata/` lock every
+  game's scoring and the catalogue.
 - `main.go` (serve | list | measure), `config/flags.go`, `Dockerfile` (distroless, non-root, no published port).
 
 ## Patches to upstream game code

@@ -48,7 +48,18 @@ class SlotEngine
             $body['sel'] = $sel;
         }
 
-        return $this->call(fn (PendingRequest $http) => $http->post('/v1/spin', $body));
+        $out = $this->call(fn (PendingRequest $http) => $http->post('/v1/spin', $body));
+
+        // The answer moves Fishkas: anything not shaped as a spin, or a negative cost or win (Cash Farm's bonus can
+        // pay below zero — audit 2026-11-18), is a fault, and the spin is refused with nothing charged.
+        $number = fn (string $k) => isset($out[$k]) && (is_int($out[$k]) || is_float($out[$k])) && is_finite((float) $out[$k]) && $out[$k] >= 0;
+        if (! is_array($out['state'] ?? null) || ! is_array($out['wins'] ?? null) || ! $number('cost') || ! $number('win')
+            || ! $number('total') || ! is_bool($out['free'] ?? null) || ! is_bool($out['next'] ?? null) || ! is_int($out['fsr'] ?? null)) {
+            throw new EngineUnavailable("slot engine gave an unusable answer for {$game}");
+        }
+
+        /** @var array{state: array<string, mixed>, wins: list<array<string, mixed>>, cost: float, win: float, jack: float, free: bool, next: bool, fsr: int, total: float} */
+        return $out;
     }
 
     /**
@@ -63,6 +74,10 @@ class SlotEngine
         $key = (string) config('services.slot_engine.key');
         if (strlen($key) < 32) {
             throw new EngineUnavailable('slot engine key is not set');
+        }
+        // The compose file's local default must never guard a production engine.
+        if (app()->isProduction() && str_starts_with($key, 'local-dev-slot-engine-key')) {
+            throw new EngineUnavailable('slot engine key is the local development default');
         }
         $http = Http::baseUrl((string) config('services.slot_engine.url'))
             ->withHeaders(['X-Engine-Key' => $key])

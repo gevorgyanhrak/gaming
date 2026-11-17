@@ -53,6 +53,8 @@ func main() {
 			Addr:              *addr,
 			Handler:           engine.Handler(key),
 			ReadHeaderTimeout: 5 * time.Second,
+			MaxHeaderBytes:    16 << 10,
+			IdleTimeout:       60 * time.Second,
 			ReadTimeout:       10 * time.Second,
 			WriteTimeout:      30 * time.Second,
 		}

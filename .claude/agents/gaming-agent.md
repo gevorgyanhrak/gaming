@@ -385,6 +385,8 @@ is not done or not verified, and how to check it manually. Keep it concise.
   `App\Platform\Slots\Engine` (`EngineSpins`, `EngineSlots::sync` ← `php artisan slots:engine-sync`). After changing
   the engine: rebuild the container, re-run `measure` into `engine/measured.json`, regenerate GAME_FEATURES_AUDIT.md.
   Recreating api containers needs `docker compose restart nginx` (502 otherwise).
+  Engine gameplay lock: `go test ./engine` includes `golden_test.go` (scores of saved screens + catalogue); regenerate
+  only on purpose (`SLOT_GOLDEN_WRITE=1`). The engine sits on the `internal` compose network `slot-engine` (api only).
 - Game search: every name match goes through `features/search/gameSearch` (`search`, `matchTerms`, `termsOf`); a new
   game's other names (Latin spellings of its hy/ru name, English names) go in `GAME_ALIASES` under its slug — never
   a second game entry.
