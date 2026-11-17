@@ -1265,5 +1265,37 @@
     "openCard": "{{name}}’s card",
     "empty": "No one is ranked yet. Play a game to be the first!",
     "error": "The ranking couldn’t be loaded."
+  },
+  "favorites": {
+    "add": "Add {{name}} to favourites",
+    "remove": "Remove {{name}} from favourites",
+    "title": "Your favourites",
+    "filter": "Favourites",
+    "empty": "No favourites yet. Tap ♥ on a game to keep it here."
+  },
+  "search": {
+    "open": "Search",
+    "label": "Search games and slots",
+    "placeholder": "Search games and slots…",
+    "close": "Close search",
+    "noResults": "Nothing matches “{{query}}”.",
+    "games": "Games",
+    "slots": "Slots",
+    "seeAll": "All results for “{{query}}”",
+    "hint": "Type a game’s name"
+  },
+  "lobbyFilters": {
+    "sort": "Sort by",
+    "recommended": "Recommended",
+    "name": "Name A–Z",
+    "playing": "Playing now",
+    "players": "Players",
+    "any": "Any",
+    "two": "2 players",
+    "many": "3 or more",
+    "clear": "Clear all",
+    "remove": "Remove filter: {{label}}",
+    "results_one": "{{count}} game",
+    "results_other": "{{count}} games"
   }
 }

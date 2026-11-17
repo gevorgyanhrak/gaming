@@ -4,6 +4,18 @@ import { useSearchParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { SlotPoster } from '@/features/casino/SlotPoster'
 import { fetchSlots, slotsKey } from '@/features/casino/slots'
+import { useFavorites } from '@/features/favorites/favorites'
+import { CloseIcon } from '@/shared/ui/icons'
+import {
+  arrange,
+  favoriteItems,
+  itemKey,
+  PLAYERS,
+  SORTS,
+  type LobbyItem,
+  type Players,
+  type Sort,
+} from '../lobbyItems'
 import type { GameSummary } from '../queries'
 import { CategoryBanners } from './CategoryBanners'
 import { CategoryPopup } from './CategoryPopup'
@@ -14,6 +26,11 @@ const OTHER = '_other'
 const CASINO = 'casino'
 /** `?category=` for the "All" banner's popup (category slugs never start with "_"). */
 const ALL = '_all'
+/** `?category=` for the player's favourites on the games page. */
+const FAVORITES = '_favorites'
+
+const isOneOf = (list: readonly string[], value: string | null) =>
+  value !== null && list.includes(value)
 
 export type GameGroup = {
   key: string
@@ -95,21 +112,59 @@ export function GameLobby({
       { replace: !banners || !key, preventScrollReset: true },
     )
 
-  const [query, setQuery] = useState('')
+  // The header search's "all results" arrives as ?q=.
+  const [query, setQuery] = useState(() => params.get('q') ?? '')
   const needle = query.trim().toLocaleLowerCase()
-  // A search looks through every game, the ones shown larger above too.
-  const shown = needle
-    ? games.filter((g) => g.name.toLocaleLowerCase().includes(needle))
-    : selected
-      ? selected.games
-      : games.filter((g) => !exclude.includes(g.slug))
-  const featured = !banners && !selected && !needle && shown.length >= 3
-  const shownSlots =
-    selected && selected.key !== CASINO
-      ? []
-      : needle
-        ? slots.filter((slot) => slot.name.toLocaleLowerCase().includes(needle))
-        : slots
+  const favorites = useFavorites()
+  const favoriteCount = favorites.data?.length ?? 0
+  // The games page's extra filters (pills mode); the home page's grid only searches.
+  const sort =
+    !banners && isOneOf(SORTS, params.get('sort')) ? (params.get('sort') as Sort) : 'recommended'
+  const players =
+    !banners && isOneOf(PLAYERS, params.get('players'))
+      ? (params.get('players') as Players)
+      : undefined
+  const favoritesOnly = !banners && category === FAVORITES
+
+  const base: LobbyItem[] = favoritesOnly
+    ? favoriteItems(favorites.data ?? [], games, slots)
+    : [
+        // A search looks through every game, the ones shown larger above too.
+        ...(needle
+          ? games
+          : selected
+            ? selected.games
+            : games.filter((g) => !exclude.includes(g.slug))
+        ).map((game): LobbyItem => ({ kind: 'game', game })),
+        ...(selected && selected.key !== CASINO ? [] : slots).map((slot): LobbyItem => ({
+          kind: 'slot',
+          slot,
+        })),
+      ]
+  const shown = arrange(base, { query, players, sort })
+  const filtered = !!selected || favoritesOnly || !!players || sort !== 'recommended'
+  const featured =
+    !banners && !filtered && !needle && shown.length >= 3 && shown[0]?.kind === 'game'
+
+  const setParam = (name: string, value: string | null) =>
+    setParams(
+      (current) => {
+        if (value) current.set(name, value)
+        else current.delete(name)
+        return current
+      },
+      { replace: true, preventScrollReset: true },
+    )
+  const chips = [
+    favoritesOnly ? { label: t('favorites.filter'), clear: () => select(null) } : null,
+    selected ? { label: selected.name, clear: () => select(null) } : null,
+    players
+      ? { label: t(`lobbyFilters.${players}`), clear: () => setParam('players', null) }
+      : null,
+    sort !== 'recommended'
+      ? { label: t(`lobbyFilters.${sort}`), clear: () => setParam('sort', null) }
+      : null,
+  ].filter((chip) => chip !== null)
 
   return (
     <div>
@@ -124,13 +179,14 @@ export function GameLobby({
           <CategoryPills
             groups={groups}
             total={games.length + slots.length}
-            selected={selected?.key ?? null}
+            favorites={favoriteCount}
+            selected={favoritesOnly ? FAVORITES : (selected?.key ?? null)}
             onSelect={select}
           />
         </div>
       )}
-      <div className="mb-4">
-        <label className="relative block max-w-sm">
+      <div className="mb-4 flex flex-wrap items-end gap-3">
+        <label className="relative block w-full sm:max-w-sm sm:flex-1">
           <span className="sr-only">{t('lobby.search')}</span>
           <svg
             viewBox="0 0 24 24"
@@ -148,36 +204,83 @@ export function GameLobby({
             className="placeholder:text-fg-muted min-h-11 w-full rounded-full border border-border bg-surface pr-4 pl-10 text-sm text-fg focus:border-accent-text focus:outline-none"
           />
         </label>
+        {banners ? null : (
+          <div className="flex w-full gap-3 sm:ml-auto sm:w-auto">
+            <FilterSelect
+              label={t('lobbyFilters.players')}
+              value={players ?? ''}
+              onChange={(value) => setParam('players', value || null)}
+              options={[
+                { value: '', label: t('lobbyFilters.any') },
+                ...PLAYERS.map((value) => ({ value, label: t(`lobbyFilters.${value}`) })),
+              ]}
+            />
+            <FilterSelect
+              label={t('lobbyFilters.sort')}
+              value={sort}
+              onChange={(value) => setParam('sort', value === 'recommended' ? null : value)}
+              options={SORTS.map((value) => ({ value, label: t(`lobbyFilters.${value}`) }))}
+            />
+          </div>
+        )}
       </div>
-      {needle && shown.length === 0 && shownSlots.length === 0 ? (
+      {/* What narrows the list, each removable, and how many it leaves (Baymard: applied filters overview). */}
+      {chips.length > 0 ? (
+        <div className="mb-4 flex flex-wrap items-center gap-2" aria-live="polite">
+          <span className="text-sm font-semibold text-fg">
+            {t('lobbyFilters.results', { count: shown.length })}
+          </span>
+          {chips.map((chip) => (
+            <button
+              key={chip.label}
+              type="button"
+              onClick={chip.clear}
+              aria-label={t('lobbyFilters.remove', { label: chip.label })}
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-gold/40 bg-black/25 pr-2.5 pl-3.5 text-sm font-semibold text-fg transition-colors hover:border-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-text"
+            >
+              {chip.label}
+              <CloseIcon className="size-4" />
+            </button>
+          ))}
+          {chips.length > 1 ? (
+            <button
+              type="button"
+              onClick={() =>
+                setParams(new URLSearchParams(), { replace: true, preventScrollReset: true })
+              }
+              className="min-h-9 px-2 text-sm font-semibold text-gold-light underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-accent-text"
+            >
+              {t('lobbyFilters.clear')}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+      {shown.length === 0 ? (
         <p role="status" className="text-fg-muted py-8 text-center">
-          {t('lobby.noMatch', { query: query.trim() })}
+          {needle
+            ? t('lobby.noMatch', { query: query.trim() })
+            : favoritesOnly
+              ? t('favorites.empty')
+              : t('lobbyFilters.results', { count: 0 })}
         </p>
       ) : null}
       {/* "All": the first game (the admin's order) is featured, a double-width tile with wide art. */}
       <ul
-        key={selected?.key ?? 'all'}
+        key={favoritesOnly ? FAVORITES : (selected?.key ?? 'all')}
         className={`grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 ${featured ? 'lg:grid-cols-6' : 'lg:grid-cols-5'}`}
       >
-        {shown.map((game, i) => (
+        {shown.map((item, i) => (
           <li
-            key={game.slug}
+            key={itemKey(item)}
             className={`flex motion-safe:animate-rise ${featured && i === 0 ? 'col-span-2 sm:col-span-3 lg:col-span-2' : ''}`}
             style={{ animationDelay: `${Math.min(i, 8) * 45}ms` }}
           >
             <div className="flex w-full flex-col">
-              <GamePoster game={game} featured={featured && i === 0} />
-            </div>
-          </li>
-        ))}
-        {shownSlots.map((slot, i) => (
-          <li
-            key={`slot-${slot.slug}`}
-            className="flex motion-safe:animate-rise"
-            style={{ animationDelay: `${Math.min(shown.length + i, 8) * 45}ms` }}
-          >
-            <div className="flex w-full flex-col">
-              <SlotPoster slot={slot} />
+              {item.kind === 'game' ? (
+                <GamePoster game={item.game} featured={featured && i === 0} />
+              ) : (
+                <SlotPoster slot={item.slot} />
+              )}
             </div>
           </li>
         ))}
@@ -197,11 +300,14 @@ export function GameLobby({
 function CategoryPills({
   groups,
   total,
+  favorites,
   selected,
   onSelect,
 }: {
   groups: GameGroup[]
   total: number
+  /** How many favourites the player has: their pill shows when there are any. */
+  favorites: number
   selected: string | null
   onSelect: (key: string | null) => void
 }) {
@@ -214,6 +320,7 @@ function CategoryPills({
       label: group.name,
       count: group.count ?? group.games.length,
     })),
+    ...(favorites > 0 ? [{ key: FAVORITES, label: t('favorites.filter'), count: favorites }] : []),
   ]
 
   return (
@@ -254,5 +361,35 @@ function CategoryPills({
         ))}
       </div>
     </fieldset>
+  )
+}
+
+/** A labelled native select: the phone's own picker, keyboard and screen readers for free. */
+function FilterSelect({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string
+  value: string
+  options: { value: string; label: string }[]
+  onChange: (value: string) => void
+}) {
+  return (
+    <label className="text-fg-muted flex min-w-0 flex-1 flex-col gap-1 text-xs font-semibold sm:flex-none">
+      {label}
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="min-h-11 w-full rounded-full border border-border bg-surface px-4 text-sm font-semibold text-fg focus:border-accent-text focus:outline-none sm:w-44"
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
   )
 }

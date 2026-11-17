@@ -2,6 +2,7 @@ import { useState, ViewTransition } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { useCurrentUser } from '@/features/auth/hooks'
+import { FavoriteButton } from '@/features/favorites/FavoriteButton'
 import { PlayPanel } from '@/features/play/components/PlayPanel'
 import { Button, ButtonLink } from '@/shared/ui/Button'
 import { Modal } from '@/shared/ui/Modal'
@@ -21,10 +22,16 @@ const quickPlace =
 export function GamePoster({
   game,
   featured = false,
+  morph = true,
 }: {
   game: GameSummary
   /** A double-width tile: wide art, a larger name. */
   featured?: boolean
+  /**
+   * Whether its art and name travel to the game's page. Only one poster per game on a page may (React refuses
+   * two transitions of one name), so second lists (Try next, Favorites) pass false.
+   */
+  morph?: boolean
 }) {
   const { t } = useTranslation()
   const { data: user } = useCurrentUser()
@@ -33,7 +40,7 @@ export function GamePoster({
   return (
     <div className="group hover-shine relative flex flex-1 flex-col overflow-hidden rounded-card border border-gold/30 bg-emerald-800 shadow-raised transition-[transform,border-color,box-shadow] duration-150 ease-soft hover:border-gold hover:shadow-[var(--shadow-raised),0_0_0_1px_var(--color-gold)] motion-safe:hover:-translate-y-1.5">
       <Link to={`/games/${game.slug}`} data-game-card="" className="flex flex-1 flex-col">
-        <ViewTransition name={artTransition(game.slug)}>
+        <ViewTransition name={morph ? artTransition(game.slug) : undefined}>
           <div
             className={`relative overflow-hidden ${featured ? 'aspect-[16/9] sm:aspect-[2.4/1] lg:aspect-[16/9]' : 'aspect-[3/3.4]'}`}
           >
@@ -55,7 +62,7 @@ export function GamePoster({
           </div>
         </ViewTransition>
         <div className="surface-ivory flex-1 rounded-none px-3 pt-2.5 pb-3 shadow-none">
-          <ViewTransition name={titleTransition(game.slug)}>
+          <ViewTransition name={morph ? titleTransition(game.slug) : undefined}>
             <h3
               className={`font-bold text-ink ${featured ? 'text-lg leading-6 sm:text-xl' : 'text-base leading-[1.375rem]'}`}
             >
@@ -67,6 +74,13 @@ export function GamePoster({
           </p>
         </div>
       </Link>
+      {/* Beside the link, not in it: a button can't sit inside a link. */}
+      <FavoriteButton
+        kind="game"
+        slug={game.slug}
+        name={game.name}
+        className="absolute top-2 right-2"
+      />
 
       {game.is_playable ? (
         user ? (

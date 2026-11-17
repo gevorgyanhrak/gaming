@@ -153,6 +153,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me/favorites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Newest first: `kind` is `game` or `slot` */
+        get: operations["v1.me.favorites.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/favorites/{kind}/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Adds a favourite; adding it again changes nothing. 404 for a game or slot the catalogue doesn't show */
+        put: operations["v1.me.favorites.store"];
+        post?: never;
+        /** Removes a favourite; removing one that isn't there changes nothing */
+        delete: operations["v1.me.favorites.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/me/gifts": {
         parameters: {
             query?: never;
@@ -1929,6 +1964,91 @@ export interface operations {
                             /** @description The Fishkas this request added (0 for a repeat). */
                             collected: number;
                         };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.me.favorites.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            /** @enum {string} */
+                            kind: "game" | "slot";
+                            slug: string;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.me.favorites.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: string;
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            /** @enum {string} */
+                            kind: "game" | "slot";
+                            slug: string;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "v1.me.favorites.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: string;
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            /** @enum {string} */
+                            kind: "game" | "slot";
+                            slug: string;
+                        }[];
                     };
                 };
             };

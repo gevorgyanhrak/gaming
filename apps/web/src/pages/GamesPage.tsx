@@ -1,9 +1,11 @@
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router'
 import { GameGrid } from '@/features/catalog/components/GameGrid'
 import { Container } from '@/shared/ui/Container'
 
 export function GamesPage() {
   const { t } = useTranslation()
+  const [params] = useSearchParams()
 
   return (
     <Container className="py-8 sm:py-10">
@@ -12,7 +14,8 @@ export function GamesPage() {
         <h1 className="text-gold-gradient text-4xl font-bold">{t('catalog.title')}</h1>
         <p className="mt-2 text-muted">{t('catalog.subtitle')}</p>
       </header>
-      <GameGrid />
+      {/* A new header search (?q=) starts the list's search afresh. */}
+      <GameGrid key={params.get('q') ?? ''} />
     </Container>
   )
 }

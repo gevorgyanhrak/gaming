@@ -8,6 +8,7 @@ import { useCurrentUser } from '@/features/auth/hooks'
 import { HomeBackdrop } from '@/features/catalog/components/HomeBackdrop'
 import { BigWinCelebration } from '@/features/wins/BigWinCelebration'
 import { AchievementToast } from '@/features/achievements/AchievementToast'
+import { SiteSearch } from '@/features/search/SiteSearch'
 import { SoundToggle } from '@/features/sound/SoundToggle'
 import { OnlineCounter } from '@/features/presence/OnlineCounter'
 import { useOnlinePresence } from '@/shared/realtime/useOnlinePresence'
@@ -83,9 +84,10 @@ export function PublicLayout() {
         className="size-8 shrink-0 object-contain"
       />
       {config.data ? (
-        <span className="truncate">{config.data.name}</span>
+        // Phones keep the header for search and the balance: the logo alone, the name for screen readers.
+        <span className="sr-only truncate sm:not-sr-only">{config.data.name}</span>
       ) : (
-        <Skeleton className="h-5 w-32" />
+        <Skeleton className="hidden h-5 w-32 sm:block" />
       )}
     </>
   )
@@ -123,8 +125,9 @@ export function PublicLayout() {
       <div className={`flex min-h-dvh min-w-0 flex-1 flex-col ${showBar ? 'pb-tabbar' : ''}`}>
         {/* At a table the room draws its own bar (TableBar); during maintenance the header stays. */}
         {atTable && !inMaintenance ? null : (
-          <header className="sticky top-0 z-20 flex h-header items-center justify-between gap-3 border-b border-gold/20 bg-emerald-900 px-3 sm:px-6">
-            <div className="flex min-w-0 items-center gap-3">
+          <header className="sticky top-0 z-20 flex h-header items-center justify-between gap-1.5 border-b border-gold/20 bg-emerald-900 px-3 sm:gap-3 sm:px-6">
+            {/* Phones show the logo alone, which must not shrink; from sm the name may truncate. */}
+            <div className="flex shrink-0 items-center gap-2 sm:min-w-0 sm:shrink sm:gap-3">
               {atTable ? (
                 <Link to={home} className={iconButton} aria-label={t('nav.back')}>
                   <BackIcon />
@@ -141,10 +144,15 @@ export function PublicLayout() {
                   <MenuIcon />
                 </button>
               )}
-              <Link to={home} className="flex min-w-0 items-center gap-2.5 font-bold text-fg">
+              {/* Under 380 px the logo gives way to search and the balance (☰ and the tab bar lead home). */}
+              <Link
+                to={home}
+                className="flex min-w-0 items-center gap-2.5 font-bold text-fg max-[379px]:hidden"
+              >
                 {brand}
               </Link>
             </div>
+            {atTable ? null : <SiteSearch />}
             <nav aria-label={t('nav.main')} className="flex items-center gap-1 sm:gap-2">
               <OnlineCounter />
               <SoundToggle />

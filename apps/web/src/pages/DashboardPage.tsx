@@ -4,6 +4,7 @@ import { useCurrentUser } from '@/features/auth/hooks'
 import { GamePoster } from '@/features/catalog/components/GamePoster'
 import { GameShowcase } from '@/features/casino/GameShowcase'
 import { MAIN_GAMES } from '@/features/casino/mainGames'
+import { FavoritesShelf } from '@/features/favorites/FavoritesShelf'
 import { GameGrid } from '@/features/catalog/components/GameGrid'
 import { LiveBigWins } from '@/features/wins/LiveBigWins'
 import { HomeRankings } from '@/features/rankings/HomeRankings'
@@ -70,6 +71,7 @@ export function DashboardPage() {
       </section>
 
       <Container className="space-y-5 pt-5 pb-12">
+        <FavoritesShelf />
         <section id="showcase" aria-labelledby="top-games" className="scroll-mt-24">
           <h2 id="top-games" className="mb-3 text-2xl font-bold text-fg">
             {t('casino.topGames')}
@@ -159,7 +161,7 @@ function TryNext() {
         {picks.map((game) => (
           <li key={game.slug} className="flex">
             <div className="flex w-full flex-col">
-              <GamePoster game={game} />
+              <GamePoster game={game} morph={false} />
             </div>
           </li>
         ))}

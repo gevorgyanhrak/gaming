@@ -159,6 +159,7 @@ export const handlers = [
   http.get('*/api/v1/banners', () => HttpResponse.json({ data: [] })),
   // No slots unless a test serves some.
   http.get('*/api/v1/slots', () => HttpResponse.json({ data: [] })),
+  http.get('*/api/v1/me/favorites', () => HttpResponse.json({ data: [] })),
   // The online counter: unknown (hidden) unless a test serves a number.
   http.get('*/api/v1/stats/online', () => HttpResponse.json({ data: { online: null } })),
   http.get('*/api/v1/leaderboards', () => HttpResponse.json({ data: [] })),

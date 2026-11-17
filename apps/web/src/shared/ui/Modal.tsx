@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
 const sizes = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-xl', xl: 'max-w-4xl' } as const
@@ -42,18 +42,20 @@ export function Modal({
 }) {
   const panel = useRef<HTMLDivElement>(null)
   const latestClose = useRef(onClose)
+  // Where the focus was before the popup: read on its first render, before a field in it can take the focus.
+  const [opener] = useState(() => document.activeElement as HTMLElement | null)
 
   useEffect(() => {
     latestClose.current = onClose
   })
 
   useEffect(() => {
-    const opener = document.activeElement as HTMLElement | null
     const app = document.getElementById('root')
     const overflow = document.body.style.overflow
     app?.setAttribute('inert', '')
     if (lockScroll) document.body.style.overflow = 'hidden'
-    panel.current?.focus()
+    // A field that took the focus itself (autoFocus) keeps it.
+    if (!panel.current?.contains(document.activeElement)) panel.current?.focus()
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') latestClose.current()
     }
@@ -64,7 +66,7 @@ export function Modal({
       if (lockScroll) document.body.style.overflow = overflow
       opener?.focus()
     }
-  }, [lockScroll])
+  }, [lockScroll, opener])
 
   return createPortal(
     <div

@@ -64,7 +64,7 @@ export function CategoryPopup({
             style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}
           >
             <div className="flex w-full flex-col">
-              <GamePoster game={game} />
+              <GamePoster game={game} morph={false} />
             </div>
           </li>
         ))}
