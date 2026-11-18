@@ -122,7 +122,10 @@ export async function audit(
 ) {
   const name = `${viewport.width}x${viewport.height}`
   const shot = screenshotPath(area, route, name)
-  await page.screenshot({ path: shot, fullPage: area !== 'game' && area !== 'slot' })
+  // A slot's canvas can keep the compositor busy; a missing picture must not stall the run.
+  await page
+    .screenshot({ path: shot, fullPage: area !== 'game' && area !== 'slot', timeout: 30_000 })
+    .catch(() => {})
   const s = await scan(target)
   if (s.doc > s.vw + 1)
     record({

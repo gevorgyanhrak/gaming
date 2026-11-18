@@ -51,7 +51,21 @@ async function api<T>(
   return result as { status: number; json: T }
 }
 
-type Game = { data: { modes: { id: number }[]; groups?: { slug?: string; key?: string }[] } }
+/**
+ * A legal action as the client sends it: range actions ({min, max}) take an amount, a pool shot an angle and power
+ * (as the boards do); every other field the server listed is the move itself.
+ */
+function payloadFor(action: Record<string, unknown>) {
+  const { min, max, ball_in_hand: ballInHand, ...move } = action
+  void max
+  if (move.type === 'shoot')
+    return ballInHand
+      ? { ...move, angle: 0, power: 40, x: 0.25, y: 0.5 }
+      : { ...move, angle: 0, power: 40 }
+  return min === undefined ? move : { ...move, amount: min }
+}
+
+type Game = { data: { min_players: number; modes: { id: number }[] } }
 type Room = { data: { id: string; public_id?: string } }
 type State = {
   data: { version: number; legal_actions: Record<string, unknown>[]; status?: string }
@@ -63,7 +77,12 @@ async function startAiTable(page: Page, slug: string) {
   for (const room of mine.json?.data ?? []) await api(page, `/api/v1/rooms/${room.id}/leave`, {})
   const game = await api<Game>(page, `/api/v1/games/${slug}`)
   const mode = game.json.data.modes[0].id
-  const created = await api<Room>(page, '/api/v1/rooms', { game_mode_id: mode, type: 'bot' })
+  const created = await api<Room>(page, '/api/v1/rooms', {
+    game_mode_id: mode,
+    type: 'bot',
+    // Blot is played by four; other games take the default two.
+    ...(game.json.data.min_players > 2 ? { opponents: game.json.data.min_players - 1 } : {}),
+  })
   expect(
     created.status,
     `create ${slug} table: ${JSON.stringify(created.json).slice(0, 200)}`,
@@ -95,13 +114,18 @@ for (const slug of GAMES) {
     let played = 0
     for (let i = 0; i < 6; i++) {
       const state = await api<State>(page, `/api/v1/rooms/${id}/state`)
-      const action = state.json?.data?.legal_actions?.[0]
+      const legal = state.json?.data?.legal_actions ?? []
+      // Plain choices first (pass, check, a card): some ranges need fields only their board fills (a Blot bid's suit).
+      const action =
+        legal.find((a) => a.type === 'pass' || a.type === 'check') ??
+        legal.find((a) => !('min' in a)) ??
+        legal[0]
       if (!action) {
         await page.waitForTimeout(1500)
         continue
       }
       const r = await api(page, `/api/v1/rooms/${id}/actions`, {
-        action: { ...action, ...('min' in action ? { amount: action.min } : {}) },
+        action: payloadFor(action),
         expected_version: state.json.data.version,
         client_action_id: crypto.randomUUID(),
       })
