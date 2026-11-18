@@ -60,13 +60,6 @@ Owner ticket 2026-11-16 "Homepage UI Improvements" (in progress):
       Rummy and Pool plates tappable (SeatTap) — this commit.
 - [x] Live check (headless Chrome, player1): compact strip on desktop/phone, poker deal order and flips counted in a
       real hand, AI thinking caption + dots, emoji to an AI's avatar, quick message over mine, my avatar emoji 2 s.
-Owner brief 2026-11-17 "Slotopol slot engine integration":
-- [x] Phase 1–2: cloned slotopol/server (db45081, MIT) into `services/slot-engine/` (untracked), audited →
-      `docs/casino/SLOT_ENGINE_AUDIT.md` (e1a8096): engine = game/ + prng/ (+ util); platform parts to drop = api/,
-      core/, config/, appdata/ (users, clubs, wallet, JWT, SQL, Brevo e-mail — the only outgoing request).
-- [ ] BLOCKED on the owner: the 353 games are re-creations of commercial slots under the makers' trademarks
-      (Novomatic, NetEnt, IGT…); the MIT licence covers the code, not those names/designs. Options in the audit's
-      "Decision"; Slotopol's own 2 games are keno (excluded). No art in the repo.
 Owner brief 2026-11-17 "complete redesign + Latin transliteration search":
 - [x] Search (critical): `features/search/gameSearch.ts` — one alias table by slug (`GAME_ALIASES`), Armenian/Cyrillic →
       Latin, sound folding (kh/h/x, sh, ch, y/i, doubles), prefix / word / inside / one-slip matches (first letter
