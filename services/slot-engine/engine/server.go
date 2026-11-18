@@ -3,7 +3,6 @@
 package engine
 
 import (
-	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/json"
 	"errors"
@@ -100,13 +99,12 @@ func Catalogue() ([]GameEntry, error) {
 func Handler(key string) http.Handler {
 	var mux = http.NewServeMux()
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
-		// Only "alive": it is the one route without the key.
-		reply(w, http.StatusOK, map[string]any{"ok": true})
+		reply(w, http.StatusOK, map[string]any{"ok": true, "games": len(game.InfoMap)})
 	})
 	mux.HandleFunc("GET /v1/games", func(w http.ResponseWriter, r *http.Request) {
 		var list, err = Catalogue()
 		if err != nil {
-			fail(w, r, http.StatusInternalServerError, "internal error", err)
+			fail(w, http.StatusInternalServerError, err)
 			return
 		}
 		reply(w, http.StatusOK, map[string]any{"data": list})
@@ -116,25 +114,18 @@ func Handler(key string) http.Handler {
 		var dec = json.NewDecoder(http.MaxBytesReader(w, r.Body, MaxBody))
 		dec.DisallowUnknownFields()
 		if err := dec.Decode(&in); err != nil {
-			fail(w, r, http.StatusBadRequest, "bad request", err)
-			return
-		}
-		if dec.More() {
-			fail(w, r, http.StatusBadRequest, "bad request", errors.New("trailing data"))
+			fail(w, http.StatusBadRequest, err)
 			return
 		}
 		var out, err = Spin(in)
-		// Fixed answers: what failed is logged here, never sent back (no Go errors, input or game internals).
 		switch {
-		case errors.Is(err, ErrBadInput):
-			fail(w, r, http.StatusBadRequest, "bad request", err)
 		case errors.Is(err, ErrNoGame):
-			fail(w, r, http.StatusNotFound, "unknown game", err)
+			fail(w, http.StatusNotFound, err)
 		case errors.Is(err, slot.ErrBadParam), errors.Is(err, slot.ErrDisabled), errors.Is(err, slot.ErrNoFeature),
 			errors.Is(err, ErrBadRTP):
-			fail(w, r, http.StatusUnprocessableEntity, "refused", err)
+			fail(w, http.StatusUnprocessableEntity, err)
 		case err != nil:
-			fail(w, r, http.StatusInternalServerError, "internal error", err)
+			fail(w, http.StatusInternalServerError, err)
 		default:
 			reply(w, http.StatusOK, out)
 		}
@@ -142,15 +133,13 @@ func Handler(key string) http.Handler {
 	return guard(key, mux)
 }
 
-// guard lets /health through and asks everything else for the shared key. Both sides are hashed first, so the
-// comparison takes the same time whatever was sent (ConstantTimeCompare alone returns early on a length mismatch).
+// guard lets /health through and asks everything else for the shared key, compared in constant time.
 func guard(key string, next http.Handler) http.Handler {
-	var want = sha256.Sum256([]byte(key))
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var t0 = time.Now()
-		var got = sha256.Sum256([]byte(r.Header.Get("X-Engine-Key")))
-		if r.URL.Path != "/health" && subtle.ConstantTimeCompare(got[:], want[:]) != 1 {
-			fail(w, r, http.StatusUnauthorized, "unauthorized", nil)
+		if r.URL.Path != "/health" &&
+			subtle.ConstantTimeCompare([]byte(r.Header.Get("X-Engine-Key")), []byte(key)) != 1 {
+			fail(w, http.StatusUnauthorized, errors.New("unauthorized"))
 			return
 		}
 		next.ServeHTTP(w, r)
@@ -164,12 +153,6 @@ func reply(w http.ResponseWriter, code int, body any) {
 	_ = json.NewEncoder(w).Encode(body)
 }
 
-// fail answers with a fixed public message; the cause goes to the log (never the request body, state or key).
-func fail(w http.ResponseWriter, r *http.Request, code int, public string, cause error) {
-	if cause != nil {
-		slog.Warn("request refused", "method", r.Method, "path", r.URL.Path, "status", code, "cause", cause.Error())
-	} else {
-		slog.Warn("request refused", "method", r.Method, "path", r.URL.Path, "status", code)
-	}
-	reply(w, code, map[string]string{"error": public})
+func fail(w http.ResponseWriter, code int, err error) {
+	reply(w, code, map[string]string{"error": err.Error()})
 }

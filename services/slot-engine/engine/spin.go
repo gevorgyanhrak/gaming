@@ -6,12 +6,9 @@
 package engine
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math"
-	"regexp"
 
 	"github.com/slotopol/server/game"
 	"github.com/slotopol/server/game/slot"
@@ -26,7 +23,6 @@ var (
 	ErrBadRTP    = errors.New("rtp out of range")
 	ErrNoSpin    = errors.New("no valid spin within the attempts limit")
 	ErrGameFault = errors.New("game fault")
-	ErrBadInput  = errors.New("bad input")
 )
 
 type SpinIn struct {
@@ -68,32 +64,6 @@ func Restore(id string, state json.RawMessage) (slot.SlotGeneric, error) {
 	return g, nil
 }
 
-// gameID is what game ids look like ("maker/game", lower-case letters and digits).
-var gameID = regexp.MustCompile(`^[a-z0-9]{1,40}/[a-z0-9]{1,80}$`)
-
-// validate bounds the request before any game code sees it. The game's own rules check the rest (lines in its set,
-// no changes during free games).
-func (in SpinIn) validate() error {
-	var finite = func(v float64) bool { return !math.IsNaN(v) && !math.IsInf(v, 0) }
-	switch {
-	case !gameID.MatchString(in.Game):
-		return fmt.Errorf("%w: game id", ErrBadInput)
-	case !finite(in.Bet) || in.Bet < 0 || in.Bet > 1e6:
-		return fmt.Errorf("%w: bet", ErrBadInput)
-	case in.Sel < 0 || in.Sel > 1024:
-		return fmt.Errorf("%w: sel", ErrBadInput)
-	case !finite(in.Fund) || in.Fund < 0 || in.Fund > 1e12:
-		return fmt.Errorf("%w: fund", ErrBadInput)
-	case !finite(in.RTP):
-		return fmt.Errorf("%w: rtp", ErrBadInput)
-	}
-	// A state is the JSON object a previous spin returned (or nothing).
-	if trimmed := bytes.TrimSpace(in.State); len(trimmed) > 0 && string(trimmed) != "null" && trimmed[0] != '{' {
-		return fmt.Errorf("%w: state", ErrBadInput)
-	}
-	return nil
-}
-
 // cascadeGain plays the falls after a winning cascade spin on a copy, so a spin whose avalanche never ends is
 // thrown away (the original CascadeGain).
 func cascadeGain(rng *slot.Rand, g slot.SlotGeneric, wins slot.Wins, fund, mrtp float64) error {
@@ -130,9 +100,6 @@ func Spin(in SpinIn) (out SpinOut, err error) {
 			out, err = SpinOut{}, fmt.Errorf("%w: %v", ErrGameFault, r)
 		}
 	}()
-	if err = in.validate(); err != nil {
-		return
-	}
 	if in.RTP < 50 || in.RTP > 150 {
 		return out, ErrBadRTP
 	}

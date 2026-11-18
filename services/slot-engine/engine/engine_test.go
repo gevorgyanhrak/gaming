@@ -52,9 +52,7 @@ func TestEveryGameSpins(t *testing.T) {
 			if err != nil {
 				t.Fatalf("%s spin %d: %v", g.ID, i, err)
 			}
-			// Disabled games (not verified) may misbehave in their own code — Cash Farm's bonus can pay a negative
-			// amount (audit 2026-11-18); the platform refuses such spins. Verified games must be consistent.
-			if g.Verified && (out.Win < 0 || out.Cost < 0 || (out.Free && out.Cost != 0) || (!out.Free && out.Cost == 0)) {
+			if out.Win < 0 || out.Cost < 0 || (out.Free && out.Cost != 0) || (!out.Free && out.Cost == 0) {
 				t.Fatalf("%s spin %d: inconsistent %+v", g.ID, i, out)
 			}
 			// The state returned is the next spin's input and restores to the same game.

@@ -15,10 +15,7 @@ Browser ──HTTPS──▶ Laravel API (/api/v1/slots/{slug}/engine, …/engin
   `docker compose exec api php artisan slots:engine-sync` to add the games (repeat after an engine update).
 - Config: `SLOT_ENGINE_KEY` (32+ characters, the same value for `slot-engine` and the API containers; compose sets a
   local default), `SLOT_ENGINE_URL` (default `http://slot-engine:8090`). Secrets, never admin settings.
-- Network: compose puts the engine on its own `internal` network shared only with the `api` container (no route
-  out); the container runs read-only, without capabilities, as `nonroot` (security audit 2026-11-18).
-- Production: the same image on the private network, no published port, a long random key (the local default is
-  refused when `APP_ENV=production`); the API's containers get
+- Production: the same image on the private network, no published port, a long random key; the API's containers get
   `SLOT_ENGINE_URL` and `SLOT_ENGINE_KEY`. Admin: Settings → Engine slots (RTP); Casino → Slot games (on/off, bets, order).
 
 ## API (ours, signed-in players)

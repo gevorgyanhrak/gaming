@@ -13,7 +13,6 @@ use App\Platform\Settings\Settings;
 use App\Platform\Slots\House\HouseSpinRefused;
 use App\Platform\Slots\SlotWallet;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -100,9 +99,7 @@ final class EngineSpins
                 $out = $this->engine->spin($game->provider_game_id, $state, $inRound ? 0 : $bet, $inRound || $fixed ? 0 : $sel, $this->rtp());
             } catch (EngineRefused) {
                 throw new HouseSpinRefused('bet_limits', $this->wallets->wallet($user)->balance);
-            } catch (EngineUnavailable $e) {
-                // For operators: which game and why (never the key, the state or the player's data).
-                Log::warning('slot engine spin failed', ['game' => $game->provider_game_id, 'reason' => $e->getMessage()]);
+            } catch (EngineUnavailable) {
                 throw new HouseSpinRefused('game_off', $this->wallets->wallet($user)->balance);
             }
 

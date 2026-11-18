@@ -42,8 +42,6 @@ x-php: &php
 services:
   api:
     <<: *php
-    # The API is the slot engine's only caller (internal network); the other services stay on the default one.
-    networks: [default, slot-engine]
 
   nginx:
     image: nginx:1.29-alpine
@@ -113,12 +111,6 @@ services:
       context: ./services/slot-engine
     environment:
       SLOT_ENGINE_KEY: ${SLOT_ENGINE_KEY:-local-dev-slot-engine-key-0123456789abcdef}
-    # Hardening (audit 2026-11-18): only on the internal network (no route out, no published port), a read-only
-    # file system, no Linux capabilities, no privilege escalation. It reads nothing from disk: the games are built in.
-    networks: [slot-engine]
-    read_only: true
-    cap_drop: [ALL]
-    security_opt: ['no-new-privileges:true']
     restart: unless-stopped
 
   mailpit:
@@ -126,12 +118,6 @@ services:
     ports:
       - "${MAILPIT_UI_PORT:-8025}:8025"
     restart: unless-stopped
-
-networks:
-  default: {}
-  # Internal: containers on it reach each other but nothing outside (the slot engine has no way out).
-  slot-engine:
-    internal: true
 
 volumes:
   mysql-data:

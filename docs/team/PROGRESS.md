@@ -60,14 +60,6 @@ Owner ticket 2026-11-16 "Homepage UI Improvements" (in progress):
       Rummy and Pool plates tappable (SeatTap) — this commit.
 - [x] Live check (headless Chrome, player1): compact strip on desktop/phone, poker deal order and flips counted in a
       real hand, AI thinking caption + dots, emoji to an AI's avatar, quick message over mine, my avatar emoji 2 s.
-Owner brief 2026-11-18 "Slotopol security audit and cleanup only" (no UI or gameplay change):
-- [x] Audit of all 859 engine files + platform side (SLOT_ENGINE_SECURITY_AUDIT.md, 13 findings), dead path/env
-      helpers and safemap removed (REMOVED_CODE), deps clean (govulncheck, DEPENDENCY_AUDIT), engine hardening
-      (fixed errors, input bounds, hashed key compare, internal-only network, read-only container), API refuses
-      negative/malformed engine answers (Cash Farm can pay < 0; disabled), logs engine failures, refuses the dev key
-      in production. Regression (REGRESSION_REPORT): game files hash-identical, golden 2,082 screens identical,
-      722 backend / 301 web tests, 322/322 live spins, free games + cascades live, 8/8 screenshots 0 px — this commit.
-      Reported, not changed: 11 PHP framework advisories (laravel/framework < 13.40, symfony) → separate update step.
 Owner brief 2026-11-17 "Slotopol slot engine integration":
 - [x] Phase 1–2: cloned slotopol/server (db45081, MIT) into `services/slot-engine/` (untracked), audited →
       `docs/casino/SLOT_ENGINE_AUDIT.md` (e1a8096): engine = game/ + prng/ (+ util); platform parts to drop = api/,

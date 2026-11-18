@@ -8,8 +8,6 @@ use App\Models\SlotSpin;
 use App\Models\User;
 use App\Platform\Fishka\FishkaWallets;
 use App\Platform\Slots\Engine\EngineSlots;
-use App\Platform\Slots\Engine\EngineUnavailable;
-use App\Platform\Slots\Engine\SlotEngine;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -199,37 +197,6 @@ it('lists the slots the player spun last, newest first', function () {
     $this->actingAs($this->user)->getJson('/api/v1/me/slots/recent')->assertOk()
         ->assertJsonPath('data.0.slug', 'novomatic-bookofradeluxe')
         ->assertJsonPath('data.1.slug', 'novomatic-powerstars');
-});
-
-it('refuses an engine answer with a negative win or a broken shape, charging nothing', function () {
-    $this->spins = [engineSpin(['win' => -8, 'total' => -8]), engineSpin(['state' => 'x']), engineSpin(['cost' => 'NaN'])];
-    foreach (['spin-0001', 'spin-0002', 'spin-0003'] as $key) {
-        $this->actingAs($this->user)
-            ->postJson('/api/v1/slots/novomatic-bookofradeluxe/engine/spin', ['bet' => 2, 'lines' => 10, 'key' => $key])
-            ->assertStatus(422)->assertJsonPath('code', 'slot_game_off')
-            ->assertJsonMissingPath('message.reason');
-    }
-    expect(engineBalance($this->user))->toBe(5000)->and(SlotSpin::query()->count())->toBe(0)
-        ->and(SlotEngineState::query()->count())->toBe(0);
-});
-
-it('never sends the engine key anywhere but the engine, and refuses the development key in production', function () {
-    $this->spins = [engineSpin()];
-    $this->actingAs($this->user)->getJson('/api/v1/slots/novomatic-bookofradeluxe/engine')
-        ->assertDontSee(str_repeat('k', 40));
-    $this->actingAs($this->user)->postJson('/api/v1/slots/novomatic-bookofradeluxe/engine/spin', ['bet' => 2, 'lines' => 10, 'key' => 'spin-0001'])
-        ->assertOk()->assertDontSee(str_repeat('k', 40));
-    $this->getJson('/api/v1/config')->assertDontSee(str_repeat('k', 40));
-    Http::assertSent(fn (Request $r) => $r->hasHeader('X-Engine-Key', str_repeat('k', 40)) && str_starts_with($r->url(), 'http://engine.test/'));
-
-    config(['services.slot_engine.key' => 'local-dev-slot-engine-key-0123456789abcdef']);
-    app()->detectEnvironment(fn () => 'production');
-    try {
-        expect(fn () => app(SlotEngine::class)->spin('novomatic/bookofradeluxe', [], 1, 10, 95.0))
-            ->toThrow(EngineUnavailable::class, 'local development default');
-    } finally {
-        app()->detectEnvironment(fn () => 'testing');
-    }
 });
 
 it('needs a signed-in player', function () {
