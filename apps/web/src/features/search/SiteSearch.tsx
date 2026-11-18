@@ -26,7 +26,8 @@ type Suggestion = {
 /**
  * The header's game search: suggestions as you type (names that start with the text first), arrow keys and
  * Enter to open one, Enter on the text itself for every match on the games page. A box in the header from
- * `md`; below that an icon that opens it full screen.
+ * `lg` (on tablets the brand, online count and balance leave it too narrow); below that an icon that opens it
+ * full screen.
  */
 export function SiteSearch() {
   const { t } = useTranslation()
@@ -34,14 +35,14 @@ export function SiteSearch() {
 
   return (
     <>
-      <div className="hidden max-w-md min-w-0 flex-1 md:block">
+      <div className="hidden max-w-md min-w-0 flex-1 lg:block">
         <SearchBox />
       </div>
       <button
         type="button"
         onClick={() => setOpen(true)}
         aria-label={t('search.open')}
-        className="mr-auto grid size-11 shrink-0 place-items-center rounded-full text-fg transition-colors hover:text-gold-light focus-visible:outline-2 focus-visible:outline-accent-text md:hidden"
+        className="mr-auto grid size-11 shrink-0 place-items-center rounded-full text-fg transition-colors hover:text-gold-light focus-visible:outline-2 focus-visible:outline-accent-text lg:hidden"
       >
         <SearchIcon className="size-5" />
       </button>

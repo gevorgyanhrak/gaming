@@ -41,6 +41,8 @@ export default defineConfig(({ mode }) => {
       setupFiles: ['./src/test/setup.ts'],
       css: false,
       restoreMocks: true,
+      // e2e/ holds the Playwright mobile suite (npx playwright test), not Vitest tests.
+      exclude: ['**/node_modules/**', 'e2e/**'],
     },
   }
 })

@@ -4,7 +4,7 @@ import { bundledLocales, languageName } from '.'
 
 /**
  * Lists the languages that are both bundled in the UI and served by the API.
- * Each option is labelled in its own language (e.g. "русский", "հայերեն").
+ * Each option is labelled in its own language (English, Русский, Հայերեն).
  */
 export function LanguageSwitcher({
   serverLocales,

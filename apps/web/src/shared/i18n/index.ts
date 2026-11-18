@@ -15,9 +15,15 @@ export function isLocale(value: string | null | undefined): value is Locale {
   return bundledLocales.includes(value as Locale)
 }
 
+/**
+ * Each language's name in that language itself, capitalised as a menu item. A fixed list: `Intl.DisplayNames`
+ * gives "русский" in lower case and, in browsers without Armenian data, "Armenian".
+ */
+const LANGUAGE_NAMES: Record<Locale, string> = { en: 'English', ru: 'Русский', hy: 'Հայերեն' }
+
 /** A language's name in that language itself. */
 export function languageName(locale: Locale): string {
-  return new Intl.DisplayNames([locale], { type: 'language' }).of(locale) ?? locale
+  return LANGUAGE_NAMES[locale]
 }
 
 function detectLocale(): Locale {

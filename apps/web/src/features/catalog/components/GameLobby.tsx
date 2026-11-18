@@ -205,7 +205,8 @@ export function GameLobby({
           />
         </label>
         {banners ? null : (
-          <div className="flex w-full gap-3 sm:ml-auto sm:w-auto">
+          // Two selects side by side while each has 10rem; on the narrowest phones one under the other.
+          <div className="flex w-full flex-wrap gap-3 sm:ml-auto sm:w-auto sm:flex-nowrap">
             <FilterSelect
               label={t('lobbyFilters.players')}
               value={players ?? ''}
@@ -377,7 +378,7 @@ function FilterSelect({
   onChange: (value: string) => void
 }) {
   return (
-    <label className="text-fg-muted flex min-w-0 flex-1 flex-col gap-1 text-xs font-semibold sm:flex-none">
+    <label className="text-fg-muted flex min-w-0 flex-1 basis-40 flex-col gap-1 text-xs font-semibold sm:flex-none sm:basis-auto">
       {label}
       <select
         value={value}

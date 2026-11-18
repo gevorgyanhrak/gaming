@@ -10,6 +10,8 @@ export class ApiError extends Error {
   readonly fieldErrors: FieldErrors
   readonly code: string | null
   readonly body: Record<string, unknown>
+  /** Seconds the server asked to wait before trying again (`Retry-After`, sent with 429), if any. */
+  retryAfter: number | null = null
 
   constructor(
     status: number,

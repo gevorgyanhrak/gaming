@@ -84,7 +84,8 @@
     "retry": "Try again",
     "notFoundTitle": "Page not found",
     "notFoundBody": "The page you're looking for doesn't exist.",
-    "goHome": "Go to the home page"
+    "goHome": "Go to the home page",
+    "account": "We couldn't load your account. Wait a moment and try again."
   },
   "footer": {
     "language": "Language",
@@ -830,7 +831,8 @@
     "yours": "Your rank: {{rank}} (level {{level}})",
     "toNext_one": "{{count}} level to {{rank}}",
     "toNext_other": "{{count}} levels to {{rank}}",
-    "progress": "Progress to the next rank"
+    "progress": "Progress to the next rank",
+    "legend": "Numbers under each rank are its levels"
   },
   "home": {
     "tryNext": "Try next",
@@ -1235,8 +1237,8 @@
     "period": "Period",
     "periods": {
       "day": "Today",
-      "week": "This week",
-      "month": "This month"
+      "week": "Week",
+      "month": "Month"
     },
     "gameFilter": "Game",
     "all": "All",

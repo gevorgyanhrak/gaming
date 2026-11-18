@@ -20,6 +20,7 @@ import { Avatar } from '@/shared/ui/Avatar'
 import { ButtonLink } from '@/shared/ui/Button'
 import { Container } from '@/shared/ui/Container'
 import { NightSky } from '@/features/home/NightSky'
+import { formatDate } from '@/shared/lib/dates'
 
 /**
  * Signed-in home: games to resume, statistics, and the catalog.
@@ -31,9 +32,7 @@ export function DashboardPage() {
   if (!user) return null
 
   const name = user.profile.display_name ?? user.username
-  const memberSince = new Intl.DateTimeFormat(i18n.language, { dateStyle: 'long' }).format(
-    new Date(user.created_at),
-  )
+  const memberSince = formatDate(user.created_at, i18n.language, 'long')
 
   return (
     <>

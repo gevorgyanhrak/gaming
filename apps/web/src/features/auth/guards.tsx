@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Navigate, Outlet, useLocation, useSearchParams } from 'react-router'
 import { Container } from '@/shared/ui/Container'
 import { Skeleton } from '@/shared/ui/Skeleton'
-import { QueryErrorState } from '@/shared/ui/States'
+import { ErrorState } from '@/shared/ui/States'
 import { safeRedirect } from './forms'
 import { getRedirectAfterSignIn, useCurrentUser } from './hooks'
 
@@ -19,6 +20,7 @@ function PageLoading() {
 
 /** Renders children for signed-in users; sends guests to the login page and back afterwards. */
 export function RequireAuth({ children }: { children: ReactNode }) {
+  const { t } = useTranslation()
   const location = useLocation()
   const user = useCurrentUser()
 
@@ -26,7 +28,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   if (user.isError) {
     return (
       <Container className="py-12">
-        <QueryErrorState error={user.error} onRetry={() => void user.refetch()} />
+        <ErrorState message={t('errors.account')} onRetry={() => void user.refetch()} />
       </Container>
     )
   }

@@ -10,6 +10,7 @@ import { Button } from '@/shared/ui/Button'
 import { Container } from '@/shared/ui/Container'
 import { Skeleton } from '@/shared/ui/Skeleton'
 import { EmptyState, QueryErrorState } from '@/shared/ui/States'
+import { formatDate } from '@/shared/lib/dates'
 
 /** The player's Fishkas: balance, totals, how fees work, and every change (newest first). */
 export function WalletPage() {
@@ -36,12 +37,15 @@ export function WalletPage() {
       ) : (
         <section className="club-panel grid gap-4 rounded-panel p-5 sm:grid-cols-3 sm:p-6">
           <div className="surface-reward flex flex-wrap items-center gap-4 rounded-card p-5 sm:col-span-3">
-            <FishkaIcon className="size-14 drop-shadow-[0_6px_16px_rgb(245_192_79/0.45)]" />
-            <div>
-              <p className="text-xs font-semibold text-muted">{t('fishka.balance')}</p>
-              <p className="text-gold-gradient font-display text-4xl font-bold tabular-nums sm:text-5xl">
-                {format(wallet.data.balance)}
-              </p>
+            {/* The coin and the number stay side by side on any phone; the number scales with the width. */}
+            <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+              <FishkaIcon className="size-12 shrink-0 drop-shadow-[0_6px_16px_rgb(245_192_79/0.45)] sm:size-14" />
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-muted">{t('fishka.balance')}</p>
+                <p className="text-gold-gradient font-display text-[clamp(1.75rem,9vw,2.25rem)] font-bold tabular-nums sm:text-5xl">
+                  {format(wallet.data.balance)}
+                </p>
+              </div>
             </div>
             {wallet.data.refill.available ? (
               <Button variant="gold" className="ml-auto min-h-11" onClick={openOutOfFishkas}>
@@ -135,10 +139,7 @@ function Entry({ entry }: { entry: FishkaTransaction }) {
           {entry.day ? ` · ${t('daily.day', { day: entry.day })}` : null}
         </p>
         <p className="text-xs text-muted">
-          {new Intl.DateTimeFormat(i18n.language, {
-            dateStyle: 'medium',
-            timeStyle: 'short',
-          }).format(new Date(entry.created_at))}
+          {formatDate(entry.created_at, i18n.language, 'mediumTime')}
         </p>
       </div>
       <div className="text-right tabular-nums">

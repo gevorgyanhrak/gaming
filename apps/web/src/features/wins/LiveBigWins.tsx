@@ -8,20 +8,10 @@ import { Skeleton } from '@/shared/ui/Skeleton'
 import { TrophyIcon } from '@/shared/ui/icons'
 import type { Win } from './api'
 import { useWinsFeed } from './useWinsFeed'
+import { formatAgo } from '@/shared/lib/dates'
 
 /** A new win steps into the spotlight about this often (owner: one about every 5 seconds). */
 const SPOTLIGHT_MS = 5000
-
-/** "5 min ago" in the reader's language. */
-function ago(iso: string, lang: string) {
-  const seconds = Math.round((new Date(iso).getTime() - Date.now()) / 1000)
-  const rtf = new Intl.RelativeTimeFormat(lang, { numeric: 'auto' })
-  const abs = Math.abs(seconds)
-  if (abs < 60) return rtf.format(seconds, 'second')
-  if (abs < 3600) return rtf.format(Math.round(seconds / 60), 'minute')
-  if (abs < 86400) return rtf.format(Math.round(seconds / 3600), 'hour')
-  return rtf.format(Math.round(seconds / 86400), 'day')
-}
 
 /**
  * BIG WINS LIVE: the latest wins of the week across every game, newest first, from the server (people's from the
@@ -97,7 +87,7 @@ export function LiveBigWins() {
                 win={current}
                 label={t('wins.spotlight')}
                 amount={format(current.amount)}
-                when={ago(current.won_at, i18n.language)}
+                when={formatAgo(current.won_at, i18n.language)}
               />
               {list.length > 1 ? (
                 <button
@@ -129,25 +119,30 @@ export function LiveBigWins() {
                   level={win.player.level}
                   size="sm"
                 />
+                {/* Name and amount on one line, the game and time under both: the full width for each. */}
                 <span className="min-w-0 flex-1">
-                  <span className="flex min-w-0 items-center gap-1.5">
-                    <span className="truncate text-sm font-bold">{win.player.name}</span>
-                    {win.is_ai ? <AiTag /> : null}
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span className="flex min-w-0 flex-1 items-center gap-1.5">
+                      <span className="truncate text-sm font-bold">{win.player.name}</span>
+                      {win.is_ai ? <AiTag /> : null}
+                    </span>
+                    <span className="flex shrink-0 items-center gap-1 text-base font-extrabold text-gold-light tabular-nums sm:text-lg">
+                      +{format(win.amount)}
+                      <FishkaIcon className="size-5" />
+                    </span>
                   </span>
-                  <span className="flex items-center gap-1 text-xs text-muted">
+                  <span className="flex min-w-0 items-center gap-1 text-xs text-muted">
                     <GameIcon
                       slug={win.game.slug}
                       name={win.game.name}
-                      className="size-3.5 text-gold"
+                      className="size-3.5 shrink-0 text-gold"
                     />
                     <span className="truncate">{win.game.name}</span>
                     <span aria-hidden="true">·</span>
-                    <time dateTime={win.won_at}>{ago(win.won_at, i18n.language)}</time>
+                    <time dateTime={win.won_at} className="shrink-0 whitespace-nowrap">
+                      {formatAgo(win.won_at, i18n.language)}
+                    </time>
                   </span>
-                </span>
-                <span className="flex items-center gap-1 text-base font-extrabold text-gold-light tabular-nums sm:text-lg">
-                  +{format(win.amount)}
-                  <FishkaIcon className="size-5" />
                 </span>
                 <span className="sr-only">
                   {t(win.is_ai ? 'wins.lineAi' : 'wins.line', {
@@ -179,7 +174,7 @@ function Spotlight({
 }) {
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl border p-3 pr-12 motion-safe:animate-rise ${
+      className={`relative overflow-hidden rounded-2xl border p-3 motion-safe:animate-rise ${
         win.is_ai
           ? 'border-sky-300/30 bg-linear-to-r from-sky-950/60 via-black/40 to-black/30'
           : 'border-gold/50 bg-linear-to-r from-gold/20 via-black/40 to-black/30 shadow-[0_0_28px_rgb(240_196_98/0.25)]'
@@ -189,7 +184,8 @@ function Spotlight({
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/15 to-transparent motion-safe:animate-[spot-sweep_1.4s_ease-out_both]"
       />
-      <p className="text-[0.65rem] font-bold tracking-widest text-gold-light/80 uppercase">
+      {/* Room on the right for the pause button, which sits level with this line. */}
+      <p className="pr-12 text-[0.65rem] font-bold tracking-widest text-gold-light/80 uppercase">
         {label}
       </p>
       <div className="mt-1 flex items-center gap-3">
@@ -200,21 +196,30 @@ function Spotlight({
           ai={win.is_ai}
         />
         <div className="min-w-0 flex-1">
-          <p className="flex min-w-0 items-center gap-1.5">
-            <span className="truncate font-bold">{win.player.name}</span>
-            {win.is_ai ? <AiTag /> : null}
+          {/* The amount moves under the name when both can't fit (a phone, beside the pause button). */}
+          <p className="flex min-w-0 flex-wrap items-center gap-x-2">
+            <span className="flex min-w-24 flex-1 items-center gap-1.5">
+              <span className="truncate font-bold">{win.player.name}</span>
+              {win.is_ai ? <AiTag /> : null}
+            </span>
+            <span className="flex shrink-0 items-center gap-1 text-xl font-black text-gold-light tabular-nums sm:text-2xl">
+              +{amount}
+              <FishkaIcon className="size-6" />
+            </span>
           </p>
-          <p className="flex items-center gap-1 text-xs text-muted">
-            <GameIcon slug={win.game.slug} name={win.game.name} className="size-3.5 text-gold" />
+          <p className="flex min-w-0 items-center gap-1 text-xs text-muted">
+            <GameIcon
+              slug={win.game.slug}
+              name={win.game.name}
+              className="size-3.5 shrink-0 text-gold"
+            />
             <span className="truncate">{win.game.name}</span>
             <span aria-hidden="true">·</span>
-            <time dateTime={win.won_at}>{when}</time>
+            <time dateTime={win.won_at} className="shrink-0 whitespace-nowrap">
+              {when}
+            </time>
           </p>
         </div>
-        <span className="flex items-center gap-1 text-xl font-black text-gold-light tabular-nums sm:text-2xl">
-          +{amount}
-          <FishkaIcon className="size-6" />
-        </span>
       </div>
     </div>
   )

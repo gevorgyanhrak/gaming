@@ -7,13 +7,13 @@ import { badgeLabel } from '@/features/levels/items'
 import { countryName } from '@/shared/lib/countries'
 import { Avatar } from '@/shared/ui/Avatar'
 import type { PublicUser } from '../api'
+import { formatDate } from '@/shared/lib/dates'
 
 /** A player's public profile card; `actions` shows owner-only controls. */
 export function ProfileView({ user, actions }: { user: PublicUser; actions?: ReactNode }) {
   const { t, i18n } = useTranslation()
   const name = user.display_name ?? user.username
-  const date = (iso: string) =>
-    new Intl.DateTimeFormat(i18n.language, { dateStyle: 'long' }).format(new Date(iso))
+  const date = (iso: string) => formatDate(iso, i18n.language, 'long')
 
   return (
     <article className="rounded-2xl border border-border bg-surface p-6 sm:p-8">

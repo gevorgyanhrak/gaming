@@ -55,7 +55,7 @@ export function CategoryBanners({
             type="button"
             aria-haspopup="dialog"
             onClick={() => onSelect(option.key)}
-            className={`group hover-shine relative flex min-h-32 overflow-hidden rounded-3xl border bg-linear-to-br p-4 text-left shadow-[0_14px_30px_rgb(0_0_0/0.45)] transition duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-text motion-safe:hover:scale-[1.02] sm:min-h-32 ${TINTS[i % TINTS.length]} border-gold/25 hover:border-gold/60 ${i === 0 ? 'col-span-2 lg:col-span-1' : ''}`}
+            className={`group hover-shine relative flex min-h-32 overflow-hidden rounded-3xl border bg-linear-to-br p-3 text-left shadow-[0_14px_30px_rgb(0_0_0/0.45)] transition duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-text motion-safe:hover:scale-[1.02] sm:min-h-32 sm:p-4 ${TINTS[i % TINTS.length]} border-gold/25 hover:border-gold/60 ${i === 0 ? 'col-span-2 lg:col-span-1' : ''}`}
           >
             {/* A fan of the category's posters on the right, lifting on hover. */}
             <span
@@ -79,8 +79,9 @@ export function CategoryBanners({
                 </span>
               ))}
             </span>
-            <span className="relative z-10 mt-auto flex flex-col justify-end sm:mt-0 sm:max-w-[60%]">
-              <span className="font-display text-lg leading-tight font-bold text-fg drop-shadow sm:text-2xl">
+            {/* Phones: the fan sits above the words (pt-12 keeps them clear of it); from sm it is beside them. */}
+            <span className="relative z-10 mt-auto flex min-w-0 flex-col justify-end pt-12 sm:mt-0 sm:max-w-[60%] sm:pt-0">
+              <span className="font-display text-base leading-tight font-bold break-words text-fg drop-shadow max-[359px]:text-sm sm:text-2xl">
                 {option.name}
               </span>
               <span className="mt-1 text-xs font-semibold text-gold-light">

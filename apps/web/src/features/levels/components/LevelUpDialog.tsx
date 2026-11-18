@@ -199,8 +199,8 @@ function Dialog({ status }: { status: LevelStatus }) {
           </div>
         </div>
 
-        {/* Always in view, however long the list of rewards is. */}
-        <div className="sticky bottom-0 z-[2] flex flex-col-reverse gap-2 bg-ivory-100 px-5 pt-3 pb-5 sm:flex-row sm:justify-center">
+        {/* Always in view, however long the list of rewards is; night like the plate above, so "Later" reads. */}
+        <div className="sticky bottom-0 z-[2] flex flex-col-reverse gap-2 bg-night-800 px-5 pt-3 pb-5 sm:flex-row sm:justify-center">
           <Button variant="secondary" className="min-h-12 sm:min-w-32" onClick={closeLevelUp}>
             {t('level.later')}
           </Button>

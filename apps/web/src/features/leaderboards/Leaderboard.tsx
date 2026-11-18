@@ -43,6 +43,7 @@ export function Leaderboard({
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
         <Segmented
+          fill
           label={t('leaders.period')}
           value={period}
           options={PERIODS.map((p) => ({ value: p, label: t(`leaders.periods.${p}`) }))}

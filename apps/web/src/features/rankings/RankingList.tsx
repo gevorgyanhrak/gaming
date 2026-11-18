@@ -89,7 +89,7 @@ export function RankingList({
 
   return (
     <>
-      <ol ref={listRef} aria-label={label} className="space-y-1.5">
+      <ol ref={listRef} aria-label={label} className="@container space-y-1.5">
         {rows.map((row) => (
           <li
             key={rowKey(row)}
@@ -135,12 +135,15 @@ export function RankingList({
                 size="sm"
               />
             </button>
-            <span className="flex min-w-0 flex-1 items-center gap-1.5">
-              <span className="truncate text-sm font-bold">{row.name}</span>
-              {row.is_ai ? <AiTag /> : null}
-            </span>
-            <span className="flex shrink-0 items-center gap-1 font-extrabold text-gold-light tabular-nums">
-              {value(row)}
+            {/* In a narrow list (a phone, a side column) the score goes under the name, so the name keeps room. */}
+            <span className="flex min-w-0 flex-1 flex-col @xs:flex-row @xs:items-center @xs:gap-3">
+              <span className="flex min-w-0 flex-1 items-center gap-1.5">
+                <span className="truncate text-sm font-bold">{row.name}</span>
+                {row.is_ai ? <AiTag /> : null}
+              </span>
+              <span className="flex shrink-0 items-center gap-1 text-sm font-extrabold text-gold-light tabular-nums @xs:text-base">
+                {value(row)}
+              </span>
             </span>
           </li>
         ))}

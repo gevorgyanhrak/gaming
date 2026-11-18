@@ -9,6 +9,7 @@ import { refillFishkas, walletKey } from '../api'
 import { useWallet } from '../hooks'
 import { closeOutOfFishkas, useOutOfFishkasOpen } from '../outOfFishkas'
 import { FishkaIcon } from './FishkaIcon'
+import { formatDate } from '@/shared/lib/dates'
 
 /**
  * The "out of Fishkas" popup: opens when a game can't start for lack of Fishkas. Rendered into
@@ -56,9 +57,7 @@ function Dialog() {
   const data = wallet.data
   const amount = data?.refill.amount ?? 5000
   const nextAt = data?.refill.available_at
-    ? new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }).format(
-        new Date(data.refill.available_at),
-      )
+    ? formatDate(data.refill.available_at, i18n.language, 'mediumTime')
     : null
   const canTake = !!data?.refill.available && !busy
   // Known not to be available (taken recently, or still enough to play): say when, offer only "OK".

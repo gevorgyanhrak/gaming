@@ -26,7 +26,14 @@ export function createQueryClient(): QueryClient {
             : isApiError(error) && error.status >= 400 && error.status < 500
               ? false
               : failureCount < 2,
-        retryDelay: (failureCount) => Math.min(1000 * 2 ** failureCount, 16_000),
+        // A 429 waits as long as the server asks (Retry-After), within the same 16 s cap.
+        retryDelay: (failureCount, error) =>
+          Math.min(
+            isApiError(error) && error.retryAfter
+              ? error.retryAfter * 1000
+              : 1000 * 2 ** failureCount,
+            16_000,
+          ),
       },
     },
   })

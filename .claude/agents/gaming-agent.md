@@ -247,8 +247,18 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   React Compiler lint rejects writes to them.
 - Realtime: `VITE_REVERB_HOST` empty = the page's host (LAN-safe). `useRealtimeConnected()` reports the real
   socket state; rooms and the wallet poll whenever it's false. The test fake counts as connected.
+- Dates: `shared/lib/dates.ts` (`formatDate`, `formatAgo`) — Chrome has no Armenian Intl data and silently answers in
+  English, so hy uses CLDR patterns there; never call `toLocaleDateString` directly. Language names come from a fixed
+  list (`languageName`: English / Русский / Հայերեն).
+- A `/me` 429 that outlives its retries (Retry-After honoured, ≤ 5) shows `AccountUnavailable` (alert + Try again);
+  routes with `handle.requiresAccount` show it in the page instead. Header sections and the ☰ drawer share `useSections`.
 - Pages opened over plain HTTP on the LAN have no `crypto.randomUUID`: use `randomId()`
   (`shared/lib/uuid.ts`).
+- Mobile QA suite: `apps/web/e2e` (Playwright, `playwright.config.ts`; signs in as player1 in `global-setup.ts`).
+  `PW_CHROMIUM=<cached chrome-headless-shell> E2E_ITERATION=N npx playwright test` — routes at 320…1440, every game vs AI
+  (moves from the server's `legal_actions`), every house slot, admin (`E2E_ADMIN_EMAIL/PASSWORD`). Findings go to
+  `e2e/results/findings-N.jsonl`, screenshots to `e2e/screenshots/iteration-N/` (both git-ignored).
+  It has its own `tsconfig.e2e.json` (referenced from `tsconfig.json`) and Vitest excludes `e2e/**`.
 - To look at a board without the Docker stack: a temporary (uncommitted) Vite page rendering the board
   with `roomStateFixture`, screenshotted with Playwright's cached `chrome-headless-shell` — delete it after.
 - When generic skill advice conflicts with the established conventions of this repo, follow the repo.

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, ViewTransition, type ReactNode } from 'rea
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import { updateSettings } from '@/features/account/api'
+import { AccountUnavailable } from '@/features/auth/components/AccountUnavailable'
 import { UserMenu } from '@/features/auth/components/UserMenu'
 import { VerificationBanner } from '@/features/auth/components/VerificationBanner'
 import { useCurrentUser } from '@/features/auth/hooks'
@@ -35,6 +36,7 @@ import {
   HomeIcon,
   MenuIcon,
   SettingsIcon,
+  SpadeIcon,
   StarIcon,
   TrophyIcon,
   UserIcon,
@@ -42,8 +44,10 @@ import {
 import { Skeleton } from '@/shared/ui/Skeleton'
 import { useRefreshOnLanguageChange } from '../useRefreshOnLanguageChange'
 
+// min-w-0: five equal tabs share the width even when a label (hy "Ֆիշկաներ") is wider than its share; the label
+// steps down a size under 375 px and, if it still can't fit, ends in "…" (TabLabel).
 const tabLink = ({ isActive }: { isActive: boolean }) =>
-  `relative flex min-h-16 flex-1 flex-col items-center justify-center gap-1 text-xs font-semibold transition-colors ${
+  `relative flex min-h-16 min-w-0 flex-1 flex-col items-center justify-center gap-1 px-0.5 text-xs font-semibold transition-colors max-[374px]:text-[0.6875rem] max-[374px]:tracking-tight ${
     isActive
       ? 'text-gold-light before:absolute before:top-0 before:h-0.5 before:w-8 before:rounded-full before:bg-gold before:shadow-[0_0_12px_var(--color-gold)]'
       : 'text-muted hover:text-fg'
@@ -52,18 +56,39 @@ const tabLink = ({ isActive }: { isActive: boolean }) =>
 const iconButton =
   'flex size-11 shrink-0 items-center justify-center rounded-control border border-white/10 bg-white/5 text-fg transition-colors hover:border-gold/50 hover:bg-white/10'
 
-/** The header's sections (from 1280 px; phones and tablets have the tab bar and the ☰ menu). */
-function SectionLinks({ home }: { home: string }) {
+/** The site's sections, for the header (from 1280 px) and the ☰ menu: one list, so both offer the same places. */
+function useSections(home: string) {
   const { t } = useTranslation()
   const { pathname, search } = useLocation()
   const casino = pathname === '/games' && new URLSearchParams(search).get('category') === 'casino'
-  const links = [
-    { to: home, label: t('nav.home'), active: pathname === home },
-    { to: '/games', label: t('nav.games'), active: pathname.startsWith('/games') && !casino },
-    { to: '/games?category=casino', label: t('nav.casino'), active: casino },
-    { to: '/ranks', label: t('nav.ranks'), active: pathname === '/ranks' },
-    { to: '/leaderboards', label: t('leaders.title'), active: pathname === '/leaderboards' },
+  return [
+    { to: home, label: t('nav.home'), icon: <HomeIcon />, active: pathname === home },
+    {
+      to: '/games',
+      label: t('nav.games'),
+      icon: <GridIcon />,
+      active: pathname.startsWith('/games') && !casino,
+    },
+    { to: '/games?category=casino', label: t('nav.casino'), icon: <SpadeIcon />, active: casino },
+    {
+      to: '/ranks',
+      label: t('nav.ranks'),
+      icon: <StarIcon className="size-5" />,
+      active: pathname === '/ranks',
+    },
+    {
+      to: '/leaderboards',
+      label: t('leaders.title'),
+      icon: <TrophyIcon />,
+      active: pathname === '/leaderboards',
+    },
   ]
+}
+
+/** The header's sections (from 1280 px; phones and tablets have the tab bar and the ☰ menu). */
+function SectionLinks({ home }: { home: string }) {
+  const { t } = useTranslation()
+  const links = useSections(home)
 
   return (
     <nav aria-label={t('nav.sections')} className="hidden items-center gap-0.5 xl:flex">
@@ -158,6 +183,7 @@ export function PublicLayout() {
         onClose={() => setMenuOpen(false)}
         home={home}
         signedIn={Boolean(user.data)}
+        guest={user.data === null}
         language={language}
       />
 
@@ -188,10 +214,13 @@ export function PublicLayout() {
                   <MenuIcon />
                 </button>
               )}
-              {/* The logo always leads to the home page (owner, 2026-11-17); under 375 px it gives way. */}
+              {/* The logo always leads to the home page (owner, 2026-11-17). On narrow phones it gives way: under
+                  375 px, or under 400 px for a player, whose balance needs the room (ru "10,1 тыс."). */}
               <Link
                 to="/"
-                className="flex min-w-0 items-center gap-2.5 font-display text-[0.95rem] font-semibold tracking-tight text-fg max-[374px]:hidden"
+                className={`flex min-w-0 items-center gap-2.5 font-display text-[0.95rem] font-semibold tracking-tight text-fg ${
+                  user.data ? 'max-[399px]:hidden' : 'max-[374px]:hidden'
+                }`}
               >
                 {brand}
               </Link>
@@ -203,9 +232,13 @@ export function PublicLayout() {
               className="flex items-center gap-0.5 min-[390px]:gap-1 sm:gap-2"
             >
               <OnlineCounter />
-              <SoundToggle />
-              {user.isPending ? (
-                <Skeleton className="size-9 rounded-full" />
+              {/* Under 360 px the speaker moves to the ☰ menu, so the balance and the account fit. */}
+              <SoundToggle className="max-[359px]:hidden" />
+              {/* While the account is unknown: a placeholder, or nothing once it failed (AccountUnavailable). */}
+              {user.data === undefined ? (
+                user.isPending ? (
+                  <Skeleton className="size-9 rounded-full" />
+                ) : null
               ) : user.data ? (
                 <>
                   {/* Keyed by account: another one signing in starts fresh (no "+N" for the switch). */}
@@ -230,6 +263,7 @@ export function PublicLayout() {
           </header>
         )}
 
+        <AccountUnavailable />
         {user.data ? <VerificationBanner user={user.data} /> : null}
         {user.data ? <WalletSync key={user.data.id} /> : null}
         {user.data && !inMaintenance ? (
@@ -285,37 +319,41 @@ export function PublicLayout() {
         >
           <NavLink to={home} end className={tabLink}>
             <HomeIcon />
-            {t('nav.home')}
+            <TabLabel>{t('nav.home')}</TabLabel>
           </NavLink>
           <NavLink to="/games" className={tabLink}>
             <GridIcon />
-            {t('nav.games')}
+            <TabLabel>{t('nav.games')}</TabLabel>
           </NavLink>
           {user.data ? (
             <>
               <NavLink to="/wallet" className={tabLink}>
                 <FishkaIcon className="size-6" />
-                {t('nav.walletShort')}
+                <TabLabel>{t('nav.walletShort')}</TabLabel>
               </NavLink>
               <NavLink to="/ranks" className={tabLink}>
                 <TrophyIcon />
-                {t('nav.ranks')}
+                <TabLabel>{t('nav.ranks')}</TabLabel>
               </NavLink>
               <NavLink to="/profile" className={tabLink}>
                 <UserIcon />
-                {t('nav.profile')}
+                <TabLabel>{t('nav.profile')}</TabLabel>
               </NavLink>
             </>
-          ) : user.isPending ? null : (
+          ) : user.data === undefined ? null : (
             <NavLink to="/login" className={tabLink}>
               <UserIcon />
-              {t('nav.login')}
+              <TabLabel>{t('nav.login')}</TabLabel>
             </NavLink>
           )}
         </nav>
       ) : null}
     </div>
   )
+}
+
+function TabLabel({ children }: { children: ReactNode }) {
+  return <span className="block max-w-full truncate">{children}</span>
 }
 
 /**
@@ -327,17 +365,21 @@ function MenuDrawer({
   onClose,
   home,
   signedIn,
+  guest,
   language,
 }: {
   open: boolean
   onClose: () => void
   home: string
   signedIn: boolean
+  /** Known to be signed out: only then Log in / Join (an unknown account offers neither). */
+  guest: boolean
   language: ReactNode
 }) {
   const { t } = useTranslation()
   const config = usePublicConfig()
   const { pathname } = useLocation()
+  const sections = useSections(home)
   const panelRef = useRef<HTMLDivElement>(null)
   const [openedAt, setOpenedAt] = useState(pathname)
   if (open && openedAt !== pathname) {
@@ -356,14 +398,14 @@ function MenuDrawer({
   }, [open, onClose])
 
   if (!open) return null
-  const link = (to: string, label: string, icon: ReactNode, end = false) => (
-    <NavLink
-      to={to}
-      end={end}
-      onClick={onClose}
-      className="flex min-h-11 items-center gap-3 rounded-control px-3 text-sm font-semibold text-fg hover:bg-emerald-800/70 aria-[current=page]:bg-gold/15 aria-[current=page]:text-gold-light"
-    >
-      <span className="flex size-6 shrink-0 items-center justify-center text-gold">{icon}</span>
+  const linkClass =
+    'flex min-h-11 items-center gap-3 rounded-control px-3 text-sm font-semibold text-fg hover:bg-emerald-800/70 aria-[current=page]:bg-gold/15 aria-[current=page]:text-gold-light'
+  const iconBox = (icon: ReactNode) => (
+    <span className="flex size-6 shrink-0 items-center justify-center text-gold">{icon}</span>
+  )
+  const link = (to: string, label: string, icon: ReactNode) => (
+    <NavLink to={to} onClick={onClose} className={linkClass}>
+      {iconBox(icon)}
       {label}
     </NavLink>
   )
@@ -410,9 +452,18 @@ function MenuDrawer({
           className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto"
         >
           <div className="flex flex-col gap-1">
-            {link(home, t('nav.home'), <HomeIcon />, true)}
-            {link('/games', t('nav.games'), <GridIcon />, true)}
-            {link('/leaderboards', t('leaders.title'), <TrophyIcon />)}
+            {sections.map((section) => (
+              <Link
+                key={section.to}
+                to={section.to}
+                onClick={onClose}
+                aria-current={section.active ? 'page' : undefined}
+                className={linkClass}
+              >
+                {iconBox(section.icon)}
+                {section.label}
+              </Link>
+            ))}
           </div>
           {signedIn ? (
             <div className="flex flex-col gap-1 border-t border-gold/15 pt-3">
@@ -421,11 +472,10 @@ function MenuDrawer({
               </p>
               {link('/profile', t('nav.profile'), <UserIcon />)}
               {link('/wallet', t('nav.wallet'), <FishkaIcon className="size-6" />)}
-              {link('/ranks', t('nav.ranks'), <StarIcon className="size-5" />)}
               {link('/history', t('nav.history'), <HistoryIcon />)}
               {link('/settings', t('nav.settings'), <SettingsIcon />)}
             </div>
-          ) : (
+          ) : guest ? (
             <div className="flex flex-col gap-2 border-t border-gold/15 px-1 pt-3">
               <ButtonLink to="/login" variant="secondary" onClick={onClose}>
                 {t('nav.login')}
@@ -434,8 +484,15 @@ function MenuDrawer({
                 {t('nav.register')}
               </ButtonLink>
             </div>
-          )}
-          <div className="mt-auto border-t border-gold/15 px-3 pt-3">{language}</div>
+          ) : null}
+          {/* Phones under 360 px have no room for the speaker in the header: it is here for everyone. */}
+          <div className="mt-auto flex flex-col gap-3 border-t border-gold/15 px-3 pt-3">
+            <div className="flex items-center justify-between gap-2 text-sm">
+              <span className="text-muted">{t('sound.toggle')}</span>
+              <SoundToggle />
+            </div>
+            {language}
+          </div>
         </nav>
       </div>
     </div>

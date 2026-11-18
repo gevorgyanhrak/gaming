@@ -87,6 +87,13 @@ export const TicketIcon = (p: IconProps) => (
   </Icon>
 )
 
+/** A spade: the casino. */
+export const SpadeIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 3.5c-3 3.4-7 5.9-7 9.6A3.6 3.6 0 0 0 8.6 16.7c1.3 0 2.4-.6 3-1.6.3 2.1-.4 3.9-1.9 5.4h4.6c-1.5-1.5-2.2-3.3-1.9-5.4.6 1 1.7 1.6 3 1.6a3.6 3.6 0 0 0 3.6-3.6c0-3.7-4-6.2-7-9.6Z" />
+  </Icon>
+)
+
 export const MenuIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M4 7h16M4 12h16M4 17h16" />

@@ -66,6 +66,8 @@ export const routes: RouteObject[] = [
       },
       {
         element: <AuthRoute />,
+        // RequireAuth shows its own error when the account can't be loaded (no AccountUnavailable bar).
+        handle: { requiresAccount: true },
         children: [
           {
             path: 'verify',

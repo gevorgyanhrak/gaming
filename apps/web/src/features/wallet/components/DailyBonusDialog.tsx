@@ -46,6 +46,11 @@ function Dialog({ bonus }: { bonus: DailyBonus }) {
   const queryClient = useQueryClient()
   const chest = useRef<HTMLDivElement>(null)
   const format = (n: number) => n.toLocaleString(i18n.language)
+  // Five tiles share a phone's width: 1.5K there, the full amount from sm.
+  const short = (n: number) =>
+    new Intl.NumberFormat(i18n.language, { notation: 'compact', maximumFractionDigits: 1 }).format(
+      n,
+    )
 
   // One request per click burst (a double click must not show an error for the second).
   const sent = useRef(false)
@@ -97,6 +102,7 @@ function Dialog({ bonus }: { bonus: DailyBonus }) {
               key={day}
               day={day}
               amount={format(amount)}
+              short={short(amount)}
               state={
                 day < bonus.day ? 'past' : day === bonus.day ? (done ? 'done' : 'today') : 'next'
               }
@@ -121,7 +127,7 @@ function Dialog({ bonus }: { bonus: DailyBonus }) {
             <Chest open={!done || collected > 0} />
           </div>
           <p
-            className="flex items-center gap-2 font-display text-4xl font-extrabold text-gold-light tabular-nums sm:text-5xl"
+            className="flex items-center gap-2 font-display text-[clamp(1.5rem,8vw,2.25rem)] font-extrabold text-gold-light tabular-nums sm:text-5xl"
             aria-live="polite"
           >
             <FishkaIcon className="size-10 sm:size-12" />
@@ -172,12 +178,15 @@ function Dialog({ bonus }: { bonus: DailyBonus }) {
 function DayTile({
   day,
   amount,
+  short,
   state,
   double,
   first,
 }: {
   day: number
   amount: string
+  /** The amount in a compact form (1.5K) for phones. */
+  short: string
   state: 'past' | 'done' | 'today' | 'next'
   double: boolean
   first: boolean
@@ -221,7 +230,8 @@ function DayTile({
         </>
       )}
       <span className="max-w-full truncate text-[0.7rem] font-bold tabular-nums sm:text-xs">
-        {amount}
+        <span className="sm:hidden">{short}</span>
+        <span className="max-sm:hidden">{amount}</span>
       </span>
     </li>
   )

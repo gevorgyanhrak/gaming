@@ -74,7 +74,11 @@ async function parse<T>(response: Response): Promise<T> {
   const payload: unknown = await response.json().catch(() => null)
 
   if (!response.ok) {
-    throw ApiError.fromResponse(response.status, payload)
+    const error = ApiError.fromResponse(response.status, payload)
+    // Too many requests: the server says how long to wait (seconds), which the query retries honour.
+    const wait = Number(response.headers.get('Retry-After'))
+    if (Number.isFinite(wait) && wait > 0) error.retryAfter = wait
+    throw error
   }
 
   return payload as T

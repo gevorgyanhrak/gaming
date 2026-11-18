@@ -6,6 +6,7 @@ import { splitParagraphs } from '@/shared/lib/paragraphs'
 import { Container } from '@/shared/ui/Container'
 import { Skeleton } from '@/shared/ui/Skeleton'
 import { EmptyState, QueryErrorState } from '@/shared/ui/States'
+import { formatDate } from '@/shared/lib/dates'
 
 /** Admin-managed pages such as the privacy policy and the terms of service. */
 export function ContentPage() {
@@ -34,9 +35,7 @@ export function ContentPage() {
             {page.data.updated_at ? (
               <p className="mt-2 text-sm text-muted">
                 {t('content.updated', {
-                  date: new Intl.DateTimeFormat(i18n.language, { dateStyle: 'long' }).format(
-                    new Date(page.data.updated_at),
-                  ),
+                  date: formatDate(page.data.updated_at, i18n.language, 'long'),
                 })}
               </p>
             ) : null}
