@@ -310,18 +310,6 @@
     }
   }
 
-  /* An engine slot's reel coming to rest: it drops in and settles with a small bounce. */
-  @keyframes reel-stop {
-    from {
-      opacity: 0.2;
-      transform: translateY(-18%);
-    }
-    70% {
-      opacity: 1;
-      transform: translateY(3%);
-    }
-  }
-
   /* A changed amount: the number pops a little. */
   @keyframes amount-pop {
     40% {

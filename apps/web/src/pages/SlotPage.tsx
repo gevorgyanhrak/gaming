@@ -2,7 +2,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
-import { EngineSlotGame } from '@/features/casino/engine/EngineSlotGame'
 import { fetchSlots, isSlotMessage, slotsKey } from '@/features/casino/slots'
 import { walletKey } from '@/features/wallet/api'
 import { openOutOfFishkas } from '@/features/wallet/outOfFishkas'
@@ -11,8 +10,7 @@ import { Skeleton } from '@/shared/ui/Skeleton'
 import { EmptyState, QueryErrorState } from '@/shared/ui/States'
 
 /**
- * A slot. An engine slot (ADR 0026) is drawn by our EngineSlotGame. A house slot (ADR 0024): the game's own page
- * (/play/<id>/, same origin) in a frame. The server deals every
+ * A house slot (ADR 0024): the game's own page (/play/<id>/, same origin) in a frame. The server deals every
  * round; the frame tells this page after each spin (the wallet refetches) and when the Fishkas run short (the
  * app's "out of Fishkas" popup opens).
  */
@@ -38,7 +36,7 @@ export function SlotPage() {
       {slot ? <title>{slot.name}</title> : null}
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <Link
-          to={slot?.kind === 'engine' ? '/casino' : '/'}
+          to="/"
           className="inline-flex min-h-11 items-center text-sm font-semibold text-accent-text hover:underline"
         >
           ← {t('slots.back')}
@@ -49,9 +47,6 @@ export function SlotPage() {
         <Skeleton className="h-[70dvh] w-full rounded-panel" />
       ) : slots.isError ? (
         <QueryErrorState error={slots.error} onRetry={() => void slots.refetch()} />
-      ) : slot?.kind === 'engine' ? (
-        // An engine slot (ADR 0026): our own screen for it, the server's engine deals.
-        <EngineSlotGame slug={slot.slug} />
       ) : !slot?.play_path ? (
         <EmptyState title={t('slots.unavailable')} />
       ) : (
@@ -62,7 +57,7 @@ export function SlotPage() {
           allow="autoplay; fullscreen"
         />
       )}
-      {slot && slot.kind !== 'engine' ? (
+      {slot ? (
         <p className="mt-2 text-center text-[11px] text-muted">
           {t('slots.credit', { provider: slot.provider })}
         </p>

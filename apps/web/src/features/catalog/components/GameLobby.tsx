@@ -1,6 +1,6 @@
 import { useId, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { SlotPoster } from '@/features/casino/SlotPoster'
 import { fetchSlots, slotsKey } from '@/features/casino/slots'
@@ -77,11 +77,10 @@ export function GameLobby({
   const [params, setParams] = useSearchParams()
   // Slots are games of the Casino category (owner, 2026-11-16): counted and listed with it, and under All.
   const slotList = useQuery({ queryKey: slotsKey, queryFn: ({ signal }) => fetchSlots(signal) })
-  // House slots are listed with the Casino category; the engine's hundreds of slots live in the slot hall (/casino)
-  // and come up here only in a search or among favourites.
-  const allSlots = useMemo(() => slotList.data ?? [], [slotList.data])
-  const slots = useMemo(() => allSlots.filter((slot) => slot.kind === 'house'), [allSlots])
-  const engineCount = allSlots.length - slots.length
+  const slots = useMemo(
+    () => (slotList.data ?? []).filter((slot) => slot.play_path !== null),
+    [slotList.data],
+  )
   const groups = useMemo(
     () =>
       groupGames(games, t('lobby.other')).map((group) =>
@@ -128,7 +127,7 @@ export function GameLobby({
   const favoritesOnly = !banners && category === FAVORITES
 
   const base: LobbyItem[] = favoritesOnly
-    ? favoriteItems(favorites.data ?? [], games, allSlots)
+    ? favoriteItems(favorites.data ?? [], games, slots)
     : [
         // A search looks through every game, the ones shown larger above too.
         ...(needle
@@ -137,12 +136,10 @@ export function GameLobby({
             ? selected.games
             : games.filter((g) => !exclude.includes(g.slug))
         ).map((game): LobbyItem => ({ kind: 'game', game })),
-        ...(selected && selected.key !== CASINO ? [] : needle ? allSlots : slots).map(
-          (slot): LobbyItem => ({
-            kind: 'slot',
-            slot,
-          }),
-        ),
+        ...(selected && selected.key !== CASINO ? [] : slots).map((slot): LobbyItem => ({
+          kind: 'slot',
+          slot,
+        })),
       ]
   const shown = arrange(base, { query, players, sort })
   const filtered = !!selected || favoritesOnly || !!players || sort !== 'recommended'
@@ -266,15 +263,6 @@ export function GameLobby({
               ? t('favorites.empty')
               : t('lobbyFilters.results', { count: 0 })}
         </p>
-      ) : null}
-      {selected?.key === CASINO && engineCount > 0 ? (
-        <Link
-          to="/casino"
-          className="club-panel mb-4 flex min-h-14 items-center justify-between gap-3 rounded-2xl px-4 py-3 font-bold text-gold-light transition-colors hover:border-gold"
-        >
-          {t('slotHall.open', { count: engineCount })}
-          <span aria-hidden="true">→</span>
-        </Link>
       ) : null}
       {/* "All": the first game (the admin's order) is featured, a double-width tile with wide art. */}
       <ul

@@ -34,9 +34,7 @@ export function DailyBonusDialog() {
   const waiting = bonus.data && !bonus.data.claimed
 
   useEffect(() => {
-    // Never over a table or a slot being played: it offers itself on the next page.
-    const playing = pathname.startsWith('/rooms/') || pathname.startsWith('/casino/slots/')
-    if (waiting && user && !playing) offerDailyBonus(user.id)
+    if (waiting && user && !pathname.startsWith('/rooms/')) offerDailyBonus(user.id)
   }, [waiting, user, pathname])
 
   // A level-up popup goes first; this one waits for it.

@@ -68,13 +68,9 @@ Owner brief 2026-11-17 "Slotopol slot engine integration":
       key; platform parts removed — UPSTREAM.md; Fairy Queen index bug patched), `App\Platform\Slots\Engine`
       (sync, EngineSpins: rounds, free games, state per player, replay), `slots:engine-sync`, setting
       `slots.engine_rtp`; 347 games measured through our path → 322 verified/on, 25 off (GAME_FEATURES_AUDIT.md);
-      live: all 322 spun via the API, balances exact; Go/Pest tests; CI `slot-engine.yml` — 6a1f767.
-- [x] Casino frontend: slot hall `/casino` (header "Casino" link; makers as filters from the data, search by name or
-      maker, sort, favourites, recently played = `GET /me/slots/recent`, 48 per page), `EngineSlotGame` on
-      `/casino/slots/:slug` for kind=engine (our generic symbols, bet/lines steppers, free games banner, cascade falls
-      play on by themselves, winning cells lit, win list, Space spins; counts as a game in progress so level-up and
-      daily-bonus popups wait), generated poster art; engine slots in the lobby only in search/favourites. Live:
-      desktop + 390 px, Book of Ra spins, Gonzo's Quest free games — this commit.
+      live: all 322 spun via the API, balances exact; Go/Pest tests; CI `slot-engine.yml` — this commit.
+- [ ] Casino frontend for engine slots: generic slot screen (`/casino/slots/:slug` for kind=engine), makers as
+      shelves/filters, search, favourites, recently played.
 Owner brief 2026-11-17 "complete redesign + Latin transliteration search":
 - [x] Search (critical): `features/search/gameSearch.ts` — one alias table by slug (`GAME_ALIASES`), Armenian/Cyrillic →
       Latin, sound folding (kh/h/x, sh, ch, y/i, doubles), prefix / word / inside / one-slip matches (first letter

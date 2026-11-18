@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SlotGameResource;
 use App\Models\SlotGame;
-use App\Models\SlotSpin;
 use App\Platform\Slots\SlotAdapters;
 use App\Platform\Slots\SlotSessions;
 use Illuminate\Http\JsonResponse;
@@ -24,18 +23,6 @@ class SlotController extends Controller
         $games = SlotGame::query()->offered()->with('provider')
             ->whereHas('provider', fn ($q) => $q->whereIn('slug', $ready))
             ->get();
-
-        return SlotGameResource::collection($games);
-    }
-
-    /** The slots this player spun last (newest first, each once; only ones still offered). */
-    public function recent(Request $request): AnonymousResourceCollection
-    {
-        $ids = SlotSpin::query()->where('user_id', $request->user()->id)
-            ->selectRaw('slot_game_id, MAX(id) as last_id')->groupBy('slot_game_id')
-            ->orderByDesc('last_id')->limit(12)->pluck('slot_game_id')->all();
-        $games = SlotGame::query()->offered()->with('provider')->whereIn('id', $ids)->get()
-            ->sortBy(fn (SlotGame $g) => array_search($g->id, $ids, true))->values();
 
         return SlotGameResource::collection($games);
     }

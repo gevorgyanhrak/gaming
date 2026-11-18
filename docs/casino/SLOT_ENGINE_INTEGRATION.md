@@ -27,15 +27,6 @@ Browser ──HTTPS──▶ Laravel API (/api/v1/slots/{slug}/engine, …/engin
   (engine win items: pay, mp, sym, num, li, xy, fs…), `free`, `next`, `free_left`, `series_win`, `round`, `replay`.
   Refusals are 422 with `insufficient_fishkas`, `slot_bet_limits`, `slot_game_off`, `slot_key_conflict`.
 
-## Web app
-
-- `/casino` — the slot hall (`pages/SlotHallPage.tsx`): every slot, makers as filters built from the data, search
-  (`features/search/gameSearch` with the maker as a term), sort, favourites, recently played (`GET /me/slots/recent`).
-- `/casino/slots/:slug` — for `kind: engine`, `features/casino/engine/EngineSlotGame`: the engine's screen drawn with
-  our generic symbols (`symbols.ts`; the engine has no art), bet and lines, free games, cascade falls continuing on
-  their own, winning cells and the win list. Every spin is one request with a fresh key; the balance is refetched.
-- `GET /api/v1/me/slots/recent` — the player's last 12 slots (from `slot_spins`).
-
 ## Money
 
 A paid spin is a round: `SlotWallet` bet (bet × lines, or the game's price × bet) then win; the free games and
