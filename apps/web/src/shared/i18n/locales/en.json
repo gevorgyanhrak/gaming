@@ -6,7 +6,10 @@
     "playMoney": "Played with Fishkas: free play money, never real money.",
     "back": "Back to the casino",
     "unavailable": "This slot isn't available right now.",
-    "credit": "Game by {{provider}}: code MIT, art CC BY 4.0 by APEXSLOTS, maths from slotopol (MIT). Every round is dealt by our server."
+    "credit": "Game by {{provider}}: code MIT, art CC BY 4.0 by APEXSLOTS, maths from slotopol (MIT). Every round is dealt by our server.",
+    "credits": {
+      "jungle-slot": "Art: \"Jungle Slot Assets\" by danitorres567 (OpenGameArt, CC0). Game and maths by this platform; every round is dealt on our server."
+    }
   },
   "nav": {
     "main": "Main",

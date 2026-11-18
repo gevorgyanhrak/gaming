@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\SlotGame;
+use App\Platform\Slots\House\CreditedHouseSlot;
 use App\Platform\Slots\House\HouseSlots;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -37,6 +38,12 @@ class SlotGameResource extends JsonResource
              * @var string|null
              */
             'play_path' => $playPath,
+            /**
+             * Where this game's art and maths come from, when the game says so itself (else the provider's credit).
+             *
+             * @var string|null
+             */
+            'credit' => $house && ($engine = app(HouseSlots::class)->for($this->provider_game_id)) instanceof CreditedHouseSlot ? $engine->credit() : null,
         ];
     }
 }

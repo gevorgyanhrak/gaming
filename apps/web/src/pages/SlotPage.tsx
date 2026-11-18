@@ -59,7 +59,10 @@ export function SlotPage() {
       )}
       {slot ? (
         <p className="mt-2 text-center text-[11px] text-muted">
-          {t('slots.credit', { provider: slot.provider })}
+          {slot.credit
+            ? // A game with its own credit (where its art and maths come from), translated when we have it.
+              t(`slots.credits.${slot.slug}`, { defaultValue: slot.credit })
+            : t('slots.credit', { provider: slot.provider })}
         </p>
       ) : null}
     </Container>

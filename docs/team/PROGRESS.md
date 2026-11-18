@@ -14,7 +14,11 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 - [x] Slotopol removed from the app: the six integration commits reverted on main (tree = 1ffa46c), branch
       `slotopol-original` deleted, its containers/volume/images and dev data removed. Backup of the removed work:
       branch `backup/before-slotopol-restore-2026-11-18`. The casino has the 12 APEXSLOTS house slots (ADR 0024).
-- [ ] Research open-source slot providers with their own original game interfaces → report to the owner first.
+- [x] Research: no free open-source slot with provider-quality art beyond APEXSLOTS on GitHub
+      (docs/research/slot-providers-2026-11-18.md); OpenGameArt "Jungle Slot Assets" (CC0) is a complete design →
+- [x] Jungle Slot, the 13th house slot: original 1920×1080 layout rebuilt from the PSD layers (play/jungle-slot),
+      5×3 20-line wild-chest maths ours, exact RTP 95.61387608 % (JungleSlotTest), credit line per game
+      (`CreditedHouseSlot`). Live: desktop, phone sideways/upright, spins, wins, Info, Lines.
 
 **Owner brief 2026-11-15 (strict order; casino only after phase A is done and tested; no asking — owner checks at the end):**
 Phase A — platform first:

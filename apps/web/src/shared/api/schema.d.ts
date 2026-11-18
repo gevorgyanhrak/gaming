@@ -1430,6 +1430,8 @@ export interface components {
             max_bet: number;
             /** @description Where the web app shows a house slot (ADR 0024); null for an outside provider (opened by launch). */
             play_path: string | null;
+            /** @description Where this game's art and maths come from, when the game says so itself (else the provider's credit). */
+            credit: string | null;
         };
         /** SubmitActionRequest */
         SubmitActionRequest: {

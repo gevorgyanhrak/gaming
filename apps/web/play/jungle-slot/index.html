@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>JUNGLE SLOT</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍍</text></svg>"
+    />
+    <link rel="preload" as="image" href="/play/jungle-slot/background.webp" />
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <div id="stage" aria-label="Jungle Slot">
+      <img class="layer" src="/play/jungle-slot/background.webp" alt="" style="left: 0; top: 0" />
+      <!-- The frame holds the dark reel panel: it goes under the symbols. -->
+      <img class="layer" id="table" src="/play/jungle-slot/table.webp" alt="" />
+      <img class="layer" id="cells" src="/play/jungle-slot/cells.webp" alt="" />
+      <div id="reels" aria-live="polite"></div>
+      <svg id="paylines" viewBox="0 0 1920 1080" aria-hidden="true"></svg>
+      <img class="layer" id="numbers" src="/play/jungle-slot/lines-numbers.webp" alt="" />
+      <img class="layer" id="title" src="/play/jungle-slot/title.webp" alt="Jungle Slot" />
+      <div id="buttons"></div>
+      <div id="boxes"></div>
+      <img class="layer" id="monkey" src="/play/jungle-slot/monkey.webp" alt="" />
+      <div id="message" role="status"></div>
+      <div id="overlay" hidden></div>
+    </div>
+    <p id="rotate">Turn your phone sideways for a bigger view.</p>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

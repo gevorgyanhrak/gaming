@@ -27,6 +27,7 @@ const slot = (slug: string): LobbyItem => ({
     min_bet: 10,
     max_bet: 1000,
     play_path: `/play/${slug}/`,
+    credit: null,
   },
 })
 

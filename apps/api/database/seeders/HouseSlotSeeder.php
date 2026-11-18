@@ -27,6 +27,8 @@ class HouseSlotSeeder extends Seeder
         'the-dynasty' => ['The Dynasty', 100],
         'fairytale' => ['Fairytale', 110],
         'bumper-crop' => ['Bumper Crop', 120],
+        // Art: "Jungle Slot Assets" by danitorres567 (OpenGameArt, CC0); maths ours (2026-11-18).
+        'jungle-slot' => ['Jungle Slot', 5],
     ];
 
     public function run(HouseSlots $slots): void

@@ -69,3 +69,12 @@ server sends.
 - The vendored clients are kept in their upstream style (excluded from our lint/format, own `tsconfig.play.json`).
 - Pixi.js is a new web dependency (only the slot pages load it).
 - Upstream fixes are not pulled automatically; the upstream commit is recorded in `apps/web/play/README.md`.
+
+## Addendum 2026-11-18 — Jungle Slot (CC0 art, our maths)
+
+After Slotopol was removed (owner: "find open-source slots and use them"), GitHub had no other open-source slot with
+provider-quality art and a usable licence (see `docs/research/slot-providers-2026-11-18.md`). OpenGameArt's "Jungle
+Slot Assets" by danitorres567 is a complete slot design under CC0. It became the 13th house slot, **Jungle Slot**
+(`House\Games\JungleSlot`, `play/jungle-slot`): the original 1920×1080 layout rebuilt from the PSD layers, a 5×3
+20-line game with a wild chest, maths ours with an exact RTP of 95.61387608 %. A house game can now carry its own
+credit line (`CreditedHouseSlot`), shown under it instead of the APEXSLOTS credit.
