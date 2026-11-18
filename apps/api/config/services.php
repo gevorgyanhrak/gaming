@@ -40,11 +40,4 @@ return [
         ],
     ],
 
-    // The internal slot engine (ADR 0026): never published; the API is its only caller.
-    'slot_engine' => [
-        'url' => env('SLOT_ENGINE_URL', 'http://slot-engine:8090'),
-        'key' => env('SLOT_ENGINE_KEY'),
-        'timeout' => 5,
-    ],
-
 ];

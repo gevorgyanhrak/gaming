@@ -26,8 +26,6 @@ function serve() {
             slug: 'stellar-sevens',
             name: 'Stellar Sevens',
             provider: 'APEXSLOTS (open source)',
-            studio: null,
-            kind: 'house',
             image_url: null,
             min_bet: 10,
             max_bet: 1000,

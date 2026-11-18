@@ -20,8 +20,6 @@ use Spatie\Translatable\HasTranslations;
  * @property string $slug
  * @property string $name
  * @property string|null $image_path
- * @property string|null $studio The game's maker (engine slots, ADR 0026), e.g. "Novomatic"
- * @property array<string, mixed>|null $meta Engine slots: reels, rows, lines, features, RTPs
  * @property int $min_bet
  * @property int $max_bet
  * @property int $max_multiplier
@@ -29,7 +27,7 @@ use Spatie\Translatable\HasTranslations;
  * @property int $sort_order
  * @property-read SlotProvider $provider
  */
-#[Fillable(['slot_provider_id', 'provider_game_id', 'slug', 'name', 'studio', 'meta', 'image_path', 'min_bet', 'max_bet', 'max_multiplier', 'is_enabled', 'sort_order'])]
+#[Fillable(['slot_provider_id', 'provider_game_id', 'slug', 'name', 'image_path', 'min_bet', 'max_bet', 'max_multiplier', 'is_enabled', 'sort_order'])]
 #[ObservedBy(AdminChangeObserver::class)]
 class SlotGame extends Model
 {
@@ -49,7 +47,6 @@ class SlotGame extends Model
             'max_multiplier' => 'integer',
             'is_enabled' => 'boolean',
             'sort_order' => 'integer',
-            'meta' => 'array',
         ];
     }
 

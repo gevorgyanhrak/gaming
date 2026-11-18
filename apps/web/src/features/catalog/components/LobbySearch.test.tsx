@@ -53,8 +53,6 @@ describe('Casino lobby', () => {
               slug: 'stellar-sevens',
               name: 'Stellar Sevens',
               provider: 'APEXSLOTS (open source)',
-              studio: null,
-              kind: 'house',
               image_url: '/play/stellar-sevens/tile.webp',
               min_bet: 10,
               max_bet: 1000,
