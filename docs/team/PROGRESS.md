@@ -10,6 +10,12 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
+**Owner 2026-11-18 "remove Slotopol, find open-source providers like AGT / Pragmatic / Novomatic":**
+- [x] Slotopol removed from the app: the six integration commits reverted on main (tree = 1ffa46c), branch
+      `slotopol-original` deleted, its containers/volume/images and dev data removed. Backup of the removed work:
+      branch `backup/before-slotopol-restore-2026-11-18`. The casino has the 12 APEXSLOTS house slots (ADR 0024).
+- [ ] Research open-source slot providers with their own original game interfaces → report to the owner first.
+
 **Owner brief 2026-11-15 (strict order; casino only after phase A is done and tested; no asking — owner checks at the end):**
 Phase A — platform first:
 - [x] A1. Restore game categories and images on the home page (the casino home of 1ebcb25 dropped the lobby): every
