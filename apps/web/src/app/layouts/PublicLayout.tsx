@@ -19,7 +19,9 @@ import { DailyBonusDialog } from '@/features/wallet/components/DailyBonusDialog'
 import { LevelUpDialog } from '@/features/levels/components/LevelUpDialog'
 import { useLevelSync } from '@/features/levels/hooks'
 import { OutOfFishkasDialog } from '@/features/wallet/components/OutOfFishkasDialog'
-import { useWalletSync } from '@/features/wallet/hooks'
+import { useGameInProgress } from '@/features/play/gameInProgress'
+import { openOutOfFishkas } from '@/features/wallet/outOfFishkas'
+import { useWalletSync, useZeroBalancePrompt } from '@/features/wallet/hooks'
 import { MaintenanceScreen } from '@/features/platform/MaintenanceScreen'
 import { useFavicon } from '@/features/platform/useFavicon'
 import { usePublicConfig } from '@/features/platform/usePublicConfig'
@@ -466,6 +468,10 @@ function MoreMenu({ home, language }: { home: string; language: ReactNode }) {
 function WalletSync() {
   useWalletSync()
   useLevelSync()
+  // Fishkas at zero: offer the top-up and the packages (once a session, never over a game or a table).
+  const inGame = useGameInProgress()
+  const atTable = useLocation().pathname.startsWith('/rooms/')
+  useZeroBalancePrompt(inGame || atTable, openOutOfFishkas)
   return (
     <>
       <LevelUpDialog />

@@ -668,7 +668,8 @@
       "wheel_prize": "Lucky wheel",
       "slot_bet": "Slot bet",
       "slot_win": "Slot win",
-      "slot_refund": "Slot bet returned"
+      "slot_refund": "Slot bet returned",
+      "purchase": "Fishkas bought"
     },
     "ok": "OK",
     "balanceLabelTable": "Your Fishkas: {{amount}}, {{table}} of them at a table. Open your wallet",
@@ -1369,5 +1370,19 @@
     "won": "{{name}} · +{{amount}}",
     "allInDetail": "{{name}} · {{amount}}",
     "lostDetail": "−{{amount}}"
+  },
+  "payments": {
+    "title": "Get more Fishkas",
+    "unavailable": "Buying Fishkas isn't available yet — no payment method is connected. Free Fishkas: the daily bonus, gifts and the top-up when you run out.",
+    "recommended": "Best value",
+    "bonus": "+{{amount}} bonus",
+    "buy": "Buy {{amount}} Fishkas for {{price}}",
+    "packages": {
+      "starter": "Starter",
+      "small": "Small",
+      "medium": "Medium",
+      "large": "Large",
+      "max": "Maximum"
+    }
   }
 }

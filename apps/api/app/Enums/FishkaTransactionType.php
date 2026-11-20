@@ -35,4 +35,7 @@ enum FishkaTransactionType: string
     case SlotWin = 'slot_win';
     /** A slot bet given back because the provider rolled the round back. */
     case SlotRefund = 'slot_refund';
+
+    /** Fishkas bought: a paid chip package (ADR 0027), credited once when the provider confirms the payment. */
+    case Purchase = 'purchase';
 }

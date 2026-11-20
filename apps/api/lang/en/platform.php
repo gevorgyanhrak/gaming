@@ -65,6 +65,9 @@ return [
         'locked' => 'Reach level :level to send this emoji.',
         'no_such_player' => 'Choose another player at this table.',
     ],
+    'payments' => [
+        'unavailable' => "Buying Fishkas isn't available yet.",
+    ],
     'slots' => [
         'unavailable' => 'This game isn\'t available right now.',
         'insufficient_fishkas' => 'Not enough Fishkas for this bet.',

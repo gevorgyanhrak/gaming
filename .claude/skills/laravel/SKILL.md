@@ -207,4 +207,9 @@ PHPDoc generics on relations/collections for Larastan.
 - `SettingsCatalog` is one long list: when replacing a block of definitions, check you didn't drop a neighbour —
   an unknown key makes `Settings::get` throw (`InvalidArgumentException`), i.e. a 500 on every request that reads it.
 - Tests that need game modes seed `[GameSeeder::class, GameModeSeeder::class]`; `GameSeeder` alone creates no modes.
+- Pest test helpers are global functions shared by every test file: give them distinctive names (a clash fails the
+  whole run with "Cannot redeclare function").
+- Scramble types a `response()->json([...], $status)` only with a literal status and a plain array; a variable status
+  or a destructured result gives the client `string`. Render expected refusals from `bootstrap/app.php` (one return
+  per controller), e.g. `PaymentsUnavailable` → 422 `payments_unavailable`.
 

@@ -11,6 +11,7 @@ use App\Http\Middleware\SetLocaleFromRequest;
 use App\Http\Middleware\TouchLastActive;
 use App\Platform\Fishka\FishkaBonusUnavailable;
 use App\Platform\Fishka\InsufficientFishkas;
+use App\Platform\Payments\PaymentsUnavailable;
 use App\Platform\Slots\House\HouseSpinRefused;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -73,6 +74,12 @@ return Application::configure(basePath: dirname(__DIR__))
                 'balance' => $e->balance,
             ], 422);
         });
+        // Buying Fishkas while no payment provider is connected (ADR 0027): an expected answer, never reported.
+        $exceptions->dontReport([PaymentsUnavailable::class]);
+        $exceptions->render(fn (PaymentsUnavailable $e) => response()->json([
+            'message' => __('platform.payments.unavailable'),
+            'code' => 'payments_unavailable',
+        ], 422));
         $exceptions->render(fn (FishkaBonusUnavailable $e) => response()->json([
             'message' => $e->getMessage(),
             'code' => 'fishka_bonus_unavailable',

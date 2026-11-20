@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
+import { ChipPackages } from '@/features/payments/ChipPackages'
 import { useTranslation } from 'react-i18next'
 import { fetchFishkaHistory, walletHistoryKey, type FishkaTransaction } from '@/features/wallet/api'
 import { DailyBonusCard } from '@/features/wallet/components/DailyBonusCard'
@@ -74,6 +75,10 @@ export function WalletPage() {
 
       <DailyBonusCard />
 
+      <section className="club-panel rounded-panel p-5 sm:p-6">
+        <ChipPackages />
+      </section>
+
       <section aria-labelledby="fishka-history" className="space-y-3">
         <h2 id="fishka-history" className="text-xl font-bold">
           {t('fishka.history')}
@@ -86,7 +91,10 @@ export function WalletPage() {
           <EmptyState title={t('fishka.historyEmpty')} />
         ) : (
           <>
-            <ul className="club-panel divide-y divide-gold/10 rounded-panel">
+            <ul
+              aria-labelledby="fishka-history"
+              className="club-panel divide-y divide-gold/10 rounded-panel"
+            >
               {history.data.data.map((entry) => (
                 <Entry key={entry.id} entry={entry} />
               ))}

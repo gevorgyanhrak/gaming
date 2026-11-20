@@ -8,6 +8,7 @@ import { Modal } from '@/shared/ui/Modal'
 import { refillFishkas, walletKey } from '../api'
 import { useWallet } from '../hooks'
 import { closeOutOfFishkas, useOutOfFishkasOpen } from '../outOfFishkas'
+import { ChipPackages } from '@/features/payments/ChipPackages'
 import { FishkaIcon } from './FishkaIcon'
 import { formatDate } from '@/shared/lib/dates'
 
@@ -150,6 +151,10 @@ function Dialog() {
                 </Button>
               </>
             )}
+          </div>
+          {/* Or buy a package (ADR 0027) — shown as unavailable until a payment provider is connected. */}
+          <div className="mt-5 border-t border-white/10 pt-4">
+            <ChipPackages compact />
           </div>
         </>
       )}

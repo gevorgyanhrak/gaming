@@ -27,6 +27,9 @@ use App\Http\Controllers\Api\V1\Me\RoomsController;
 use App\Http\Controllers\Api\V1\Me\SettingsController;
 use App\Http\Controllers\Api\V1\Me\WalletController;
 use App\Http\Controllers\Api\V1\OnlineController;
+use App\Http\Controllers\Api\V1\Payments\ChipPackageController;
+use App\Http\Controllers\Api\V1\Payments\PaymentOrderController;
+use App\Http\Controllers\Api\V1\Payments\PaymentWebhookController;
 use App\Http\Controllers\Api\V1\PublicProfileController;
 use App\Http\Controllers\Api\V1\RankingController;
 use App\Http\Controllers\Api\V1\ReactionCatalogController;
@@ -56,10 +59,13 @@ Route::prefix('v1')->name('v1.')->group(function () {
     // A slot provider's server-to-server wallet calls (signed; see SlotWalletController). Outside maintenance so
     // rounds already played can still be settled.
     Route::post('slots/wallet/{provider}', SlotWalletController::class)->middleware('throttle:slot-wallet')->name('slots.wallet');
+    // A payment provider's server-to-server calls (ADR 0027; signed by the provider). Outside maintenance.
+    Route::post('payments/webhook/{provider}', PaymentWebhookController::class)->middleware('throttle:slot-wallet')->name('payments.webhook');
 
     Route::middleware('maintenance')->group(function () {
         Route::get('games', [GameController::class, 'index'])->name('games.index');
         Route::get('games/{slug}', [GameController::class, 'show'])->name('games.show');
+        Route::get('chip-packages', [ChipPackageController::class, 'index'])->name('chip-packages.index');
         Route::get('banners', [CasinoBannerController::class, 'index'])->name('banners.index');
 
         Route::get('users/{username}', [PublicProfileController::class, 'show'])
@@ -103,6 +109,8 @@ Route::prefix('v1')->name('v1.')->group(function () {
                 Route::get('wallet', [WalletController::class, 'show'])->name('wallet.show');
                 Route::get('wallet/transactions', [WalletController::class, 'transactions'])->name('wallet.transactions');
                 Route::post('wallet/refill', [WalletController::class, 'refill'])->middleware('throttle:verification')->name('wallet.refill');
+                Route::post('payments/orders', [PaymentOrderController::class, 'store'])->middleware('throttle:verification')->name('payments.orders.store');
+                Route::get('payments/orders/{id}', [PaymentOrderController::class, 'show'])->name('payments.orders.show');
                 Route::get('daily-bonus', [DailyBonusController::class, 'show'])->name('daily-bonus.show');
                 Route::post('daily-bonus', [DailyBonusController::class, 'store'])->name('daily-bonus.store');
                 Route::get('gifts', [FreeGiftsController::class, 'show'])->name('gifts.show');

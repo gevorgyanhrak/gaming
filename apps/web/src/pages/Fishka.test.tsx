@@ -44,6 +44,8 @@ function serveGame() {
   )
 }
 
+const HISTORY = 'History'
+
 describe('Fishkas', () => {
   it('shows the balance in the header and follows changes from the server', async () => {
     serveGame()
@@ -226,7 +228,9 @@ describe('Fishkas', () => {
     renderRoute('/wallet')
 
     expect(await screen.findByRole('heading', { name: 'Your Fishkas' })).toBeInTheDocument()
-    const items = within(await screen.findByRole('list')).getAllByRole('listitem')
+    const items = within(await screen.findByRole('list', { name: HISTORY })).getAllByRole(
+      'listitem',
+    )
     expect(items[0]).toHaveTextContent('Game entry')
     expect(items[0]).toHaveTextContent('−500')
     expect(items[1]).toHaveTextContent('Welcome bonus')

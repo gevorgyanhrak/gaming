@@ -58,6 +58,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/chip-packages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The chip packages on sale, and whether buying works now (`purchasable`: false until a payment provider is
+         *     connected and switched on — then the UI shows the packages without a way to pay)
+         */
+        get: operations["v1.chip-packages.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/config": {
         parameters: {
             query?: never;
@@ -547,6 +567,59 @@ export interface paths {
          *     longer matches) and API tokens are revoked.
          */
         post: operations["v1.auth.password.reset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/payments/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Starts buying a chip package: an order and where to pay it (the provider's page). 422 `payments_unavailable`
+         *     while no provider is connected. Fishkas arrive only when the provider confirms the payment
+         */
+        post: operations["v1.me.payments.orders.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/payments/orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One of your orders (e.g. after coming back from the provider's page) */
+        get: operations["v1.me.payments.orders.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/payments/webhook/{provider}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1.payments.webhook"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1075,6 +1148,18 @@ export interface components {
             email: string;
             phone: string;
         };
+        /** ChipPackageResource */
+        ChipPackageResource: {
+            slug: string;
+            name: string;
+            /** @description Price in the currency's minor unit (cents). */
+            price_cents: number;
+            currency: string;
+            chips: number;
+            bonus_chips: number;
+            total_chips: number;
+            is_recommended: boolean;
+        };
         /**
          * ContactChannel
          * @description A way to reach a user: an email address or a phone number (delivered by SMS).
@@ -1088,6 +1173,15 @@ export interface components {
             /** @description Paragraphs separated by blank lines. */
             body: string;
             updated_at: string;
+        };
+        /** CreatePaymentOrderRequest */
+        CreatePaymentOrderRequest: {
+            package: string;
+            /**
+             * Format: uuid
+             * @description The client's one-time key: the same key again returns the same order (a double tap, a retry).
+             */
+            key: string;
         };
         /** CreateRoomRequest */
         CreateRoomRequest: {
@@ -1108,7 +1202,7 @@ export interface components {
         FishkaTransactionResource: {
             id: number;
             /** @enum {string} */
-            type: "registration_bonus" | "daily_login_bonus" | "game_entry_fee" | "game_entry_refund" | "game_stake" | "game_payout" | "poker_bet" | "poker_winning" | "admin_credit" | "admin_debit" | "insufficient_balance_bonus" | "level_reward" | "free_gift" | "wheel_prize" | "slot_bet" | "slot_win" | "slot_refund";
+            type: "registration_bonus" | "daily_login_bonus" | "game_entry_fee" | "game_entry_refund" | "game_stake" | "game_payout" | "poker_bet" | "poker_winning" | "admin_credit" | "admin_debit" | "insufficient_balance_bonus" | "level_reward" | "free_gift" | "wheel_prize" | "slot_bet" | "slot_win" | "slot_refund" | "purchase";
             amount: number;
             balance_after: number;
             description: string | null;
@@ -1232,6 +1326,17 @@ export interface components {
             login: string;
             password: string;
             remember?: boolean;
+        };
+        /** PaymentOrderResource */
+        PaymentOrderResource: {
+            id: string;
+            /** @enum {string} */
+            status: "pending" | "processing" | "paid" | "failed" | "cancelled" | "expired" | "refunded";
+            price_cents: number;
+            currency: string;
+            chips: number;
+            paid_at: string | null;
+            created_at: string;
         };
         /** PlayGroupResource */
         PlayGroupResource: {
@@ -1584,8 +1689,8 @@ export interface components {
                 };
             };
         };
-        /** @description Authorization error */
-        AuthorizationException: {
+        /** @description Not found */
+        ModelNotFoundException: {
             headers: {
                 [name: string]: unknown;
             };
@@ -1596,8 +1701,8 @@ export interface components {
                 };
             };
         };
-        /** @description Not found */
-        ModelNotFoundException: {
+        /** @description Authorization error */
+        AuthorizationException: {
             headers: {
                 [name: string]: unknown;
             };
@@ -1742,6 +1847,28 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["CasinoBannerResource"][];
+                    };
+                };
+            };
+        };
+    };
+    "v1.chip-packages.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ChipPackageResource"][];
+                        purchasable: boolean;
                     };
                 };
             };
@@ -2825,6 +2952,98 @@ export interface operations {
                 };
             };
             422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.me.payments.orders.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePaymentOrderRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PaymentOrderResource"];
+                        redirect_url: string | null;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.me.payments.orders.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `PaymentOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PaymentOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.payments.webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ok: boolean;
+                    };
+                };
+            };
+            /** @description An error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Error overview.
+                         * @example
+                         */
+                        message: string;
+                    };
+                };
+            };
+            404: components["responses"]["ModelNotFoundException"];
         };
     };
     "v1.me.profile.update": {

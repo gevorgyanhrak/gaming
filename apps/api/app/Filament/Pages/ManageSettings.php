@@ -187,6 +187,13 @@ class ManageSettings extends Page
                         TextInput::make('levels.reward_default')->label('Fishkas for a level without its own reward')
                             ->numeric()->integer()->required()->minValue(0)->maxValue(1000000),
                     ]),
+                Section::make('Payments')->columns(2)
+                    ->description('Buying Fishkas (ADR 0027). Stays off until a payment provider is installed for your bank contract; its keys go in the server environment, never here. Packages: Payments → Chip packages.')
+                    ->schema([
+                        Toggle::make('payments.enabled')->label('Players can buy Fishkas'),
+                        TextInput::make('payments.provider')->label('Payment provider (its id)')->maxLength(40)
+                            ->helperText('Must match an installed provider; otherwise buying stays unavailable.'),
+                    ]),
                 Section::make('Demo activity')->columns(2)
                     ->description('A simulated activity figure shown on the home page next to the real online count, always labelled as a demo. It is never added to the real count.')
                     ->schema([

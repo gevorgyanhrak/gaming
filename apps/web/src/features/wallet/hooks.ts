@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { useRealtimeConnected } from '@/shared/realtime/useRealtimeConnected'
 import { playUiSound } from '@/shared/lib/sounds'
@@ -39,4 +40,26 @@ export function useWalletSync() {
       void queryClient.invalidateQueries({ queryKey: walletHistoryKey })
     },
   })
+}
+
+const ZERO_PROMPT_KEY = 'fishka:zero-prompted'
+
+/**
+ * When the player's Fishkas reach zero (none in the wallet, none at a table), the "out of Fishkas" popup offers the
+ * free top-up and the chip packages (HayBet item 6) — once a session, never over a game in progress (`paused`).
+ */
+export function useZeroBalancePrompt(paused: boolean, open: () => void) {
+  const wallet = useWallet()
+  const empty = wallet.data ? wallet.data.balance + wallet.data.at_table === 0 : false
+  useEffect(() => {
+    if (!empty || paused) return
+    let shown = false
+    try {
+      shown = sessionStorage.getItem(ZERO_PROMPT_KEY) === '1'
+      sessionStorage.setItem(ZERO_PROMPT_KEY, '1')
+    } catch {
+      // Storage blocked: the popup may come back on the next empty balance; nothing else depends on it.
+    }
+    if (!shown) open()
+  }, [empty, paused, open])
 }

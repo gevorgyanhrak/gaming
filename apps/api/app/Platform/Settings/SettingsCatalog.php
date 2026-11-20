@@ -66,6 +66,9 @@ final class SettingsCatalog
             new SettingDefinition('rankings.chips_games', SettingType::StringList, [], rules: ['array', 'max:30'], elementRules: ['string', 'max:40']),
             // The AI arena: whole AI-vs-AI games played on the server for each game's board, per hour (0: off).
             new SettingDefinition('rankings.arena_games_per_hour', SettingType::Integer, 12, rules: ['required', 'integer', 'min:0', 'max:600']),
+            // Buying Fishkas (ADR 0027): off until the owner connects a provider; `payments.provider` names it.
+            new SettingDefinition('payments.enabled', SettingType::Boolean, false, rules: ['boolean']),
+            new SettingDefinition('payments.provider', SettingType::String, null, rules: ['nullable', 'string', 'max:40']),
             // A simulated activity figure shown next to the real online count, always labelled demo (HayBet item 1).
             new SettingDefinition('online.demo_enabled', SettingType::Boolean, true, rules: ['boolean']),
             new SettingDefinition('online.demo_base', SettingType::Integer, 30000, rules: ['required', 'integer', 'min:0', 'max:10000000']),

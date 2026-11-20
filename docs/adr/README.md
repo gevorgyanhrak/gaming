@@ -31,3 +31,4 @@ Records are immutable once accepted; a changed decision gets a new record that s
 | [0024](0024-house-slots-from-open-source-games.md) | House slots: open-source games (APEXSLOTS, MIT/CC BY) ported to PHP and dealt by our server | Accepted |
 | [0025](0025-midnight-gold-platform-identity.md) | Midnight Gold platform identity; the game rooms keep the Lamplit Room (`.classic-scope`) | Accepted |
 | [0026](0026-ai-arena-and-per-game-boards.md) | AI arena (real AI-vs-AI games score AI players), one home game per AI, every game ranked by points (×10 unit) | Accepted |
+| [0027](0027-chip-packages-and-payments.md) | Chip packages and payment orders; Fishkas credited only on a verified provider webhook; no provider ships (owner checks legality) | Accepted |

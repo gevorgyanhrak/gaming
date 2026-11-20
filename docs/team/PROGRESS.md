@@ -36,7 +36,10 @@ then AI takes the seat for good) changes ADR 0021 → new ADR.
       admin: Bots → Home game, Settings → arena rate — d425a48.
 - [x] 5. Navigation: the ☰ side drawer is gone; sections inline in the header (1280+), a second header row of icon
       pills (768–1279), and on phones a More panel dropping from the header (section tiles, sounds, language) next to
-      the tab bar — this commit.
+      the tab bar — b9f04ea.
+- [x] 6. Payments architecture (ADR 0027): chip packages ($2–$15, admin-managed), payment orders with statuses,
+      provider contract + signed webhook, Fishkas credited once on a verified "paid"; no provider ships, so buying is
+      off and says so; packages on /wallet and in the out-of-Fishkas popup, which opens at a zero balance — this commit.
 
 **Owner 2026-11-18 "remove Slotopol, find open-source providers like AGT / Pragmatic / Novomatic":**
 - [x] Slotopol removed from the app: the six integration commits reverted on main (tree = 1ffa46c), branch

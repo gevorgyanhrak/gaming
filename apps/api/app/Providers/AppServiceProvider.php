@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use App\Gameplay\GameRegistry;
 use App\Models\User;
+use App\Platform\Fishka\FishkaWallets;
 use App\Platform\Levels\Levels;
+use App\Platform\Payments\Payments;
 use App\Platform\Settings\Settings;
 use App\Platform\Slots\House\Games\BumperCrop;
 use App\Platform\Slots\House\Games\DiscoveryVoyage;
@@ -52,6 +54,8 @@ class AppServiceProvider extends ServiceProvider
         // House slots (ADR 0024): open-source games whose rounds our server deals.
         $this->app->tag([StellarSevens::class, NitroHot::class, ScorchingHot::class, TropicEscape::class, PearlReef::class, DiscoveryVoyage::class, GoldenPapyrus::class, HouseOfRa::class, Samurai::class, TheDynasty::class, Fairytale::class, BumperCrop::class, JungleSlot::class], 'house-slots');
         $this->app->bind(HouseSlots::class, fn ($app) => new HouseSlots($app->tagged('house-slots')));
+        // Payment providers (ADR 0027): none ships; one is tagged 'payment-providers' when the owner connects a bank.
+        $this->app->bind(Payments::class, fn ($app) => new Payments($app->make(Settings::class), $app->make(FishkaWallets::class), $app->tagged('payment-providers')));
 
         $this->app->singleton(SmsGateway::class, fn () => match (config('services.sms.driver')) {
             'log' => new LogSmsGateway,

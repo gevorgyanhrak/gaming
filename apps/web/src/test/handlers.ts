@@ -161,6 +161,10 @@ export const handlers = [
   http.get('*/api/v1/slots', () => HttpResponse.json({ data: [] })),
   http.get('*/api/v1/me/favorites', () => HttpResponse.json({ data: [] })),
   // The online counter: unknown (hidden) unless a test serves a number.
+  // Chip packages (ADR 0027): on show, not buyable — no payment provider is connected in tests either.
+  http.get('*/api/v1/chip-packages', () =>
+    HttpResponse.json({ data: chipPackagesFixture(), purchasable: false }),
+  ),
   http.get('*/api/v1/stats/online', () =>
     HttpResponse.json({ data: { online: null, demo: null } }),
   ),
@@ -259,4 +263,24 @@ export function winFixture(
     game: { slug: 'blackjack', name: 'Blackjack' },
     ...overrides,
   }
+}
+
+/** The five chip packages as the server seeds them (ADR 0027). */
+export function chipPackagesFixture() {
+  return [
+    ['starter', 'Starter', 200, 10000, 0, false],
+    ['small', 'Small', 500, 25000, 2500, false],
+    ['medium', 'Medium', 800, 40000, 6000, false],
+    ['large', 'Large', 1000, 50000, 10000, true],
+    ['max', 'Maximum', 1500, 75000, 22500, false],
+  ].map(([slug, name, price, chips, bonus, recommended]) => ({
+    slug: slug as string,
+    name: name as string,
+    price_cents: price as number,
+    currency: 'USD',
+    chips: chips as number,
+    bonus_chips: bonus as number,
+    total_chips: (chips as number) + (bonus as number),
+    is_recommended: recommended as boolean,
+  }))
 }
