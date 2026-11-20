@@ -1336,6 +1336,9 @@ export interface components {
             level: number;
             frame: string | null;
             value: number;
+            /** @description Finished games behind a points board's score (null on the level / Fishkas boards). */
+            played: number | null;
+            wins: number | null;
         };
         /** RegisterRequest */
         RegisterRequest: {

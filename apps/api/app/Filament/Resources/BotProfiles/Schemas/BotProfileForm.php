@@ -38,6 +38,9 @@ class BotProfileForm
                             ->options(collect(BotPersonality::cases())->mapWithKeys(fn ($p) => [$p->value => ucfirst($p->value)]))
                             ->default(BotPersonality::Steady->value)
                             ->helperText('Pace and style (poker bluffing and raising, blackjack bet size) — never strength.'),
+                        Select::make('home_game_id')->label('Home game')
+                            ->relationship('homeGame', 'name')
+                            ->helperText('The only game whose leaderboard this AI player appears on; it earns its points there (also in the AI arena). It still plays other games for people, unranked.'),
                         Toggle::make('is_enabled')->label('Enabled')->default(true),
                     ]),
                 Section::make('Games')

@@ -1321,7 +1321,10 @@
     "place": "Place",
     "openCard": "{{name}}’s card",
     "empty": "No one is ranked yet. Play a game to be the first!",
-    "error": "The ranking couldn’t be loaded."
+    "error": "The ranking couldn’t be loaded.",
+    "played_one": "{{count}} game",
+    "played_other": "{{count}} games",
+    "winRate": "{{rate}}% wins"
   },
   "favorites": {
     "add": "Add {{name}} to favourites",

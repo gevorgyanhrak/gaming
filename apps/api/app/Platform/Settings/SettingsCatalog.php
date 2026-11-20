@@ -57,13 +57,16 @@ final class SettingsCatalog
             new SettingDefinition('fishka.daily_bonus', SettingType::Integer, 1000, rules: ['required', 'integer', 'min:0', 'max:1000000']),
             // Free gifts (FreeGifts): one every few hours, and a lucky wheel spun once a day ("amount:weight").
             // Big Wins: a win this big (Fishkas) is celebrated on every open page.
-            // Per-game ranking points (owner, 2026-11-16): each listed game keeps its own table, AI included.
-            new SettingDefinition('rankings.points_games', SettingType::StringList, ['durak', 'checkers', 'nardi', 'blot', 'chess'], rules: ['array', 'max:30'], elementRules: ['string', 'max:40']),
-            new SettingDefinition('rankings.win_points', SettingType::Integer, 10, rules: ['required', 'integer', 'min:0', 'max:1000']),
-            new SettingDefinition('rankings.loss_points', SettingType::Integer, 5, rules: ['required', 'integer', 'min:0', 'max:1000']),
-            // Games whose page ranks players by Fishkas instead.
-            new SettingDefinition('rankings.chips_games', SettingType::StringList, ['poker', 'blackjack'], rules: ['array', 'max:30'], elementRules: ['string', 'max:40']),
-            // A simulated activity figure shown next to the real online count, always labelled demo (HayBet brief).
+            // Per-game ranking points (owner, 2026-11-16; HayBet 2026-11-20: every game, points ten times larger).
+            // People and AI players; an AI player ranks only in its home game and earns there in the AI arena too.
+            new SettingDefinition('rankings.points_games', SettingType::StringList, ['durak', 'checkers', 'nardi', 'blot', 'chess', 'poker', 'blackjack', 'domino', 'ludo', 'pool', 'rummy'], rules: ['array', 'max:30'], elementRules: ['string', 'max:40']),
+            new SettingDefinition('rankings.win_points', SettingType::Integer, 100, rules: ['required', 'integer', 'min:0', 'max:100000']),
+            new SettingDefinition('rankings.loss_points', SettingType::Integer, 50, rules: ['required', 'integer', 'min:0', 'max:100000']),
+            // Games whose page ranks people by Fishkas instead (none since HayBet: one ranking system).
+            new SettingDefinition('rankings.chips_games', SettingType::StringList, [], rules: ['array', 'max:30'], elementRules: ['string', 'max:40']),
+            // The AI arena: whole AI-vs-AI games played on the server for each game's board, per hour (0: off).
+            new SettingDefinition('rankings.arena_games_per_hour', SettingType::Integer, 12, rules: ['required', 'integer', 'min:0', 'max:600']),
+            // A simulated activity figure shown next to the real online count, always labelled demo (HayBet item 1).
             new SettingDefinition('online.demo_enabled', SettingType::Boolean, true, rules: ['boolean']),
             new SettingDefinition('online.demo_base', SettingType::Integer, 30000, rules: ['required', 'integer', 'min:0', 'max:10000000']),
             new SettingDefinition('wins.celebrate_at', SettingType::Integer, 100000, rules: ['required', 'integer', 'min:1', 'max:1000000000']),

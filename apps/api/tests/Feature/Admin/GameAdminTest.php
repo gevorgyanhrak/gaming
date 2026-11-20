@@ -123,8 +123,9 @@ it('seeds modes, bots and draft pages without overwriting admin changes', functi
     $this->seed([GameSeeder::class, GameModeSeeder::class, BotSeeder::class, ContentPageSeeder::class]);
 
     expect(GameMode::query()->count())->toBe(15)  // nardi long and short, chess blitz and rapid, checkers, durak, poker, blackjack, blot quick, standard and bazar, domino, ludo, pool, rummy
-        ->and(BotProfile::query()->count())->toBe(100)
-        ->and(BotProfile::query()->pluck('name')->all())->toContain('Armen', 'Levon', 'Sevak', 'Davo91', 'Lusine')
+        ->and(BotProfile::query()->count())->toBe(count(BotSeeder::NAMES))
+        ->and(BotProfile::query()->pluck('name')->all())->toContain('Armen', 'Levon', 'Sevak', 'Davtyan_D', 'Lusine', 'Andranik')
+        ->not->toContain('Davo91') // renamed (BotSeeder::RENAMES)
         ->and(BotProfile::query()->where('name', 'Levon')->sole()->gameProfiles()->count())->toBe(11)
         ->and(BotGameProfile::query()->where('difficulty', '!=', BotDifficulty::Hard)->exists())->toBeFalse();
 
@@ -132,7 +133,7 @@ it('seeds modes, bots and draft pages without overwriting admin changes', functi
     $this->seed([GameModeSeeder::class, BotSeeder::class, ContentPageSeeder::class]);
 
     expect(GameMode::query()->count())->toBe(15)  // nardi long and short, chess blitz and rapid, checkers, durak, poker, blackjack, blot quick, standard and bazar, domino, ludo, pool, rummy
-        ->and(BotProfile::query()->count())->toBe(100)
+        ->and(BotProfile::query()->count())->toBe(count(BotSeeder::NAMES))
         ->and(BotProfile::query()->where('name', 'Armen')->sole()->is_enabled)->toBeFalse();
 });
 
@@ -147,7 +148,7 @@ it('teaches the sample bots a game added after them, and keeps admins\' removals
 
     $this->seed(BotSeeder::class);
 
-    expect(BotGameProfile::query()->where('game_id', $blackjack->id)->count())->toBe(100)
+    expect(BotGameProfile::query()->where('game_id', $blackjack->id)->count())->toBe(count(BotSeeder::NAMES))
         ->and($levon->gameProfiles()->where('game_id', $poker->id)->exists())->toBeFalse();
 });
 

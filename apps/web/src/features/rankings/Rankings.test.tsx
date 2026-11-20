@@ -22,6 +22,8 @@ const row = (overrides: Partial<RankingRow>): RankingRow => ({
   level: 5,
   frame: null,
   value: 40,
+  played: null,
+  wins: null,
   ...overrides,
 })
 
@@ -33,7 +35,15 @@ describe('Rankings', () => {
         HttpResponse.json({
           kind: 'points',
           data: [
-            row({ rank: 1, name: 'Davit', username: null, is_ai: true, value: 195 }),
+            row({
+              rank: 1,
+              name: 'Davit',
+              username: null,
+              is_ai: true,
+              value: 195,
+              played: 128,
+              wins: 78,
+            }),
             row({ rank: 2, value: 180 }),
             row({ rank: 3, name: 'Vardan', username: 'vardan', value: 90 }),
             row({ rank: 4, name: 'Lilit', username: 'lilit', value: 10 }),
@@ -49,6 +59,8 @@ describe('Rankings', () => {
     expect(within(rows[0]!).getByText('Davit')).toBeInTheDocument()
     expect(within(rows[0]!).getByText('AI')).toBeInTheDocument()
     expect(within(rows[0]!).getByText('195 pts')).toBeInTheDocument()
+    // The games behind the score: how many, and the share won.
+    expect(rows[0]).toHaveTextContent('128 games · 61% wins')
     expect(within(rows[3]!).getByText('10 pts')).toBeInTheDocument()
 
     // The avatar opens the player's card.

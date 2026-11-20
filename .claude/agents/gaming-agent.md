@@ -256,6 +256,9 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   `features/home/WelcomeStrip` + favourites, Try next, `DashboardGames`); `/dashboard` is the games section
   (`GamesPage`, public, filter pills; the header's Games and the tab bar link here); `/games` redirects to `/dashboard`
   keeping `?category=`/`?q=` (`GamesRedirect`); `/games/:slug` unchanged. Sign-in and verify land on `/`.
+- Rankings (ADR 0026): every game by points (win 100 / loss 50); an AI player ranks only in its `home_game_id`; the
+  AI arena (`Gameplay/Arena/AiArena`, `rankings:arena`, every 5 min) plays whole real AI-vs-AI games (≤ Medium) and
+  scores them through `Rankings::recordArena`, logged in `ai_arena_games`. Rows carry `played`/`wins`.
 - Online: `GET /stats/online` → `online` (real, Reverb presence; null when unknown) and `demo` (owner-chosen
   simulated figure, `DemoActivity`, admin "Demo activity"). Never add `demo` to `online`; anything showing `demo`
   tags it "Demo" and explains it (`useDemoActivity`, HomeHero `DemoStat`).

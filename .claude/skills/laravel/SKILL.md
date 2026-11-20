@@ -200,3 +200,11 @@ are not sure exists in Laravel 13. Read the surrounding code first and match it.
 `make lint-api` (Pint `laravel` preset + Larastan level 6) and `make test-api`.
 Code style follows the Laravel skeleton and Pint's `laravel` preset — no `declare(strict_types=1)`,
 PHPDoc generics on relations/collections for Larastan.
+
+## Gotchas (2026-11-20)
+- `$collection[$key]++` on a Laravel Collection throws "Indirect modification of overloaded element" (an error in
+  tests and seeders): count in a plain array (`->all()`), then `asort` / `array_key_first`.
+- `SettingsCatalog` is one long list: when replacing a block of definitions, check you didn't drop a neighbour —
+  an unknown key makes `Settings::get` throw (`InvalidArgumentException`), i.e. a 500 on every request that reads it.
+- Tests that need game modes seed `[GameSeeder::class, GameModeSeeder::class]`; `GameSeeder` alone creates no modes.
+

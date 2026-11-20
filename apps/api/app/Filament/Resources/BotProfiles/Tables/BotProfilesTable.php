@@ -21,6 +21,7 @@ class BotProfilesTable
                 TextColumn::make('name')->searchable()->sortable(),
                 TextColumn::make('level')->sortable(),
                 TextColumn::make('personality')->badge()->formatStateUsing(fn ($state) => ucfirst($state instanceof \BackedEnum ? (string) $state->value : (string) $state)),
+                TextColumn::make('homeGame.name')->label('Home game')->sortable(),
                 IconColumn::make('is_enabled')->label('Enabled')->boolean(),
                 TextColumn::make('game_profiles_count')->counts('gameProfiles')->label('Games'),
                 TextColumn::make('updated_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),

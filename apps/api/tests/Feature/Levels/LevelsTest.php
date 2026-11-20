@@ -138,14 +138,14 @@ it('does not count turns the server played for a player as playing', function ()
     expect(XpTransaction::query()->where('user_id', $idle->user_id)->count())->toBe(0);
 });
 
-it('gives the 100 seeded bots varied levels, the same on every seeding', function () {
+it('gives the seeded bots varied levels, the same on every seeding', function () {
     BotProfile::query()->delete();
     $this->seed(BotSeeder::class);
 
     $levels = BotProfile::query()->pluck('level', 'name');
-    expect($levels)->toHaveCount(100)->and($levels->unique()->count())->toBeGreaterThan(40)
+    expect($levels)->toHaveCount(count(BotSeeder::NAMES))->and($levels->unique()->count())->toBeGreaterThan(40)
         ->and($levels->min())->toBeGreaterThanOrEqual(3)->and($levels->max())->toBeLessThanOrEqual(85)
-        ->and($levels['Davo91'])->toBe(BotSeeder::level('Davo91'));
+        ->and($levels['Tiko_88'])->toBe(BotSeeder::level('Tiko_88'));
 });
 
 it('tells other tabs when the rewards are collected', function () {

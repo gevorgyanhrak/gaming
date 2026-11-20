@@ -1421,7 +1421,12 @@
     "place": "Место",
     "openCard": "Карточка: {{name}}",
     "empty": "В рейтинге пока никого. Сыграйте первым!",
-    "error": "Не удалось загрузить рейтинг."
+    "error": "Не удалось загрузить рейтинг.",
+    "played_one": "{{count}} игра",
+    "played_few": "{{count}} игры",
+    "played_many": "{{count}} игр",
+    "played_other": "{{count}} игры",
+    "winRate": "{{rate}}% побед"
   },
   "favorites": {
     "add": "Добавить {{name}} в избранное",

@@ -137,9 +137,20 @@ export function RankingList({
             </button>
             {/* In a narrow list (a phone, a side column) the score goes under the name, so the name keeps room. */}
             <span className="flex min-w-0 flex-1 flex-col @xs:flex-row @xs:items-center @xs:gap-3">
-              <span className="flex min-w-0 flex-1 items-center gap-1.5">
-                <span className="truncate text-sm font-bold">{row.name}</span>
-                {row.is_ai ? <AiTag /> : null}
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="flex min-w-0 items-center gap-1.5">
+                  <span className="truncate text-sm font-bold">{row.name}</span>
+                  {row.is_ai ? <AiTag /> : null}
+                </span>
+                {/* The games behind a points score: how many, and the share won. */}
+                {row.played ? (
+                  <span className="truncate text-xs text-muted tabular-nums">
+                    {t('rankings.played', { count: row.played })} ·{' '}
+                    {t('rankings.winRate', {
+                      rate: Math.round(((row.wins ?? 0) / row.played) * 100),
+                    })}
+                  </span>
+                ) : null}
               </span>
               <span className="flex shrink-0 items-center gap-1 text-sm font-extrabold text-gold-light tabular-nums @xs:text-base">
                 {value(row)}

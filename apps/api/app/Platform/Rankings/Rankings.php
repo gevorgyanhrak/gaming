@@ -16,11 +16,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Rankings (owner, 2026-11-16), all from real data:
+ * Rankings (owner, 2026-11-16; HayBet 2026-11-20), all from real data:
  * - per-game points for the games in `rankings.points_games`: a win adds `rankings.win_points`, a loss (also leaving
  *   or timing out) takes `rankings.loss_points`, a draw changes nothing; never below 0. People and AI players alike
- *   (an AI by its bot profile), each game on its own. One event per finished game and seat (unique), so a game
- *   never counts twice;
+ *   (an AI by its bot profile, in its home game only — its own table games and the AI arena's), each game on its
+ *   own. One event per finished game and seat (unique), so a game never counts twice;
  * - the games in `rankings.chips_games` (Poker, Blackjack) rank people by their Fishkas;
  * - across the platform: the highest levels, and the most Fishkas (people only: AI has no wallet, and its level is
  *   set by the admin, not earned).
@@ -51,13 +51,35 @@ class Rankings
     public function record(GameRoom $room, GameParticipant $participant, ParticipantResult $result): void
     {
         $game = $room->game;
-        if ($this->kindFor($game) !== 'points' || $result === ParticipantResult::Draw) {
-            return;
+        if ($participant->user_id !== null) {
+            $this->score($game, ['user_id' => $participant->user_id], $room->public_id, $participant->seat, $result);
+        } elseif ($participant->bot_profile_id !== null && $this->isHome($participant->bot_profile_id, $game)) {
+            $this->score($game, ['bot_profile_id' => $participant->bot_profile_id], $room->public_id, $participant->seat, $result);
         }
-        $owner = $participant->user_id !== null
-            ? ['user_id' => $participant->user_id]
-            : ($participant->bot_profile_id !== null ? ['bot_profile_id' => $participant->bot_profile_id] : null);
-        if ($owner === null) {
+    }
+
+    /** Points for an AI player's seat in an AI arena game (its home game only; see AiArena). */
+    public function recordArena(Game $game, string $arenaPublicId, int $seat, int $botProfileId, ParticipantResult $result): void
+    {
+        if ($this->isHome($botProfileId, $game)) {
+            $this->score($game, ['bot_profile_id' => $botProfileId], $arenaPublicId, $seat, $result);
+        }
+    }
+
+    /** An AI player is ranked in its home game only, so no AI appears on two games' boards. */
+    private function isHome(int $botProfileId, Game $game): bool
+    {
+        return (int) DB::table('bot_profiles')->where('id', $botProfileId)->value('home_game_id') === $game->id;
+    }
+
+    /**
+     * One finished game for one seat: once only (unique per game and seat), never below 0.
+     *
+     * @param  array{user_id: int}|array{bot_profile_id: int}  $owner
+     */
+    private function score(Game $game, array $owner, string $publicId, int $seat, ParticipantResult $result): void
+    {
+        if ($this->kindFor($game) !== 'points' || $result === ParticipantResult::Draw) {
             return;
         }
 
@@ -73,8 +95,8 @@ class Rankings
             : -min((int) $row->points, (int) $this->settings->get('rankings.loss_points'));
         $inserted = DB::table('game_point_events')->insertOrIgnore([
             'game_points_id' => $row->id,
-            'room_public_id' => $room->public_id,
-            'seat' => $participant->seat,
+            'room_public_id' => $publicId,
+            'seat' => $seat,
             'delta' => $delta,
             'created_at' => now(),
         ]);
@@ -138,13 +160,15 @@ class Rankings
             ->leftJoin('bot_profiles', 'bot_profiles.id', '=', 'game_points.bot_profile_id')
             ->where('game_points.game_id', $game->id)
             ->where('game_points.points', '>', 0)
-            ->where(fn ($q) => $q->whereNull('game_points.user_id')->orWhere('users.status', UserStatus::Active->value))
+            // People who are active; AI players in their home game only (older points elsewhere don't show).
+            ->where(fn ($q) => $q->where('users.status', UserStatus::Active->value)
+                ->orWhere('bot_profiles.home_game_id', $game->id))
             ->orderByDesc('game_points.points')->orderByDesc('game_points.wins')->orderBy('game_points.id')
             ->limit(self::TOP)
             ->get([
                 'users.username', 'users.level', 'user_profiles.display_name', 'user_profiles.avatar_path',
                 'bot_profiles.id as bot_id', 'bot_profiles.name as bot_name', 'bot_profiles.level as bot_level', 'bot_profiles.avatar_path as bot_avatar',
-                'game_points.points as value',
+                'game_points.points as value', 'game_points.wins', 'game_points.losses',
             ]);
 
         return $this->rank($rows);
@@ -178,6 +202,9 @@ class Rankings
                 'level' => $level,
                 'frame' => $this->levels->looks($level)['frame'],
                 'value' => (int) $row->value,
+                // Games behind the points (point boards only): finished games won and lost.
+                'played' => isset($row->wins) ? (int) $row->wins + (int) $row->losses : null,
+                'wins' => isset($row->wins) ? (int) $row->wins : null,
             ];
         })->all();
     }

@@ -15,6 +15,8 @@ Schedule::command('app:lift-expired-bans')->everyMinute()->withoutOverlapping(1)
 // slowed the game workers next to it.
 Schedule::call(fn (Matchmaker $matchmaker) => $matchmaker->sweep())->name('matchmaking-sweep')->everyFiveSeconds()->withoutOverlapping(1);
 Schedule::call(fn (RoomPresence $presence) => $presence->sweep())->name('abandonment-sweep')->everyFiveSeconds()->withoutOverlapping(1);
+// The AI arena: real AI-vs-AI games for the per-game boards (rankings.arena_games_per_hour; HayBet items 3–4).
+Schedule::command('rankings:arena')->everyFiveMinutes()->withoutOverlapping(30)->runInBackground();
 Schedule::command('model:prune', ['--model' => [VerificationCode::class]])->daily();
 
 // Achievements: the day's and the week's first place, once the period is over.

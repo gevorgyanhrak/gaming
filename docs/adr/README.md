@@ -30,3 +30,4 @@ Records are immutable once accepted; a changed decision gets a new record that s
 | [0023](0023-casino-slots-through-a-signed-fishka-wallet.md) | Casino slots only through a provider adapter and a signed, replay-proof Fishka wallet | Accepted |
 | [0024](0024-house-slots-from-open-source-games.md) | House slots: open-source games (APEXSLOTS, MIT/CC BY) ported to PHP and dealt by our server | Accepted |
 | [0025](0025-midnight-gold-platform-identity.md) | Midnight Gold platform identity; the game rooms keep the Lamplit Room (`.classic-scope`) | Accepted |
+| [0026](0026-ai-arena-and-per-game-boards.md) | AI arena (real AI-vs-AI games score AI players), one home game per AI, every game ranked by points (×10 unit) | Accepted |

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
@@ -22,7 +23,7 @@ use Illuminate\Support\Facades\Storage;
  * @property BotPersonality $personality Pace and style (not strength).
  * @property bool $is_enabled
  */
-#[Fillable(['name', 'avatar_path', 'level', 'personality', 'is_enabled'])]
+#[Fillable(['name', 'avatar_path', 'level', 'personality', 'home_game_id', 'is_enabled'])]
 #[ObservedBy(AdminChangeObserver::class)]
 class BotProfile extends Model
 {
@@ -47,6 +48,16 @@ class BotProfile extends Model
     public function gameProfiles(): HasMany
     {
         return $this->hasMany(BotGameProfile::class);
+    }
+
+    /**
+     * The one game whose board this AI player can appear on (it plays others for people, unranked).
+     *
+     * @return BelongsTo<Game, $this>
+     */
+    public function homeGame(): BelongsTo
+    {
+        return $this->belongsTo(Game::class, 'home_game_id');
     }
 
     public function avatarUrl(): ?string

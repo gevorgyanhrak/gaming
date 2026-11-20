@@ -196,15 +196,18 @@ class ManageSettings extends Page
                             ->helperText('It drifts ±10 % over the day and a little every minute.'),
                     ]),
                 Section::make('Rankings')->columns(2)
-                    ->description('Each listed game has its own Top 10 by points, AI included; points change once per finished game.')
+                    ->description('Each listed game has its own Top 10 by points: people, and the AI players whose home game it is. Points change once per finished game.')
                     ->schema([
                         TagsInput::make('rankings.points_games')->label('Games ranked by points (slugs)'),
                         TagsInput::make('rankings.chips_games')->label('Games ranked by Fishkas (slugs)'),
                         TextInput::make('rankings.win_points')->label('Points for a win')
-                            ->numeric()->integer()->required()->minValue(0)->maxValue(1000),
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(100000),
                         TextInput::make('rankings.loss_points')->label('Points taken for a loss')
-                            ->numeric()->integer()->required()->minValue(0)->maxValue(1000)
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(100000)
                             ->helperText('Also for leaving or timing out. Points never go below 0.'),
+                        TextInput::make('rankings.arena_games_per_hour')->label('AI arena games per game, per hour')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(600)
+                            ->helperText('Real AI-vs-AI games played on the server so each board has its AI players; 0 turns it off.'),
                     ]),
                 Section::make('Security')->columns(2)->schema([
                     TextInput::make('security.session_lifetime_minutes')->label('Session lifetime (minutes)')

@@ -12,6 +12,7 @@ use App\Models\BotProfile;
 use App\Models\GameMode;
 use App\Models\GameParticipant;
 use App\Models\GameRoom;
+use App\Models\PlatformSetting;
 use App\Models\User;
 use App\Platform\Fishka\FishkaWallets;
 use App\Platform\Rankings\Rankings;
@@ -48,14 +49,14 @@ function pointsOf(User $user): int
     return (int) DB::table('game_points')->where('user_id', $user->id)->value('points');
 }
 
-it('gives the winner 10 points and takes 5 from the loser, never below 0, once per game', function () {
+it('gives the winner 100 points and takes 50 from the loser, never below 0, once per game', function () {
     [$winner, $loser] = resignRanked(rankedRoom());
-    expect(pointsOf($winner))->toBe(10)->and(pointsOf($loser))->toBe(0);
+    expect(pointsOf($winner))->toBe(100)->and(pointsOf($loser))->toBe(0);
 
     [$again] = resignRanked($room = rankedRoom($winner, $loser));
     $loserNow = $again->is($winner) ? $loser : $winner;
-    expect(pointsOf($again))->toBe($again->is($winner) ? 20 : 10)
-        ->and(pointsOf($loserNow))->toBe($again->is($winner) ? 0 : 5);
+    expect(pointsOf($again))->toBe($again->is($winner) ? 200 : 100)
+        ->and(pointsOf($loserNow))->toBe($again->is($winner) ? 0 : 50);
 
     // The same result again (a retried finish) changes nothing.
     $before = DB::table('game_points')->sum('points');
@@ -72,22 +73,23 @@ it('keeps each game’s points apart, and leaves games without points alone', fu
     expect(DB::table('game_points')->count())->toBe(0)->and(pointsOf($winner))->toBe(0);
 });
 
-it('gives AI players points too, and lists the game’s Top 10 with them marked', function () {
+it('gives AI players points in their home game, and lists the game’s Top 10 with them marked and their record', function () {
     $room = rankedRoom();
     [$winner] = resignRanked($room);
-    $bot = BotProfile::factory()->create(['name' => 'Aram', 'level' => 30]);
+    $bot = BotProfile::factory()->create(['name' => 'Aram', 'level' => 30, 'home_game_id' => $room->game_id]);
     $ai = (new GameParticipant)->forceFill(['seat' => 7, 'bot_profile_id' => $bot->id, 'user_id' => null]);
     app(Rankings::class)->record($room, $ai, ParticipantResult::Win);
     app(Rankings::class)->record(rankedRoom(), (new GameParticipant)->forceFill(['seat' => 7, 'bot_profile_id' => $bot->id]), ParticipantResult::Win);
 
     $rows = $this->getJson('/api/v1/rankings/games/tictactoe')->assertOk()->assertJsonPath('kind', 'points')->json('data');
-    expect($rows[0])->toMatchArray(['rank' => 1, 'is_ai' => true, 'username' => null, 'name' => 'Aram', 'level' => 30, 'value' => 20])
-        ->and($rows[1])->toMatchArray(['rank' => 2, 'is_ai' => false, 'username' => $winner->username, 'value' => 10])
+    expect($rows[0])->toMatchArray(['rank' => 1, 'is_ai' => true, 'username' => null, 'name' => 'Aram', 'level' => 30, 'value' => 200, 'played' => 2, 'wins' => 2])
+        ->and($rows[1])->toMatchArray(['rank' => 2, 'is_ai' => false, 'username' => $winner->username, 'value' => 100, 'played' => 1, 'wins' => 1])
         ->and($rows)->toHaveCount(2);
 });
 
-it('ranks Poker and Blackjack by Fishkas, and the platform by level and by Fishkas, people only', function () {
+it('ranks a game by Fishkas when the admin lists it so, and the platform by level and by Fishkas, people only', function () {
     $this->seed(GameSeeder::class);
+    app(Settings::class)->update(['rankings.chips_games' => ['poker']]);
     $rich = User::factory()->create(['level' => 3]);
     $high = User::factory()->create(['level' => 40, 'xp' => 99999]);
     $banned = User::factory()->create(['level' => 90, 'status' => UserStatus::Banned]);
@@ -119,5 +121,27 @@ it('scores games finished before rankings existed, once however often it runs', 
     $this->artisan('rankings:backfill')->assertSuccessful();
     $this->artisan('rankings:backfill')->assertSuccessful();
 
-    expect(pointsOf($winner))->toBe(10)->and(DB::table('game_point_events')->count())->toBe(2);
+    expect(pointsOf($winner))->toBe(100)->and(DB::table('game_point_events')->count())->toBe(2);
+});
+
+it('ranks an AI player only in its home game: points elsewhere never reach that board', function () {
+    $room = rankedRoom();
+    $away = BotProfile::factory()->create(['name' => 'Away', 'home_game_id' => null]);
+    app(Rankings::class)->record($room, (new GameParticipant)->forceFill(['seat' => 7, 'bot_profile_id' => $away->id]), ParticipantResult::Win);
+
+    expect(DB::table('game_points')->where('bot_profile_id', $away->id)->exists())->toBeFalse();
+    // Points it held from before still don't show on that board.
+    DB::table('game_points')->insert(['game_id' => $room->game_id, 'bot_profile_id' => $away->id, 'points' => 900, 'wins' => 9, 'losses' => 0, 'created_at' => now(), 'updated_at' => now()]);
+    $this->getJson('/api/v1/rankings/games/tictactoe')->assertOk()->assertJsonMissing(['name' => 'Away']);
+});
+
+it('ranks every game by points by default, Poker and Blackjack too', function () {
+    $this->seed(GameSeeder::class);
+    // Back to the shipped defaults (beforeEach narrowed the list to tic-tac-toe).
+    PlatformSetting::query()->where('key', 'like', 'rankings.%')->delete();
+    app(Settings::class)->flush();
+
+    $this->getJson('/api/v1/rankings/games/poker')->assertOk()->assertJsonPath('kind', 'points');
+    $this->getJson('/api/v1/rankings/games/blackjack')->assertOk()->assertJsonPath('kind', 'points');
+    $this->getJson('/api/v1/rankings/games/domino')->assertOk()->assertJsonPath('kind', 'points');
 });
