@@ -264,6 +264,9 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
 - Payments (ADR 0027): `Platform/Payments/Payments` (orders, `apply()` of verified provider events, one credit per order,
   ledger `purchase`), providers tagged `payment-providers` (none ships), settings `payments.enabled/provider`. Web:
   `features/payments` (`ChipPackages`, on /wallet and in OutOfFishkasDialog; `useZeroBalancePrompt` opens the popup at 0).
+- Brand (HayBet, item 7): the name is the `general.platform_name` setting; the logo is `shared/ui/BrandMark`
+  (`BrandMark` chip-and-diamond mark, `BrandLogo` = admin upload or mark + two-tone "Hay|Bet"), the same drawing as
+  `public/favicon.svg` and the `index.html` loading screen.
 - Online: `GET /stats/online` → `online` (real, Reverb presence; null when unknown) and `demo` (owner-chosen
   simulated figure, `DemoActivity`, admin "Demo activity"). Never add `demo` to `online`; anything showing `demo`
   tags it "Demo" and explains it (`useDemoActivity`, HomeHero `DemoStat`).

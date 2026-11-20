@@ -39,7 +39,11 @@ then AI takes the seat for good) changes ADR 0021 → new ADR.
       the tab bar — b9f04ea.
 - [x] 6. Payments architecture (ADR 0027): chip packages ($2–$15, admin-managed), payment orders with statuses,
       provider contract + signed webhook, Fishkas credited once on a verified "paid"; no provider ships, so buying is
-      off and says so; packages on /wallet and in the out-of-Fishkas popup, which opens at a zero balance — this commit.
+      off and says so; packages on /wallet and in the out-of-Fishkas popup, which opens at a zero balance — 6d2f71e.
+- [x] 7. HayBet brand: the name (setting, set by a migration unless an admin chose another), a new mark (gold chip with
+      eight notches, an "H" whose crossbar is a diamond) drawn in code (`shared/ui/BrandMark`: BrandMark, BrandLogo with
+      the two-tone wordmark) — header, phone header, footer, maintenance screen, favicon, loading screen, page title.
+      An uploaded admin logo still wins — this commit.
 
 **Owner 2026-11-18 "remove Slotopol, find open-source providers like AGT / Pragmatic / Novomatic":**
 - [x] Slotopol removed from the app: the six integration commits reverted on main (tree = 1ffa46c), branch

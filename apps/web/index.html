@@ -12,10 +12,18 @@
       type="font/woff2"
       crossorigin
     />
-    <title>Game Platform</title>
+    <title>HayBet</title>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- The loading screen: the HayBet mark on the night background until the app replaces it. -->
+    <div id="root">
+      <div
+        style="min-height: 100dvh; display: grid; place-items: center; background: #0a0d19"
+        aria-label="HayBet"
+      >
+        <img src="/favicon.svg" alt="" width="72" height="72" style="opacity: 0.9" />
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

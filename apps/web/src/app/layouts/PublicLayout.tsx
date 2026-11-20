@@ -41,6 +41,7 @@ import {
   TrophyIcon,
   UserIcon,
 } from '@/shared/ui/icons'
+import { BrandLogo, BrandMark } from '@/shared/ui/BrandMark'
 import { Skeleton } from '@/shared/ui/Skeleton'
 import { useRefreshOnLanguageChange } from '../useRefreshOnLanguageChange'
 
@@ -147,19 +148,18 @@ export function PublicLayout() {
   }, [atTable])
   const showBar = !wide && !atTable
 
-  const brand = (
+  const brand = config.data ? (
+    // The HayBet mark and name (item 7); phones keep the header for search and the balance: the mark alone, the name
+    // for screen readers.
+    <BrandLogo
+      name={config.data.name}
+      logoUrl={config.data.logo_url}
+      wordClassName="sr-only text-[1.05rem] sm:not-sr-only"
+    />
+  ) : (
     <>
-      <img
-        src={config.data?.logo_url ?? '/favicon.svg'}
-        alt=""
-        className="size-8 shrink-0 object-contain"
-      />
-      {config.data ? (
-        // Phones keep the header for search and the balance: the logo alone, the name for screen readers.
-        <span className="sr-only truncate sm:not-sr-only">{config.data.name}</span>
-      ) : (
-        <Skeleton className="hidden h-5 w-32 sm:block" />
-      )}
+      <BrandMark />
+      <Skeleton className="hidden h-5 w-32 sm:block" />
     </>
   )
 
@@ -279,7 +279,8 @@ export function PublicLayout() {
         <footer className="border-t border-(--chrome-edge) bg-emerald-900 py-8">
           <Container className="flex flex-col items-center justify-between gap-4 text-sm text-muted sm:flex-row">
             <div className="flex flex-col items-center gap-2 sm:flex-row sm:gap-6">
-              <span>
+              <span className="flex items-center gap-2">
+                <BrandMark className="size-6" />
                 {config.data
                   ? t('footer.copyright', {
                       year: new Date().getFullYear(),
