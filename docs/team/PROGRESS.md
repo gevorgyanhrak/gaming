@@ -10,6 +10,21 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
+**Owner brief 2026-11-20 "Mobile QA" (in progress — finish before HayBet):** Playwright suite `apps/web/e2e`
+(README there), report `docs/qa/MOBILE_QA_REPORT.md`.
+- [x] Iteration 1: audit (routes × 11 sizes, 11 games vs AI, 13 slots, admin) + visual review → H-1, V-1…V-19, C-1,
+      G-1…G-6, A-1; fixes by UI/UX and Game UI developers, reviewed — 9908aad, 8f6f9b6, 3a2f51a.
+- [ ] Iteration 2: full retest (guests now in en/ru/hy), visual review, fix what's left, repeat until clean.
+- [ ] MOBILE_QA_SUMMARY.md + final report.
+
+**Next — owner brief 2026-11-20 "HayBet" (17 items, verbatim in `docs/product/briefs/HAYBET-2026-11-20.md`).**
+Owner decisions (2026-11-20, asked before starting): payments = build the architecture (new ADR; packages, orders
+with statuses, provider adapter, purchase popup; no provider connected, no fake success; owner checks legality);
+online counter = real count + a separate figure clearly labelled demo, never mixed; leaderboards = AI players earn
+real points by playing real server games (AI arena), marked AI — no invented scores; AI avatars = research a
+free-licence set of generated fictional faces, show the owner the licence, keep the AI badge. Item 12 (5 s return,
+then AI takes the seat for good) changes ADR 0021 → new ADR.
+
 **Owner 2026-11-18 "remove Slotopol, find open-source providers like AGT / Pragmatic / Novomatic":**
 - [x] Slotopol removed from the app: the six integration commits reverted on main (tree = 1ffa46c), branch
       `slotopol-original` deleted, its containers/volume/images and dev data removed. Backup of the removed work:

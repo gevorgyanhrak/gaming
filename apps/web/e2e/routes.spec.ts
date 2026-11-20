@@ -46,25 +46,29 @@ for (const vp of ALL) {
   test.describe(`${vp.width}x${vp.height}`, () => {
     test.use({ viewport: vp })
 
-    test('guest routes', async ({ browser }) => {
-      const context = await browser.newContext({
-        viewport: vp,
-        storageState: { cookies: [], origins: [] },
-        reducedMotion: 'reduce',
+    // Signed out, in every language: long words (ru "Регистрация") are what overflow first.
+    for (const lang of ['en', 'ru', 'hy']) {
+      test(`guest routes (${lang})`, async ({ browser }) => {
+        const context = await browser.newContext({
+          viewport: vp,
+          storageState: { cookies: [], origins: [] },
+          reducedMotion: 'reduce',
+        })
+        await context.addInitScript((l) => localStorage.setItem('locale', l), lang)
+        const page = await context.newPage()
+        const errors = watchConsole(page, 'guest')
+        let overflow = 0
+        for (const route of GUEST) {
+          await page.goto(route)
+          await page.waitForLoadState('networkidle').catch(() => {})
+          await page.waitForTimeout(400)
+          overflow += (await audit(page, `guest-${lang}`, route, vp)).overflow
+        }
+        await context.close()
+        expect.soft(errors, 'console errors').toEqual([])
+        expect(overflow, 'pages wider than the screen').toBe(0)
       })
-      const page = await context.newPage()
-      const errors = watchConsole(page, 'guest')
-      let overflow = 0
-      for (const route of GUEST) {
-        await page.goto(route)
-        await page.waitForLoadState('networkidle').catch(() => {})
-        await page.waitForTimeout(500)
-        overflow += (await audit(page, 'guest', route, vp)).overflow
-      }
-      await context.close()
-      expect.soft(errors, 'console errors').toEqual([])
-      expect(overflow, 'pages wider than the screen').toBe(0)
-    })
+    }
 
     test('player routes', async ({ page }) => {
       const errors = watchConsole(page, 'player')
