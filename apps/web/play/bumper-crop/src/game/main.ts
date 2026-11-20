@@ -1,6 +1,6 @@
 // A Content Security Policy without 'unsafe-eval' needs this import first, or Pixi hangs on boot.
 import 'pixi.js/unsafe-eval';
-import { fishkas } from '../../../shared/house';
+import { settleWin, fishkas } from '../../../shared/house';
 import { Application } from 'pixi.js';
 import type { Grid, RoundResult } from '../engine';
 import { setBets } from './hud';
@@ -183,8 +183,12 @@ async function boot(): Promise<void> {
         // held win is not on the books yet, an instant win is backed out
         // until it has been presented.
         hud.setBalance(dealt.held ? paid : paid - dealt.winCents / 100);
-        await presentRound(dealt.round, bet, true, async () =>
-          dealt.held ? (await deliverRound(dealt.roundId)) / 100 : paid,
+        await presentRound(dealt.round, bet, true, async () => {
+          const to = dealt.held ? (await deliverRound(dealt.roundId)) / 100 : paid;
+          // A win waits a second after it's shown, then the credits count up (HayBet item 17).
+          await settleWin(hud.balance, to, (value) => hud.setBalance(value));
+          return to;
+        },
         );
       }
     } catch (err) {

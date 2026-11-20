@@ -6,7 +6,7 @@ import { Board, BOARD_H, BOARD_W, loadSymbolTextures } from './board';
 import { Hud } from './hud';
 import { initFit } from './fit';
 import { fetchSession, serverSpin, tellLowBalance, WalletError } from './wallet';
-import { fishkas } from '../../../shared/house';
+import { settleWin, fishkas } from '../../../shared/house';
 import { setBets } from './hud';
 
 /** The frame's opening picture before the first spin (the browser never deals: ADR 0024). */
@@ -119,7 +119,8 @@ async function boot(): Promise<void> {
       await show;
       hud.message(`WIN ${fishkas(win)}`);
     }
-    hud.setBalance(settledBalance);
+    // A win waits a second after it's shown, then the credits count up (HayBet item 17).
+    await settleWin(hud.balance, settledBalance, (value) => hud.setBalance(value));
 
     busy = false;
     hud.setBusy(false);

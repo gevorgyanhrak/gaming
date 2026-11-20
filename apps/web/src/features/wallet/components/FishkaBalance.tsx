@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCountUp } from '@/shared/lib/useCountUp'
+import { useHeldBalance } from '../balanceHold'
 import { Link } from 'react-router'
 import { useWallet } from '../hooks'
 import { FishkaIcon } from './FishkaIcon'
@@ -13,7 +14,10 @@ import { FishkaIcon } from './FishkaIcon'
 export function FishkaBalance() {
   const { t, i18n } = useTranslation()
   const wallet = useWallet()
-  const balance = wallet.data === undefined ? undefined : wallet.data.balance + wallet.data.at_table
+  // A slot win being presented waits here (HayBet item 17): the wallet minus that win until the game is done.
+  const held = useHeldBalance()
+  const balance =
+    wallet.data === undefined ? undefined : (held ?? wallet.data.balance) + wallet.data.at_table
   const format = (n: number) => n.toLocaleString(i18n.language)
   // Phones: from 10,000 the pill says 18.5K, so a big balance never pushes the header off the screen (the exact
   // amount stays in the label and on the wallet page).

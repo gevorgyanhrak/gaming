@@ -4,7 +4,7 @@
  * The browser only asks for a spin with a bet and shows the screen and wins it gets back.
  */
 import i18n from '@/shared/i18n'
-import { HouseError, fishkas, openGame, spin, tellLowBalance } from '../../shared/house'
+import { HouseError, fishkas, openGame, settleWin, spin, tellLowBalance } from '../../shared/house'
 
 const GAME = 'jungle-slot'
 const ART = '/play/jungle-slot/'
@@ -250,6 +250,8 @@ let betIndex = 0
 let balance = 0
 let won = 0
 let busy = false
+/** The latest win count in progress (HayBet item 17). */
+let settling = 0
 let autoLeft = 0
 let autoCount = AUTO_COUNTS[0]!
 
@@ -288,8 +290,10 @@ async function play() {
   render()
   try {
     const result = await spin<Round>(GAME, bet)
+    // The bet leaves the credits at once; a win is added only after it has been shown (HayBet item 17).
+    balance = result.balance - result.win
+    render()
     await roll(result.round.grid)
-    balance = result.balance
     won = result.win
     showWins(result.round)
     if (result.win > 0) {
@@ -300,6 +304,14 @@ async function play() {
         setTimeout(() => monkey.classList.remove('show'), 2500)
       }
     }
+    // A second after the win is shown the credits count up; the page's header follows (settle). A newer spin wins
+    // over an older count still running (autoplay), so consecutive wins never overwrite each other.
+    const token = ++settling
+    void settleWin(balance, result.balance, (value) => {
+      if (token !== settling) return
+      balance = value
+      render()
+    })
   } catch (error) {
     autoLeft = 0
     const e = error as HouseError
@@ -312,7 +324,8 @@ async function play() {
   if (autoLeft > 0) {
     autoLeft -= 1
     render()
-    if (autoLeft > 0) setTimeout(() => void play(), won > 0 ? 1400 : 500)
+    // After a win, time for the pause and the credits counting up (about 1.8 s) before the next spin.
+    if (autoLeft > 0) setTimeout(() => void play(), won > 0 ? 2200 : 500)
   }
 }
 

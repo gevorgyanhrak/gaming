@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
+import { holdBalance, releaseBalance } from '@/features/wallet/balanceHold'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
 import { fetchSlots, isSlotMessage, slotsKey } from '@/features/casino/slots'
@@ -24,11 +25,20 @@ export function SlotPage() {
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       if (event.origin !== window.location.origin || !isSlotMessage(event.data)) return
-      if (event.data.type === 'slot:low-balance') openOutOfFishkas()
-      else void queryClient.invalidateQueries({ queryKey: walletKey })
+      const message = event.data
+      if (message.type === 'slot:low-balance') openOutOfFishkas()
+      else if (message.type === 'slot:settled') releaseBalance()
+      else {
+        // A win waits in the header until the game has shown it (HayBet item 17); the wallet is already credited.
+        if (message.win && message.balance !== undefined) holdBalance(message.balance - message.win)
+        void queryClient.invalidateQueries({ queryKey: walletKey })
+      }
     }
     window.addEventListener('message', onMessage)
-    return () => window.removeEventListener('message', onMessage)
+    return () => {
+      window.removeEventListener('message', onMessage)
+      releaseBalance()
+    }
   }, [queryClient])
 
   return (

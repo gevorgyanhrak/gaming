@@ -48,10 +48,53 @@ function toHouseError(error: unknown): HouseError {
 }
 
 /** Tells the page around the game (if any). */
-function tellPage(type: 'slot:spun' | 'slot:low-balance'): boolean {
+function tellPage(
+  type: 'slot:spun' | 'slot:settled' | 'slot:low-balance',
+  detail: { win?: number; balance?: number } = {},
+): boolean {
   if (window.parent === window) return false
-  window.parent.postMessage({ type }, window.location.origin)
+  window.parent.postMessage({ type, ...detail }, window.location.origin)
   return true
+}
+
+/** The pause between a win shown and the balance counting up (HayBet item 17). */
+export const SETTLE_DELAY_MS = 1000
+const COUNT_MS = 800
+
+/**
+ * After a win has been shown: wait a second, count the game's own credits from `from` to `to`, then tell the page
+ * (whose header held the win back) to count up too. The win was credited by the server with the spin — this only
+ * paces what is shown. Without a win, call it with from === to: it settles at once.
+ */
+export async function settleWin(
+  from: number,
+  to: number,
+  show: (value: number) => void,
+): Promise<void> {
+  if (to > from) {
+    await new Promise((resolve) => setTimeout(resolve, SETTLE_DELAY_MS))
+    const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    if (!still) {
+      const start = performance.now()
+      await new Promise<void>((resolve) => {
+        const step = (now: number) => {
+          const t = Math.min(1, (now - start) / COUNT_MS)
+          show(Math.round(from + (to - from) * (1 - Math.pow(1 - t, 3))))
+          if (t < 1) requestAnimationFrame(step)
+          else resolve()
+        }
+        requestAnimationFrame(step)
+      })
+    }
+  }
+  show(to)
+  tellPage('slot:settled')
+}
+
+/** For games whose own client shows the credits: just the pause, then tell the page. */
+export async function settleAfterWin(win: number): Promise<void> {
+  if (win > 0) await new Promise((resolve) => setTimeout(resolve, SETTLE_DELAY_MS))
+  tellPage('slot:settled')
 }
 
 export async function openGame(slug: string): Promise<HouseSession> {
@@ -75,7 +118,7 @@ export async function spin<Round>(slug: string, bet: number): Promise<HouseRound
         method: 'POST',
         body,
       })
-      tellPage('slot:spun')
+      tellPage('slot:spun', { win: data.win, balance: data.balance })
       return data
     } catch (error) {
       const failed = toHouseError(error)
