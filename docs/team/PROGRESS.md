@@ -17,7 +17,7 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 - [x] Iteration 2 complete: all routes, games, slots pass at 320–1440; L-1 fixed. Open: none.
 - [x] docs/qa/MOBILE_QA_SUMMARY.md + report status.
 
-**Next — owner brief 2026-11-20 "HayBet" (17 items, verbatim in `docs/product/briefs/HAYBET-2026-11-20.md`).**
+**Done — owner brief 2026-11-20 "HayBet" (17 items, verbatim in `docs/product/briefs/HAYBET-2026-11-20.md`).**
 Owner decisions (2026-11-20, asked before starting): payments = build the architecture (new ADR; packages, orders
 with statuses, provider adapter, purchase popup; no provider connected, no fake success; owner checks legality);
 online counter = real count + a separate figure clearly labelled demo, never mixed; leaderboards = AI players earn

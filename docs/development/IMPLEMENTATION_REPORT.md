@@ -696,3 +696,50 @@ Durak (players row, Bot pills), Chess (title, sounds, PlayerList kept).
   to P1.
 - Header status says "Waiting for the other player" at multi-player tables (pre-existing copy).
 - hy strings need a native-speaker check (spec open question 3).
+
+---
+
+## HayBet upgrade (owner brief 2026-11-20, 17 items) — final report
+
+Brief (verbatim): `docs/product/briefs/HAYBET-2026-11-20.md`. Owner decisions taken before work: payments = build
+the architecture; online = real count + a separate labelled demo figure; leaderboards = AI earns real points; item 13
+(new faces) skipped.
+
+| # | Item | Status | Commit | Notes |
+|---|---|---|---|---|
+| 1 | Online counter | Done | 42adcc2 | Real count animated; separate "Demo" figure (DemoActivity, admin on/off + base), never added to the real count |
+| 2 | `/` home, `/dashboard` games | Done | 7358785 | `/games` redirects with its filters |
+| 3–4 | Leaderboards, bot profiles | Done | d425a48 | ADR 0026: AI arena, home game per AI, every game on points ×10, 152 bots (52 new names) |
+| 5 | Header navigation | Done | b9f04ea | Side drawer removed; section row / phone More panel |
+| 6 | Chip packages & payments | Architecture done | 6d2f71e | ADR 0027; **no provider connected** — buying off; owner to check legality |
+| 7 | HayBet brand | Done | d635e5f, e6292c9 | New mark everywhere; `APP_NAME=HayBet` on servers |
+| 8 | Casino sounds | Done | cbe4b81 | Ambience + welcome, game start, reward, level-up; one switch |
+| 9 | Engagement | Done | 47e6dd3 | Daily missions, weekly challenges, level-up fireworks |
+| 10 | Mobile navigation bug | Fixed | 78249e2 | Root cause: stale matched-room hint + client redirect |
+| 11 | Checkers timer | Done | 5882196 | Ring timer on the seat plate (also Chess/Nardi) |
+| 12 | Disconnect → AI | Done | 7f13013 | ADR 0028: 5 s server-decided window; also fixed AI not moving for taken-over seats |
+| 13 | Photorealistic AI faces | Skipped (owner) | — | |
+| 14 | AI identification | Done | d41b87c | AI ring + chip in every game |
+| 15 | Unified background | Done | 9a988ff | Night room on every page incl. tables |
+| 16 | Big Wins ≥ 100,000 | Done | cea25e8 | Admin `wins.feed_min`; honest empty state |
+| 17 | Slot win pacing | Done | a74cef7, 670fd7b | Display only; header holds the win until shown |
+
+**Backend/database:** migrations for the AI arena (`bot_profiles.home_game_id`, `ai_arena_games`, points ×10), payments
+(`chip_packages`, `payment_orders`, ledger `purchase`), the HayBet name, missions (`mission_claims`, ledger
+`mission_reward`), the return window (`game_participants.disconnected_at`, `replaced_at`). New settings: `online.demo_*`,
+`rankings.arena_games_per_hour`, `payments.*`, `presence.*`, `wins.feed_min`; removed `matchmaking.abandon_after_seconds`.
+New scheduled work: `rankings:arena` every 5 min; presence sweep every second.
+
+**Dependencies:** `@playwright/test` (dev only, mobile QA suite). Nothing else new.
+
+**Tests at the end:** backend 737 passed; web 325 passed; typecheck, lint, format, build clean; CI green on 670fd7b.
+
+**Needs external services:** a payment provider/bank contract (item 6) — then a `PaymentProvider` implementation and
+the admin switch; legal check of selling chips.
+
+**Deploying:** run migrations, `db:seed --class=BotSeeder` (names, home games), set `APP_NAME=HayBet`, restart Horizon,
+Reverb and the scheduler (new jobs and schedules).
+
+**Remaining / known:** the Big Wins feed is empty until someone wins 100,000+; AI leaderboard scores grow over time
+(the arena adds a few hundred points a day per top AI); the replaced-seat note truncates on very narrow plates (the AI
+tag and banner carry it).
