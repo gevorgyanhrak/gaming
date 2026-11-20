@@ -21,8 +21,8 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 Owner decisions (2026-11-20, asked before starting): payments = build the architecture (new ADR; packages, orders
 with statuses, provider adapter, purchase popup; no provider connected, no fake success; owner checks legality);
 online counter = real count + a separate figure clearly labelled demo, never mixed; leaderboards = AI players earn
-real points by playing real server games (AI arena), marked AI — no invented scores; AI avatars = research a
-free-licence set of generated fictional faces, show the owner the licence, keep the AI badge. Item 12 (5 s return,
+real points by playing real server games (AI arena), marked AI — no invented scores; AI avatars (item 13) =
+skipped by the owner (2026-11-20: "skip it"): bots keep the current drawn portraits with the AI badge. Item 12 (5 s return,
 then AI takes the seat for good) changes ADR 0021 → new ADR.
 
 **Owner 2026-11-18 "remove Slotopol, find open-source providers like AGT / Pragmatic / Novomatic":**
