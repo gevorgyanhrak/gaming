@@ -201,7 +201,8 @@ export function RoomPage() {
                 t(pauseCaption(traitsOf(data.game.slug).nextRound, view.view))
               : (waitingCaption(view, playerNames, t, aiFaces) ?? t('room.theirTurn'))}
         </p>
-        {secondsLeft !== null && !clocks ? (
+        {secondsLeft !== null && !clocks && !showPlayers ? (
+          // With seat plates the ring timer is on the acting player's plate instead.
           <p className={`truncate text-xs sm:text-sm ${myTurn ? 'text-black/70' : 'text-muted'}`}>
             {t('room.secondsLeft', { count: secondsLeft })}
           </p>
@@ -272,6 +273,11 @@ export function RoomPage() {
               mySeat={view?.seat ?? null}
               seatsToAct={view?.seats_to_act ?? []}
               clocks={clocks}
+              turnTimer={
+                !clocks && secondsLeft !== null && view?.turn_seconds
+                  ? { seconds: secondsLeft, total: view.turn_seconds }
+                  : null
+              }
             />
           ) : null}
 

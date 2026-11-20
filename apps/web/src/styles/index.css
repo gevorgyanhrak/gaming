@@ -282,6 +282,17 @@
   }
 
   /* The player to act: their chair breathes in the turn colour. */
+  /* The turn timer's last seconds (TurnTimer): a gentle beat. */
+  @keyframes timer-tick {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    15% {
+      transform: scale(1.12);
+    }
+  }
+
   @keyframes turn-glow {
     50% {
       box-shadow:

@@ -58,7 +58,10 @@ then AI takes the seat for good) changes ADR 0021 → new ADR.
       lobby" or opening another game sent the player back into the finished room and its result popup. Fix: the
       server forgets a matched room once its game is over; the client follows a match only while it was searching and
       clears the status on entering the room. Regression tests on both sides (the web one fails on the old code) —
-      this commit.
+      78249e2.
+- [x] 11. Checkers timer: `TurnTimer` (ring draining with the server's deadline, seconds inside, red from 10 s, a
+      gentle tick in the last 5, none under reduced motion) on the acting player's seat plate — Checkers, and Chess /
+      Nardi without a clock — this commit.
 
 **Owner 2026-11-18 "remove Slotopol, find open-source providers like AGT / Pragmatic / Novomatic":**
 - [x] Slotopol removed from the app: the six integration commits reverted on main (tree = 1ffa46c), branch

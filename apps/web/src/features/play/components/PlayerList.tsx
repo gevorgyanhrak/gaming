@@ -1,3 +1,4 @@
+import { TurnTimer } from './TurnTimer'
 import { useTranslation } from 'react-i18next'
 import { AiTag } from '@/shared/ui/AiTag'
 import { seatTrigger } from '@/features/players/seatTrigger'
@@ -23,12 +24,15 @@ export function PlayerList({
   mySeat,
   seatsToAct,
   clocks = null,
+  turnTimer = null,
 }: {
   room: Room
   mySeat: number | null
   seatsToAct: number[]
   /** Chess clocks: seconds left per seat. */
   clocks?: (number | null)[] | null
+  /** A per-turn timer (no chess clock): seconds left for the seat to act, out of the turn's length. */
+  turnTimer?: { seconds: number; total: number } | null
 }) {
   const { t } = useTranslation()
   const duel = room.participants.length === 2
@@ -94,6 +98,13 @@ export function PlayerList({
               </Badge>
             ) : player.seat === mySeat ? (
               <span>{t('room.youSeat')}</span>
+            ) : null}
+            {toAct && clock == null && turnTimer ? (
+              <TurnTimer
+                seconds={turnTimer.seconds}
+                total={turnTimer.total}
+                mine={player.seat === mySeat}
+              />
             ) : null}
             {toAct && clock == null ? (
               <span className="inline-flex items-center gap-1 font-semibold text-turn">

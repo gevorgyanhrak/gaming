@@ -272,6 +272,8 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
 - Missions (item 9): `Platform/Missions/Missions` (code catalog: DAILY sets alternate by local date, WEEKLY), progress =
   games with a `game` XP entry in the period (fishka.timezone), claims in `mission_claims` + ledger `mission_reward`;
   API `GET /me/missions`, `POST /me/missions/{key}/claim`; web `features/missions/MissionsPanel` on home.
+- Per-turn timers on seat plates: `features/play/components/TurnTimer` (PlayerList `turnTimer` from RoomPage: useCountdown +
+  state `turn_seconds`); the caption's text countdown shows only where there are no plates.
 - Online: `GET /stats/online` → `online` (real, Reverb presence; null when unknown) and `demo` (owner-chosen
   simulated figure, `DemoActivity`, admin "Demo activity"). Never add `demo` to `online`; anything showing `demo`
   tags it "Demo" and explains it (`useDemoActivity`, HomeHero `DemoStat`).
