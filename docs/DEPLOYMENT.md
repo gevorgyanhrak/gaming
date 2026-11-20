@@ -30,6 +30,7 @@ Start from `apps/api/.env.example` and set at least:
 
 | Variable | Production value |
 |---|---|
+| `APP_NAME` | `HayBet` — the platform's name until an admin changes it in Settings (also the e-mail sender name) |
 | `APP_ENV` / `APP_DEBUG` | `production` / `false` |
 | `APP_KEY` | `php artisan key:generate --show`, kept in your secret store |
 | `APP_URL` | public API URL, e.g. `https://api.example.com` |
