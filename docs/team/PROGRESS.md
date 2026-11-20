@@ -10,11 +10,11 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
-**Owner brief 2026-11-20 "Mobile QA" — stopped by the owner ("lets stop qa testing"):** Playwright suite `apps/web/e2e`
+**Owner brief 2026-11-20 "Mobile QA" — done (paused by the owner, resumed, finished):** Playwright suite `apps/web/e2e`
 (README there), report `docs/qa/MOBILE_QA_REPORT.md`.
 - [x] Iteration 1: audit (routes × 11 sizes, 11 games vs AI, 13 slots, admin) + visual review → H-1, V-1…V-19, C-1,
       G-1…G-6, A-1; fixes by UI/UX and Game UI developers, reviewed — 9908aad, 8f6f9b6, 3a2f51a.
-- [x] Iteration 2 partial (no overflow where it ran); stopped. Open: L-1 leaderboard link height (P3).
+- [x] Iteration 2 complete: all routes, games, slots pass at 320–1440; L-1 fixed. Open: none.
 - [x] docs/qa/MOBILE_QA_SUMMARY.md + report status.
 
 **Next — owner brief 2026-11-20 "HayBet" (17 items, verbatim in `docs/product/briefs/HAYBET-2026-11-20.md`).**

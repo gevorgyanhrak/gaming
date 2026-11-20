@@ -263,6 +263,8 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   (a focused slot iframe swallows page keys); a test that drives a board sends only `legal_actions` (ranges get
   `amount`, a pool shot `angle`/`power`, Blot needs 4 seats); `gh` isn't installed — CI status via
   `curl https://api.github.com/repos/gevorgyanhrak/gaming/actions/runs`.
+  The suite spends player1's Fishkas (slot spins, buy-ins): a `create … table: insufficient_fishkas` failure means
+  top up the dev account (free refill, or an audited `FishkaWallets::adjust` by a dev admin) — not an app bug.
 - To look at a board without the Docker stack: a temporary (uncommitted) Vite page rendering the board
   with `roomStateFixture`, screenshotted with Playwright's cached `chrome-headless-shell` — delete it after.
 - When generic skill advice conflicts with the established conventions of this repo, follow the repo.

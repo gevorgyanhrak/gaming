@@ -103,9 +103,10 @@ export function Leaderboard({
               />
               <Link
                 to={`/u/${row.player.username}`}
-                className="min-w-0 flex-1 truncate text-sm font-bold hover:underline"
+                // The whole row height is the tap target (44 px); the name truncates inside.
+                className="flex min-h-11 min-w-0 flex-1 items-center text-sm font-bold hover:underline"
               >
-                {row.player.name}
+                <span className="truncate">{row.player.name}</span>
               </Link>
               {row.game ? (
                 <span
