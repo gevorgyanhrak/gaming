@@ -130,7 +130,7 @@ function SearchBox({
     onDone?.()
     void navigate(to)
   }
-  const goAll = () => go(`/games?q=${encodeURIComponent(query.trim())}`)
+  const goAll = () => go(`/dashboard?q=${encodeURIComponent(query.trim())}`)
 
   return (
     <div className="relative">

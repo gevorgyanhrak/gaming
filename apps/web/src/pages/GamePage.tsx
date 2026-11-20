@@ -29,7 +29,7 @@ export function GamePage() {
       {/* The game's own room behind its page (known from the address before the game loads). */}
       <GameBackdrop slug={slug} />
       <Link
-        to="/games"
+        to="/dashboard"
         className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-accent-text hover:underline"
       >
         <BackIcon className="size-4" />

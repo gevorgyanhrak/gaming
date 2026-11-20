@@ -60,7 +60,7 @@ function serve(initial: { kind: 'game' | 'slot'; slug: string }[] = []) {
 describe('Favourites', () => {
   it('saves a game with the heart and lists it under the Favourites pill', async () => {
     const calls = serve()
-    renderRoute('/games')
+    renderRoute('/dashboard')
 
     const heart = await screen.findByRole('button', { name: 'Add Durak to favourites' })
     expect(heart).toHaveAttribute('aria-pressed', 'false')
@@ -87,7 +87,7 @@ describe('Favourites', () => {
 
   it('shows the saved games first on the dashboard, and no shelf without any', async () => {
     serve([{ kind: 'game', slug: 'chess' }])
-    renderRoute('/dashboard')
+    renderRoute('/')
     const shelf = await screen.findByRole('region', { name: 'Your favourites' })
     expect(await within(shelf).findByRole('link', { name: /Chess/ })).toHaveAttribute(
       'href',
@@ -96,7 +96,7 @@ describe('Favourites', () => {
   })
 
   it('has no hearts for guests', async () => {
-    renderRoute('/games')
+    renderRoute('/dashboard')
     await screen.findAllByRole('link', { name: /Nardi|Chess|Durak|Poker/ })
     expect(screen.queryByRole('button', { name: /favourites/ })).not.toBeInTheDocument()
   })
@@ -105,7 +105,7 @@ describe('Favourites', () => {
 describe('Games page filters', () => {
   it('filters by players and sorts, shows what applies as removable chips, and clears them', async () => {
     serve()
-    renderRoute('/games')
+    renderRoute('/dashboard')
     await screen.findByRole('button', { name: 'Add Durak to favourites' })
     const titles = () => screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent)
 

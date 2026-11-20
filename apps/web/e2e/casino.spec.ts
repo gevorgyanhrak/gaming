@@ -24,7 +24,7 @@ test('casino lobby', async ({ page }) => {
   let overflow = 0
   for (const vp of [...PHONES, ...LARGER]) {
     await page.setViewportSize(vp)
-    await page.goto('/games?category=casino')
+    await page.goto('/dashboard?category=casino')
     await calm(page)
     await page.waitForTimeout(600)
     overflow += (await audit(page, 'casino', 'lobby', vp)).overflow
@@ -67,8 +67,11 @@ for (const slug of SLOTS) {
     if (spins.length === 0) record_noSpin(slug)
     // Back to the casino from the slot page (a level-up earned by the spins may greet first).
     await calm(page)
-    await page.locator('main a[href="/games?category=casino"]').first().click({ timeout: 10_000 })
-    await expect(page).toHaveURL(/\/games\?category=casino/)
+    await page
+      .locator('main a[href="/dashboard?category=casino"]')
+      .first()
+      .click({ timeout: 10_000 })
+    await expect(page).toHaveURL(/\/dashboard\?category=casino/)
     expect.soft(errors).toEqual([])
     expect(overflow).toBe(0)
   })

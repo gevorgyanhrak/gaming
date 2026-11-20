@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { delay, http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
@@ -25,7 +25,7 @@ describe('Games catalog', () => {
       }),
     )
 
-    renderRoute('/games')
+    renderRoute('/dashboard')
 
     expect(screen.getByTestId('game-grid-loading')).toBeInTheDocument()
 
@@ -42,7 +42,7 @@ describe('Games catalog', () => {
   it('shows an empty state when no games are available', async () => {
     server.use(http.get('*/api/v1/games', () => HttpResponse.json({ data: [] })))
 
-    renderRoute('/games')
+    renderRoute('/dashboard')
 
     expect(await screen.findByText('No games are available right now.')).toBeInTheDocument()
   })
@@ -58,7 +58,7 @@ describe('Games catalog', () => {
       }),
     )
 
-    renderRoute('/games')
+    renderRoute('/dashboard')
 
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent('Something went wrong')
@@ -76,7 +76,7 @@ describe('Games catalog', () => {
       }),
     )
 
-    renderRoute('/games')
+    renderRoute('/dashboard')
     await catalog().findByRole('link', { name: /^(?!Quick).*Chess/ })
 
     await userEvent.selectOptions(await screen.findByLabelText('Language'), 'ru')
@@ -93,7 +93,7 @@ describe('Games catalog', () => {
         }),
       ),
     )
-    renderRoute('/games')
+    renderRoute('/dashboard')
 
     await userEvent.click(await screen.findByRole('button', { name: 'Menu' }))
     const menu = screen.getByRole('dialog', { name: 'Menu' })
@@ -128,7 +128,7 @@ describe('Games catalog', () => {
 
   it('offers a filter per category, in the admin order, others last', async () => {
     serveCategories()
-    renderRoute('/games')
+    renderRoute('/dashboard')
 
     await catalog().findByRole('link', { name: /^(?!Quick).*Chess/ })
     expect(
@@ -140,7 +140,7 @@ describe('Games catalog', () => {
 
   it('filters by category, and the link keeps the choice', async () => {
     serveCategories()
-    const { router } = renderRoute('/games')
+    const { router } = renderRoute('/dashboard')
 
     await catalog().findByRole('link', { name: /^(?!Quick).*Chess/ })
     await userEvent.click(catalog().getByRole('radio', { name: /Card games/ }))
@@ -160,9 +160,15 @@ describe('Games catalog', () => {
         HttpResponse.json({ data: [summaryOf(gameFixture({ category: board }))] }),
       ),
     )
-    renderRoute('/games')
+    renderRoute('/dashboard')
 
     await catalog().findByRole('link', { name: /^(?!Quick).*Chess/ })
     expect(catalog().queryByRole('radio')).not.toBeInTheDocument()
+  })
+
+  it('keeps old /games links working: they open the games section with their filters', async () => {
+    const { router } = renderRoute('/games?category=casino')
+    await waitFor(() => expect(router.state.location.pathname).toBe('/dashboard'))
+    expect(router.state.location.search).toBe('?category=casino')
   })
 })

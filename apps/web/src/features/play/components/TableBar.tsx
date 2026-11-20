@@ -31,7 +31,7 @@ export function TableBar({
   return (
     <header className="sticky top-0 z-20 flex h-header items-center gap-3 border-b border-gold/20 bg-emerald-900 px-3 sm:px-6">
       <Link
-        to={user ? '/dashboard' : '/'}
+        to="/dashboard"
         className="flex size-11 shrink-0 items-center justify-center rounded-control border border-border-strong/50 bg-emerald-800 text-fg transition-colors hover:border-gold-light"
         aria-label={t('nav.back')}
       >

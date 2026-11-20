@@ -72,7 +72,7 @@ describe('Header search', () => {
 
     await userEvent.clear(box)
     await userEvent.type(box, 'sev{Enter}')
-    expect(router.state.location.pathname).toBe('/games')
+    expect(router.state.location.pathname).toBe('/dashboard')
     expect(router.state.location.search).toBe('?q=sev')
     expect(await screen.findByRole('link', { name: /Stellar Sevens/ })).toBeInTheDocument()
   })

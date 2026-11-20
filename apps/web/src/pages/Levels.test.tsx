@@ -114,7 +114,7 @@ describe('Level-up popup', () => {
 
   it('offers a reward put off with "Later" again from the level card', async () => {
     serve(levelFixture({ level: 2, pending: [up(2, 350)] }))
-    renderRoute('/dashboard')
+    renderRoute('/')
 
     const dialog = await screen.findByRole('dialog', { name: 'Level up!' })
     await userEvent.click(within(dialog).getByRole('button', { name: 'Later' }))

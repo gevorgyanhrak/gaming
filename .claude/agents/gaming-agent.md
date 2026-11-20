@@ -252,6 +252,10 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   list (`languageName`: English / Русский / Հայերեն).
 - A `/me` 429 that outlives its retries (Retry-After honoured, ≤ 5) shows `AccountUnavailable` (alert + Try again);
   routes with `handle.requiresAccount` show it in the page instead. Header sections and the ☰ drawer share `useSections`.
+- Routes (HayBet item 2, 2026-11-20): `/` is the one home (`LandingPage`: guests get `HomeHero`, signed-in players
+  `features/home/WelcomeStrip` + favourites, Try next, `DashboardGames`); `/dashboard` is the games section
+  (`GamesPage`, public, filter pills; the header's Games and the tab bar link here); `/games` redirects to `/dashboard`
+  keeping `?category=`/`?q=` (`GamesRedirect`); `/games/:slug` unchanged. Sign-in and verify land on `/`.
 - Online: `GET /stats/online` → `online` (real, Reverb presence; null when unknown) and `demo` (owner-chosen
   simulated figure, `DemoActivity`, admin "Demo activity"). Never add `demo` to `online`; anything showing `demo`
   tags it "Demo" and explains it (`useDemoActivity`, HomeHero `DemoStat`).
@@ -335,7 +339,7 @@ put project-specific content there; propose generic improvements to the user ins
 Lead with the outcome. List what changed (files/areas), how it was verified (commands and results), what
 is not done or not verified, and how to check it manually. Keep it concise.
 - Game page (compact, 2026-11-14): one-line record chips in the hero, modes as compact pills (Blot: name + target; win/bet once under PLAY), groups as one compact row (short numbers, full figures in title/sr-only), rules in a `<details>`. `games.show_online` (admin toggle) + `playing_now` (people in active rooms, `Game::playingNow()` cached 15 s) drive the "N playing" chip, shown only when > 0.
-- Casino home (2026-11-14): `features/casino` — `CasinoHero` (gold dust, floating chips, `.casino-gold` title sweep, glowing CTA; animations `float-chip`, `gold-dust`, `gold-glow`, `gold-sweep`, all `motion-safe:`) and `GameShowcase` (main games blackjack/poker/blot as big themed cards, others as a compact row) on `/` and `/dashboard`.
+- Casino home (2026-11-14): `features/casino` — `CasinoHero` (gold dust, floating chips, `.casino-gold` title sweep, glowing CTA; animations `float-chip`, `gold-dust`, `gold-glow`, `gold-sweep`, all `motion-safe:`) and `GameShowcase` (main games blackjack/poker/blot as big themed cards, others as a compact row) on `/`.
 - Big Wins (2026-11-14): `Platform/Wins/GameWins` records a person's net Fishkas for a room (ledger rows with `reference_type=game_room`) into `game_wins` after the game's transaction commits (`DB::afterCommit` in `GameFinisher`), broadcasts `win.recorded` on the public `wins` channel; `GET /api/v1/wins` = week's biggest. Setting `wins.celebrate_at` (100,000). Web: `features/wins` (`LiveBigWins`, `BigWinCelebration` = the app's ONE `wins` listener in PublicLayout — two listeners would `stopListening` each other), `usePublicChannel`.
 - Leaderboards: `Platform/Wins/Leaderboards::top(period day|week|month, ?Game)` sums `game_wins` per person (cached 30 s); `GET /api/v1/leaderboards?period=&game=`; web `features/leaderboards` (`Leaderboard` compact/full, `LeaderboardCard` on home, `/leaderboards` page).
 - Achievements: catalog in code `Platform/Achievements/AchievementCatalog` (big_win per main game ≥ 10,000, streak 5, veteran 100/500/1000, daily_best, weekly_champion — no tournaments yet); `Achievements::afterGame` runs after commit in `GameFinisher`, `closePeriod` from the scheduler; `user_achievements` unique on (user, key, scope, period) — `scope` = game id or '' because MySQL unique lets NULLs repeat. `achievement.unlocked` on user.{id} → `AchievementToast`; profiles show `PlayerAchievements`.

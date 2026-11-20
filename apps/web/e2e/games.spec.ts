@@ -94,7 +94,7 @@ for (const slug of GAMES) {
   test(`${slug} against the AI`, async ({ page }) => {
     const errors = watchConsole(page, `game:${slug}`)
     await page.setViewportSize({ width: 375, height: 812 })
-    await page.goto('/games')
+    await page.goto('/dashboard')
     await calm(page)
     const id = await startAiTable(page, slug)
     const route = `/rooms/${id}`

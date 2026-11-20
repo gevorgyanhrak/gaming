@@ -77,7 +77,7 @@ export function HomeHero() {
                   {t('casino.play')}
                   <Arrow />
                 </ButtonLink>
-                <ButtonLink to="/games" size="lg" variant="secondary">
+                <ButtonLink to="/dashboard" size="lg" variant="secondary">
                   {t('home.explore')}
                 </ButtonLink>
               </>

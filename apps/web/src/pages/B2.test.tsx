@@ -136,7 +136,10 @@ describe('Invite link', () => {
     expect(
       await screen.findByText('This invite code is not valid or the room is full.'),
     ).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Choose a game' })).toHaveAttribute('href', '/games')
+    expect(screen.getByRole('link', { name: 'Choose a game' })).toHaveAttribute(
+      'href',
+      '/dashboard',
+    )
   })
 
   it('sends guests through login and back to the table', async () => {

@@ -21,7 +21,7 @@ describe('Verification', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Verify' }))
 
     await screen.findByRole('heading', { name: /Welcome/ })
-    expect(router.state.location.pathname).toBe('/dashboard')
+    expect(router.state.location.pathname).toBe('/')
     expect(screen.queryByText('Please verify your email address.')).not.toBeInTheDocument()
   })
 

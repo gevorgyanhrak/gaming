@@ -45,7 +45,7 @@ export function withNext(path: string, next: string | null | undefined): string 
   return `${path}${path.includes('?') ? '&' : '?'}next=${encodeURIComponent(next)}`
 }
 
-export function safeRedirect(target: string | null | undefined, fallback = '/dashboard'): string {
+export function safeRedirect(target: string | null | undefined, fallback = '/'): string {
   return target && target.startsWith('/') && !target.startsWith('//') && !target.startsWith('/\\')
     ? target
     : fallback

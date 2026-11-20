@@ -63,7 +63,7 @@ export function VerifyPage() {
           <Alert tone={verified ? 'success' : 'info'}>
             {verified ? t('auth.alreadyVerified') : t('auth.nothingToVerify')}
           </Alert>
-          <ButtonLink to="/dashboard" className="w-full">
+          <ButtonLink to="/" className="w-full">
             {t('nav.dashboard')}
           </ButtonLink>
         </div>

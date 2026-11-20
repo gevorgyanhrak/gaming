@@ -251,7 +251,7 @@ describe('Playing a game', () => {
       ),
       http.get('*/api/v1/games', () => HttpResponse.json({ data: [summaryOf(playable)] })),
     )
-    renderRoute('/dashboard')
+    renderRoute('/')
 
     expect(await screen.findByRole('heading', { name: 'Games in progress' })).toBeInTheDocument()
     expect(screen.getByText('vs Aram')).toBeInTheDocument()

@@ -16,7 +16,7 @@ describe('The ☰ menu', () => {
 
     expect(within(menu).getByRole('link', { name: 'Casino' })).toHaveAttribute(
       'href',
-      '/games?category=casino',
+      '/dashboard?category=casino',
     )
     for (const name of ['Home', 'Games', 'Ranks']) {
       expect(within(menu).getByRole('link', { name })).toBeInTheDocument()

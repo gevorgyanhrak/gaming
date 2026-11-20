@@ -31,7 +31,8 @@ const PLAYER = [
   '/games/ludo',
   '/games/pool',
   '/games/rummy',
-  '/games?category=casino',
+  '/dashboard?category=casino',
+
   '/leaderboards',
   '/ranks',
   '/profile',

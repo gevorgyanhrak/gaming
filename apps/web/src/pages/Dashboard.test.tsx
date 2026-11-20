@@ -31,7 +31,7 @@ function signedIn() {
 describe('Dashboard welcome strip', () => {
   it('puts the daily bonus, the free gift and the lucky wheel side by side in the welcome strip', async () => {
     signedIn()
-    renderRoute('/dashboard')
+    renderRoute('/')
 
     const perks = await screen.findByRole('list', { name: "Today's free Fishkas" })
     expect(
@@ -45,7 +45,7 @@ describe('Dashboard welcome strip', () => {
 
   it('offers Durak under Try next, as a game card', async () => {
     signedIn()
-    renderRoute('/dashboard')
+    renderRoute('/')
 
     const tryNext = await screen.findByRole('region', { name: 'Try next' })
     const cards = await within(tryNext).findAllByRole('link')

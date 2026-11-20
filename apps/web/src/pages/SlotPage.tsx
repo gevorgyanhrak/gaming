@@ -37,7 +37,7 @@ export function SlotPage() {
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <Link
           // "Back to the casino": the casino shelf of the lobby, where the header's Casino link goes.
-          to="/games?category=casino"
+          to="/dashboard?category=casino"
           className="inline-flex min-h-11 items-center text-sm font-semibold text-accent-text hover:underline"
         >
           ← {t('slots.back')}

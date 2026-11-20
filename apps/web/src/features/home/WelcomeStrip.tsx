@@ -1,42 +1,31 @@
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { useCurrentUser } from '@/features/auth/hooks'
+import type { CurrentUser } from '@/features/auth/api'
 import { GamePoster } from '@/features/catalog/components/GamePoster'
-import { GameShowcase } from '@/features/casino/GameShowcase'
-import { MAIN_GAMES } from '@/features/casino/mainGames'
-import { FavoritesShelf } from '@/features/favorites/FavoritesShelf'
-import { GameGrid } from '@/features/catalog/components/GameGrid'
-import { LiveBigWins } from '@/features/wins/LiveBigWins'
-import { HomeRankings } from '@/features/rankings/HomeRankings'
 import { useGames, type GameSummary } from '@/features/catalog/queries'
+import { GiftTiles } from '@/features/gifts/FreeGifts'
+import { NightSky } from '@/features/home/NightSky'
+import { LevelCard } from '@/features/levels/components/LevelCard'
 import { fetchMyStats, myStatsKey } from '@/features/play/api'
 import { FishkaIcon } from '@/features/wallet/components/FishkaIcon'
 import { openDailyBonus, useDailyBonus } from '@/features/wallet/dailyBonus'
-import { GiftTiles } from '@/features/gifts/FreeGifts'
-import { Skeleton } from '@/shared/ui/Skeleton'
-import { DashboardGames } from '@/features/play/components/DashboardGames'
-import { LevelCard } from '@/features/levels/components/LevelCard'
+import { formatDate } from '@/shared/lib/dates'
 import { Avatar } from '@/shared/ui/Avatar'
 import { ButtonLink } from '@/shared/ui/Button'
 import { Container } from '@/shared/ui/Container'
-import { NightSky } from '@/features/home/NightSky'
-import { formatDate } from '@/shared/lib/dates'
+import { Skeleton } from '@/shared/ui/Skeleton'
 
 /**
- * Signed-in home: games to resume, statistics, and the catalog.
+ * The top of the home page for a signed-in player (in place of the guest hero): who you are, your level, a way into
+ * the games section, and today's free Fishkas.
  */
-export function DashboardPage() {
+export function WelcomeStrip({ user }: { user: CurrentUser }) {
   const { t, i18n } = useTranslation()
-  const { data: user } = useCurrentUser()
-
-  if (!user) return null
-
   const name = user.profile.display_name ?? user.username
   const memberSince = formatDate(user.created_at, i18n.language, 'long')
 
   return (
     <>
-      <title>{t('dashboard.title')}</title>
       {/* A compact welcome strip: who you are, your level (owner: in the banner), and today's free Fishkas. */}
       <section className="relative isolate overflow-hidden border-b border-white/6">
         <NightSky />
@@ -60,7 +49,7 @@ export function DashboardPage() {
               </div>
             </div>
             <LevelCard compact className="w-full bg-black/25 sm:w-80 lg:w-96" />
-            <ButtonLink to="/games" variant="gold" className="shrink-0">
+            <ButtonLink to="/dashboard" variant="gold" className="shrink-0">
               {t('dashboard.play')}
             </ButtonLink>
           </div>
@@ -70,28 +59,6 @@ export function DashboardPage() {
           </ul>
         </Container>
       </section>
-
-      <Container className="space-y-5 pt-5 pb-12">
-        <FavoritesShelf />
-        <section id="showcase" aria-labelledby="top-games" className="scroll-mt-24">
-          <h2 id="top-games" className="mb-3 text-2xl font-bold text-fg">
-            {t('casino.topGames')}
-          </h2>
-          <GameShowcase />
-        </section>
-        <section id="games" aria-labelledby="all-games" className="scroll-mt-24">
-          <h2 id="all-games" className="mb-3 text-2xl font-bold text-fg">
-            {t('casino.allGames')}
-          </h2>
-          <GameGrid banners exclude={MAIN_GAMES} />
-        </section>
-        <TryNext />
-        <div className="grid gap-5 lg:grid-cols-2 [&>*]:min-w-0">
-          <LiveBigWins />
-          <HomeRankings />
-        </div>
-        <DashboardGames />
-      </Container>
     </>
   )
 }
@@ -138,7 +105,7 @@ const ALWAYS_TRY = ['durak']
 const TRY_COUNT = 3
 
 /** Games to try: the ones the player played least, Durak always among them; poster cards like the catalog's. */
-function TryNext() {
+export function TryNext() {
   const { t } = useTranslation()
   const games = useGames()
   const stats = useQuery({ queryKey: myStatsKey, queryFn: ({ signal }) => fetchMyStats(signal) })

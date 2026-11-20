@@ -20,7 +20,7 @@ describe('Route access', () => {
     const { router } = renderRoute('/login')
 
     expect(await screen.findByRole('heading', { name: 'Welcome, alice' })).toBeInTheDocument()
-    expect(router.state.location.pathname).toBe('/dashboard')
+    expect(router.state.location.pathname).toBe('/')
   })
 
   it('logs out from the account menu', async () => {
@@ -51,7 +51,7 @@ describe('Route access', () => {
 
   it('reminds users to verify their contact', async () => {
     server.use(signedInAs(userFixture({ email_verified: false })))
-    renderRoute('/dashboard')
+    renderRoute('/')
 
     expect(await screen.findByText('Please verify your email address.')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Verify now' })).toHaveAttribute(

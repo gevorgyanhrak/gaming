@@ -78,6 +78,6 @@ describe('Login', () => {
     await fillAndSubmit('alice@example.com', 'password1')
 
     await screen.findByRole('heading', { name: /Welcome/ })
-    expect(router.state.location.pathname).toBe('/dashboard')
+    expect(router.state.location.pathname).toBe('/')
   })
 })

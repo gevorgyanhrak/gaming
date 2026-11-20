@@ -26,7 +26,7 @@ describe('Dashboard statistics', () => {
       signedInAs(userFixture({ username: 'alice' })),
       http.get('*/api/v1/me/stats', () => HttpResponse.json({ data: [stat] })),
     )
-    renderRoute('/dashboard')
+    renderRoute('/')
 
     const table = await screen.findByRole('table')
     const row = within(table).getByRole('row', { name: /Chess/ })
@@ -51,7 +51,7 @@ describe('Dashboard statistics', () => {
           : HttpResponse.json({ data: [stat] }),
       ),
     )
-    renderRoute('/dashboard')
+    renderRoute('/')
 
     const retry = await screen.findByRole('button', { name: 'Try again' })
     expect(screen.getByText('Something went wrong. Please try again.')).toBeInTheDocument()

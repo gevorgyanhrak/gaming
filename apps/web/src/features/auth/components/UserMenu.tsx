@@ -72,9 +72,6 @@ export function UserMenu({ user }: { user: CurrentUser }) {
               <LevelProgress status={level.data} compact />
             </Link>
           ) : null}
-          <Link to="/dashboard" className={item} onClick={() => setOpen(false)}>
-            {t('nav.dashboard')}
-          </Link>
           <Link to="/wallet" className={item} onClick={() => setOpen(false)}>
             {t('nav.wallet')}
           </Link>

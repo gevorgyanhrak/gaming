@@ -60,16 +60,22 @@ const iconButton =
 function useSections(home: string) {
   const { t } = useTranslation()
   const { pathname, search } = useLocation()
-  const casino = pathname === '/games' && new URLSearchParams(search).get('category') === 'casino'
+  const casino =
+    pathname === '/dashboard' && new URLSearchParams(search).get('category') === 'casino'
   return [
     { to: home, label: t('nav.home'), icon: <HomeIcon />, active: pathname === home },
     {
-      to: '/games',
+      to: '/dashboard',
       label: t('nav.games'),
       icon: <GridIcon />,
-      active: pathname.startsWith('/games') && !casino,
+      active: (pathname === '/dashboard' || pathname.startsWith('/games/')) && !casino,
     },
-    { to: '/games?category=casino', label: t('nav.casino'), icon: <SpadeIcon />, active: casino },
+    {
+      to: '/dashboard?category=casino',
+      label: t('nav.casino'),
+      icon: <SpadeIcon />,
+      active: casino,
+    },
     {
       to: '/ranks',
       label: t('nav.ranks'),
@@ -132,7 +138,7 @@ export function PublicLayout() {
   // Staff can still use the app during maintenance, to check it before reopening.
   const inMaintenance = Boolean(config.data?.maintenance.enabled) && !user.data?.can_access_admin
 
-  const home = user.data ? '/dashboard' : '/'
+  const home = '/'
   const atTable = pathname.startsWith('/rooms/')
   // A game table keeps its own look (owner, 2026-11-17): the classic tokens for the whole page, popups included.
   useEffect(() => {
@@ -321,7 +327,7 @@ export function PublicLayout() {
             <HomeIcon />
             <TabLabel>{t('nav.home')}</TabLabel>
           </NavLink>
-          <NavLink to="/games" className={tabLink}>
+          <NavLink to="/dashboard" className={tabLink}>
             <GridIcon />
             <TabLabel>{t('nav.games')}</TabLabel>
           </NavLink>

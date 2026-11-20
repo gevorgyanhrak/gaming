@@ -2,6 +2,7 @@ import type { RouteObject } from 'react-router'
 import { AuthRoute, GuestRoute } from '@/features/auth/guards'
 import { GamePage } from '@/pages/GamePage'
 import { GamesPage } from '@/pages/GamesPage'
+import { GamesRedirect } from '@/pages/GamesRedirect'
 import { LandingPage } from '@/pages/LandingPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { RouteErrorPage } from '@/pages/RouteErrorPage'
@@ -16,7 +17,9 @@ export const routes: RouteObject[] = [
     hydrateFallbackElement: null,
     children: [
       { index: true, element: <LandingPage /> },
-      { path: 'games', element: <GamesPage /> },
+      // The games section (HayBet item 2); `/games` keeps working as a redirect with its filters.
+      { path: 'dashboard', element: <GamesPage /> },
+      { path: 'games', element: <GamesRedirect /> },
       { path: 'games/:slug', element: <GamePage /> },
       {
         path: 'leaderboards',
@@ -73,11 +76,6 @@ export const routes: RouteObject[] = [
             path: 'verify',
             lazy: () =>
               import('@/pages/auth/VerifyPage').then((m) => ({ Component: m.VerifyPage })),
-          },
-          {
-            path: 'dashboard',
-            lazy: () =>
-              import('@/pages/DashboardPage').then((m) => ({ Component: m.DashboardPage })),
           },
           {
             path: 'profile',

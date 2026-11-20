@@ -48,7 +48,7 @@ export function JoinPage() {
           </EmptyState>
         ) : isApiError(error) && error.status === 422 ? (
           <EmptyState title={message(error.message)}>
-            <ButtonLink to="/games" className="mt-2">
+            <ButtonLink to="/dashboard" className="mt-2">
               {t('dashboard.play')}
             </ButtonLink>
           </EmptyState>

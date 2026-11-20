@@ -75,7 +75,7 @@ export function ProfilePage() {
 
       {noGames ? (
         <EmptyState title={t('profile.noGames')}>
-          <ButtonLink to="/games" className="mt-2">
+          <ButtonLink to="/dashboard" className="mt-2">
             {t('dashboard.play')}
           </ButtonLink>
         </EmptyState>

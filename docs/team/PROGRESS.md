@@ -27,7 +27,9 @@ then AI takes the seat for good) changes ADR 0021 → new ADR.
 - [x] 1. Online counter: the header pill shows the real count, rolling to each value; a separate demo figure
       (`Platform/Presence/DemoActivity`: settings `online.demo_enabled` / `online.demo_base` 30,000, a daily rhythm
       ± drift per minute, same for everyone) in its own `demo` field and its own home stat tagged "Demo" with a note —
-      never added to the real count — this commit.
+      never added to the real count — 42adcc2.
+- [x] 2. `/` is the one home (guests: hero; players: welcome strip + their shelves, nothing twice); `/dashboard` is
+      the games section (public); `/games` redirects there with its filters; links, sign-in and verify updated — this commit.
 
 **Owner 2026-11-18 "remove Slotopol, find open-source providers like AGT / Pragmatic / Novomatic":**
 - [x] Slotopol removed from the app: the six integration commits reverted on main (tree = 1ffa46c), branch

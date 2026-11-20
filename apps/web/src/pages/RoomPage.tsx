@@ -332,7 +332,7 @@ export function RoomPage() {
             to="/dashboard"
             className="inline-flex min-h-11 items-center self-center text-sm font-medium text-accent-text hover:underline"
           >
-            {t('nav.dashboard')}
+            {t('nav.games')}
           </Link>
         </footer>
       </Container>
