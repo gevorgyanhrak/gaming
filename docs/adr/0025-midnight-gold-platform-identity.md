@@ -19,3 +19,10 @@ both, through shared tokens.
 - New shared UI must use tokens or the component variables, never fixed night colours, when it can appear at a
   table; otherwise the room changes.
 - A game room's look is verified by pixel-diffing a finished room before and after a platform change.
+
+## Addendum 2026-11-20 (HayBet item 15)
+
+The owner asked for one background across the product: the game rooms no longer switch to the Lamplit Room tokens
+(`.classic-scope` is not applied) and the per-game page backdrops are gone; every page uses the night room. The
+tables keep their own felt, wood and boards.
+

@@ -280,6 +280,8 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   state `turn_seconds`); the caption's text countdown shows only where there are no plates.
 - AI look (item 14): `Avatar ai` = `.ai-ring` + an "AI" chip (not on `sm`); boards that draw their own seats put
   `shared/ui/AiSeatMark` by AI seats from `BoardProps.faces` (names already carry "· AI", ADR 0022).
+- Backgrounds (item 15): every page, tables included, uses the site's night `.club-room`; no `.classic-scope`, no
+  `.table-room`, no per-game page backdrop (`games/themes.ts` now only colours the home showcase cards).
 - Online: `GET /stats/online` → `online` (real, Reverb presence; null when unknown) and `demo` (owner-chosen
   simulated figure, `DemoActivity`, admin "Demo activity"). Never add `demo` to `online`; anything showing `demo`
   tags it "Demo" and explains it (`useDemoActivity`, HomeHero `DemoStat`).

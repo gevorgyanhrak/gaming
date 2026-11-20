@@ -71,7 +71,10 @@ then AI takes the seat for good) changes ADR 0021 → new ADR.
 - [—] 13. New photorealistic AI faces — skipped by the owner (2026-11-20).
 - [x] 14. AI reads as AI everywhere: the Avatar gives AI players a holographic cyan/violet ring and an "AI" chip (with or
       without an uploaded picture); Blackjack, Domino, Ludo, Rummy and Pool — which draw their own seats and showed no
-      AI mark — now show the ringed AI face by each AI seat (`AiSeatMark`) — this commit.
+      AI mark — now show the ringed AI face by each AI seat (`AiSeatMark`) — d41b87c.
+- [x] 15. One background everywhere: the homepage's night room on every page, game lobbies and tables included (the
+      room-only `.classic-scope` tokens, the green `.table-room` and the per-game page backdrops are gone; the tables
+      keep their own felt, wood and boards). Checked: all 11 tables vs AI at 1440 and 390 — this commit.
 
 **Owner 2026-11-18 "remove Slotopol, find open-source providers like AGT / Pragmatic / Novomatic":**
 - [x] Slotopol removed from the app: the six integration commits reverted on main (tree = 1ffa46c), branch

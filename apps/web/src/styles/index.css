@@ -945,12 +945,6 @@
   }
 
   /* Behind a game table: darker on purpose, the board is the subject. */
-  .table-room {
-    background:
-      radial-gradient(70rem 32rem at 50% -8rem, rgb(255 214 150 / 0.08), transparent 70%),
-      linear-gradient(var(--color-table-room), #0b3028);
-  }
-
   .table-rim {
     padding: 14px;
     background: linear-gradient(135deg, #9a6a38, #5a3218 35%, #a87440 55%, #4a2810 80%, #7a4a22);

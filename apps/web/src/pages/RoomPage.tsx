@@ -14,7 +14,6 @@ import { GroupBadge } from '@/features/play/components/GroupBadge'
 import { SHORT_LANDSCAPE } from '@/features/play/FitStage'
 import { PlayerProfilePopup } from '@/features/players/PlayerProfilePopup'
 import { tableFaces } from '@/shared/lib/aiPortraits'
-import { GameBackdrop } from '@/features/play/components/GameBackdrop'
 import { TableBar } from '@/features/play/components/TableBar'
 import { PlayerList } from '@/features/play/components/PlayerList'
 import { WaitingTable } from '@/features/play/components/WaitingTable'
@@ -212,7 +211,6 @@ export function RoomPage() {
 
   return (
     <>
-      <GameBackdrop slug={data.game.slug} />
       {(() => {
         const shown = reacting ? cardSeat : (cardSeat ?? tappedSeat)
         const p = shown === null ? undefined : data.participants.find((x) => x.seat === shown)

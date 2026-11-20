@@ -142,11 +142,8 @@ export function PublicLayout() {
 
   const home = '/'
   const atTable = pathname.startsWith('/rooms/')
-  // A game table keeps its own look (owner, 2026-11-17): the classic tokens for the whole page, popups included.
-  useEffect(() => {
-    document.body.classList.toggle('classic-scope', atTable)
-    return () => document.body.classList.remove('classic-scope')
-  }, [atTable])
+  // HayBet item 15 (owner, 2026-11-20): one background for every page, tables included — the homepage's night
+  // room; the game tables themselves keep their own felt, wood and boards.
   const showBar = !wide && !atTable
   // Quiet casino ambience and the welcome chime around the games, never over a table (item 8).
   useCasinoAmbience(!atTable)
@@ -266,7 +263,7 @@ export function PublicLayout() {
           </div>
         ) : null}
 
-        <main className={`flex-1 ${atTable ? 'table-room' : ''}`}>
+        <main className="flex-1">
           {inMaintenance ? (
             <MaintenanceScreen message={config.data?.maintenance.message ?? null} />
           ) : (
