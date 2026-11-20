@@ -47,7 +47,12 @@ then AI takes the seat for good) changes ADR 0021 → new ADR.
 - [x] 8. Casino sounds (synthesized, one on/off switch): a quiet lounge ambience outside tables (soft chords drifting
       every 12–20 s, a distant chip clink now and then, about 4 % volume, after the first tap), a welcome chime once a
       session, a game-start riffle, reward coins (daily bonus, gifts, top-up, level rewards), a level-up fanfare;
-      win/lose and buttons already had theirs — this commit.
+      win/lose and buttons already had theirs — cbe4b81.
+- [x] 9. Engagement: daily missions (3 a day, two alternating sets) and weekly challenges (2), progress only from
+      games that earned XP (anti-farming), Fishka rewards claimed once (ledger `mission_reward`), a Missions panel on
+      home; level-up popup now with fireworks and a fanfare. Already there: daily streak bonus, gifts, wheel,
+      achievements incl. daily best / weekly champion, ranks, frames. Not added: VIP (owner said no), tournaments (none
+      exist) — this commit.
 
 **Owner 2026-11-18 "remove Slotopol, find open-source providers like AGT / Pragmatic / Novomatic":**
 - [x] Slotopol removed from the app: the six integration commits reverted on main (tree = 1ffa46c), branch

@@ -38,4 +38,7 @@ enum FishkaTransactionType: string
 
     /** Fishkas bought: a paid chip package (ADR 0027), credited once when the provider confirms the payment. */
     case Purchase = 'purchase';
+
+    /** A daily mission's or weekly challenge's reward (Platform/Missions), once per mission and period. */
+    case MissionReward = 'mission_reward';
 }

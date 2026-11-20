@@ -17,7 +17,7 @@ import { itemLabel } from '../items'
 import { closeLevelUp, offerLevelUp, useLevelUpOpen } from '../popup'
 
 /**
- * The level-up popup (TASK-047): previous level → new level with a burst of confetti, what the new
+ * The level-up popup (TASK-047; fireworks and fanfare: HayBet item 9): previous level → new level with fireworks and confetti, what the new
  * levels give, and "Collect". It offers itself once per visit while rewards wait (reached while away,
  * too) and again when a level is reached during the visit — never over a game in progress. It goes
  * before the daily bonus, which waits for it. The server decides the levels and pays each reward once.
@@ -90,7 +90,13 @@ function Dialog({ status }: { status: LevelStatus }) {
 
   useEffect(() => {
     const host = burst.current
-    const first = confetti(host, major ? 80 : milestone ? 90 : 50)
+    // Fireworks over the popup (HayBet item 9), then the confetti falls.
+    const sparks = fireworks(host, major ? 3 : 2)
+    const confettiFirst = confetti(host, major ? 80 : milestone ? 90 : 50)
+    const first = () => {
+      sparks()
+      confettiFirst()
+    }
     if (!major) return first
     // A major milestone gets a second burst.
     let second = () => {}
@@ -260,4 +266,47 @@ function confetti(host: HTMLElement | null, count: number): () => void {
       .addEventListener('finish', () => piece.remove())
   }
   return () => pieces.forEach((piece) => piece.remove())
+}
+
+/**
+ * Fireworks: a few bursts of gold sparks flying out from points high in the popup, fading as they fall. Purely
+ * visual; skipped under reduced motion.
+ */
+function fireworks(host: HTMLElement | null, bursts: number): () => void {
+  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  if (!host || reduced || typeof host.animate !== 'function') return () => {}
+  const sparks: HTMLElement[] = []
+  const colours = ['#ffe9a3', '#f5c04f', '#ff8f6b', '#9be7ff']
+  for (let b = 0; b < bursts; b++) {
+    const x = 20 + Math.random() * 60
+    const y = 12 + Math.random() * 22
+    const colour = colours[b % colours.length]!
+    for (let i = 0; i < 18; i++) {
+      const spark = document.createElement('span')
+      spark.setAttribute('aria-hidden', 'true')
+      spark.style.cssText = `position:absolute;left:${x}%;top:${y}%;width:4px;height:4px;border-radius:9999px;background:${colour};box-shadow:0 0 6px ${colour};pointer-events:none;z-index:6`
+      host.appendChild(spark)
+      sparks.push(spark)
+      const angle = (i / 18) * Math.PI * 2
+      const reach = 55 + Math.random() * 35
+      spark
+        .animate(
+          [
+            { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+            {
+              transform: `translate(${Math.cos(angle) * reach}px, ${Math.sin(angle) * reach + 30}px) scale(0.4)`,
+              opacity: 0,
+            },
+          ],
+          {
+            duration: 1100 + Math.random() * 300,
+            delay: b * 380,
+            easing: 'cubic-bezier(0.1, 0.7, 0.3, 1)',
+            fill: 'forwards',
+          },
+        )
+        .addEventListener('finish', () => spark.remove())
+    }
+  }
+  return () => sparks.forEach((spark) => spark.remove())
 }

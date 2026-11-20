@@ -669,7 +669,8 @@
       "slot_bet": "Slot bet",
       "slot_win": "Slot win",
       "slot_refund": "Slot bet returned",
-      "purchase": "Fishkas bought"
+      "purchase": "Fishkas bought",
+      "mission_reward": "Mission reward"
     },
     "ok": "OK",
     "balanceLabelTable": "Your Fishkas: {{amount}}, {{table}} of them at a table. Open your wallet",
@@ -1383,6 +1384,25 @@
       "medium": "Medium",
       "large": "Large",
       "max": "Maximum"
+    }
+  },
+  "missions": {
+    "title": "Missions",
+    "today": "Today",
+    "week": "This week",
+    "collected": "Collected",
+    "collect": "Collect {{amount}} Fishkas",
+    "resetsHours_one": "New in {{count}} hour",
+    "resetsHours_other": "New in {{count}} hours",
+    "resetsDays_one": "New in {{count}} day",
+    "resetsDays_other": "New in {{count}} days",
+    "kinds": {
+      "play_one": "Play {{count}} game",
+      "play_other": "Play {{count}} games",
+      "win_one": "Win {{count}} game",
+      "win_other": "Win {{count}} games",
+      "variety_one": "Play {{count}} different game",
+      "variety_other": "Play {{count}} different games"
     }
   }
 }

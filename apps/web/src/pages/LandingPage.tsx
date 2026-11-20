@@ -5,6 +5,7 @@ import { MAIN_GAMES } from '@/features/casino/mainGames'
 import { PromoBanners } from '@/features/casino/PromoBanners'
 import { GameGrid } from '@/features/catalog/components/GameGrid'
 import { RecentlyPlayed } from '@/features/catalog/components/RecentlyPlayed'
+import { MissionsPanel } from '@/features/missions/MissionsPanel'
 import { FavoritesShelf } from '@/features/favorites/FavoritesShelf'
 import { HomeHero } from '@/features/home/HomeHero'
 import { TryNext, WelcomeStrip } from '@/features/home/WelcomeStrip'
@@ -35,6 +36,7 @@ export function LandingPage() {
 
       <Container className="space-y-14 pt-8 pb-16 sm:pt-10">
         <PromoBanners />
+        {user ? <MissionsPanel /> : null}
         {user ? <FavoritesShelf /> : null}
         <section id="showcase" aria-labelledby="top-games" className="scroll-mt-24">
           <SectionHeading

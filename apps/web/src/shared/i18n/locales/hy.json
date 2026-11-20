@@ -669,7 +669,8 @@
       "slot_bet": "Խաղադրույք սլոթում",
       "slot_win": "Շահում սլոթում",
       "slot_refund": "Սլոթի խաղադրույքի վերադարձ",
-      "purchase": "Գնված ֆիշկաներ"
+      "purchase": "Գնված ֆիշկաներ",
+      "mission_reward": "Առաքելության պարգև"
     },
     "ok": "Լավ",
     "balanceLabelTable": "Ձեր ֆիշկաները՝ {{amount}}, որից {{table}}-ը սեղանի մոտ։ Բացել դրամապանակը",
@@ -1383,6 +1384,25 @@
       "medium": "Միջին",
       "large": "Մեծ",
       "max": "Առավելագույն"
+    }
+  },
+  "missions": {
+    "title": "Առաքելություններ",
+    "today": "Այսօր",
+    "week": "Այս շաբաթ",
+    "collected": "Ստացված է",
+    "collect": "Վերցնել {{amount}} ֆիշկա",
+    "resetsHours_one": "Նորերը {{count}} ժամից",
+    "resetsHours_other": "Նորերը {{count}} ժամից",
+    "resetsDays_one": "Նորերը {{count}} օրից",
+    "resetsDays_other": "Նորերը {{count}} օրից",
+    "kinds": {
+      "play_one": "Խաղացեք {{count}} խաղ",
+      "play_other": "Խաղացեք {{count}} խաղ",
+      "win_one": "Հաղթեք {{count}} խաղում",
+      "win_other": "Հաղթեք {{count}} խաղում",
+      "variety_one": "Խաղացեք {{count}} տարբեր խաղ",
+      "variety_other": "Խաղացեք {{count}} տարբեր խաղ"
     }
   }
 }

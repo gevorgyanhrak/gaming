@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\V1\Me\ProfileController;
 use App\Http\Controllers\Api\V1\Me\RoomsController;
 use App\Http\Controllers\Api\V1\Me\SettingsController;
 use App\Http\Controllers\Api\V1\Me\WalletController;
+use App\Http\Controllers\Api\V1\MissionController;
 use App\Http\Controllers\Api\V1\OnlineController;
 use App\Http\Controllers\Api\V1\Payments\ChipPackageController;
 use App\Http\Controllers\Api\V1\Payments\PaymentOrderController;
@@ -118,6 +119,8 @@ Route::prefix('v1')->name('v1.')->group(function () {
                 Route::post('gifts/spin', [FreeGiftsController::class, 'spin'])->name('gifts.spin');
                 Route::get('level', [LevelController::class, 'show'])->name('level.show');
                 Route::post('level-ups/claim', [LevelController::class, 'claim'])->name('level-ups.claim');
+                Route::get('missions', [MissionController::class, 'index'])->name('missions.index');
+                Route::post('missions/{key}/claim', [MissionController::class, 'claim'])->middleware('throttle:verification')->name('missions.claim');
                 Route::get('favorites', [FavoritesController::class, 'index'])->name('favorites.index');
                 Route::put('favorites/{kind}/{slug}', [FavoritesController::class, 'store'])->whereIn('kind', ['game', 'slot'])->name('favorites.store');
                 Route::delete('favorites/{kind}/{slug}', [FavoritesController::class, 'destroy'])->whereIn('kind', ['game', 'slot'])->name('favorites.destroy');

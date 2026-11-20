@@ -65,6 +65,9 @@ return [
         'locked' => 'Reach level :level to send this emoji.',
         'no_such_player' => 'Choose another player at this table.',
     ],
+    'missions' => [
+        'not_done' => "This mission isn't finished yet.",
+    ],
     'payments' => [
         'unavailable' => "Buying Fishkas isn't available yet.",
     ],

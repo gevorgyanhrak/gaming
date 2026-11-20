@@ -723,7 +723,8 @@
       "slot_bet": "Ставка в слоте",
       "slot_win": "Выигрыш в слоте",
       "slot_refund": "Возврат ставки в слоте",
-      "purchase": "Покупка фишек"
+      "purchase": "Покупка фишек",
+      "mission_reward": "Награда за задание"
     },
     "ok": "Понятно",
     "balanceLabelTable": "Ваши фишки: {{amount}}, из них {{table}} за столом. Открыть кошелёк",
@@ -1487,6 +1488,35 @@
       "medium": "Средний",
       "large": "Большой",
       "max": "Максимум"
+    }
+  },
+  "missions": {
+    "title": "Задания",
+    "today": "Сегодня",
+    "week": "На этой неделе",
+    "collected": "Получено",
+    "collect": "Забрать {{amount}} фишек",
+    "resetsHours_one": "Новые через {{count}} час",
+    "resetsHours_few": "Новые через {{count}} часа",
+    "resetsHours_many": "Новые через {{count}} часов",
+    "resetsHours_other": "Новые через {{count}} часа",
+    "resetsDays_one": "Новые через {{count}} день",
+    "resetsDays_few": "Новые через {{count}} дня",
+    "resetsDays_many": "Новые через {{count}} дней",
+    "resetsDays_other": "Новые через {{count}} дня",
+    "kinds": {
+      "play_one": "Сыграйте {{count}} игру",
+      "play_few": "Сыграйте {{count}} игры",
+      "play_many": "Сыграйте {{count}} игр",
+      "play_other": "Сыграйте {{count}} игры",
+      "win_one": "Выиграйте {{count}} игру",
+      "win_few": "Выиграйте {{count}} игры",
+      "win_many": "Выиграйте {{count}} игр",
+      "win_other": "Выиграйте {{count}} игры",
+      "variety_one": "Сыграйте в {{count}} игру",
+      "variety_few": "Сыграйте в {{count}} разные игры",
+      "variety_many": "Сыграйте в {{count}} разных игр",
+      "variety_other": "Сыграйте в {{count}} разные игры"
     }
   }
 }

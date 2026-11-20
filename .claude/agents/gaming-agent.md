@@ -269,6 +269,9 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   `public/favicon.svg` and the `index.html` loading screen.
 - Casino sounds (item 8): `shared/lib/sounds.ts` also has `welcome`, `gameStart`, `reward`, `levelUp` and the ambience
   (`setAmbience`), run by `features/sound/useCasinoAmbience` outside tables; the wallet clink is skipped for 1.5 s after a reward sound.
+- Missions (item 9): `Platform/Missions/Missions` (code catalog: DAILY sets alternate by local date, WEEKLY), progress =
+  games with a `game` XP entry in the period (fishka.timezone), claims in `mission_claims` + ledger `mission_reward`;
+  API `GET /me/missions`, `POST /me/missions/{key}/claim`; web `features/missions/MissionsPanel` on home.
 - Online: `GET /stats/online` → `online` (real, Reverb presence; null when unknown) and `demo` (owner-chosen
   simulated figure, `DemoActivity`, admin "Demo activity"). Never add `demo` to `online`; anything showing `demo`
   tags it "Demo" and explains it (`useDemoActivity`, HomeHero `DemoStat`).

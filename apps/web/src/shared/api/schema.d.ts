@@ -491,6 +491,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me/missions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Today's missions and this week's challenges, with progress and what was claimed */
+        get: operations["v1.me.missions.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/missions/{key}/claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Collects a finished mission's Fishkas (once); 422 when it isn't finished. Answers with the missions again */
+        post: operations["v1.me.missions.claim"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/stats/online": {
         parameters: {
             query?: never;
@@ -1202,7 +1236,7 @@ export interface components {
         FishkaTransactionResource: {
             id: number;
             /** @enum {string} */
-            type: "registration_bonus" | "daily_login_bonus" | "game_entry_fee" | "game_entry_refund" | "game_stake" | "game_payout" | "poker_bet" | "poker_winning" | "admin_credit" | "admin_debit" | "insufficient_balance_bonus" | "level_reward" | "free_gift" | "wheel_prize" | "slot_bet" | "slot_win" | "slot_refund" | "purchase";
+            type: "registration_bonus" | "daily_login_bonus" | "game_entry_fee" | "game_entry_refund" | "game_stake" | "game_payout" | "poker_bet" | "poker_winning" | "admin_credit" | "admin_debit" | "insufficient_balance_bonus" | "level_reward" | "free_gift" | "wheel_prize" | "slot_bet" | "slot_win" | "slot_refund" | "purchase" | "mission_reward";
             amount: number;
             balance_after: number;
             description: string | null;
@@ -2838,6 +2872,75 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.me.missions.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            key: string;
+                            /** @enum {string} */
+                            period: "day" | "week";
+                            /** @enum {string} */
+                            kind: "play" | "win" | "variety";
+                            target: number;
+                            progress: number;
+                            reward: number;
+                            claimed: boolean;
+                            ends_at: string;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.me.missions.claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            key: string;
+                            /** @enum {string} */
+                            period: "day" | "week";
+                            /** @enum {string} */
+                            kind: "play" | "win" | "variety";
+                            target: number;
+                            progress: number;
+                            reward: number;
+                            claimed: boolean;
+                            ends_at: string;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "v1.stats.online": {

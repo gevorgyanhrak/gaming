@@ -161,6 +161,8 @@ export const handlers = [
   http.get('*/api/v1/slots', () => HttpResponse.json({ data: [] })),
   http.get('*/api/v1/me/favorites', () => HttpResponse.json({ data: [] })),
   // The online counter: unknown (hidden) unless a test serves a number.
+  // Missions (HayBet item 9): none unless a test says otherwise.
+  http.get('*/api/v1/me/missions', () => HttpResponse.json({ data: [] })),
   // Chip packages (ADR 0027): on show, not buyable — no payment provider is connected in tests either.
   http.get('*/api/v1/chip-packages', () =>
     HttpResponse.json({ data: chipPackagesFixture(), purchasable: false }),
