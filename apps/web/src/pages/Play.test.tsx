@@ -162,6 +162,22 @@ describe('Playing a game', () => {
     expect(router.state.location.pathname).toBe('/rooms/room-9')
   })
 
+  it('never sends a player back into an old game from the lobby (HayBet item 10)', async () => {
+    serveGame()
+    // The status still names the room of a game this player already finished.
+    server.use(
+      signedInAs(userFixture({ id: 1 })),
+      http.get('*/api/v1/matchmaking', () =>
+        HttpResponse.json({ data: { ticket: null, room: 'room-old', waiting: 0 } }),
+      ),
+    )
+    const { router } = renderRoute('/games/tictactoe')
+
+    await screen.findByRole('button', { name: 'Find an opponent' })
+    await new Promise((resolve) => setTimeout(resolve, 150))
+    expect(router.state.location.pathname).toBe('/games/tictactoe')
+  })
+
   it('keeps searching quietly, then goes to the table the server filled', async () => {
     serveGame()
     let filled = false

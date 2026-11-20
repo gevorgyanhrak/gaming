@@ -5,6 +5,7 @@ namespace App\Gameplay\Matchmaking;
 use App\Enums\BotDifficulty;
 use App\Enums\BotFallbackMode;
 use App\Enums\PlayGroupKind;
+use App\Enums\RoomStatus;
 use App\Enums\RoomType;
 use App\Gameplay\Bots\AiPlayers;
 use App\Gameplay\Rooms\PlayGroups;
@@ -153,12 +154,27 @@ class Matchmaker
         return count($this->queue($ticket->pool()));
     }
 
-    /** The room a recent match placed the player in (for clients that missed the event). */
+    /**
+     * The room a recent match placed the player in (for clients that missed the event) — only while that game is
+     * still waiting or being played. A finished or aborted one is forgotten: pointing at it would send a player who
+     * went back to the lobby straight into the old game's result again (HayBet item 10).
+     */
     public function matchedRoom(User $user): ?string
     {
-        $room = $this->store()->get($this->matchedKey($user->id));
+        $key = $this->matchedKey($user->id);
+        $room = $this->store()->get($key);
+        if (! is_string($room)) {
+            return null;
+        }
+        $live = GameRoom::query()->where('public_id', $room)
+            ->whereIn('status', [RoomStatus::Waiting->value, RoomStatus::Active->value])->exists();
+        if (! $live) {
+            $this->store()->forget($key);
 
-        return is_string($room) ? $room : null;
+            return null;
+        }
+
+        return $room;
     }
 
     public function heartbeat(User $user): ?Ticket

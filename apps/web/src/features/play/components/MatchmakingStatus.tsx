@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, type CSSProperties } from 'react'
+import { useEffect, useRef, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { useCurrentUser } from '@/features/auth/hooks'
@@ -43,9 +43,18 @@ export function MatchmakingStatus({
       ? Math.max(1, (new Date(startsAt).getTime() - new Date(ticket.joined_at).getTime()) / 1000)
       : null
 
+  // Follow a match only when this screen was searching for one (HayBet item 10): a room left over in the status or
+  // in the cache from an earlier game must never pull the player back into it. Entering the room clears the status.
+  const searchingRef = useRef(false)
   useEffect(() => {
-    if (room) void navigate(`/rooms/${room}`)
-  }, [room, navigate])
+    if (ticket) searchingRef.current = true
+  }, [ticket])
+  useEffect(() => {
+    if (!room || !searchingRef.current) return
+    searchingRef.current = false
+    queryClient.setQueryData(matchmakingKey, { ticket: null, room: null })
+    void navigate(`/rooms/${room}`)
+  }, [room, navigate, queryClient])
 
   useEffect(() => {
     if (!ticket) return
@@ -54,7 +63,11 @@ export function MatchmakingStatus({
   }, [ticket])
 
   useUserChannel(user?.id, {
-    'matchmaking.matched': (payload: { room: string }) => void navigate(`/rooms/${payload.room}`),
+    'matchmaking.matched': (payload: { room: string }) => {
+      searchingRef.current = false
+      queryClient.setQueryData(matchmakingKey, { ticket: null, room: null })
+      void navigate(`/rooms/${payload.room}`)
+    },
     // The table is being prepared: fetch who sits at it.
     'matchmaking.table': () => void queryClient.invalidateQueries({ queryKey: matchmakingKey }),
   })

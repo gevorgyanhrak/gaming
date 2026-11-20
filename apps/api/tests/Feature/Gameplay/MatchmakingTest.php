@@ -50,6 +50,19 @@ it('pairs two waiting players into a room and tells both', function () {
     $this->actingAs($alice)->getJson('/api/v1/matchmaking')->assertJsonPath('data.ticket', null)->assertJsonPath('data.room', $room);
 });
 
+it('stops pointing at the matched room once its game is over, so the lobby never sends a player back to it', function () {
+    $mode = ticTacToe();
+    [$alice, $bob] = User::factory()->count(2)->create();
+    $this->actingAs($alice)->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id]);
+    $room = $this->actingAs($bob)->postJson('/api/v1/matchmaking', ['game_mode_id' => $mode->id])->json('data.room');
+    $this->actingAs($alice)->getJson('/api/v1/matchmaking')->assertJsonPath('data.room', $room);
+
+    GameRoom::query()->where('public_id', $room)->update(['status' => RoomStatus::Finished->value]);
+
+    $this->actingAs($alice)->getJson('/api/v1/matchmaking')->assertJsonPath('data.room', null);
+    $this->actingAs($bob)->getJson('/api/v1/matchmaking')->assertJsonPath('data.room', null);
+});
+
 it('does not pair players looking for different modes', function () {
     $mode = ticTacToe();
     $other = GameMode::factory()->for($mode->game)->create(['slug' => 'other']);

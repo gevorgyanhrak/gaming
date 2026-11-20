@@ -52,7 +52,13 @@ then AI takes the seat for good) changes ADR 0021 → new ADR.
       games that earned XP (anti-farming), Fishka rewards claimed once (ledger `mission_reward`), a Missions panel on
       home; level-up popup now with fireworks and a fanfare. Already there: daily streak bonus, gifts, wheel,
       achievements incl. daily best / weekly champion, ranks, frames. Not added: VIP (owner said no), tournaments (none
-      exist) — this commit.
+      exist) — 47e6dd3.
+- [x] 10. Mobile game navigation bug — root cause: after a matchmaking game, the server kept the matched room as a
+      2-minute hint and `MatchmakingStatus` (on every game page) followed any room it saw, cached or fresh, so "Return to
+      lobby" or opening another game sent the player back into the finished room and its result popup. Fix: the
+      server forgets a matched room once its game is over; the client follows a match only while it was searching and
+      clears the status on entering the room. Regression tests on both sides (the web one fails on the old code) —
+      this commit.
 
 **Owner 2026-11-18 "remove Slotopol, find open-source providers like AGT / Pragmatic / Novomatic":**
 - [x] Slotopol removed from the app: the six integration commits reverted on main (tree = 1ffa46c), branch

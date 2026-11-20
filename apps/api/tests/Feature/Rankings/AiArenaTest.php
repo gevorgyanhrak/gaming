@@ -36,7 +36,8 @@ it('plays a whole real game between home AI players and scores each seat once, f
         expect(BotProfile::query()->find($botId)->home_game_id)->toBe($durak->id);
     }
     $events = DB::table('game_point_events')->where('room_public_id', $played['public_id'])->get();
-    expect($events)->toHaveCount(count($played['bots']))
+    // A draw (Durak can end in one) scores nobody; otherwise every seat has its one event.
+    expect($events)->toHaveCount($played['winners'] === [] ? 0 : count($played['bots']))
         ->and(DB::table('game_points')->whereNotNull('bot_profile_id')->where('game_id', '!=', $durak->id)->exists())->toBeFalse()
         ->and($events->where('delta', '>', 0)->count())->toBe(count($played['winners']));
 });
