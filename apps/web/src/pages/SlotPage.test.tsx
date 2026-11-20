@@ -1,4 +1,4 @@
-import { act, screen, waitFor } from '@testing-library/react'
+import { act, waitFor } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { HOLD_MS, releaseBalance } from '@/features/wallet/balanceHold'
