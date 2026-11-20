@@ -46,6 +46,11 @@ export function useRoom(id: string) {
   }, [active, playing, id, queryClient])
 
   useUserChannel(user?.id, {
+    // Someone disconnected, came back or was replaced by AI (ADR 0028): the seats live on the room.
+    'room.seats': (payload: { room: string }) => {
+      if (payload.room === id)
+        void queryClient.invalidateQueries({ queryKey: roomKeys.room(id), exact: true })
+    },
     'room.updated': (payload: RoomState) => {
       if (payload.room !== id) return
       const current = queryClient.getQueryData<RoomState | null>(roomKeys.state(id))

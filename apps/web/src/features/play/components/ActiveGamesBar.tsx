@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
+import { ButtonLink } from '@/shared/ui/Button'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation } from 'react-router'
+import { useLocation } from 'react-router'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { usePublicConfig } from '@/features/platform/usePublicConfig'
 import { Container } from '@/shared/ui/Container'
@@ -48,7 +49,7 @@ export function ActiveGamesBar() {
 function ActiveGame({ room }: { room: Room }) {
   const { t } = useTranslation()
   const config = usePublicConfig()
-  const awayLimit = config.data?.play.abandon_after_seconds ?? 0
+  const awayLimit = config.data?.play.return_seconds ?? 0
   const queryClient = useQueryClient()
   const [confirming, setConfirming] = useState(false)
   const leave = useMutation({
@@ -66,9 +67,10 @@ function ActiveGame({ room }: { room: Room }) {
         {room.status === 'waiting'
           ? t('activeGame.waiting', { game: room.game.name })
           : t('activeGame.playing', { game: room.game.name })}{' '}
-        <Link to={`/rooms/${room.id}`} className="font-semibold text-accent-text hover:underline">
-          {t('activeGame.return')}
-        </Link>
+        {/* A real button (owner: "Վերադառնալ խաղին" as a button, not text), HayBet item 12. */}
+        <ButtonLink to={`/rooms/${room.id}`} size="sm" variant="gold" className="ml-1 align-middle">
+          {t('activeGame.returnButton')}
+        </ButtonLink>
         {room.status === 'active' && awayLimit > 0 ? (
           <span className="block text-xs text-muted sm:inline sm:pl-2">
             {t('activeGame.awayLimit', { count: awayLimit })}

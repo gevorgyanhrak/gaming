@@ -380,6 +380,10 @@
       "label": "Rebuy",
       "withAmount": "Rebuy · {{amount}} Fishkas",
       "getFishkas": "Get free Fishkas to rebuy"
+    },
+    "seat": {
+      "returning": "Back in {{count}} s?",
+      "replaced": "AI plays on"
     }
   },
   "history": {
@@ -611,8 +615,9 @@
     "confirmClose": "Close the room?",
     "leave": "Leave",
     "keep": "Keep playing",
-    "awayLimit_one": "Come back within {{count}} second, or the game is lost.",
-    "awayLimit_other": "Come back within {{count}} seconds, or the game is lost."
+    "returnButton": "Return to the game",
+    "awayLimit_one": "If you leave the table, you have {{count}} second to come back before AI takes your seat.",
+    "awayLimit_other": "If you leave the table, you have {{count}} seconds to come back before AI takes your seat."
   },
   "join": {
     "title": "Join a table",
@@ -1370,7 +1375,10 @@
     "lost": "Hand lost",
     "won": "{{name}} · +{{amount}}",
     "allInDetail": "{{name}} · {{amount}}",
-    "lostDetail": "−{{amount}}"
+    "lostDetail": "−{{amount}}",
+    "disconnected": "{{name}} disconnected — a few seconds to return",
+    "back": "{{name}} is back",
+    "replaced": "AI took {{name}}’s seat"
   },
   "payments": {
     "title": "Get more Fishkas",

@@ -7,7 +7,6 @@ use App\Enums\RoomType;
 use App\Gameplay\Actions\GameActionService;
 use App\Gameplay\Bots\AiPlayers;
 use App\Gameplay\Engine\Action;
-use App\Gameplay\Lifecycle\AiTakeover;
 use App\Gameplay\Lifecycle\RoomPresence;
 use App\Gameplay\Rooms\PlayGroups;
 use App\Gameplay\Rooms\PlayRules;
@@ -129,16 +128,31 @@ class RoomController extends Controller
      * "Still here": the game page calls this every few seconds. Players who stop calling for longer than
      * the platform allows are away: AI holds their seat at tables of 3+, otherwise they lose (RoomPresence).
      */
-    public function presence(Request $request, GameRoom $room, RoomPresence $presence, AiTakeover $takeover): JsonResponse
+    public function presence(Request $request, GameRoom $room, RoomPresence $presence): JsonResponse
     {
         /** @var User $user */
         $user = $request->user();
         $participant = $room->load('participants')->participantFor($user);
 
         if ($participant !== null && $participant->is_active && $room->isActive()) {
+            // Back within the return window keeps the seat; later, AI has it for good (ADR 0028).
             $presence->seen($room, $participant);
-            // Back at the table: a seat AI held while they were away is theirs again.
-            $takeover->handBack($room, $participant);
+        }
+
+        return response()->json(null, 204);
+    }
+
+    /**
+     * The game page is closing (sent as a beacon): the player's return window opens now rather than after the
+     * silence that would otherwise tell (ADR 0028).
+     */
+    public function away(Request $request, GameRoom $room, RoomPresence $presence): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $participant = $room->load('participants')->participantFor($user);
+        if ($participant !== null && $participant->is_active && $room->isActive()) {
+            $presence->away($room, $participant);
         }
 
         return response()->json(null, 204);

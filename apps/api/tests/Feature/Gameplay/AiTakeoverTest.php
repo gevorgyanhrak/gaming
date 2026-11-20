@@ -8,6 +8,7 @@ use App\Gameplay\Actions\GameActionService;
 use App\Gameplay\Bots\AiPlayers;
 use App\Gameplay\Bots\BotTurnJob;
 use App\Gameplay\GameRegistry;
+use App\Gameplay\Lifecycle\ReplaceAwayJob;
 use App\Gameplay\Lifecycle\ResumeRoundJob;
 use App\Gameplay\Lifecycle\RoomPresence;
 use App\Gameplay\Rooms\RoomService;
@@ -45,19 +46,25 @@ function takeoverTable(int $people = 2): array
     return [$room->fresh(['game', 'participants']), $users];
 }
 
-/** Everyone but $away reports in after a while; then the presence sweep runs. */
+/**
+ * Everyone but $away keeps reporting; $away's page goes quiet (the sweep opens their return window), and the
+ * window ends without them (ADR 0028).
+ */
 function awayFor(GameRoom $room, array $users, User $away): void
 {
-    test()->travel(20)->seconds();
+    test()->travel(7)->seconds();
     foreach ($users as $user) {
         if ($user->id !== $away->id) {
             test()->actingAs($user)->postJson("/api/v1/rooms/{$room->public_id}/presence")->assertNoContent();
         }
     }
     app(RoomPresence::class)->sweep();
+    test()->travel(5)->seconds();
+    $participant = $room->participants()->where('user_id', $away->id)->sole();
+    (new ReplaceAwayJob($room->id, $participant->id))->handle(app(RoomPresence::class));
 }
 
-it('lets AI hold the seat of a player who is away, so the table plays on, and gives it back', function () {
+it('gives the seat of a player who doesn’t come back to AI for good, and the table plays on', function () {
     [$room, [$alice, $bob]] = takeoverTable();
 
     awayFor($room, [$alice, $bob], $alice);
@@ -66,17 +73,16 @@ it('lets AI hold the seat of a player who is away, so the table plays on, and gi
     $seat = $room->participants->firstWhere('user_id', $alice->id);
     expect($room->status)->toBe(RoomStatus::Active)
         ->and($seat->ai_controlled)->toBeTrue()
-        ->and($seat->is_active)->toBeTrue()
-        ->and($seat->result)->toBeNull()
-        // Nothing in the room tells the others.
-        ->and($this->actingAs($bob)->getJson("/api/v1/rooms/{$room->public_id}")->json('data.participants'))
-        ->each->not->toHaveKey('ai_controlled');
+        ->and($seat->replaced_at)->not->toBeNull()
+        ->and($seat->result)->toBe(ParticipantResult::Abandoned)
+        ->and($room->participants->firstWhere('user_id', $bob->id)->result)->toBeNull();
 
+    // Coming back later doesn't reclaim it.
     $this->actingAs($alice)->postJson("/api/v1/rooms/{$room->public_id}/presence")->assertNoContent();
-    expect($seat->fresh()->ai_controlled)->toBeFalse();
+    expect($seat->fresh()->ai_controlled)->toBeTrue();
 });
 
-it('plays a held seat with the game\'s own AI, as the server\'s move (never counted as the player\'s)', function () {
+it('plays a taken-over seat with the game\'s own AI, as the server\'s move (never counted as the player\'s)', function () {
     [$room, [$alice, $bob]] = takeoverTable();
     $toAct = app(RoomStates::class)->current($room)->seatsToAct[0];
     $away = $room->participants->firstWhere('seat', $toAct);
@@ -121,7 +127,7 @@ it('lets a player leave a table of four: they lose, AI plays their seat on and t
         ->and($this->actingAs($alice)->getJson("/api/v1/rooms/{$room->public_id}/state")->json('data.legal_actions'))->toBe([]);
 });
 
-it('doesn\'t hold a seat when no other person plays at the table: the game ends as before', function () {
+it('ends the game when no other person plays at the table (nobody to play on for)', function () {
     [$room, [$alice]] = takeoverTable(people: 1);
 
     awayFor($room, [$alice], $alice);
@@ -131,14 +137,26 @@ it('doesn\'t hold a seat when no other person plays at the table: the game ends 
         ->and($room->participants->firstWhere('user_id', $alice->id)->ai_controlled)->toBeFalse();
 });
 
-it('never hands a seat to AI in a game for two: the one who stays wins', function () {
+it('lets a game for two go on against AI when one person doesn’t come back (ADR 0028)', function () {
     [$alice, $bob] = User::factory()->count(2)->create();
     $room = app(RoomService::class)->createStarted(ticTacToe(), RoomType::Private, [$alice, $bob])->fresh(['game', 'participants']);
 
     awayFor($room, [$alice, $bob], $alice);
 
     $room->refresh()->load('participants');
-    expect($room->status)->toBe(RoomStatus::Finished)
-        ->and($room->participants->firstWhere('user_id', $bob->id)->result)->toBe(ParticipantResult::Win)
-        ->and($room->participants->firstWhere('user_id', $alice->id)->ai_controlled)->toBeFalse();
+    expect($room->status)->toBe(RoomStatus::Active)
+        ->and($room->participants->firstWhere('user_id', $alice->id)->ai_controlled)->toBeTrue()
+        ->and($room->participants->firstWhere('user_id', $alice->id)->result)->toBe(ParticipantResult::Abandoned)
+        ->and($room->participants->firstWhere('user_id', $bob->id)->result)->toBeNull();
+});
+
+it('never lets a person who lost their seat act as the server for it', function () {
+    [$room, [$alice, $bob]] = takeoverTable();
+    awayFor($room, [$alice, $bob], $alice);
+
+    $this->actingAs($alice)->postJson("/api/v1/rooms/{$room->public_id}/actions", [
+        'client_action_id' => GameMove::AUTO_PREFIX.'forged',
+        'expected_version' => $room->fresh()->state_version,
+        'action' => ['type' => 'pass'],
+    ])->assertStatus(422)->assertJsonValidationErrors('client_action_id');
 });

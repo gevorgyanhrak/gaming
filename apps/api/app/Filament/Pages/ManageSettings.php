@@ -109,9 +109,12 @@ class ManageSettings extends Page
                     TextInput::make('matchmaking.start_seconds')->label('Matchmaking countdown (seconds)')
                         ->numeric()->integer()->required()->minValue(3)->maxValue(600)
                         ->helperText('The game starts when it ends (a full table of people starts at once).'),
-                    TextInput::make('matchmaking.abandon_after_seconds')->label('A player who leaves the game loses after (seconds)')
-                        ->numeric()->integer()->required()->minValue(0)->maxValue(600)
-                        ->helperText('Away from the game page this long ends the game for them. 0 turns it off.'),
+                    TextInput::make('presence.offline_after_seconds')->label('A quiet game page counts as disconnected after (seconds)')
+                        ->numeric()->integer()->required()->minValue(3)->maxValue(120)
+                        ->helperText('The page reports every 2 s; closing it counts at once.'),
+                    TextInput::make('presence.return_seconds')->label('Seconds a disconnected player has to come back')
+                        ->numeric()->integer()->required()->minValue(1)->maxValue(120)
+                        ->helperText('After this, AI takes their seat for the rest of the game (ADR 0028).'),
                     TextInput::make('matchmaking.max_concurrent_games')->label('Games a player can play at once')
                         ->numeric()->integer()->required()->minValue(1)->maxValue(10),
                     Toggle::make('reactions.enabled')->label('Emojis and quick messages at tables')

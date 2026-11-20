@@ -169,6 +169,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
                     // state (the "game" limit) must never use up their presence reports.
                     Route::post('{room}/presence', [RoomController::class, 'presence'])
                         ->withoutMiddleware('throttle:game')->middleware('throttle:presence')->name('presence');
+                    Route::post('{room}/away', [RoomController::class, 'away'])->middleware('throttle:presence')->name('away');
                     Route::post('{room}/leave', [RoomController::class, 'leave'])->name('leave');
                     Route::get('{room}/reactions', [ReactionController::class, 'index'])->name('reactions.index');
                     Route::post('{room}/reactions', [ReactionController::class, 'store'])

@@ -2,7 +2,14 @@ import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { showBanner } from './store'
 
-type Seat = { seat: number; name: string | null; username: string | null; result: string | null }
+type Seat = {
+  seat: number
+  name: string | null
+  username: string | null
+  result: string | null
+  return_until?: string | null
+  replaced?: boolean
+}
 
 /**
  * "Anna joined" / "Anna left" at any table, from the room's participants: a seat filled or emptied, or a player who
@@ -24,6 +31,13 @@ export function useSeatBanners(participants: Seat[] | undefined, mySeat: number 
       if (seat === mySeat) continue
       const before = seen.get(seat)
       if (!before) showBanner({ kind: 'joined', title: t('banners.joined', { name: label(p) }) })
+      // ADR 0028: disconnected (a few seconds to return), back in time, or the seat went to AI.
+      else if (!before.replaced && p.replaced)
+        showBanner({ kind: 'left', title: t('banners.replaced', { name: label(p) }) })
+      else if (!before.return_until && p.return_until)
+        showBanner({ kind: 'left', title: t('banners.disconnected', { name: label(p) }) })
+      else if (before.return_until && !p.return_until && !p.replaced)
+        showBanner({ kind: 'joined', title: t('banners.back', { name: label(p) }) })
       else if (before.result === null && p.result === 'abandoned')
         showBanner({ kind: 'left', title: t('banners.left', { name: label(p) }) })
     }

@@ -899,6 +899,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/rooms/{room}/away": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * The game page is closing (sent as a beacon): the player's return window opens now rather than after the
+         *     silence that would otherwise tell (ADR 0028)
+         */
+        post: operations["v1.rooms.away"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/rooms/{room}/leave": {
         parameters: {
             query?: never;
@@ -1539,6 +1559,8 @@ export interface components {
                 frame: string | null;
                 result: string | null;
                 score: number | null;
+                return_until: string | null;
+                replaced: boolean;
             }[];
             end_reason: string | null;
             created_at: string;
@@ -1941,8 +1963,8 @@ export interface operations {
                                 requires_terms: boolean;
                             };
                             play: {
-                                /** @description Seconds away from a running game before it is lost; 0: never. */
-                                abandon_after_seconds: number;
+                                /** @description Seconds a disconnected player has to come back before AI takes their seat (ADR 0028). */
+                                return_seconds: number;
                                 /** @description Players can send emojis and quick messages at tables. */
                                 reactions: boolean;
                             };
@@ -3573,6 +3595,30 @@ export interface operations {
         };
     };
     "v1.rooms.presence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The room public id */
+                room: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "v1.rooms.away": {
         parameters: {
             query?: never;
             header?: never;

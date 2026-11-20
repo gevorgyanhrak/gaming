@@ -31,7 +31,9 @@ describe('Games in progress bar', () => {
       '/rooms/room-7',
     )
     expect(
-      await screen.findByText('Come back within 15 seconds, or the game is lost.'),
+      await screen.findByText(
+        'If you leave the table, you have 5 seconds to come back before AI takes your seat.',
+      ),
     ).toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: 'Leave the Chess game' }))

@@ -48,7 +48,8 @@ class ConfigController extends Controller
                 ],
                 'play' => [
                     /** @var int Seconds away from a running game before it is lost; 0: never. */
-                    'abandon_after_seconds' => $settings->get('matchmaking.abandon_after_seconds'),
+                    /** @var int Seconds a disconnected player has to come back before AI takes their seat (ADR 0028). */
+                    'return_seconds' => (int) $settings->get('presence.return_seconds'),
                     /** @var bool Players can send emojis and quick messages at tables. */
                     'reactions' => (bool) $settings->get('reactions.enabled'),
                 ],

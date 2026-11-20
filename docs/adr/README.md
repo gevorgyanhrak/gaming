@@ -32,3 +32,4 @@ Records are immutable once accepted; a changed decision gets a new record that s
 | [0025](0025-midnight-gold-platform-identity.md) | Midnight Gold platform identity; the game rooms keep the Lamplit Room (`.classic-scope`) | Accepted |
 | [0026](0026-ai-arena-and-per-game-boards.md) | AI arena (real AI-vs-AI games score AI players), one home game per AI, every game ranked by points (×10 unit) | Accepted |
 | [0027](0027-chip-packages-and-payments.md) | Chip packages and payment orders; Fishkas credited only on a verified provider webhook; no provider ships (owner checks legality) | Accepted |
+| [0028](0028-five-second-return-then-ai.md) | A disconnected player has 5 s to return (server-decided, race-free); then AI takes the seat for good; replaces ADR 0021's temporary stand-in | Accepted |

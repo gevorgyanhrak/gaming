@@ -27,7 +27,7 @@ it('returns the public platform configuration', function () {
                     'require_phone_verification' => false,
                     'requires_terms' => false,
                 ],
-                'play' => ['abandon_after_seconds' => 15, 'reactions' => true],
+                'play' => ['return_seconds' => 5, 'reactions' => true],
                 'pages' => [],
             ],
         ]);

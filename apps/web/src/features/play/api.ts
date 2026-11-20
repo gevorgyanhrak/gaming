@@ -1,4 +1,4 @@
-import { apiRequest } from '@/shared/api/http'
+import { apiRequest, postOnUnload } from '@/shared/api/http'
 import type { ApiResponse, Schemas } from '@/shared/api/types'
 import { randomId } from '@/shared/lib/uuid'
 
@@ -100,6 +100,9 @@ export const submitAction = (id: string, action: GameAction, expectedVersion: nu
 /** "Still on the game page" (see usePresence). */
 export const sendPresence = (id: string) =>
   apiRequest<null>(`/api/v1/rooms/${encodeURIComponent(id)}/presence`, { method: 'POST' })
+
+/** The game page is closing or the player is navigating away: their return window opens now (ADR 0028). */
+export const sendAway = (id: string) => postOnUnload(`/api/v1/rooms/${encodeURIComponent(id)}/away`)
 
 export const leaveRoom = (id: string) =>
   apiRequest<{ data: Room }>(`/api/v1/rooms/${encodeURIComponent(id)}/leave`, {

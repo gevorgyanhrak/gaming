@@ -14,7 +14,8 @@ Schedule::command('app:lift-expired-bans')->everyMinute()->withoutOverlapping(1)
 // hand): starting PHP for every run, 24 times a minute, cost far more than the sweeps themselves and
 // slowed the game workers next to it.
 Schedule::call(fn (Matchmaker $matchmaker) => $matchmaker->sweep())->name('matchmaking-sweep')->everyFiveSeconds()->withoutOverlapping(1);
-Schedule::call(fn (RoomPresence $presence) => $presence->sweep())->name('abandonment-sweep')->everyFiveSeconds()->withoutOverlapping(1);
+// Disconnections (ADR 0028): every second, so a quiet page opens its 5-second return window promptly.
+Schedule::call(fn (RoomPresence $presence) => $presence->sweep())->name('abandonment-sweep')->everySecond()->withoutOverlapping(1);
 // The AI arena: real AI-vs-AI games for the per-game boards (rankings.arena_games_per_hour; HayBet items 3–4).
 Schedule::command('rankings:arena')->everyFiveMinutes()->withoutOverlapping(30)->runInBackground();
 Schedule::command('model:prune', ['--model' => [VerificationCode::class]])->daily();

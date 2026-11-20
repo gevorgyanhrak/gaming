@@ -48,7 +48,10 @@ final class SettingsCatalog
             // AI fills a matchmaking table after this long; the game starts at start_seconds (owner: 7 and 10).
             new SettingDefinition('matchmaking.default_bot_timeout_seconds', SettingType::Integer, 7, rules: ['required', 'integer', 'min:3', 'max:600']),
             new SettingDefinition('matchmaking.start_seconds', SettingType::Integer, 10, rules: ['required', 'integer', 'min:3', 'max:600']),
-            new SettingDefinition('matchmaking.abandon_after_seconds', SettingType::Integer, 15, public: true, rules: ['required', 'integer', 'min:0', 'max:600']),
+            // ADR 0028: silence after which a player counts as disconnected, and the window they have to come back
+            // before AI takes their seat for good.
+            new SettingDefinition('presence.offline_after_seconds', SettingType::Integer, 6, rules: ['required', 'integer', 'min:3', 'max:120']),
+            new SettingDefinition('presence.return_seconds', SettingType::Integer, 5, public: true, rules: ['required', 'integer', 'min:1', 'max:120']),
             new SettingDefinition('matchmaking.max_concurrent_games', SettingType::Integer, 1, rules: ['required', 'integer', 'min:1', 'max:10']),
             new SettingDefinition('reactions.enabled', SettingType::Boolean, true, public: true, rules: ['boolean']),
 

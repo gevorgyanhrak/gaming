@@ -7,6 +7,7 @@ use App\Enums\ParticipantResult;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * A seat in a room, taken by a player or a bot.
@@ -18,7 +19,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $bot_profile_id
  * @property BotDifficulty|null $bot_difficulty
  * @property bool $is_active
- * @property bool $ai_controlled AI plays this person's seat (they are away, or left a table that plays on).
+ * @property bool $ai_controlled AI plays this person's seat (they left a table that plays on, or didn't come back in time).
+ * @property Carbon|null $disconnected_at The person's page went quiet: they have a few seconds to return (ADR 0028).
+ * @property Carbon|null $replaced_at AI took the seat for good: the person can't reclaim it.
  * @property ParticipantResult|null $result
  * @property int|null $score
  * @property int $stake Fishkas paid for the seat (entry fee or poker buy-in).
@@ -39,6 +42,8 @@ class GameParticipant extends Model
             'bot_difficulty' => BotDifficulty::class,
             'is_active' => 'boolean',
             'ai_controlled' => 'boolean',
+            'disconnected_at' => 'datetime',
+            'replaced_at' => 'datetime',
             'result' => ParticipantResult::class,
             'score' => 'integer',
         ];

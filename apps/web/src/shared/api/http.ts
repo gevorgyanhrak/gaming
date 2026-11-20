@@ -105,6 +105,24 @@ function refreshCsrfCookie(): Promise<void> {
   return csrfRequest
 }
 
+/**
+ * A POST that survives the page closing (fetch keepalive), with the session cookie and the XSRF token — for the
+ * "my game page is closing" signal (ADR 0028). Fire and forget: errors are ignored.
+ */
+export function postOnUnload(path: string) {
+  try {
+    const token = readCookie('XSRF-TOKEN')
+    void fetch(`${env.apiBaseUrl}${path}`, {
+      method: 'POST',
+      credentials: 'include',
+      keepalive: true,
+      headers: { Accept: 'application/json', ...(token ? { 'X-XSRF-TOKEN': token } : {}) },
+    }).catch(() => undefined)
+  } catch {
+    // The page is going away; nothing to report.
+  }
+}
+
 function readCookie(name: string): string | null {
   const match = document.cookie.split('; ').find((cookie) => cookie.startsWith(`${name}=`))
   return match ? decodeURIComponent(match.slice(name.length + 1)) : null

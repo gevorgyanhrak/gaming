@@ -61,7 +61,13 @@ then AI takes the seat for good) changes ADR 0021 → new ADR.
       78249e2.
 - [x] 11. Checkers timer: `TurnTimer` (ring draining with the server's deadline, seconds inside, red from 10 s, a
       gentle tick in the last 5, none under reduced motion) on the acting player's seat plate — Checkers, and Chess /
-      Nardi without a clock — this commit.
+      Nardi without a clock — 5882196.
+- [x] 12. Disconnection (ADR 0028): presence every 2 s + a keepalive "away" when the page closes or the player leaves
+      the table; quiet 6 s = disconnected; a 5-second return window decided by server time under the room lock (4.9 s
+      keeps the seat, 5.0 s doesn't); then AI takes the seat for good (2-player tables too; chip tables cash out;
+      AI-only tables end); playing elsewhere ends the window. Seat plates count down, then show the AI face; small
+      banners; "Return to the game" button. Fixed on the way: AI couldn't move for a seat taken over after Leave.
+      Live: player2 closed the page → countdown on player1's screen at 0.5 s, AI took the seat at 5.1 s — this commit.
 
 **Owner 2026-11-18 "remove Slotopol, find open-source providers like AGT / Pragmatic / Novomatic":**
 - [x] Slotopol removed from the app: the six integration commits reverted on main (tree = 1ffa46c), branch

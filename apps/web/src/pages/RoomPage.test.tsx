@@ -91,6 +91,29 @@ describe('Room', () => {
     expect(screen.getByText('vs')).toBeInTheDocument()
   })
 
+  it('counts down a disconnected player’s return on their seat, and marks a seat AI took (ADR 0028)', async () => {
+    const room = roomFixture()
+    const [me, other] = room.participants
+    const until = new Date(Date.now() + 4_500).toISOString()
+    serveRoom({
+      ...room,
+      participants: [me!, { ...other!, is_bot: false, name: 'Bob', return_until: until }],
+    })
+    renderRoute('/rooms/room-1')
+
+    expect(await screen.findByText(/Back in [45] s\?/)).toBeInTheDocument()
+
+    serveRoom({
+      ...room,
+      participants: [
+        me!,
+        { ...other!, is_bot: false, name: 'Bob', replaced: true, result: 'abandoned' },
+      ],
+    })
+    emit('user.1', 'room.seats', { room: 'room-1', seat: 1, change: 'replaced' })
+    expect(await screen.findByText('AI plays on')).toBeInTheDocument()
+  })
+
   it('shows the table bar in place of the site header', async () => {
     serveRoom()
     renderRoute('/rooms/room-1')

@@ -4,22 +4,19 @@ namespace App\Gameplay\Lifecycle;
 
 use App\Gameplay\Contracts\PlaysForChips;
 use App\Gameplay\Rooms\RoomStates;
-use App\Gameplay\Rooms\RoomStateStore;
 use App\Models\GameParticipant;
 use App\Models\GameRoom;
 
 /**
- * AI stands in for people at tables of three seats or more (owner, 2026-11-12), so the others keep
- * playing: while a player is away (missed presence reports) AI plays their seat, and gives it back as
- * soon as they are seen again; the result stays theirs. A player who presses Leave loses, and AI plays
- * their seat to the end (tables played for chips keep their own cash-out instead: see GameActionService).
- * Two-player games never hand a seat to AI: the one who stays wins. Each game's own bot (BotStrategy)
+ * AI stands in for people so the others keep playing. A player who presses Leave at a table of three seats
+ * or more loses, and AI plays their seat to the end (tables played for chips keep their own cash-out instead: see
+ * GameActionService). A player who disconnects and doesn't return within the window loses their seat to AI at
+ * any table where another person plays (ADR 0028, RoomPresence + GameActionService::replaceAway). Each game's own bot (BotStrategy)
  * makes the moves, at the game's highest level, through the same path as everyone (BotTurnJob).
  */
 class AiTakeover
 {
     public function __construct(
-        private readonly RoomStateStore $store,
         private readonly RoomStates $states,
         private readonly GameScheduler $scheduler,
     ) {}
@@ -40,44 +37,6 @@ class AiTakeover
     public function takesLeaversSeat(GameRoom $room, GameParticipant $participant): bool
     {
         return ! $this->states->engine($room) instanceof PlaysForChips && $this->canStandIn($room, $participant);
-    }
-
-    /**
-     * The player is away: AI plays their seat from now on. Returns false when it can't (then they have left).
-     */
-    public function standIn(GameRoom $room, GameParticipant $participant): bool
-    {
-        return (bool) $this->store->locked($room, function () use ($room, $participant) {
-            $room->refresh()->load(['game', 'participants']);
-            $seat = $room->participants->firstWhere('id', $participant->id);
-            if (! $room->isActive() || $seat === null || ! $seat->is_active) {
-                return true;   // Nothing to do: the game or their part in it is over.
-            }
-            if ($seat->ai_controlled) {
-                return true;
-            }
-            if (! $this->canStandIn($room, $seat)) {
-                return false;
-            }
-            $seat->forceFill(['ai_controlled' => true])->save();
-            $this->playNow($room);
-
-            return true;
-        });
-    }
-
-    /** The player is back: their seat is theirs again (not after they left). */
-    public function handBack(GameRoom $room, GameParticipant $participant): void
-    {
-        if (! $participant->ai_controlled || ! $participant->is_active) {
-            return;
-        }
-        $this->store->locked($room, function () use ($participant) {
-            $participant->refresh();
-            if ($participant->ai_controlled && $participant->is_active) {
-                $participant->forceFill(['ai_controlled' => false])->save();
-            }
-        });
     }
 
     /**

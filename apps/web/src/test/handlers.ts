@@ -24,7 +24,7 @@ export const configFixture: PublicConfig = {
     require_phone_verification: true,
     requires_terms: false,
   },
-  play: { abandon_after_seconds: 15, reactions: true },
+  play: { return_seconds: 5, reactions: true },
   pages: [],
 }
 
@@ -211,6 +211,8 @@ export function roomFixture(overrides: Partial<Room> = {}): Room {
         frame: null,
         result: null,
         score: null,
+        return_until: null,
+        replaced: false,
       },
       {
         seat: 1,
@@ -223,6 +225,8 @@ export function roomFixture(overrides: Partial<Room> = {}): Room {
         frame: null,
         result: null,
         score: null,
+        return_until: null,
+        replaced: false,
       },
     ],
     end_reason: null,

@@ -1,3 +1,4 @@
+import { useCountdown } from '../useCountdown'
 import { TurnTimer } from './TurnTimer'
 import { useTranslation } from 'react-i18next'
 import { AiTag } from '@/shared/ui/AiTag'
@@ -37,7 +38,10 @@ export function PlayerList({
   const { t } = useTranslation()
   const duel = room.participants.length === 2
   const faces = tableFaces(
-    room.participants.filter((p) => p.is_bot).map((p) => ({ seat: p.seat, name: p.name ?? '' })),
+    // AI players, and seats AI took over (ADR 0028: the seat shows an AI face from then on).
+    room.participants
+      .filter((p) => p.is_bot || p.replaced)
+      .map((p) => ({ seat: p.seat, name: p.name ?? '' })),
   )
   // You first: on the left of a duel.
   const players = [...room.participants].sort(
@@ -60,7 +64,7 @@ export function PlayerList({
         <span {...seatTrigger(player.seat, t('playerCard.open', { name: player.name ?? '?' }))}>
           <Avatar
             url={player.avatar_url}
-            ai={player.is_bot}
+            ai={player.is_bot || player.replaced}
             face={faces[player.seat]}
             name={player.name ?? '?'}
             size="md"
@@ -86,7 +90,7 @@ export function PlayerList({
                 {formatClock(clock)}
               </span>
             ) : null}
-            {player.result ? (
+            {player.result && !player.replaced ? (
               // A long result word in a narrow plate (a phone) truncates instead of spilling over.
               <Badge
                 tone={resultTone[player.result as ParticipantResult]}
@@ -98,6 +102,14 @@ export function PlayerList({
               </Badge>
             ) : player.seat === mySeat ? (
               <span>{t('room.youSeat')}</span>
+            ) : null}
+            {player.return_until ? <ReturnCountdown until={player.return_until} /> : null}
+            {player.replaced ? (
+              // The seat plays on with AI: one short line, no result badge (ADR 0028).
+              <span className="inline-flex min-w-0 items-center gap-1 font-semibold text-accent-text">
+                <AiTag />
+                <span className="truncate">{t('room.seat.replaced')}</span>
+              </span>
             ) : null}
             {toAct && clock == null && turnTimer ? (
               <TurnTimer
@@ -143,5 +155,24 @@ export function PlayerList({
     <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3" aria-label={t('room.players')}>
       {players.map((player) => plate(player, false))}
     </ul>
+  )
+}
+
+/** A disconnected player's return window, counting down on their plate (ADR 0028). */
+function ReturnCountdown({ until }: { until: string }) {
+  const { t } = useTranslation()
+  const seconds = useCountdown(until, null)
+  if (seconds === null) return null
+  return (
+    <span
+      role="status"
+      className="inline-flex items-center gap-1 font-semibold text-danger tabular-nums"
+    >
+      <span
+        aria-hidden="true"
+        className="size-2 rounded-full bg-danger motion-safe:animate-pulse"
+      />
+      {t('room.seat.returning', { count: seconds })}
+    </span>
   )
 }

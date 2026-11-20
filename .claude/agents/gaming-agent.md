@@ -81,6 +81,10 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   loses the game).
 - The header balance is `balance + at_table` (`at_table` includes a buy-in at a chip table that hasn't started); on `wallet.updated` the client refetches the summary (never
   patches `balance` alone — buy-ins and cash-outs move Fishkas between the two).
+- Disconnection (ADR 0028): `RoomPresence` (presence every 2 s, `POST /rooms/{room}/away` keepalive on close/leave, sweep
+  every second, `presence.offline_after_seconds` 6 / `presence.return_seconds` 5), `ReplaceAwayJob`,
+  `GameActionService::replaceAway` (server time under the room lock decides; replaced seats never come back);
+  participants carry `return_until` / `replaced`; event `room.seats`. AI may move for an inactive seat only with an `auto:` id.
 - Gameplay jobs run on the `game` queue under Horizon's `supervisor-game` (sleep 0.25 s); `BotTurnJob`,
   `TurnTimeoutJob` and `ResumeRoundJob` release and retry on a room-lock timeout. The 5-second sweeps are
   `Schedule::call`s in the scheduler's process (spawning artisan every 5 s was the slowest thing locally).

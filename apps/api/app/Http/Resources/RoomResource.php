@@ -6,6 +6,7 @@ use App\Enums\RoomStatus;
 use App\Models\GameParticipant;
 use App\Models\GameRoom;
 use App\Platform\Levels\Levels;
+use App\Platform\Settings\Settings;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
@@ -44,7 +45,7 @@ class RoomResource extends JsonResource
             'group' => $this->group === null ? null : new PlayGroupResource($this->group),
             /** What each player bets (stake games; 0 for poker). */
             'stake' => $this->stake,
-            /** @var list<array{seat: int, is_bot: bool, personality: string|null, name: string|null, username: string|null, avatar_url: string|null, level: int, frame: string|null, result: string|null, score: int|null}> */
+            /** @var list<array{seat: int, is_bot: bool, personality: string|null, name: string|null, username: string|null, avatar_url: string|null, level: int, frame: string|null, result: string|null, score: int|null, return_until: string|null, replaced: bool}> */
             'participants' => $this->participants->map(fn (GameParticipant $p) => [
                 'seat' => $p->seat,
                 'is_bot' => $p->isBot(),
@@ -63,6 +64,17 @@ class RoomResource extends JsonResource
                 'result' => $p->result?->value,
                 /** @var int|null Points the result is worth (Nardi: 2 for a mars, a double win). */
                 'score' => $p->score,
+                /**
+                 * When a disconnected person's return window closes (ADR 0028): the others show a countdown. Null while
+                 * they're here.
+                 *
+                 * @var string|null
+                 */
+                'return_until' => $p->disconnected_at !== null && $p->replaced_at === null
+                    ? $p->disconnected_at->copy()->addSeconds((int) app(Settings::class)->get('presence.return_seconds'))->format('Y-m-d\TH:i:s.vP')
+                    : null,
+                /** @var bool AI took this person's seat for the rest of the game. */
+                'replaced' => $p->replaced_at !== null,
             ])->values()->all(),
             /** @var string|null */
             'end_reason' => $this->end_reason,

@@ -84,8 +84,10 @@ class GameActionService
                 };
             }
 
-            // Someone who left plays no more: AI has their seat (AiTakeover).
-            if (! $actor->is_active) {
+            // Someone who left plays no more: AI has their seat (AiTakeover). Only the server's own move for a seat AI
+            // took over goes through (BotTurnJob marks it with the AUTO prefix); a person's request never does.
+            $aiMove = $actor->ai_controlled && $clientActionId !== null && str_starts_with($clientActionId, GameMove::AUTO_PREFIX);
+            if (! $actor->is_active && ! $aiMove) {
                 throw new RoomNotActive(__('platform.play.not_in_progress'));
             }
             $engine = $this->states->engine($room);
@@ -211,6 +213,46 @@ class GameActionService
             $this->othersPlayOn($room, $leaver)
                 ? $this->depart($room, $current, $leaver, null, GameMove::ABANDON)
                 : $this->end($room, $current, $leaver, GameMove::ABANDON, null);
+        });
+    }
+
+    /**
+     * The player disconnected and didn't come back in time (ADR 0028). `$due` is read under the room lock — a return
+     * and the end of the window can't both win. With another person still playing (any table size), AI takes the
+     * seat for the rest of the game and the player has left (abandoned); at a chip table, and when nobody else plays,
+     * the usual abandonment (taken out with their chips, or the game ends). The seat can't be reclaimed after this.
+     *
+     * @param  callable(GameParticipant): bool  $due
+     */
+    public function replaceAway(GameRoom $room, GameParticipant $participant, callable $due): bool
+    {
+        return (bool) $this->store->locked($room, function () use ($room, $participant, $due) {
+            $room->refresh()->load(['game', 'participants']);
+            $seat = $room->participants->firstWhere('id', $participant->id);
+            if (! $room->isActive() || $seat === null || ! $seat->is_active || $seat->replaced_at !== null
+                || $seat->disconnected_at === null || ! $due($seat)) {
+                return false;
+            }
+
+            $current = $this->states->current($room);
+            $anotherPerson = $room->participants->contains(fn (GameParticipant $p) => $p->id !== $seat->id
+                && $p->user_id !== null && $p->is_active && ! $p->ai_controlled);
+            if ($anotherPerson && ! $this->states->engine($room) instanceof PlaysForChips) {
+                DB::transaction(function () use ($room, $seat) {
+                    $this->finisher->finishParticipant($seat, $room->game_id, ParticipantResult::Abandoned);
+                    $seat->forceFill(['ai_controlled' => true, 'replaced_at' => now()])->save();
+                });
+                DB::afterCommit(fn () => $this->takeover->playNow($room));
+
+                return true;
+            }
+
+            $seat->forceFill(['replaced_at' => now()])->save();
+            $this->othersPlayOn($room, $seat)
+                ? $this->depart($room, $current, $seat, null, GameMove::ABANDON)
+                : $this->end($room, $current, $seat, GameMove::ABANDON, null);
+
+            return true;
         });
     }
 
