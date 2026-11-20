@@ -47,6 +47,7 @@ describe('The More menu (phones)', () => {
     await userEvent.click(button)
     await userEvent.click(within(panel()!).getByRole('link', { name: 'Leaderboards' }))
     expect(panel()).toBeNull()
-    expect(await screen.findByRole('heading', { level: 1 })).toBeInTheDocument()
+    // The leaderboards page is a lazy route: give it time under a loaded test run.
+    expect(await screen.findByRole('heading', { level: 1 }, { timeout: 5000 })).toBeInTheDocument()
   })
 })

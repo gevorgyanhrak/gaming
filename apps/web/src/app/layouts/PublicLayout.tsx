@@ -19,6 +19,7 @@ import { DailyBonusDialog } from '@/features/wallet/components/DailyBonusDialog'
 import { LevelUpDialog } from '@/features/levels/components/LevelUpDialog'
 import { useLevelSync } from '@/features/levels/hooks'
 import { OutOfFishkasDialog } from '@/features/wallet/components/OutOfFishkasDialog'
+import { useCasinoAmbience } from '@/features/sound/useCasinoAmbience'
 import { useGameInProgress } from '@/features/play/gameInProgress'
 import { openOutOfFishkas } from '@/features/wallet/outOfFishkas'
 import { useWalletSync, useZeroBalancePrompt } from '@/features/wallet/hooks'
@@ -147,6 +148,8 @@ export function PublicLayout() {
     return () => document.body.classList.remove('classic-scope')
   }, [atTable])
   const showBar = !wide && !atTable
+  // Quiet casino ambience and the welcome chime around the games, never over a table (item 8).
+  useCasinoAmbience(!atTable)
 
   const brand = config.data ? (
     // The HayBet mark and name (item 7); phones keep the header for search and the balance: the mark alone, the name

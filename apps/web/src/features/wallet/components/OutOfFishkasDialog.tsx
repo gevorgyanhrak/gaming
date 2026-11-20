@@ -1,3 +1,4 @@
+import { playUiSound } from '@/shared/lib/sounds'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -33,7 +34,10 @@ function Dialog() {
   const sent = useRef(false)
   const refill = useMutation({
     mutationFn: refillFishkas,
-    onSuccess: (next) => queryClient.setQueryData(walletKey, next),
+    onSuccess: (next) => {
+      queryClient.setQueryData(walletKey, next)
+      playUiSound('reward')
+    },
     onError: () => {
       sent.current = false
     },

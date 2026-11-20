@@ -267,6 +267,8 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
 - Brand (HayBet, item 7): the name is the `general.platform_name` setting; the logo is `shared/ui/BrandMark`
   (`BrandMark` chip-and-diamond mark, `BrandLogo` = admin upload or mark + two-tone "Hay|Bet"), the same drawing as
   `public/favicon.svg` and the `index.html` loading screen.
+- Casino sounds (item 8): `shared/lib/sounds.ts` also has `welcome`, `gameStart`, `reward`, `levelUp` and the ambience
+  (`setAmbience`), run by `features/sound/useCasinoAmbience` outside tables; the wallet clink is skipped for 1.5 s after a reward sound.
 - Online: `GET /stats/online` → `online` (real, Reverb presence; null when unknown) and `demo` (owner-chosen
   simulated figure, `DemoActivity`, admin "Demo activity"). Never add `demo` to `online`; anything showing `demo`
   tags it "Demo" and explains it (`useDemoActivity`, HomeHero `DemoStat`).

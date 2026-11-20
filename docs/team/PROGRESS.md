@@ -43,7 +43,11 @@ then AI takes the seat for good) changes ADR 0021 → new ADR.
 - [x] 7. HayBet brand: the name (setting, set by a migration unless an admin chose another), a new mark (gold chip with
       eight notches, an "H" whose crossbar is a diamond) drawn in code (`shared/ui/BrandMark`: BrandMark, BrandLogo with
       the two-tone wordmark) — header, phone header, footer, maintenance screen, favicon, loading screen, page title.
-      An uploaded admin logo still wins — this commit.
+      An uploaded admin logo still wins — d635e5f, fix e6292c9.
+- [x] 8. Casino sounds (synthesized, one on/off switch): a quiet lounge ambience outside tables (soft chords drifting
+      every 12–20 s, a distant chip clink now and then, about 4 % volume, after the first tap), a welcome chime once a
+      session, a game-start riffle, reward coins (daily bonus, gifts, top-up, level rewards), a level-up fanfare;
+      win/lose and buttons already had theirs — this commit.
 
 **Owner 2026-11-18 "remove Slotopol, find open-source providers like AGT / Pragmatic / Novomatic":**
 - [x] Slotopol removed from the app: the six integration commits reverted on main (tree = 1ffa46c), branch

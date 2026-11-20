@@ -21,6 +21,11 @@ export type Sound =
   | 'click'
   | 'fanfare'
   | 'unlock'
+  // HayBet (item 8): the app opening, a game starting, a reward collected, a level reached.
+  | 'welcome'
+  | 'gameStart'
+  | 'reward'
+  | 'levelUp'
 export type Material = 'wood' | 'cards'
 
 const MASTER = 0.25
@@ -52,9 +57,18 @@ export function setUiSounds(on: boolean) {
   uiOn = on
 }
 
-/** A sound outside a game (buttons, chips, celebrations): only when the player has sounds on. */
+let lastReward = 0
+
+/**
+ * A sound outside a game (buttons, chips, celebrations): only when the player has sounds on. The wallet's chip clink
+ * stays quiet just after a reward or level-up sound, which already says the Fishkas arrived.
+ */
 export function playUiSound(sound: Sound) {
-  if (uiOn) playSound(sound)
+  if (!uiOn) return
+  const now = Date.now()
+  if (sound === 'reward' || sound === 'levelUp') lastReward = now
+  else if (sound === 'chips' && now - lastReward < 1500) return
+  playSound(sound)
 }
 
 /** Plays a sound now, if audio is unlocked and running. */
@@ -201,6 +215,42 @@ const recipes: Record<Sound, Recipe> = {
     tone(ctx, out, at, { type: 'sine', freq: 1319, peak: 0.3, decay: 0.6 })
     tone(ctx, out, at + 0.09, { type: 'sine', freq: 1976, peak: 0.22, decay: 0.7 })
   },
+  welcome: (ctx, out, at) => {
+    // A soft lounge chime: a major-seventh chord rolled upwards.
+    ;[392, 494, 587, 740].forEach((freq, i) => {
+      tone(ctx, out, at + i * 0.08, { type: 'sine', freq, peak: 0.16, decay: 1.1 })
+    })
+  },
+  gameStart: (ctx, out, at) => {
+    // A riffle of chips and a bright shimmer: the table is open.
+    ;[0, 0.04, 0.08, 0.12, 0.16].forEach((dt, i) => {
+      tone(ctx, out, at + dt, { type: 'triangle', freq: 2100 + i * 180, peak: 0.12, decay: 0.06 })
+    })
+    tone(ctx, out, at + 0.22, { type: 'sine', freq: 1047, peak: 0.2, decay: 0.45 })
+    tone(ctx, out, at + 0.3, { type: 'sine', freq: 1568, peak: 0.14, decay: 0.55 })
+  },
+  reward: (ctx, out, at) => {
+    // Coins tumbling into a pile, rising a little.
+    for (let i = 0; i < 7; i++) {
+      const dt = i * 0.055 + Math.random() * 0.02
+      tone(ctx, out, at + dt, {
+        type: 'triangle',
+        freq: 2000 + i * 170 + Math.random() * 120,
+        peak: 0.14,
+        decay: 0.09,
+      })
+    }
+    tone(ctx, out, at + 0.42, { type: 'sine', freq: 2093, peak: 0.16, decay: 0.5 })
+  },
+  levelUp: (ctx, out, at) => {
+    // A short rising fanfare ending on a held chord.
+    ;[523, 659, 784].forEach((freq, i) => {
+      tone(ctx, out, at + i * 0.1, { type: 'triangle', freq, peak: 0.26, decay: 0.28 })
+    })
+    ;[1047, 1319, 1568].forEach((freq) => {
+      tone(ctx, out, at + 0.34, { type: 'sine', freq, peak: 0.14, decay: 1.2 })
+    })
+  },
   loss: (ctx, out, at) => {
     const low = ctx.createBiquadFilter()
     low.type = 'lowpass'
@@ -233,4 +283,87 @@ function noiseBurst(
   band.connect(envelope(ctx, out, at, peak, decay))
   source.start(at)
   source.stop(at + decay)
+}
+
+/**
+ * The casino's background ambience (HayBet item 8): a very quiet lounge pad — soft chords that drift every 12–20 s —
+ * with a distant chip clink now and then. Synthesized, never a loop of the same notes. Plays only while the player
+ * has sounds on, after a gesture (browser autoplay rules), and is stopped at game tables (`setAmbience(false)`).
+ */
+const AMBIENCE_GAIN = 0.16 // of the master (0.25): about 4 % of full volume
+const CHORDS = [
+  [196, 247, 294, 370], // G maj7
+  [165, 196, 247, 294], // E m7
+  [131, 165, 196, 247], // C maj7
+  [147, 185, 220, 262], // D 7
+  [175, 220, 262, 330], // F maj7
+]
+let ambience: { gain: GainNode; timers: number[]; voices: OscillatorNode[] } | null = null
+
+export function setAmbience(on: boolean) {
+  if (!on) {
+    stopAmbience()
+    return
+  }
+  if (ambience || !context || !master || context.state !== 'running') return
+  const ctx = context
+  const gain = ctx.createGain()
+  gain.gain.value = 0.0001
+  const low = ctx.createBiquadFilter()
+  low.type = 'lowpass'
+  low.frequency.value = 900
+  low.connect(gain).connect(master)
+  gain.gain.exponentialRampToValueAtTime(AMBIENCE_GAIN, ctx.currentTime + 3)
+  const state = { gain, timers: [] as number[], voices: [] as OscillatorNode[] }
+  ambience = state
+
+  const playChord = () => {
+    if (ambience !== state) return
+    const chord = CHORDS[Math.floor(Math.random() * CHORDS.length)]!
+    const at = ctx.currentTime
+    const length = 12 + Math.random() * 8
+    for (const freq of chord) {
+      const osc = ctx.createOscillator()
+      osc.type = 'triangle'
+      osc.frequency.value = freq * (1 + (Math.random() - 0.5) * 0.004)
+      const voice = ctx.createGain()
+      voice.gain.setValueAtTime(0.0001, at)
+      voice.gain.exponentialRampToValueAtTime(0.06, at + 3)
+      voice.gain.setValueAtTime(0.06, at + length - 3)
+      voice.gain.exponentialRampToValueAtTime(0.0001, at + length + 1)
+      osc.connect(voice).connect(low)
+      osc.start(at)
+      osc.stop(at + length + 1.2)
+      state.voices.push(osc)
+      osc.onended = () => {
+        state.voices = state.voices.filter((v) => v !== osc)
+      }
+    }
+    state.timers.push(window.setTimeout(playChord, (length - 2) * 1000))
+  }
+  const clink = () => {
+    if (ambience !== state) return
+    recipes.chips(ctx, gain, ctx.currentTime, 'wood')
+    state.timers.push(window.setTimeout(clink, 20_000 + Math.random() * 25_000))
+  }
+  playChord()
+  state.timers.push(window.setTimeout(clink, 8000 + Math.random() * 10_000))
+}
+
+function stopAmbience() {
+  const state = ambience
+  if (!state || !context) return
+  ambience = null
+  for (const timer of state.timers) window.clearTimeout(timer)
+  const at = context.currentTime
+  state.gain.gain.cancelScheduledValues(at)
+  state.gain.gain.setValueAtTime(Math.max(state.gain.gain.value, 0.0001), at)
+  state.gain.gain.exponentialRampToValueAtTime(0.0001, at + 1.2)
+  for (const voice of state.voices) {
+    try {
+      voice.stop(at + 1.3)
+    } catch {
+      // already stopped
+    }
+  }
 }

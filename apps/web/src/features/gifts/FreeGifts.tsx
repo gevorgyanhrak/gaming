@@ -1,3 +1,4 @@
+import { playUiSound } from '@/shared/lib/sounds'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -38,6 +39,7 @@ export function GiftTiles({ tileClassName }: { tileClassName: string }) {
     onSuccess: (data) => {
       queryClient.setQueryData(giftsKey, data)
       void queryClient.invalidateQueries({ queryKey: walletKey })
+      playUiSound('reward')
     },
   })
   // The countdown ran out: the next gift is there.

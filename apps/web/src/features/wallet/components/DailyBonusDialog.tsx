@@ -1,3 +1,4 @@
+import { playUiSound } from '@/shared/lib/sounds'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -58,6 +59,7 @@ function Dialog({ bonus }: { bonus: DailyBonus }) {
     mutationFn: collectDailyBonus,
     onSuccess: (next) => {
       queryClient.setQueryData(dailyBonusKey, next)
+      playUiSound('reward')
       void queryClient.invalidateQueries({ queryKey: walletKey })
       // The chips take off from the chest and the popup steps aside at once, so the header balance
       // is in plain view (not under the backdrop) when they land and it counts up.

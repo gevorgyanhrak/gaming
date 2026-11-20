@@ -1,3 +1,4 @@
+import { playUiSound } from '@/shared/lib/sounds'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -56,6 +57,8 @@ function Dialog({ status }: { status: LevelStatus }) {
 
   // Shown as it was when it opened: collecting empties the list, and the popup steps aside then.
   const [pending] = useState(status.pending)
+  // The level-up fanfare as the popup opens (HayBet item 8), and the coins as the rewards come in.
+  useEffect(() => playUiSound('levelUp'), [])
   const from = (pending[0]?.level ?? status.level) - 1
   const to = pending[pending.length - 1]?.level ?? status.level
   const fishkas = pending.reduce((sum, up) => sum + up.fishkas, 0)
@@ -68,7 +71,10 @@ function Dialog({ status }: { status: LevelStatus }) {
     onSuccess: (next) => {
       void queryClient.invalidateQueries({ queryKey: walletKey })
       void queryClient.invalidateQueries({ queryKey: authKeys.me, exact: true })
-      if (next.collected > 0) flyFishkas(chips.current, 'in')
+      if (next.collected > 0) {
+        flyFishkas(chips.current, 'in')
+        playUiSound('reward')
+      }
       // The empty list closes the popup, so it stays up a moment for the chips to leave it.
       window.setTimeout(() => queryClient.setQueryData(levelKey, next.status), 250)
     },

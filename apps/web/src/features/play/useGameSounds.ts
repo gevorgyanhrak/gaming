@@ -16,8 +16,8 @@ interface Context {
 }
 
 /**
- * The one sound (if any) that the step from `prev` to `next` deserves. Nothing on a first load or a
- * refetch of the same version; the game's end wins over everything, then a round I won (a poker
+ * The one sound (if any) that the step from `prev` to `next` deserves. On a first load only a game's start; nothing
+ * on a refetch of the same version; the game's end wins over everything, then a round I won (a poker
  * hand), then the start of my turn (when it could go unnoticed), then a capture, then a plain move.
  */
 export function soundFor(prev: Snapshot | null, next: Snapshot, ctx: Context): Sound | null {
@@ -25,7 +25,8 @@ export function soundFor(prev: Snapshot | null, next: Snapshot, ctx: Context): S
   if (seat === null) return null
   const myTurn = next.seats_to_act.includes(seat)
 
-  if (!prev) return ctx.sawWaiting && myTurn ? 'yourTurn' : null
+  // A game starting (this page saw the table fill, or nobody has moved yet): the start sound, whoever moves first.
+  if (!prev) return (ctx.sawWaiting || next.version === 0) && !next.result ? 'gameStart' : null
   if (next.version <= prev.version) return null
 
   if (next.result && !prev.result) {

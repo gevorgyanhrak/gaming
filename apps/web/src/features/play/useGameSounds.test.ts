@@ -8,10 +8,13 @@ const ctx = { traits: wood, seats: 2, hidden: false, sawWaiting: false }
 const state = roomStateFixture
 
 describe('soundFor', () => {
-  it('stays quiet on a first load, unless this page saw the game start', () => {
-    expect(soundFor(null, state(), ctx)).toBeNull()
-    expect(soundFor(null, state(), { ...ctx, sawWaiting: true })).toBe('yourTurn')
-    expect(soundFor(null, state({ seats_to_act: [1] }), { ...ctx, sawWaiting: true })).toBeNull()
+  it('on a first load plays only a game’s start: the table filled here, or nobody has moved yet', () => {
+    expect(soundFor(null, state({ version: 7 }), ctx)).toBeNull()
+    expect(soundFor(null, state({ version: 7 }), { ...ctx, sawWaiting: true })).toBe('gameStart')
+    expect(
+      soundFor(null, state({ version: 7, seats_to_act: [1] }), { ...ctx, sawWaiting: true }),
+    ).toBe('gameStart')
+    expect(soundFor(null, state({ version: 0 }), ctx)).toBe('gameStart')
   })
 
   it('stays quiet when the version did not advance', () => {
