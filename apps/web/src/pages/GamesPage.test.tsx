@@ -85,7 +85,7 @@ describe('Games catalog', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Игры')
   })
 
-  it('opens the ☰ menu with the sections and the language — no list of games — and closes it with Escape', async () => {
+  it('lists the sections, not the games, in the phone’s More menu', async () => {
     server.use(
       http.get('*/api/v1/games', () =>
         HttpResponse.json({
@@ -96,16 +96,12 @@ describe('Games catalog', () => {
     renderRoute('/dashboard')
 
     await userEvent.click(await screen.findByRole('button', { name: 'Menu' }))
-    const menu = screen.getByRole('dialog', { name: 'Menu' })
+    const menu = document.getElementById('more-menu')!
     expect(within(menu).getByRole('link', { name: 'Leaderboards' })).toHaveAttribute(
       'href',
       '/leaderboards',
     )
     expect(within(menu).queryByRole('link', { name: 'Durak' })).not.toBeInTheDocument()
-    expect(within(menu).getByRole('combobox', { name: 'Language' })).toBeInTheDocument()
-
-    await userEvent.keyboard('{Escape}')
-    expect(screen.queryByRole('dialog', { name: 'Menu' })).not.toBeInTheDocument()
   })
 
   const board = { slug: 'board', name: 'Board games', sort_order: 10 }

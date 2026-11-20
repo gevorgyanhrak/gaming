@@ -32,10 +32,8 @@ import {
   BackIcon,
   CloseIcon,
   GridIcon,
-  HistoryIcon,
   HomeIcon,
   MenuIcon,
-  SettingsIcon,
   SpadeIcon,
   StarIcon,
   TrophyIcon,
@@ -56,7 +54,7 @@ const tabLink = ({ isActive }: { isActive: boolean }) =>
 const iconButton =
   'flex size-11 shrink-0 items-center justify-center rounded-control border border-white/10 bg-white/5 text-fg transition-colors hover:border-gold/50 hover:bg-white/10'
 
-/** The site's sections, for the header (from 1280 px) and the ☰ menu: one list, so both offer the same places. */
+/** The site's sections: one list for the header row, the tablet section bar and the phone's More panel. */
 function useSections(home: string) {
   const { t } = useTranslation()
   const { pathname, search } = useLocation()
@@ -91,7 +89,7 @@ function useSections(home: string) {
   ]
 }
 
-/** The header's sections (from 1280 px; phones and tablets have the tab bar and the ☰ menu). */
+/** The header's sections, inline from 1280 px (tablets: SectionBar; phones: the tab bar and MoreMenu). */
 function SectionLinks({ home }: { home: string }) {
   const { t } = useTranslation()
   const links = useSections(home)
@@ -122,7 +120,7 @@ function SectionLinks({ home }: { home: string }) {
 }
 
 /**
- * The app's shell (TASK-048): a header with the ☰ menu (MenuDrawer), the balance and account, the page,
+ * The app's shell (TASK-048, HayBet item 5): a header with the sections, the balance and account, the page,
  * and a bottom bar on phones and tablets. At a table the room shows its own bar (TableBar) instead.
  */
 export function PublicLayout() {
@@ -146,8 +144,6 @@ export function PublicLayout() {
     return () => document.body.classList.remove('classic-scope')
   }, [atTable])
   const showBar = !wide && !atTable
-  // The ☰ menu (owner, 2026-11-14: no side bar of games; the account's pages and the language, in a menu).
-  const [menuOpen, setMenuOpen] = useState(false)
 
   const brand = (
     <>
@@ -184,88 +180,75 @@ export function PublicLayout() {
       <BigWinCelebration />
       <AchievementToast />
 
-      <MenuDrawer
-        open={menuOpen}
-        onClose={() => setMenuOpen(false)}
-        home={home}
-        signedIn={Boolean(user.data)}
-        guest={user.data === null}
-        language={language}
-      />
-
       <div className={`flex min-h-dvh min-w-0 flex-1 flex-col ${showBar ? 'pb-tabbar' : ''}`}>
         {/* At a table the room draws its own bar (TableBar); during maintenance the header stays. */}
         {atTable && !inMaintenance ? null : (
-          <header className="sticky top-0 z-20 flex h-header items-center justify-between gap-1.5 border-b border-white/6 bg-night-900/75 px-2.5 backdrop-blur-xl backdrop-saturate-150 sm:gap-3 sm:px-6">
+          // HayBet item 5 (2026-11-20): no side menu. The sections sit in the header — inline from 1280 px, on a
+          // second row of the header from 768 px, and on phones in the "More" panel that drops from the header
+          // (next to the tab bar).
+          <header className="sticky top-0 z-20 border-b border-white/6 bg-night-900/75 backdrop-blur-xl backdrop-saturate-150">
             {/* A thin gold light along the bottom edge. */}
             <span
               aria-hidden="true"
               className="pointer-events-none absolute inset-x-0 -bottom-px h-px bg-linear-to-r from-transparent via-gold/45 to-transparent"
             />
-            {/* Phones show the logo alone, which must not shrink; from sm the name may truncate. */}
-            <div className="flex shrink-0 items-center gap-2 sm:min-w-0 sm:shrink sm:gap-3">
-              {atTable ? (
-                <Link to={home} className={iconButton} aria-label={t('nav.back')}>
-                  <BackIcon />
-                </Link>
-              ) : null}
-              {atTable ? null : (
-                <button
-                  type="button"
-                  onClick={() => setMenuOpen(true)}
-                  aria-label={t('nav.menu')}
-                  aria-expanded={menuOpen}
-                  className={iconButton}
-                >
-                  <MenuIcon />
-                </button>
-              )}
-              {/* The logo always leads to the home page (owner, 2026-11-17). On narrow phones it gives way: under
+            <div className="flex h-header items-center justify-between gap-1.5 px-2.5 sm:gap-3 sm:px-6">
+              {/* Phones show the logo alone, which must not shrink; from sm the name may truncate. */}
+              <div className="flex shrink-0 items-center gap-2 sm:min-w-0 sm:shrink sm:gap-3">
+                {atTable ? (
+                  <Link to={home} className={iconButton} aria-label={t('nav.back')}>
+                    <BackIcon />
+                  </Link>
+                ) : null}
+                {atTable ? null : <MoreMenu home={home} language={language} />}
+                {/* The logo always leads to the home page (owner, 2026-11-17). On narrow phones it gives way: under
                   375 px, or under 400 px for a player, whose balance needs the room (ru "10,1 тыс."). */}
-              <Link
-                to="/"
-                className={`flex min-w-0 items-center gap-2.5 font-display text-[0.95rem] font-semibold tracking-tight text-fg ${
-                  user.data ? 'max-[399px]:hidden' : 'max-[374px]:hidden'
-                }`}
+                <Link
+                  to="/"
+                  className={`flex min-w-0 items-center gap-2.5 font-display text-[0.95rem] font-semibold tracking-tight text-fg ${
+                    user.data ? 'max-[399px]:hidden' : 'max-[374px]:hidden'
+                  }`}
+                >
+                  {brand}
+                </Link>
+              </div>
+              {atTable ? null : <SectionLinks home={home} />}
+              {atTable ? null : <SiteSearch />}
+              <nav
+                aria-label={t('nav.main')}
+                className="flex items-center gap-0.5 min-[390px]:gap-1 sm:gap-2"
               >
-                {brand}
-              </Link>
+                <OnlineCounter />
+                {/* Under 360 px the speaker is only in the More panel, so the balance and the account fit. */}
+                <SoundToggle className="max-[359px]:hidden" />
+                {/* While the account is unknown: a placeholder, or nothing once it failed (AccountUnavailable). */}
+                {user.data === undefined ? (
+                  user.isPending ? (
+                    <Skeleton className="size-9 rounded-full" />
+                  ) : null
+                ) : user.data ? (
+                  <>
+                    {/* Keyed by account: another one signing in starts fresh (no "+N" for the switch). */}
+                    <FishkaBalance key={user.data.id} />
+                    <UserMenu user={user.data} />
+                  </>
+                ) : (
+                  <>
+                    <NavLink
+                      to="/login"
+                      // Phones have "Log in" in the tab bar: the header keeps room for Sign up.
+                      className="flex min-h-11 items-center rounded-lg px-3 text-sm font-medium whitespace-nowrap text-fg hover:text-gold-light max-sm:hidden"
+                    >
+                      {t('nav.login')}
+                    </NavLink>
+                    <ButtonLink to="/register" variant="gold" className="whitespace-nowrap">
+                      {t('nav.register')}
+                    </ButtonLink>
+                  </>
+                )}
+              </nav>
             </div>
-            {atTable ? null : <SectionLinks home={home} />}
-            {atTable ? null : <SiteSearch />}
-            <nav
-              aria-label={t('nav.main')}
-              className="flex items-center gap-0.5 min-[390px]:gap-1 sm:gap-2"
-            >
-              <OnlineCounter />
-              {/* Under 360 px the speaker moves to the ☰ menu, so the balance and the account fit. */}
-              <SoundToggle className="max-[359px]:hidden" />
-              {/* While the account is unknown: a placeholder, or nothing once it failed (AccountUnavailable). */}
-              {user.data === undefined ? (
-                user.isPending ? (
-                  <Skeleton className="size-9 rounded-full" />
-                ) : null
-              ) : user.data ? (
-                <>
-                  {/* Keyed by account: another one signing in starts fresh (no "+N" for the switch). */}
-                  <FishkaBalance key={user.data.id} />
-                  <UserMenu user={user.data} />
-                </>
-              ) : (
-                <>
-                  <NavLink
-                    to="/login"
-                    // Phones have "Log in" in the tab bar: the header keeps room for Sign up.
-                    className="flex min-h-11 items-center rounded-lg px-3 text-sm font-medium whitespace-nowrap text-fg hover:text-gold-light max-sm:hidden"
-                  >
-                    {t('nav.login')}
-                  </NavLink>
-                  <ButtonLink to="/register" variant="gold" className="whitespace-nowrap">
-                    {t('nav.register')}
-                  </ButtonLink>
-                </>
-              )}
-            </nav>
+            {atTable ? null : <SectionBar home={home} />}
           </header>
         )}
 
@@ -362,145 +345,116 @@ function TabLabel({ children }: { children: ReactNode }) {
   return <span className="block max-w-full truncate">{children}</span>
 }
 
-/**
- * The ☰ menu: a panel from the left with the main pages, the player's account pages and the language. Closes on
- * Escape, a tap outside or a choice; the page behind stays as it was.
- */
-function MenuDrawer({
-  open,
-  onClose,
-  home,
-  signedIn,
-  guest,
-  language,
-}: {
-  open: boolean
-  onClose: () => void
-  home: string
-  signedIn: boolean
-  /** Known to be signed out: only then Log in / Join (an unknown account offers neither). */
-  guest: boolean
-  language: ReactNode
-}) {
+/** The sections on a second header row, for tablets and small laptops (768–1279 px). */
+function SectionBar({ home }: { home: string }) {
   const { t } = useTranslation()
-  const config = usePublicConfig()
-  const { pathname } = useLocation()
+  const links = useSections(home)
+
+  return (
+    <nav
+      aria-label={t('nav.sections')}
+      className="hidden items-center justify-center gap-1 border-t border-white/5 px-4 py-1.5 md:flex xl:hidden"
+    >
+      {links.map((link) => (
+        <Link
+          key={link.to}
+          to={link.to}
+          aria-current={link.active ? 'page' : undefined}
+          className={`flex min-h-10 items-center gap-2 rounded-full px-3.5 text-sm font-semibold whitespace-nowrap transition-colors duration-150 ${
+            link.active
+              ? 'bg-gold/15 text-gold-light shadow-[inset_0_0_0_1px_rgb(245_192_79/0.35)]'
+              : 'text-muted hover:bg-white/5 hover:text-fg'
+          }`}
+        >
+          <span className="flex size-5 items-center justify-center text-gold">{link.icon}</span>
+          {link.label}
+        </Link>
+      ))}
+    </nav>
+  )
+}
+
+/**
+ * Phones (under 768 px): one "More" button that drops a compact panel from the header — every section as a tile
+ * (the tab bar has only five places), then sounds and the language. Closes on a choice, Escape, a tap outside or a
+ * route change.
+ */
+function MoreMenu({ home, language }: { home: string; language: ReactNode }) {
+  const { t } = useTranslation()
+  const { pathname, search } = useLocation()
   const sections = useSections(home)
-  const panelRef = useRef<HTMLDivElement>(null)
-  const [openedAt, setOpenedAt] = useState(pathname)
-  if (open && openedAt !== pathname) {
-    setOpenedAt(pathname)
-    onClose()
+  const [open, setOpen] = useState(false)
+  const [openedAt, setOpenedAt] = useState(pathname + search)
+  const rootRef = useRef<HTMLDivElement>(null)
+  if (open && openedAt !== pathname + search) {
+    setOpenedAt(pathname + search)
+    setOpen(false)
   }
 
   useEffect(() => {
     if (!open) return
-    panelRef.current?.querySelector<HTMLElement>('a, button')?.focus()
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
+      if (event.key === 'Escape') setOpen(false)
+    }
+    const onPointer = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
     }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open, onClose])
-
-  if (!open) return null
-  const linkClass =
-    'flex min-h-11 items-center gap-3 rounded-control px-3 text-sm font-semibold text-fg hover:bg-emerald-800/70 aria-[current=page]:bg-gold/15 aria-[current=page]:text-gold-light'
-  const iconBox = (icon: ReactNode) => (
-    <span className="flex size-6 shrink-0 items-center justify-center text-gold">{icon}</span>
-  )
-  const link = (to: string, label: string, icon: ReactNode) => (
-    <NavLink to={to} onClick={onClose} className={linkClass}>
-      {iconBox(icon)}
-      {label}
-    </NavLink>
-  )
+    window.addEventListener('pointerdown', onPointer)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('pointerdown', onPointer)
+    }
+  }, [open])
 
   return (
-    <div className="fixed inset-0 z-50">
+    <div ref={rootRef} className="md:hidden">
       <button
         type="button"
-        aria-label={t('nav.closeMenu')}
-        onClick={onClose}
-        className="absolute inset-0 bg-black/60 motion-safe:animate-[fade-in_150ms_ease-out]"
-      />
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
+        onClick={() => {
+          setOpenedAt(pathname + search)
+          setOpen((now) => !now)
+        }}
         aria-label={t('nav.menu')}
-        className="absolute inset-y-0 left-0 flex w-[min(20rem,85vw)] flex-col gap-4 border-r border-gold/25 bg-emerald-900 p-3 shadow-[0_0_40px_rgb(0_0_0/0.6)] motion-safe:animate-[drawer-in_200ms_ease-out]"
+        aria-expanded={open}
+        aria-controls="more-menu"
+        className={iconButton}
       >
-        <div className="flex items-center justify-between gap-2 px-1">
-          <Link
-            to="/"
-            onClick={onClose}
-            className="flex min-w-0 items-center gap-2.5 font-bold text-fg"
-          >
-            <img
-              src={config.data?.logo_url ?? '/favicon.svg'}
-              alt=""
-              className="size-8 shrink-0 object-contain"
-            />
-            <span className="truncate">{config.data?.name}</span>
-          </Link>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t('nav.closeMenu')}
-            className={iconButton}
-          >
-            <CloseIcon />
-          </button>
-        </div>
-        <nav
-          aria-label={t('nav.sections')}
-          className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto"
+        {open ? <CloseIcon /> : <MenuIcon />}
+      </button>
+      {open ? (
+        <div
+          id="more-menu"
+          className="absolute inset-x-0 top-full border-b border-gold/25 bg-night-900/95 px-3 pt-3 pb-4 shadow-[0_24px_40px_-12px_rgb(0_0_0/0.7)] backdrop-blur-xl motion-safe:animate-[fade-in_150ms_ease-out]"
         >
-          <div className="flex flex-col gap-1">
-            {sections.map((section) => (
-              <Link
-                key={section.to}
-                to={section.to}
-                onClick={onClose}
-                aria-current={section.active ? 'page' : undefined}
-                className={linkClass}
-              >
-                {iconBox(section.icon)}
-                {section.label}
-              </Link>
-            ))}
-          </div>
-          {signedIn ? (
-            <div className="flex flex-col gap-1 border-t border-gold/15 pt-3">
-              <p className="px-3 pb-1 text-xs font-semibold tracking-wider text-muted uppercase">
-                {t('nav.account')}
-              </p>
-              {link('/profile', t('nav.profile'), <UserIcon />)}
-              {link('/wallet', t('nav.wallet'), <FishkaIcon className="size-6" />)}
-              {link('/history', t('nav.history'), <HistoryIcon />)}
-              {link('/settings', t('nav.settings'), <SettingsIcon />)}
-            </div>
-          ) : guest ? (
-            <div className="flex flex-col gap-2 border-t border-gold/15 px-1 pt-3">
-              <ButtonLink to="/login" variant="secondary" onClick={onClose}>
-                {t('nav.login')}
-              </ButtonLink>
-              <ButtonLink to="/register" variant="gold" onClick={onClose}>
-                {t('nav.register')}
-              </ButtonLink>
-            </div>
-          ) : null}
-          {/* Phones under 360 px have no room for the speaker in the header: it is here for everyone. */}
-          <div className="mt-auto flex flex-col gap-3 border-t border-gold/15 px-3 pt-3">
-            <div className="flex items-center justify-between gap-2 text-sm">
-              <span className="text-muted">{t('sound.toggle')}</span>
+          <nav aria-label={t('nav.sections')}>
+            <ul className="grid grid-cols-3 gap-1.5 min-[360px]:gap-2">
+              {sections.map((section) => (
+                <li key={section.to}>
+                  <Link
+                    to={section.to}
+                    onClick={() => setOpen(false)}
+                    aria-current={section.active ? 'page' : undefined}
+                    className="flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl border border-white/8 bg-white/5 py-2 text-center text-[11px] leading-tight font-semibold text-fg aria-[current=page]:border-gold/50 aria-[current=page]:bg-gold/12 aria-[current=page]:text-gold-light"
+                  >
+                    <span className="flex size-6 items-center justify-center text-gold">
+                      {section.icon}
+                    </span>
+                    <span className="w-full">{section.label}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <div className="mt-3 flex items-center justify-between gap-3 border-t border-white/8 pt-3 text-sm">
+            <span className="flex items-center gap-2 text-muted">
+              {t('sound.toggle')}
               <SoundToggle />
-            </div>
+            </span>
             {language}
           </div>
-        </nav>
-      </div>
+        </div>
+      ) : null}
     </div>
   )
 }

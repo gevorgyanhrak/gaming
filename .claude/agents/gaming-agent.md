@@ -149,8 +149,9 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   cards `posterStyles`; header `SectionLinks` from 1280 px.
 - Lamplit Room (TASK-048; since ADR 0025 the game rooms only, plus the menus/shell vocabulary below; modelled on bazarblot.am): the app was a brass-edged window (`.club-frame`) over a lamp-lit
   wood room (`.club-room`); panels are `.club-panel`, icon medallions `.club-medal`. Warm tokens in
-  `index.css`: accent is the green "play" colour, accent-text/gold is brass. Navigation is a ☰ menu
-  (`MenuDrawer` in PublicLayout: home, games, leaderboards, the account's pages, the language — no games list, no side rail; owner 2026-11-14; a back arrow on `/rooms/*`) plus a phone tab bar. Games are
+  `index.css`: accent is the green "play" colour, accent-text/gold is brass. Navigation (HayBet item 5, no side menu): the
+  sections (`useSections`) inline in the header from 1280 px, on a second header row (`SectionBar`) at 768–1279, and on phones
+  a header `MoreMenu` panel (section tiles, sounds, language) beside the tab bar; account pages in `UserMenu`; a back arrow on `/rooms/*`. Games are
   a 3D carousel (`GameCarousel`: arrows, dots, swipe, arrow keys, autoplay off with reduced motion);
   the opened game's art and title travel to its page with React `<ViewTransition name>` (names in
   `features/catalog/transitions.ts`; the Outlet is wrapped in one `<ViewTransition>`; don't use the
@@ -251,7 +252,7 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   English, so hy uses CLDR patterns there; never call `toLocaleDateString` directly. Language names come from a fixed
   list (`languageName`: English / Русский / Հայերեն).
 - A `/me` 429 that outlives its retries (Retry-After honoured, ≤ 5) shows `AccountUnavailable` (alert + Try again);
-  routes with `handle.requiresAccount` show it in the page instead. Header sections and the ☰ drawer share `useSections`.
+  routes with `handle.requiresAccount` show it in the page instead. Header sections, SectionBar and MoreMenu share `useSections`.
 - Routes (HayBet item 2, 2026-11-20): `/` is the one home (`LandingPage`: guests get `HomeHero`, signed-in players
   `features/home/WelcomeStrip` + favourites, Try next, `DashboardGames`); `/dashboard` is the games section
   (`GamesPage`, public, filter pills; the header's Games and the tab bar link here); `/games` redirects to `/dashboard`

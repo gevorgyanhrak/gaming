@@ -33,7 +33,10 @@ then AI takes the seat for good) changes ADR 0021 → new ADR.
 - [x] 3–4. Boards (ADR 0026): every game ranked by points ×10 (win 100 / loss 50, totals scaled); 152 AI players
       (52 new names, mostly men; 12 near-duplicate handles renamed), one home game each (13–14 per game, never on two
       boards); the AI arena plays real AI-vs-AI games every 5 min and scores them; rows show games and win rate;
-      admin: Bots → Home game, Settings → arena rate — this commit.
+      admin: Bots → Home game, Settings → arena rate — d425a48.
+- [x] 5. Navigation: the ☰ side drawer is gone; sections inline in the header (1280+), a second header row of icon
+      pills (768–1279), and on phones a More panel dropping from the header (section tiles, sounds, language) next to
+      the tab bar — this commit.
 
 **Owner 2026-11-18 "remove Slotopol, find open-source providers like AGT / Pragmatic / Novomatic":**
 - [x] Slotopol removed from the app: the six integration commits reverted on main (tree = 1ffa46c), branch
