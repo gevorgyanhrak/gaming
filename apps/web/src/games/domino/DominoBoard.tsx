@@ -1,4 +1,5 @@
 import { SeatTap } from '@/features/players/SeatTap'
+import { AiSeatMark } from '@/shared/ui/AiSeatMark'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCountdown } from '@/features/play/useCountdown'
@@ -39,6 +40,7 @@ export default function DominoBoard({
   onAction,
   pending,
   players = {},
+  faces = {},
   levels = {},
 }: BoardProps) {
   const { t, i18n } = useTranslation()
@@ -101,6 +103,7 @@ export default function DominoBoard({
               <SeatTap seat={seat} name={name(seat)} className="block">
                 <Plate
                   name={name(seat)}
+                  ai={faces[seat]}
                   score={format(view.scores[seat] ?? 0)}
                   tiles={view.hand_sizes[seat] ?? 0}
                   tilesLabel={t('domino.tilesLeft', { count: view.hand_sizes[seat] ?? 0 })}
@@ -373,8 +376,11 @@ function Plate({
   level,
   gone,
   mine = false,
+  ai,
 }: {
   name: string
+  /** An AI player's face key (HayBet item 14): shows the AI mark by the name. */
+  ai?: string
   score: string
   tiles: number
   tilesLabel: string
@@ -398,7 +404,10 @@ function Plate({
       style={{ background: ring }}
     >
       <span className="flex items-center gap-2 rounded-[0.4rem] bg-[#1c120d]/95 px-2.5 py-1">
-        <span className="max-w-24 truncate text-xs font-semibold min-[641px]:text-sm">{name}</span>
+        <span className="max-w-24 truncate text-xs font-semibold min-[641px]:text-sm">
+          {name}
+          {ai ? <AiSeatMark face={ai} /> : null}
+        </span>
         <span className="text-xs font-extrabold text-gold-light tabular-nums">{score}</span>
         {tiles > 0 ? (
           <span className="flex items-center gap-0.5" aria-label={tilesLabel} role="img">

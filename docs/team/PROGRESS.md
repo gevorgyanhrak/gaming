@@ -67,7 +67,11 @@ then AI takes the seat for good) changes ADR 0021 → new ADR.
       keeps the seat, 5.0 s doesn't); then AI takes the seat for good (2-player tables too; chip tables cash out;
       AI-only tables end); playing elsewhere ends the window. Seat plates count down, then show the AI face; small
       banners; "Return to the game" button. Fixed on the way: AI couldn't move for a seat taken over after Leave.
-      Live: player2 closed the page → countdown on player1's screen at 0.5 s, AI took the seat at 5.1 s — this commit.
+      Live: player2 closed the page → countdown on player1's screen at 0.5 s, AI took the seat at 5.1 s — 7f13013.
+- [—] 13. New photorealistic AI faces — skipped by the owner (2026-11-20).
+- [x] 14. AI reads as AI everywhere: the Avatar gives AI players a holographic cyan/violet ring and an "AI" chip (with or
+      without an uploaded picture); Blackjack, Domino, Ludo, Rummy and Pool — which draw their own seats and showed no
+      AI mark — now show the ringed AI face by each AI seat (`AiSeatMark`) — this commit.
 
 **Owner 2026-11-18 "remove Slotopol, find open-source providers like AGT / Pragmatic / Novomatic":**
 - [x] Slotopol removed from the app: the six integration commits reverted on main (tree = 1ffa46c), branch

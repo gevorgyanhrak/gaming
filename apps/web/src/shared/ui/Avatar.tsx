@@ -11,8 +11,8 @@ const frames: Record<string, string> = {
 }
 
 /**
- * A user's avatar image, or their initial on a neutral tile; an AI player without a picture gets its drawn face
- * (AiFace). With a level, the level badge sits on its
+ * A user's avatar image, or their initial on a neutral tile; an AI player gets its drawn face (AiFace) when it has
+ * no picture, and always the AI ring and chip (HayBet item 14). With a level, the level badge sits on its
  * corner (and a frame, if the level unlocked one, goes round it) — the same everywhere.
  */
 export function Avatar({
@@ -34,14 +34,34 @@ export function Avatar({
   level?: number | null
   frame?: string | null
 }) {
-  const face = url ? (
-    <img src={url} alt="" className={`${sizes[size]} rounded-full object-cover`} />
+  const picture = url ? (
+    <img
+      src={url}
+      alt=""
+      className={`${sizes[size]} rounded-full object-cover ${ai ? 'ai-ring' : ''}`}
+    />
   ) : ai ? (
-    <span
-      className={`${sizes[size]} inline-flex shrink-0 overflow-hidden rounded-full border border-sky-300/40`}
-    >
+    <span className={`${sizes[size]} ai-ring inline-flex shrink-0 overflow-hidden rounded-full`}>
       <AiFace name={faceKey ?? name} className="size-full" />
     </span>
+  ) : null
+  // An AI player always reads as AI (HayBet item 14): the holographic ring, and an "AI" chip on the avatar.
+  const face = picture ? (
+    ai ? (
+      <span className="relative inline-flex shrink-0">
+        {picture}
+        {size === 'sm' ? null : (
+          <span
+            aria-hidden="true"
+            className="absolute -top-1 -left-1 rounded-full bg-[#0b1530] px-1 text-[9px] leading-[14px] font-extrabold tracking-wide text-[#5ee7ff] ring-1 ring-[#5ee7ff]/70"
+          >
+            AI
+          </span>
+        )}
+      </span>
+    ) : (
+      picture
+    )
   ) : (
     <span
       aria-hidden="true"

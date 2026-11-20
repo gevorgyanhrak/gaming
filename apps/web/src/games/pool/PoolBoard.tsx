@@ -1,4 +1,5 @@
 import { SeatTap } from '@/features/players/SeatTap'
+import { AiSeatMark } from '@/shared/ui/AiSeatMark'
 import { useEffect, useEffectEvent, useId, useRef, useState, type PointerEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCountdown } from '@/features/play/useCountdown'
@@ -126,6 +127,7 @@ export default function PoolBoard({
   onAction,
   pending,
   players = {},
+  faces = {},
   levels = {},
 }: BoardProps) {
   const { t } = useTranslation()
@@ -218,6 +220,7 @@ export default function PoolBoard({
           <SeatTap key={seat} seat={seat} name={name(seat)} className="flex">
             <PlayerPlate
               name={name(seat)}
+              ai={faces[seat]}
               group={view.groups[seat] ?? null}
               balls={balls}
               acting={view.to_act === seat && !animating}
@@ -513,8 +516,11 @@ function PlayerPlate({
   acting,
   level,
   seconds,
+  ai,
 }: {
   name: string
+  /** An AI player's face key (HayBet item 14): shows the AI mark by the name. */
+  ai?: string
   group: 'solids' | 'stripes' | null
   balls: (Point | null)[]
   acting: boolean
@@ -535,7 +541,10 @@ function PlayerPlate({
     >
       {level !== undefined ? <LevelBadge level={level} size="sm" /> : null}
       <div className="min-w-0">
-        <p className="truncate text-sm font-semibold">{name}</p>
+        <p className="truncate text-sm font-semibold">
+          {name}
+          {ai ? <AiSeatMark face={ai} /> : null}
+        </p>
         <p className="flex items-center gap-1 text-xs text-white/70">
           {group === null ? (
             t('pool.openTable')

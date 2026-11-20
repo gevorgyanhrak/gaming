@@ -1,4 +1,5 @@
 import { SeatTap } from '@/features/players/SeatTap'
+import { AiSeatMark } from '@/shared/ui/AiSeatMark'
 import { useTranslation } from 'react-i18next'
 import { useCountdown } from '@/features/play/useCountdown'
 import { LevelBadge } from '@/shared/ui/LevelBadge'
@@ -96,6 +97,7 @@ export default function LudoBoard({
   onAction,
   pending,
   players = {},
+  faces = {},
   levels = {},
 }: BoardProps) {
   const { t } = useTranslation()
@@ -332,6 +334,7 @@ export default function LudoBoard({
                     style={{ background: COLOURS[colour] }}
                   />
                   <span className="min-w-0 truncate">{name(seat)}</span>
+                  {faces[seat] ? <AiSeatMark face={faces[seat]} /> : null}
                 </SeatTap>
                 {levels[seat] !== undefined ? <LevelBadge level={levels[seat]} size="sm" /> : null}
                 <span className="text-xs text-gold-light tabular-nums">

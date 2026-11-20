@@ -278,6 +278,8 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   API `GET /me/missions`, `POST /me/missions/{key}/claim`; web `features/missions/MissionsPanel` on home.
 - Per-turn timers on seat plates: `features/play/components/TurnTimer` (PlayerList `turnTimer` from RoomPage: useCountdown +
   state `turn_seconds`); the caption's text countdown shows only where there are no plates.
+- AI look (item 14): `Avatar ai` = `.ai-ring` + an "AI" chip (not on `sm`); boards that draw their own seats put
+  `shared/ui/AiSeatMark` by AI seats from `BoardProps.faces` (names already carry "· AI", ADR 0022).
 - Online: `GET /stats/online` → `online` (real, Reverb presence; null when unknown) and `demo` (owner-chosen
   simulated figure, `DemoActivity`, admin "Demo activity"). Never add `demo` to `online`; anything showing `demo`
   tags it "Demo" and explains it (`useDemoActivity`, HomeHero `DemoStat`).

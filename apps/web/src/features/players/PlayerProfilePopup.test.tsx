@@ -103,7 +103,10 @@ describe('Player card', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: /Show Aram/ }))
     const card = await screen.findByRole('dialog', { name: /Aram/ })
-    expect(within(card).getByText('AI')).toBeInTheDocument()
+    // The AI tag by the name, and the AI chip on the avatar (decorative, hidden from screen readers).
+    const marks = within(card).getAllByText('AI')
+    expect(marks.length).toBe(2)
+    expect(marks.filter((el) => el.closest('[aria-hidden="true"]') === null)).toHaveLength(1)
     expect(within(card).getByText(/An AI player/)).toBeInTheDocument()
     expect(within(card).queryByText('Win rate')).not.toBeInTheDocument()
     // Its character, and its drawn face (never a photo).

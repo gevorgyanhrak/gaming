@@ -1,4 +1,5 @@
 import { SeatTap } from '@/features/players/SeatTap'
+import { AiSeatMark } from '@/shared/ui/AiSeatMark'
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCountdown } from '@/features/play/useCountdown'
@@ -60,6 +61,7 @@ export default function RummyBoard({
   onAction,
   pending,
   players = {},
+  faces = {},
   levels = {},
 }: BoardProps) {
   const { t, i18n } = useTranslation()
@@ -156,6 +158,7 @@ export default function RummyBoard({
                 className="flex min-h-11 items-center text-xs font-semibold min-[641px]:text-sm"
               >
                 <span className="max-w-24 truncate">{name(seat)}</span>
+                {faces[seat] ? <AiSeatMark face={faces[seat]} /> : null}
               </SeatTap>
               <span
                 className="flex"

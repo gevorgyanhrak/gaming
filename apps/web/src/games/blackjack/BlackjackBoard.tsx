@@ -1,4 +1,5 @@
 import { SeatTap } from '@/features/players/SeatTap'
+import { AiSeatMark } from '@/shared/ui/AiSeatMark'
 import { useQueryClient } from '@tanstack/react-query'
 import {
   useEffect,
@@ -76,6 +77,7 @@ export default function BlackjackBoard({
   onAction,
   pending,
   players = {},
+  faces = {},
   levels = {},
 }: BoardProps) {
   const { t, i18n } = useTranslation()
@@ -348,6 +350,7 @@ export default function BlackjackBoard({
                     <SeatTap seat={seat} name={name(seat)} className="block">
                       <SeatPlate
                         name={name(seat)}
+                        ai={faces[seat]}
                         stack={format(stack)}
                         acting={acting}
                         share={acting ? turnShare : null}
@@ -644,8 +647,11 @@ function SeatPlate({
   share,
   level,
   mine,
+  ai,
 }: {
   name: string
+  /** An AI player's face key (HayBet item 14): shows the AI mark by the name. */
+  ai?: string
   stack: string
   acting: boolean
   share: number | null
@@ -668,6 +674,7 @@ function SeatPlate({
       <span className="block min-w-16 rounded-[0.4rem] bg-[#1c120d]/95 px-2 py-0.5 text-center min-[901px]:min-w-24">
         <span className="block max-w-24 truncate text-[0.7rem] font-semibold min-[901px]:text-sm">
           {name}
+          {ai ? <AiSeatMark face={ai} /> : null}
         </span>
         <span className="block text-[0.7rem] font-bold text-gold tabular-nums min-[901px]:text-xs">
           {stack}
