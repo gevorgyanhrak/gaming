@@ -330,7 +330,7 @@ export function RoomPage() {
           ) : null}
           <Link
             to="/dashboard"
-            className="self-center text-sm font-medium text-accent-text hover:underline"
+            className="inline-flex min-h-11 items-center self-center text-sm font-medium text-accent-text hover:underline"
           >
             {t('nav.dashboard')}
           </Link>

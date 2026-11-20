@@ -259,6 +259,10 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   (moves from the server's `legal_actions`), every house slot, admin (`E2E_ADMIN_EMAIL/PASSWORD`). Findings go to
   `e2e/results/findings-N.jsonl`, screenshots to `e2e/screenshots/iteration-N/` (both git-ignored).
   It has its own `tsconfig.e2e.json` (referenced from `tsconfig.json`) and Vitest excludes `e2e/**`.
+  Gotchas: popups (level-up, daily bonus) open a moment after load — `calm()` presses Escape on the dialog itself
+  (a focused slot iframe swallows page keys); a test that drives a board sends only `legal_actions` (ranges get
+  `amount`, a pool shot `angle`/`power`, Blot needs 4 seats); `gh` isn't installed — CI status via
+  `curl https://api.github.com/repos/gevorgyanhrak/gaming/actions/runs`.
 - To look at a board without the Docker stack: a temporary (uncommitted) Vite page rendering the board
   with `roomStateFixture`, screenshotted with Playwright's cached `chrome-headless-shell` — delete it after.
 - When generic skill advice conflicts with the established conventions of this repo, follow the repo.

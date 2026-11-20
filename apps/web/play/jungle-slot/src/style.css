@@ -2,7 +2,12 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: #1d1206; overflow: clip; font-family: 'Arial Rounded MT Bold', 'Trebuchet MS', system-ui, sans-serif; }
 /* The canvas is centred and scaled; nothing scrolls (a focused button must not shift the scene). */
-#stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: center; overflow: clip; user-select: none; }
+#stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; overflow: clip; user-select: none; }
+/* The table, reels and lines: the design canvas, moved as one piece when the phone is held upright. */
+#scene { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+#background { left: 0; top: 0; }
+/* The monkey and the win line stay above the buttons, as in the original art. */
+#monkey, #message { z-index: 2; }
 .layer { position: absolute; pointer-events: none; display: block; }
 #reels { position: absolute; inset: 0; pointer-events: none; }
 .reel { position: absolute; width: 228px; overflow: hidden; }
@@ -35,6 +40,16 @@ html, body { margin: 0; height: 100%; background: #1d1206; overflow: clip; font-
 #overlay .pay div { line-height: 1.35; }
 #overlay .close { position: absolute; top: 18px; right: 26px; font-size: 44px; color: #ffe9a8; background: none; border: 0; cursor: pointer; }
 #overlay p { margin: 20px 0 0; text-align: center; color: #e9c98e; }
-#rotate { display: none; position: fixed; left: 0; right: 0; bottom: 10px; margin: 0; text-align: center; color: #ffe9a8; font-size: 14px; }
-@media (orientation: portrait) and (max-width: 700px) { #rotate { display: block; } }
+/* Held upright (main.ts sets .upright): a taller canvas — the scene on top, the boxes and buttons below it, all
+   larger so a phone's finger can hit them — and a line above it saying the game is bigger sideways. */
+#rotate { position: fixed; left: 0; right: 0; top: 0; margin: 0; padding: 6px 12px; text-align: center; color: #ffe9a8; font-size: 13px; line-height: 18px; }
+.upright #background { width: 100%; height: 100%; object-fit: cover; }
+.upright .box output { bottom: 30px; font-size: 76px; }
+.upright #message { font-size: 64px; }
+.upright #message.win { font-size: 84px; }
+.upright #overlay { inset: 60px 40px; padding: 60px 50px; font-size: 52px; }
+.upright #overlay h2 { font-size: 80px; }
+.upright #overlay .pays { grid-template-columns: repeat(2, 1fr); gap: 36px 40px; }
+.upright #overlay .pay img { width: 200px; height: 177px; }
+.upright #overlay .close { font-size: 96px; top: 20px; right: 40px; }
 @media (prefers-reduced-motion: reduce) { .strip, #monkey, .sym { transition: none !important; } }

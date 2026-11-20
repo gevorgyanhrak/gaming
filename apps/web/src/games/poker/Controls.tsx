@@ -282,8 +282,8 @@ export function BetControls({
               ) : null}
             </div>
 
-            {/* The chips, then More. */}
-            <div className="flex shrink-0 items-end justify-between gap-1.5 sm:justify-start sm:gap-2.5">
+            {/* The chips, then More: under 360 px chips of 44 px and a closer gap keep More inside the panel. */}
+            <div className="flex shrink-0 items-end justify-between gap-1.5 max-[359px]:gap-1 sm:justify-start sm:gap-2.5">
               {CHIPS.map((chip) => {
                 const picked = tapped?.value === chip.value
                 return (
@@ -299,7 +299,7 @@ export function BetControls({
                   >
                     <span
                       key={picked ? tapped.n : 0}
-                      className={`poker-chip size-12 text-sm font-black sm:size-14 sm:text-base ${picked ? 'shadow-[0_0_0_3px_var(--color-turn),0_0_18px_rgb(242_193_78/0.7)] motion-safe:animate-[chip-pop_260ms_ease-out]' : ''}`}
+                      className={`poker-chip size-12 text-sm font-black max-[359px]:size-11 sm:size-14 sm:text-base ${picked ? 'shadow-[0_0_0_3px_var(--color-turn),0_0_18px_rgb(242_193_78/0.7)] motion-safe:animate-[chip-pop_260ms_ease-out]' : ''}`}
                       style={
                         {
                           '--chip': chip.chip,

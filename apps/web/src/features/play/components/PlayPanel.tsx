@@ -191,7 +191,9 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
               // the bet are the same for each, so they're said once, under PLAY.
               <fieldset className="w-full min-w-0">
                 <legend className="sr-only">{t('play.whatToPlay')}</legend>
-                <div className="grid grid-cols-3 gap-2">
+                {/* Each column at least as wide as its longest word ("Ստանդարտ"), the rest shared: names wrap
+                    between words on a phone instead of being cut. */}
+                <div className="grid auto-cols-[minmax(min-content,1fr)] grid-flow-col gap-2">
                   {modes.map((m) => (
                     <label
                       key={m.slug}
@@ -205,7 +207,7 @@ export function PlayPanel({ game, hero }: { game: GameDetail; hero: ReactNode })
                         onChange={() => setModeSlug(m.slug)}
                         className="sr-only"
                       />
-                      <span className="max-w-full truncate text-sm font-extrabold text-gold-light">
+                      <span className="text-sm leading-tight font-extrabold text-balance text-gold-light">
                         {m.name}
                       </span>
                       {m.target ? (

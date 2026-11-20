@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { useCurrentUser } from '@/features/auth/hooks'
 import { GameIcon } from '@/features/catalog/components/GameArt'
+import { formatDate } from '@/shared/lib/dates'
 import { Badge } from '@/shared/ui/Badge'
 import type { ParticipantResult, Room } from '../api'
 import { endReasonShort, resultLabel, resultTone, statusLabel } from '../labels'
@@ -45,10 +46,7 @@ export function RoomSummary({ room }: { room: Room }) {
         </span>
         <span className="flex text-sm text-muted">
           <span className="truncate">{t('history.against', { names: opponents || '—' })}</span>
-          <span className="shrink-0">
-            &nbsp;·{' '}
-            {new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium' }).format(new Date(when))}
-          </span>
+          <span className="shrink-0">&nbsp;· {formatDate(when, i18n.language, 'medium')}</span>
         </span>
         {/* Phones: the outcome on a third line, so names and dates keep the width. */}
         <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 sm:hidden">

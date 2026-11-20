@@ -545,16 +545,17 @@ export default function PokerBoard({
         </div>
 
         {/* The table's info, like a card on the table's edge, in the stage's corner: off the felt, where
-            the players' bets go. */}
+            the players' bets go. Under 360 px each value goes under its label, so the card stays clear of
+            your seat's plate in the middle. */}
         <dl className="absolute bottom-2 left-2 rounded-lg border border-gold/25 bg-black/60 px-2 py-1 text-[0.7rem] min-[901px]:bottom-3 min-[901px]:left-4 min-[901px]:rounded-xl min-[901px]:px-3 min-[901px]:py-2 min-[901px]:text-xs">
-          <div className="flex gap-1.5">
+          <div className="flex gap-1.5 max-[359px]:flex-col max-[359px]:gap-0">
             <dt className="text-white/60">{t('poker.infoBlinds')}</dt>
             <dd className="font-bold text-gold-light tabular-nums">
               {view.blinds[0].toLocaleString(i18n.language)} /{' '}
               {view.blinds[1].toLocaleString(i18n.language)}
             </dd>
           </div>
-          <div className="flex gap-1.5">
+          <div className="flex gap-1.5 max-[359px]:flex-col max-[359px]:gap-0">
             <dt className="text-white/60">{t('poker.infoHand')}</dt>
             <dd className="font-bold tabular-nums">{view.hand}</dd>
           </div>

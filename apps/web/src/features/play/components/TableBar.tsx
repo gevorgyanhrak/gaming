@@ -42,7 +42,8 @@ export function TableBar({
           <span className="hidden size-9 shrink-0 items-center justify-center rounded-control bg-gold/15 min-[420px]:flex">
             <GameIcon slug={room.game.slug} name={room.game.name} className="size-5 text-gold" />
           </span>
-          <div className="min-w-0">
+          {/* From md, with the group badge beside it, the game keeps its name up to half the row: the badge is cut first. */}
+          <div className="min-w-0 md:max-w-[50%] md:shrink-0">
             <h1 className="truncate text-base leading-tight font-bold sm:text-lg">
               {room.game.name}
             </h1>

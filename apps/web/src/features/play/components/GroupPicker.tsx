@@ -33,9 +33,11 @@ export function GroupPicker({
       <legend className="mb-1.5 text-xs font-semibold tracking-wider text-muted uppercase">
         {t('play.group')}
       </legend>
-      {/* One compact row (it scrolls sideways on a phone): name, then the bets or the balance needed in
-          short numbers; the full figures are in the tooltip and read out to screen readers. */}
-      <div className="-mx-1 flex snap-x gap-1.5 overflow-x-auto px-1 pb-1 sm:grid sm:grid-cols-5 sm:overflow-visible">
+      {/* One compact row: name, then the bets or the balance needed in short numbers; the full figures are in
+          the tooltip and read out to screen readers. On a phone it scrolls sideways: the right edge fades to say
+          so, and the end padding lets the last tile clear the fade. Wider, three tiles a row: five names never
+          fit one row of this panel whole, and 3 + 2 never leaves a tile alone. */}
+      <div className="-mx-1 flex snap-x scroll-px-1 gap-1.5 overflow-x-auto [mask-image:linear-gradient(to_right,#000_calc(100%-2rem),transparent)] pt-0.5 pr-8 pb-1 pl-1 sm:grid sm:grid-cols-3 sm:overflow-visible sm:[mask-image:none] sm:pr-1">
         {groups.map((group) => {
           const open = canEnter(group, balance)
           const color = groupColor(group)
@@ -63,13 +65,13 @@ export function GroupPicker({
                 onChange={() => onChange(group.slug)}
                 className="sr-only"
               />
-              <span className="flex min-w-0 items-center gap-1.5 text-xs font-bold sm:text-sm">
+              <span className="flex min-w-0 items-center gap-1.5 text-xs font-bold">
                 <span
                   aria-hidden="true"
                   className={`size-2.5 shrink-0 rounded-full shadow-[inset_0_-2px_0_rgb(0_0_0/0.25)] ${open ? '' : 'opacity-50'}`}
                   style={{ background: color }}
                 />
-                <span className={`min-w-0 truncate ${open ? '' : 'text-muted'}`}>
+                <span className={`whitespace-nowrap ${open ? '' : 'text-muted'}`}>
                   {t(`groups.${group.slug}` as 'groups.beginner')}
                 </span>
               </span>

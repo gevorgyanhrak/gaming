@@ -3,6 +3,7 @@
  * laid out exactly as its 1920×1080 design; the maths lives on our server (App\Platform\Slots\House\Games\JungleSlot).
  * The browser only asks for a spin with a bet and shows the screen and wins it gets back.
  */
+import i18n from '@/shared/i18n'
 import { HouseError, fishkas, openGame, spin, tellLowBalance } from '../../shared/house'
 
 const GAME = 'jungle-slot'
@@ -49,6 +50,19 @@ const LABELS: Record<keyof typeof BUTTONS, string> = {
 }
 const BOXES = ['Lines', 'Line bet', 'Total bet', 'Won', 'Credits', 'Spins'] as const
 const BOX_X = [31, 267, 504, 1193, 1429, 1666]
+
+/**
+ * Held upright, a canvas of 1600×2320: the scene (table, reels, lines) on top, moved left so the table fills the
+ * width; under it the six boxes in two rows and the buttons in two rows, the bet buttons either side of SPIN —
+ * everything twice the size or more, so the game fills a phone's width and every button takes a finger.
+ */
+const UPRIGHT = { width: 1600, height: 2320, sceneX: -160 }
+const UPRIGHT_BUTTONS: Record<keyof typeof BUTTONS, readonly number[]> = {
+  spins: [40, 1610, 230, 230], auto: [362, 1610, 230, 230], info: [684, 1610, 230, 230],
+  lines: [1006, 1610, 230, 230], max: [1328, 1610, 230, 230],
+  minus: [120, 1967, 230, 230], spin: [500, 1880, 600, 404], betLine: [1250, 1967, 230, 230],
+}
+const UPRIGHT_BOXES = [0, 1, 2, 3, 4, 5].map((i) => [40 + (i % 3) * 530, i < 3 ? 1110 : 1350, 460, 219])
 const AUTO_COUNTS = [10, 25, 50, 100]
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T
@@ -67,13 +81,9 @@ for (const [id, box] of [['table', [173, 0, 1579, 1080]], ['cells', [349, 271, 1
   place($(id), box)
 }
 
-// Fit the design to the window.
-function fit() {
-  const scale = Math.min(innerWidth / 1920, innerHeight / 1080)
-  stage.style.transform = `translate(-50%, -50%) scale(${scale})`
-}
-addEventListener('resize', fit)
-fit()
+// The hint for phones held upright, in the app's language (the frame shares its saved choice).
+const hint = $<HTMLParagraphElement>('rotate')
+hint.textContent = i18n.t('slots.rotate')
 
 // Reels: a strip per reel; the last three images are what shows when it stops.
 const src = (s: Symbol, glow = false) => `${ART}${(glow && GLOW[s]) || IMAGE[s]}.webp`
@@ -176,10 +186,11 @@ function showWins(round: Round) {
 }
 
 // Boxes: Lines, Line bet, Total bet, Won, Credits, Spins.
+const boxes: HTMLDivElement[] = []
 const outputs = BOXES.map((label, i) => {
   const box = document.createElement('div')
   box.className = 'box'
-  place(box, [BOX_X[i]!, 946, 225, 107])
+  boxes.push(box)
   const img = document.createElement('img')
   img.src = `${ART}low-scores-${i}.webp`
   img.alt = ''
@@ -196,7 +207,6 @@ const buttons = Object.fromEntries(
     const b = document.createElement('button')
     b.type = 'button'
     b.setAttribute('aria-label', LABELS[key])
-    place(b, BUTTONS[key])
     const img = document.createElement('img')
     img.src = `${ART}${BUTTON_ART[key]}.webp`
     img.alt = ''
@@ -205,6 +215,34 @@ const buttons = Object.fromEntries(
     return [key, b]
   }),
 ) as Record<keyof typeof BUTTONS, HTMLButtonElement>
+
+// Lay the game out for the window: the original landscape design, or the upright one; then scale it to fit.
+let upright: boolean | null = null
+function fit() {
+  const nowUpright = innerHeight > innerWidth
+  if (nowUpright !== upright) {
+    upright = nowUpright
+    document.body.classList.toggle('upright', upright)
+    const [width, height] = upright ? [UPRIGHT.width, UPRIGHT.height] : [1920, 1080]
+    Object.assign(stage.style, { width: `${width}px`, height: `${height}px` })
+    $('scene').style.transform = upright ? `translateX(${UPRIGHT.sceneX}px)` : ''
+    for (const key of Object.keys(BUTTONS) as (keyof typeof BUTTONS)[]) {
+      place(buttons[key], upright ? UPRIGHT_BUTTONS[key] : BUTTONS[key])
+    }
+    boxes.forEach((box, i) => place(box, upright ? UPRIGHT_BOXES[i]! : [BOX_X[i]!, 946, 225, 107]))
+  }
+  // The hint shows on phones held upright, above the game.
+  hint.hidden = !(upright && innerWidth <= 700)
+  const top = hint.hidden ? 0 : hint.offsetHeight
+  const width = upright ? UPRIGHT.width : 1920
+  const height = upright ? UPRIGHT.height : 1080
+  const scale = Math.min(innerWidth / width, (innerHeight - top) / height)
+  const x = (innerWidth - width * scale) / 2
+  const y = top + (innerHeight - top - height * scale) / 2
+  stage.style.transform = `translate(${x}px, ${y}px) scale(${scale})`
+}
+addEventListener('resize', fit)
+fit()
 
 // State.
 let bets: number[] = [10]

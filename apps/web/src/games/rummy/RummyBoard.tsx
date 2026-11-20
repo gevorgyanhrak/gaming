@@ -149,12 +149,13 @@ export default function RummyBoard({
               } ${view.out[seat] ? 'opacity-45' : ''}`}
             >
               {levels[seat] !== undefined ? <LevelBadge level={levels[seat]} size="sm" /> : null}
+              {/* The plate is as tall as its card backs: the name's tap target takes that height. */}
               <SeatTap
                 seat={seat}
                 name={name(seat)}
-                className="max-w-24 truncate text-xs font-semibold min-[641px]:text-sm"
+                className="flex min-h-11 items-center text-xs font-semibold min-[641px]:text-sm"
               >
-                {name(seat)}
+                <span className="max-w-24 truncate">{name(seat)}</span>
               </SeatTap>
               <span
                 className="flex"

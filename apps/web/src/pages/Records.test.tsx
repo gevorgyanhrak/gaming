@@ -2,6 +2,7 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
+import i18n from '@/shared/i18n'
 import type { GameStat, Room } from '@/features/play/api'
 import { roomFixture, signedInAs, userFixture } from '@/test/handlers'
 import { renderRoute } from '@/test/render'
@@ -108,5 +109,15 @@ describe('History', () => {
       expect(badges[1]!.parentElement!.className).toContain('sm:flex')
       for (const badge of badges) expect(badge.className).toContain(tone)
     }
+  })
+
+  it('dates the games in the UI language, Armenian included', async () => {
+    serveHistory([finished('win', 'completed')])
+    await i18n.changeLanguage('hy')
+    renderRoute('/history')
+
+    // CLDR's medium date for hy, also where the browser has no Armenian data.
+    const [row] = await screen.findAllByRole('link', { name: /Tic-tac-toe/ })
+    expect(row!.textContent).toContain('28 հոկ, 2026 թ.')
   })
 })

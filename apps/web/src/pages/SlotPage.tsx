@@ -54,7 +54,8 @@ export function SlotPage() {
         <iframe
           src={slot.play_path}
           title={slot.name}
-          className="block h-[calc(100dvh-9rem)] min-h-[28rem] w-full rounded-panel border border-gold/30 bg-black shadow-[0_18px_40px_rgb(0_0_0/0.55)]"
+          // Under 1024 px the phone tab bar covers the window's bottom: the frame ends above it.
+          className="block h-[calc(100dvh-11rem-var(--spacing-tabbar))] min-h-[22rem] w-full rounded-panel border border-gold/30 bg-black shadow-[0_18px_40px_rgb(0_0_0/0.55)] lg:h-[calc(100dvh-9rem)] lg:min-h-[28rem]"
           allow="autoplay; fullscreen"
         />
       )}

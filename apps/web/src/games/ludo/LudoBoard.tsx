@@ -309,7 +309,7 @@ export default function LudoBoard({
               <li
                 key={seat}
                 aria-current={acting ? 'step' : undefined}
-                className={`relative flex items-center gap-2 rounded-xl border px-3 py-2 ${
+                className={`relative flex items-center gap-2 rounded-xl border pr-3 ${
                   acting ? 'border-[var(--color-turn)] bg-black/35' : 'border-white/10 bg-black/20'
                 } ${view.out[seat] ? 'opacity-45' : ''}`}
                 style={
@@ -320,17 +320,18 @@ export default function LudoBoard({
                     : undefined
                 }
               >
-                <span
-                  aria-hidden="true"
-                  className="size-4 shrink-0 rounded-full border border-black/40"
-                  style={{ background: COLOURS[colour] }}
-                />
+                {/* The colour and the name are the tap target (reactions, profile): the plate's full height. */}
                 <SeatTap
                   seat={seat}
                   name={name(seat)}
-                  className="min-w-0 flex-1 truncate text-sm font-semibold"
+                  className="flex min-h-11 min-w-0 flex-1 items-center gap-2 pl-3 text-sm font-semibold"
                 >
-                  {name(seat)}
+                  <span
+                    aria-hidden="true"
+                    className="size-4 shrink-0 rounded-full border border-black/40"
+                    style={{ background: COLOURS[colour] }}
+                  />
+                  <span className="min-w-0 truncate">{name(seat)}</span>
                 </SeatTap>
                 {levels[seat] !== undefined ? <LevelBadge level={levels[seat]} size="sm" /> : null}
                 <span className="text-xs text-gold-light tabular-nums">
