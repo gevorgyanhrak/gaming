@@ -17,7 +17,7 @@ const SPOTLIGHT_MS = 5000
  * BIG WINS LIVE: the latest wins of the week across every game, newest first, from the server (people's from the
  * ledger; AI players' from real games, marked AI). A spotlight steps through them, one about every 5 seconds
  * (paused on hover, focus or with its button); a win that just happened takes it at once with a gold flash.
- * Nothing invented: an empty week says so.
+ * Only wins of 100,000 Fishkas or more (the server filters, admin setting). Nothing invented: an empty month says so.
  */
 export function LiveBigWins() {
   const { t, i18n } = useTranslation()
@@ -56,6 +56,13 @@ export function LiveBigWins() {
           <span className="relative inline-flex size-2.5 rounded-full bg-[#ff5a4e]" />
         </span>
         <span className="casino-gold">{t('wins.title')}</span>
+        {/* Only big wins appear here (HayBet item 16: 100,000 Fishkas or more, an admin setting). */}
+        <span
+          aria-hidden="true"
+          className="rounded-full border border-gold/50 bg-gold/10 px-2 py-0.5 font-sans text-[11px] font-bold tracking-wide text-gold-light"
+        >
+          {t('wins.minimum')}
+        </span>
       </h2>
       <p className="mt-0.5 text-xs text-muted">{t('wins.subtitle')}</p>
 
@@ -126,7 +133,7 @@ export function LiveBigWins() {
                       <span className="truncate text-sm font-bold">{win.player.name}</span>
                       {win.is_ai ? <AiTag /> : null}
                     </span>
-                    <span className="flex shrink-0 items-center gap-1 text-base font-extrabold text-gold-light tabular-nums sm:text-lg">
+                    <span className="flex shrink-0 items-center gap-1 text-base font-extrabold text-gold-light tabular-nums drop-shadow-[0_0_10px_rgb(245_192_79/0.45)] sm:text-lg">
                       +{format(win.amount)}
                       <FishkaIcon className="size-5" />
                     </span>
@@ -202,7 +209,7 @@ function Spotlight({
               <span className="truncate font-bold">{win.player.name}</span>
               {win.is_ai ? <AiTag /> : null}
             </span>
-            <span className="flex shrink-0 items-center gap-1 text-xl font-black text-gold-light tabular-nums sm:text-2xl">
+            <span className="text-gold-gradient flex shrink-0 items-center gap-1 text-2xl font-black tabular-nums drop-shadow-[0_0_14px_rgb(245_192_79/0.55)] sm:text-3xl">
               +{amount}
               <FishkaIcon className="size-6" />
             </span>

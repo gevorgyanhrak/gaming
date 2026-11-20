@@ -44,6 +44,7 @@ function aliceBeatsBob(): array
 
 it('records what a person won in a game, from the ledger, and only for the winner', function () {
     Event::fake([WinRecorded::class]);
+    app(Settings::class)->update(['wins.feed_min' => 1]);
     [$alice, $bob, $room] = aliceBeatsBob();
 
     // Alice put in 3,000 and took the 6,000 pot: she won 3,000.
@@ -55,18 +56,19 @@ it('records what a person won in a game, from the ledger, and only for the winne
         && $e->broadcastOn()[0]->name === 'wins');
 });
 
-it('lists the latest wins of the week, newest first, and celebrates the big ones', function () {
+it('lists the latest wins of the month, newest first, and celebrates the big ones', function () {
+    app(Settings::class)->update(['wins.feed_min' => 1]);
     [$alice] = aliceBeatsBob();
     $small = winner(1);
     DB::table('game_wins')->insert([
         ['user_id' => $small->id, 'game_id' => Game::query()->where('slug', 'chess')->value('id'), 'room_public_id' => 'r-small', 'amount' => 500, 'won_at' => now()->subMinute()],
-        ['user_id' => $small->id, 'game_id' => Game::query()->where('slug', 'chess')->value('id'), 'room_public_id' => 'r-old', 'amount' => 900_000, 'won_at' => now()->subDays(8)],
+        ['user_id' => $small->id, 'game_id' => Game::query()->where('slug', 'chess')->value('id'), 'room_public_id' => 'r-old', 'amount' => 900_000, 'won_at' => now()->subDays(31)],
     ]);
     app(Settings::class)->update(['wins.celebrate_at' => 2_000]);
 
     $this->getJson('/api/v1/wins')
         ->assertOk()
-        ->assertJsonCount(2, 'data')   // last week's only
+        ->assertJsonCount(2, 'data')   // the last 30 days only
         ->assertJsonPath('data.0.amount', 3_000)
         ->assertJsonPath('data.0.player.username', $alice->username)
         ->assertJsonPath('data.0.game.slug', 'checkers')
@@ -78,6 +80,7 @@ it('lists the latest wins of the week, newest first, and celebrates the big ones
 
 it('lists an AI player’s win in a real game, marked AI: never celebrated, never on leaderboards', function () {
     Event::fake([WinRecorded::class]);
+    app(Settings::class)->update(['wins.feed_min' => 1]);
     $mode = Game::query()->where('slug', 'checkers')->sole()->modes()->first();
     $game = Game::query()->where('slug', 'checkers')->sole();
     $bot = BotProfile::factory()->create(['name' => 'Aram']);
@@ -114,4 +117,20 @@ it('records nothing for AI that didn’t win, nor at a table without a stake', f
     if ((int) DB::table('game_rooms')->where('public_id', $room['id'])->value('stake') === 0) {
         expect(DB::table('ai_wins')->count())->toBe(0);
     }
+});
+
+it('shows and announces only wins of 100,000 Fishkas or more by default (HayBet item 16), keeping the rest', function () {
+    Event::fake([WinRecorded::class]);
+    [$alice] = aliceBeatsBob(); // a 3,000 win: recorded, not announced
+    $big = winner(1);
+    DB::table('game_wins')->insert([
+        ['user_id' => $big->id, 'game_id' => Game::query()->where('slug', 'chess')->value('id'), 'room_public_id' => 'r-big', 'amount' => 150_000, 'won_at' => now()->subHour()],
+        ['user_id' => $big->id, 'game_id' => Game::query()->where('slug', 'chess')->value('id'), 'room_public_id' => 'r-99k', 'amount' => 99_999, 'won_at' => now()->subMinute()],
+    ]);
+
+    expect(DB::table('game_wins')->where('user_id', $alice->id)->value('amount'))->toBe(3_000);
+    Event::assertNotDispatched(WinRecorded::class);
+    $this->getJson('/api/v1/wins')->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.amount', 150_000);
 });

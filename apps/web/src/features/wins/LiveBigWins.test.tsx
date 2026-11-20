@@ -13,7 +13,7 @@ describe('Big Wins live', () => {
 
   it('lists the week’s wins from the server, and says so when there are none', async () => {
     renderRoute('/')
-    expect(await screen.findByText(/No wins yet this week/)).toBeInTheDocument()
+    expect(await screen.findByText(/No win of 100,000 Fishkas or more yet/)).toBeInTheDocument()
   })
 
   it('shows each win with the player, the game and the amount, newest first', async () => {
@@ -48,7 +48,7 @@ describe('Big Wins live', () => {
 
   it('adds a new win live, and celebrates a big one', async () => {
     renderRoute('/')
-    await screen.findByText(/No wins yet this week/)
+    await screen.findByText(/No win of 100,000 Fishkas or more yet/)
 
     act(() =>
       emit(
@@ -71,7 +71,7 @@ describe('Big Wins live', () => {
 
   it('doesn’t celebrate a win below the amount the server set', async () => {
     renderRoute('/')
-    await screen.findByText(/No wins yet this week/)
+    await screen.findByText(/No win of 100,000 Fishkas or more yet/)
 
     act(() => emit('wins', 'win.recorded', winFixture({ id: 'p3', amount: 900, celebrate: false })))
 
@@ -81,7 +81,7 @@ describe('Big Wins live', () => {
 
   it('marks an AI player’s win and never celebrates it', async () => {
     renderRoute('/')
-    await screen.findByText(/No wins yet this week/)
+    await screen.findByText(/No win of 100,000 Fishkas or more yet/)
 
     act(() =>
       emit(

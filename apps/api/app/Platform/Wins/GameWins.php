@@ -48,7 +48,10 @@ class GameWins
             return;
         }
         $id = (int) DB::table('game_wins')->where('room_public_id', $room->public_id)->where('user_id', $participant->user_id)->value('id');
-        WinRecorded::dispatch($this->present($id));
+        // Kept for leaderboards and achievements either way; the Big Wins feed announces only big ones.
+        if ($amount >= $this->feedMin()) {
+            WinRecorded::dispatch($this->present($id));
+        }
     }
 
     /**
@@ -71,7 +74,9 @@ class GameWins
                 continue;
             }
             $id = (int) DB::table('ai_wins')->where('room_public_id', $room->public_id)->where('seat', $seat)->value('id');
-            WinRecorded::dispatch($this->presentAi($id));
+            if ($win['amount'] >= $this->feedMin()) {
+                WinRecorded::dispatch($this->presentAi($id));
+            }
         }
     }
 
@@ -81,18 +86,26 @@ class GameWins
         return (int) $this->settings->get('wins.celebrate_at');
     }
 
+    /** The smallest win the Big Wins feed shows (admin setting, 100,000 by default; HayBet item 16). */
+    public function feedMin(): int
+    {
+        return (int) $this->settings->get('wins.feed_min');
+    }
+
     /**
-     * The latest wins of the last $days days, people's and AI's together, newest first (the live feed).
+     * The latest big wins (at least feedMin) of the last $days days, people's and AI's together, newest first (the
+     * live feed). Real records only: with no big win, the feed is empty.
      *
      * @return list<array<string, mixed>>
      */
-    public function recent(int $days = 7, int $limit = 15): array
+    public function recent(int $days = 30, int $limit = 15): array
     {
         $since = now()->subDays($days);
-        $people = DB::table('game_wins')->where('won_at', '>=', $since)
+        $min = $this->feedMin();
+        $people = DB::table('game_wins')->where('won_at', '>=', $since)->where('amount', '>=', $min)
             ->orderByDesc('won_at')->limit($limit)->get(['id', 'won_at'])
             ->map(fn ($w) => ['ai' => false, 'id' => (int) $w->id, 'at' => (string) $w->won_at]);
-        $ai = DB::table('ai_wins')->where('won_at', '>=', $since)
+        $ai = DB::table('ai_wins')->where('won_at', '>=', $since)->where('amount', '>=', $min)
             ->orderByDesc('won_at')->limit($limit)->get(['id', 'won_at'])
             ->map(fn ($w) => ['ai' => true, 'id' => (int) $w->id, 'at' => (string) $w->won_at]);
 

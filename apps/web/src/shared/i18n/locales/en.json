@@ -1227,8 +1227,8 @@
   },
   "wins": {
     "title": "BIG WINS LIVE",
-    "subtitle": "The latest wins of the week, in Fishkas (free play money). AI players’ wins in real games are marked AI.",
-    "empty": "No wins yet this week. The first big one will show here.",
+    "subtitle": "Wins of 100,000 Fishkas or more in the last 30 days (free play money). AI players’ wins in real games are marked AI.",
+    "empty": "No win of 100,000 Fishkas or more yet. The first one will show here.",
     "error": "Big wins can’t be shown right now.",
     "line": "{{name}} won {{amount}} Fishkas in {{game}}",
     "congrats": "Congratulations!",
@@ -1237,7 +1237,8 @@
     "lineAi": "{{name}} (AI player) won {{amount}} Fishkas in {{game}}",
     "spotlight": "Recent win",
     "pause": "Pause the wins",
-    "play": "Show the wins in turn"
+    "play": "Show the wins in turn",
+    "minimum": "100,000+"
   },
   "leaders": {
     "title": "Leaderboards",
