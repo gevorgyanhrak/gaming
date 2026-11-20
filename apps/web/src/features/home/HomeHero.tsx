@@ -7,7 +7,8 @@ import { MAIN_GAMES } from '@/features/casino/mainGames'
 import { fetchSlots, slotsKey } from '@/features/casino/slots'
 import { GameArtwork } from '@/features/catalog/components/GameArtwork'
 import { useGames } from '@/features/catalog/queries'
-import { useOnlineCount } from '@/features/presence/useOnlineCount'
+import { useDemoActivity, useOnlineCount } from '@/features/presence/useOnlineCount'
+import { useCountUp } from '@/shared/lib/useCountUp'
 import { FishkaIcon } from '@/features/wallet/components/FishkaIcon'
 import { ButtonLink } from '@/shared/ui/Button'
 import { NightSky } from './NightSky'
@@ -31,6 +32,7 @@ export function HomeHero() {
   const games = useGames()
   const slots = useQuery({ queryKey: slotsKey, queryFn: ({ signal }) => fetchSlots(signal) })
   const online = useOnlineCount()
+  const demo = useDemoActivity()
   const number = (n: number) => n.toLocaleString(i18n.language)
 
   const main = MAIN_GAMES.map((slug) => games.data?.find((g) => g.slug === slug)).filter(
@@ -93,6 +95,9 @@ export function HomeHero() {
             {slotCount ? (
               <Stat value={number(slotCount)} label={t('home.slots', { count: slotCount })} />
             ) : null}
+            {/* The owner's simulated activity figure: its own stat, always tagged and explained, never added to
+                the real count above. */}
+            {demo !== null ? <DemoStat value={demo} format={number} /> : null}
           </dl>
           <p className="mt-7 inline-flex items-center gap-2 text-xs text-muted">
             <FishkaIcon className="size-4 shrink-0" />
@@ -159,6 +164,27 @@ function Stat({ value, label, live = false }: { value: string; label: string; li
       </dd>
       <dd aria-hidden="true" className="text-xs font-semibold tracking-wide text-muted uppercase">
         {label}
+      </dd>
+    </div>
+  )
+}
+
+function DemoStat({ value, format }: { value: number; format: (n: number) => string }) {
+  const { t } = useTranslation()
+  const shown = useCountUp(value, 1200)
+  return (
+    <div className="flex flex-col items-center lg:items-start" title={t('online.demoNote')}>
+      <dt className="sr-only">
+        {t('online.demoLabel')}. {t('online.demoNote')}
+      </dt>
+      <dd className="flex items-center gap-2 font-display text-2xl font-bold text-fg/80 tabular-nums">
+        {format(shown)}
+        <span className="rounded-full border border-gold/40 px-1.5 py-0.5 font-sans text-[0.625rem] font-bold tracking-wider text-gold-light uppercase">
+          {t('online.demoTag')}
+        </span>
+      </dd>
+      <dd aria-hidden="true" className="text-xs font-semibold tracking-wide text-muted uppercase">
+        {t('online.demoLabel')}
       </dd>
     </div>
   )

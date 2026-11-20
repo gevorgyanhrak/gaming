@@ -63,6 +63,9 @@ final class SettingsCatalog
             new SettingDefinition('rankings.loss_points', SettingType::Integer, 5, rules: ['required', 'integer', 'min:0', 'max:1000']),
             // Games whose page ranks players by Fishkas instead.
             new SettingDefinition('rankings.chips_games', SettingType::StringList, ['poker', 'blackjack'], rules: ['array', 'max:30'], elementRules: ['string', 'max:40']),
+            // A simulated activity figure shown next to the real online count, always labelled demo (HayBet brief).
+            new SettingDefinition('online.demo_enabled', SettingType::Boolean, true, rules: ['boolean']),
+            new SettingDefinition('online.demo_base', SettingType::Integer, 30000, rules: ['required', 'integer', 'min:0', 'max:10000000']),
             new SettingDefinition('wins.celebrate_at', SettingType::Integer, 100000, rules: ['required', 'integer', 'min:1', 'max:1000000000']),
             new SettingDefinition('fishka.gift_amount', SettingType::Integer, 120, rules: ['required', 'integer', 'min:0', 'max:1000000']),
             new SettingDefinition('fishka.gift_interval_hours', SettingType::Integer, 4, rules: ['required', 'integer', 'min:1', 'max:168']),

@@ -1302,7 +1302,10 @@
   "online": {
     "title": "People connected right now",
     "label_one": "online",
-    "label_other": "online"
+    "label_other": "online",
+    "demoTag": "Demo",
+    "demoLabel": "demo activity",
+    "demoNote": "A simulated figure shown for atmosphere, not real players. The real number of people online is shown separately."
   },
   "rankings": {
     "title": "Top players",

@@ -9,13 +9,45 @@ import { server } from '@/test/server'
 describe('Online counter', () => {
   it('shows how many people are connected, as the server counts them', async () => {
     server.use(
-      http.get('*/api/v1/stats/online', () => HttpResponse.json({ data: { online: 1234 } })),
+      http.get('*/api/v1/stats/online', () =>
+        HttpResponse.json({ data: { online: 1234, demo: 30412 } }),
+      ),
     )
     renderRoute('/')
 
     const counter = await screen.findByTitle('People connected right now')
     expect(counter).toHaveTextContent('1,234')
     expect(counter).toHaveTextContent('online')
+    // The header shows the real count only, never the demo figure.
+    expect(counter).not.toHaveTextContent('30,412')
+  })
+
+  it('shows the demo figure on its own, tagged and explained, apart from the real count', async () => {
+    server.use(
+      http.get('*/api/v1/stats/online', () =>
+        HttpResponse.json({ data: { online: 3, demo: 30412 } }),
+      ),
+    )
+    renderRoute('/')
+
+    const demo = await screen.findByTitle(
+      /A simulated figure shown for atmosphere, not real players/,
+    )
+    expect(demo).toHaveTextContent('30,412')
+    expect(demo).toHaveTextContent('Demo')
+    expect(demo).toHaveTextContent('demo activity')
+    expect(screen.getByTitle('People connected right now')).toHaveTextContent('3')
+  })
+
+  it('shows no demo figure when the admin turned it off', async () => {
+    server.use(
+      http.get('*/api/v1/stats/online', () =>
+        HttpResponse.json({ data: { online: 3, demo: null } }),
+      ),
+    )
+    renderRoute('/')
+    await screen.findByTitle('People connected right now')
+    expect(screen.queryByText('demo activity')).not.toBeInTheDocument()
   })
 
   it('shows nothing when the server can’t count (never a made-up number)', async () => {

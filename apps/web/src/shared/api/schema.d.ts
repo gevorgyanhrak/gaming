@@ -480,7 +480,8 @@ export interface paths {
         };
         /**
          * People connected right now (the counter at the top of the app): unique signed-in users on the "online"
-         *     presence channel. Null when Reverb can't be asked
+         *     presence channel. Null when Reverb can't be asked. `demo` is a separate simulated figure (DemoActivity), never
+         *     part of `online`; clients must label it as a demo. Null when the admin turned it off
          */
         get: operations["v1.stats.online"];
         put?: never;
@@ -2726,6 +2727,7 @@ export interface operations {
                     "application/json": {
                         data: {
                             online: number | null;
+                            demo: number | null;
                         };
                     };
                 };

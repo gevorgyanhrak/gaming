@@ -161,7 +161,9 @@ export const handlers = [
   http.get('*/api/v1/slots', () => HttpResponse.json({ data: [] })),
   http.get('*/api/v1/me/favorites', () => HttpResponse.json({ data: [] })),
   // The online counter: unknown (hidden) unless a test serves a number.
-  http.get('*/api/v1/stats/online', () => HttpResponse.json({ data: { online: null } })),
+  http.get('*/api/v1/stats/online', () =>
+    HttpResponse.json({ data: { online: null, demo: null } }),
+  ),
   http.get('*/api/v1/leaderboards', () => HttpResponse.json({ data: [] })),
   // Rankings: none unless a test serves some.
   http.get('*/api/v1/rankings/games/:slug', () => HttpResponse.json({ kind: 'points', data: [] })),

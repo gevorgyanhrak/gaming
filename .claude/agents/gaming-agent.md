@@ -252,6 +252,9 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   list (`languageName`: English / Русский / Հայերեն).
 - A `/me` 429 that outlives its retries (Retry-After honoured, ≤ 5) shows `AccountUnavailable` (alert + Try again);
   routes with `handle.requiresAccount` show it in the page instead. Header sections and the ☰ drawer share `useSections`.
+- Online: `GET /stats/online` → `online` (real, Reverb presence; null when unknown) and `demo` (owner-chosen
+  simulated figure, `DemoActivity`, admin "Demo activity"). Never add `demo` to `online`; anything showing `demo`
+  tags it "Demo" and explains it (`useDemoActivity`, HomeHero `DemoStat`).
 - Pages opened over plain HTTP on the LAN have no `crypto.randomUUID`: use `randomId()`
   (`shared/lib/uuid.ts`).
 - Mobile QA suite: `apps/web/e2e` (Playwright, `playwright.config.ts`; signs in as player1 in `global-setup.ts`).

@@ -187,6 +187,14 @@ class ManageSettings extends Page
                         TextInput::make('levels.reward_default')->label('Fishkas for a level without its own reward')
                             ->numeric()->integer()->required()->minValue(0)->maxValue(1000000),
                     ]),
+                Section::make('Demo activity')->columns(2)
+                    ->description('A simulated activity figure shown on the home page next to the real online count, always labelled as a demo. It is never added to the real count.')
+                    ->schema([
+                        Toggle::make('online.demo_enabled')->label('Show the demo activity figure'),
+                        TextInput::make('online.demo_base')->label('Average demo figure')
+                            ->numeric()->integer()->required()->minValue(0)->maxValue(10000000)
+                            ->helperText('It drifts ±10 % over the day and a little every minute.'),
+                    ]),
                 Section::make('Rankings')->columns(2)
                     ->description('Each listed game has its own Top 10 by points, AI included; points change once per finished game.')
                     ->schema([

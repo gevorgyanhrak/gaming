@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { useCountUp } from '@/shared/lib/useCountUp'
 import { useOnlineCount } from './useOnlineCount'
 
 /**
@@ -8,6 +9,8 @@ import { useOnlineCount } from './useOnlineCount'
 export function OnlineCounter({ className = '' }: { className?: string }) {
   const { t, i18n } = useTranslation()
   const count = useOnlineCount()
+  // The number rolls to each new value (off under reduced motion).
+  const shown = useCountUp(count ?? 0, 900)
   if (count === null) return null
 
   return (
@@ -19,10 +22,7 @@ export function OnlineCounter({ className = '' }: { className?: string }) {
         <span className="absolute inline-flex size-full rounded-full bg-[#3ddc84] opacity-75 motion-safe:animate-ping" />
         <span className="relative inline-flex size-2 rounded-full bg-[#3ddc84] shadow-[0_0_6px_#3ddc84]" />
       </span>
-      {/* The number changes with a short pop. */}
-      <span key={count} className="tabular-nums motion-safe:animate-turn-pop">
-        {count.toLocaleString(i18n.language)}
-      </span>
+      <span className="tabular-nums">{shown.toLocaleString(i18n.language)}</span>
       <span className="sr-only sm:not-sr-only">{t('online.label', { count })}</span>
     </p>
   )
