@@ -52,6 +52,7 @@ Severity: P0 unusable · P1 major broken · P2 significant · P3 minor.
 | G-4 | Poker room | `games/poker/Controls.tsx` | 320–344 | MORE chip ran outside the bet row | Inside the row | P2 | 44 px chips under 360 | Fixed (3a2f51a) |
 | G-5 | Poker room | `games/poker/PokerBoard.tsx` | 320–344 | Table-info card under your seat plate | No overlap | P3 | Values under labels under 360 | Fixed (3a2f51a) |
 | G-6 | every room | `features/play/components/TableBar.tsx` | 768+ | Game name cut ("Շախմ…") by the group badge | Whole name | P3 | Name keeps half the row | Fixed (3a2f51a) |
+| L-1 | `/leaderboards` | leaderboard row name link | 320–430 | Player link 20 px tall (`a.min-w-0.flex-1.truncate`) | ≥ 24 px target | P3 | — | Open (found in iteration 2, QA stopped) |
 | A-1 | `/admin/*` | Filament tables (vendor) | 320 | Table row links (Edit / View / Delete) and sort headers are 20 px tall | ≥ 24 px | P3 | — | Not fixed: Filament's own components, staff-only screens; no page overflows |
 
 ## Iterations
@@ -60,4 +61,12 @@ Severity: P0 unusable · P1 major broken · P2 significant · P3 minor.
 |---|---|---|
 | 1 | routes ×11 sizes, games ×11, slots ×13, admin; visual review | 1 measured bug (H-1) + 19 visual (V-1…V-19) + 7 game/casino (C-1, G-1…G-6) + A-1 |
 | 1 → fixes | UI/UX Developer (H-1, V-1…V-9, V-11, V-13, V-14, V-16…V-19), Game UI Developer (V-10, V-12, V-15, V-16, G-1…G-6), Code Quality Reviewer on both | 2 rounds approved with small changes; 9908aad, 3a2f51a |
-| 2 | full suite again (routes now also signed out in ru and hy) | _pending_ |
+| 2 (partial) | admin, casino shelf, 13 slots, 11 games, signed-out routes in en/ru/hy at all 11 sizes, part of the signed-in routes; stopped by the owner (2026-11-20) before the rest | **No page wider than the screen and nothing past the edges anywhere it ran.** Remaining flags: the leaderboard's player link is 20 px tall (P3, L-1 below); Filament admin links (A-1). 7 game tests (checkers, durak, blot, domino, ludo, pool, rummy) failed within 2 s when the run was stopped, before Playwright printed why — cause not investigated; the same tests passed in iteration 1's rerun (8f6f9b6) |
+
+## Status when QA was stopped (2026-11-20, owner: "lets stop qa testing")
+
+- Fixed and verified live by the developers, reviewed: 27 of 30 (H-1, V-1…V-19, C-1, G-1, G-2, G-4…G-6).
+- Won't fix: G-3 (Nardi points at 320 px), A-1 (Filament vendor tables).
+- Open: L-1 (leaderboard name link height, P3).
+- Not done: the full iteration-2 retest of the signed-in routes, the visual review of iteration-2 screenshots, and the
+  cause of the 7 game-test failures in the stopped run.
