@@ -22,7 +22,7 @@ per game), one shared client page, symbols drawn in code in the classic style (n
       balance, pay table, upright layout), tiles via `play/tools/agt_tiles.mjs`; live: 27 real spins, wins, lines,
       scatter, expanding wild; in the casino page and lobby — this commit.
 - [x] 3. Batch 2: Gems, 50 Gems, Hot Clover, Jokers, 100 Jokers, Ice Fruits 6 Reels (wild `line_wild`; gem/star
-      symbols; wild variants joker/clover/crystal via `data-wild`); live: 36 real spins, 8 wins, 5×4 and 6×3 grids — this commit.
+      symbols; wild variants joker/clover/crystal via `data-wild`); live: 36 real spins, 8 wins, 5×4 and 6×3 grids — 21cc1ff.
 - [ ] 4. Features for the rest: fill multiplier (Cherry Hot, Valentine's Day), two scatters (Shining Stars ×2),
       Egypt's multiplier, wild scatter (AI slot); then 3×3 / 4×4; then free-spin games.
 
