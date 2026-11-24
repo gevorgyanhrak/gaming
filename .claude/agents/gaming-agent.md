@@ -288,7 +288,8 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   `play/<slug>/index.html` with `data-game`/`data-theme` (+ optional `data-wild` joker|clover|crystal); tiles
   `play/tools/agt_tiles.mjs` (needs `cwebp`). Slotopol yaml reel lines may end in `# NN` comments; its published
   line RTP for expanding-wild games is an estimate (test tolerance 0.35 %). New wild/scatter features: port + exact
-  RTP proof in `AgtSlotsTest` first.
+  RTP proof in `AgtSlotsTest` first (helpers `agtStates`/`agtLineRtp` take per-reel stop filters for conditioning,
+  as the fill multiplier does).
 - Online: `GET /stats/online` → `online` (real, Reverb presence; null when unknown) and `demo` (owner-chosen
   simulated figure, `DemoActivity`, admin "Demo activity"). Never add `demo` to `online`; anything showing `demo`
   tags it "Demo" and explains it (`useDemoActivity`, HomeHero `DemoStat`).

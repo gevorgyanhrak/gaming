@@ -25,6 +25,8 @@ const SLOTS = [
   'jokers',
   'jokers-100',
   'ice-fruits-6',
+  'cherry-hot',
+  'valentines-day',
 ]
 const SIZES = [PHONES[0], PHONES[3], { width: 812, height: 375 }, LARGER[0], LARGER[3]]
 

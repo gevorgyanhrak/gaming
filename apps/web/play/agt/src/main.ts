@@ -19,6 +19,8 @@ type Layout = {
   scatter_pay: number[]
   wild: string | null
   wild_mode: 'none' | 'substitute' | 'expanding' | 'line_wild'
+  /** Whole reels of one of these symbols multiply every line win (counted from the left, or around the middle). */
+  fill?: { from: 'left' | 'center'; symbols: string[] } | null
 }
 type LineWin = { line: number; symbol: string; count: number; amount: number; positions: [number, number][] }
 type Round = {
@@ -26,6 +28,7 @@ type Round = {
   lineWins: LineWin[]
   scatterWin: { symbol: string; count: number; amount: number; positions: [number, number][] } | null
   expanded: number[]
+  multiplier?: number
   totalWin: number
 }
 
@@ -228,7 +231,10 @@ async function play() {
     if (dealt.round.expanded.length) await expand(dealt.round.expanded)
     showWins(dealt.round)
     won = dealt.win
-    if (dealt.win > 0) say(t('won', { amount: fishkas(dealt.win) }), true)
+    if (dealt.win > 0) {
+      const times = dealt.round.multiplier ?? 1
+      say(times > 1 ? t('wonTimes', { amount: fishkas(dealt.win), times }) : t('won', { amount: fishkas(dealt.win) }), true)
+    }
     render()
     const token = ++settling
     await settleWin(balance, dealt.balance, (value) => {
@@ -272,9 +278,10 @@ function payTable() {
             : name === layout.wild
               ? `<p>${t(layout.wild_mode === 'expanding' ? 'wildExpanding' : 'wildSubstitute')}</p>${pays.some((p) => p > 0) ? `<ul>${line(pays)}</ul>` : ''}`
               : `<ul>${line(pays)}</ul>`
-        return `<div class="pay"><span class="icon">${symbolSvg(name, `p-${name}`, WILD_STYLE)}</span>${special}</div>`
+        return `<div class="pay"><span class="icon">${symbolSvg(name, `p-${name}`, WILD_STYLE)}</span><div>${special}</div></div>`
       })
       .join('')}</div>
+    ${layout.fill ? `<p class="rules">${t(layout.fill.from === 'left' ? 'fillLeft' : 'fillCenter')}</p><div class="fill-icons">${layout.fill.symbols.map((name) => `<span class="icon">${symbolSvg(name, `f-${name}`, WILD_STYLE)}</span>`).join('')}</div>` : ''}
     <p class="rules">${t('rules', { lines: layout.lines.length })}</p>`
   overlay.hidden = false
   overlay.querySelector<HTMLButtonElement>('.close')?.focus()

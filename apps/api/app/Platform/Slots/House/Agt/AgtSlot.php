@@ -22,7 +22,7 @@ use RuntimeException;
  */
 final class AgtSlot implements CreditedHouseSlot, HasClientLayout
 {
-    /** @var array{slug: string, title: string, cols: int, rows: int, lines: list<list<int>>, symbols: list<string>, line_pay: list<list<int|float>>, scatter: int|null, scatter_pay: list<float>, wild: int|null, wild_mode: string, rtp: float, reels: list<list<int>>} */
+    /** @var array{slug: string, title: string, cols: int, rows: int, lines: list<list<int>>, symbols: list<string>, line_pay: list<list<int|float>>, scatter: int|null, scatter_pay: list<float>, wild: int|null, wild_mode: string, fill?: array{from: string, symbols: list<int>}|null, rtp: float, reels: list<list<int>>} */
     private readonly array $game;
 
     /**
@@ -37,7 +37,7 @@ final class AgtSlot implements CreditedHouseSlot, HasClientLayout
         if (! is_array($data)) {
             throw new RuntimeException("No AGT slot data for [{$slug}].");
         }
-        /** @var array{slug: string, title: string, cols: int, rows: int, lines: list<list<int>>, symbols: list<string>, line_pay: list<list<int|float>>, scatter: int|null, scatter_pay: list<float>, wild: int|null, wild_mode: string, rtp: float, reels: list<list<int>>} $data */
+        /** @var array{slug: string, title: string, cols: int, rows: int, lines: list<list<int>>, symbols: list<string>, line_pay: list<list<int|float>>, scatter: int|null, scatter_pay: list<float>, wild: int|null, wild_mode: string, fill?: array{from: string, symbols: list<int>}|null, rtp: float, reels: list<list<int>>} $data */
         $this->game = $data;
     }
 
@@ -52,7 +52,7 @@ final class AgtSlot implements CreditedHouseSlot, HasClientLayout
     }
 
     /**
-     * @return array{slug: string, title: string, cols: int, rows: int, lines: list<list<int>>, symbols: list<string>, line_pay: list<list<int|float>>, scatter: int|null, scatter_pay: list<float>, wild: int|null, wild_mode: string, rtp: float, reels: list<list<int>>}
+     * @return array{slug: string, title: string, cols: int, rows: int, lines: list<list<int>>, symbols: list<string>, line_pay: list<list<int|float>>, scatter: int|null, scatter_pay: list<float>, wild: int|null, wild_mode: string, fill?: array{from: string, symbols: list<int>}|null, rtp: float, reels: list<list<int>>}
      */
     public function data(): array
     {
@@ -79,6 +79,10 @@ final class AgtSlot implements CreditedHouseSlot, HasClientLayout
             'scatter_pay' => $g['scatter_pay'],
             'wild' => $g['wild'] === null ? null : $g['symbols'][$g['wild']],
             'wild_mode' => $g['wild_mode'],
+            'fill' => ($g['fill'] ?? null) === null ? null : [
+                'from' => $g['fill']['from'],
+                'symbols' => array_map(fn (int $s) => $g['symbols'][$s], $g['fill']['symbols']),
+            ],
         ];
     }
 
@@ -88,7 +92,9 @@ final class AgtSlot implements CreditedHouseSlot, HasClientLayout
         $line = max(array_map(fn (array $pays) => $pays === [] ? 0 : max($pays), $this->game['line_pay']));
         $scatter = $this->game['scatter_pay'] === [] ? 0 : max($this->game['scatter_pay']);
 
-        return (int) ceil($line + $scatter);
+        $fill = ($this->game['fill'] ?? null) === null ? 1 : ($this->game['fill']['from'] === 'left' ? 5 : 4);
+
+        return (int) ceil($line * $fill + $scatter);
     }
 
     public function play(Closure $random): array
@@ -114,6 +120,7 @@ final class AgtSlot implements CreditedHouseSlot, HasClientLayout
     public function evaluate(array $grid): array
     {
         $expanded = $this->expandedReels($grid);
+        $multiplier = $this->fillMultiplier($grid);
         $lineWins = [];
         $lines = count($this->game['lines']);
         foreach ($this->game['lines'] as $index => $rows) {
@@ -131,7 +138,7 @@ final class AgtSlot implements CreditedHouseSlot, HasClientLayout
                     'line' => $index,
                     'symbol' => $this->game['symbols'][$win['symbol']],
                     'count' => $win['count'],
-                    'amount' => $win['pay'] / $lines,
+                    'amount' => $win['pay'] * $multiplier / $lines,
                     'positions' => $positions,
                 ];
             }
@@ -159,8 +166,52 @@ final class AgtSlot implements CreditedHouseSlot, HasClientLayout
             'lineWins' => $lineWins,
             'scatterWin' => $scatterWin,
             'expanded' => $expanded,
+            'multiplier' => $multiplier,
             'totalWin' => (float) (array_sum(array_column($lineWins, 'amount')) + ($scatterWin['amount'] ?? 0)),
         ];
+    }
+
+    /**
+     * The fill multiplier (Slotopol's FillMult) on every line win: whole reels of one listed symbol. From the left
+     * (Cherry Hot): 3, 4 or 5 full reels from reel 1 give ×3, ×4, ×5. Around the centre (Valentine's Day): the middle
+     * reel full, then the full reels next to it on both sides; 3, 4 or 5 in a row give ×2, ×3, ×4. Otherwise ×1.
+     *
+     * @param  array<int, array<int, int>>  $grid
+     */
+    public function fillMultiplier(array $grid): int
+    {
+        $fill = $this->game['fill'] ?? null;
+        if ($fill === null) {
+            return 1;
+        }
+        $full = fn (int $reel, int $symbol): bool => array_filter($grid[$reel], fn (int $s) => $s !== $symbol) === [];
+        if ($fill['from'] === 'left') {
+            $symbol = $grid[0][0];
+            if (! in_array($symbol, $fill['symbols'], true)) {
+                return 1;
+            }
+            $count = 0;
+            while ($count < $this->game['cols'] && $full($count, $symbol)) {
+                $count++;
+            }
+
+            return $count >= 3 ? $count : 1;
+        }
+
+        $middle = intdiv($this->game['cols'], 2);
+        $symbol = $grid[$middle][intdiv($this->game['rows'], 2)];
+        if (! in_array($symbol, $fill['symbols'], true) || ! $full($middle, $symbol)) {
+            return 1;
+        }
+        $count = 1;
+        for ($reel = $middle - 1; $reel >= 0 && $full($reel, $symbol); $reel--) {
+            $count++;
+        }
+        for ($reel = $middle + 1; $reel < $this->game['cols'] && $full($reel, $symbol); $reel++) {
+            $count++;
+        }
+
+        return $count >= 3 ? $count - 1 : 1;
     }
 
     /**

@@ -49,6 +49,13 @@ body {
   --bg2: #12021a;
   --accent: #ff3d8a;
 }
+#app[data-theme='love'] {
+  --bg1: #7a0a3a;
+  --bg2: #1a0210;
+  --frame: #ffc8dc;
+  --frame-dark: #a0285a;
+  --accent: #ff4d8a;
+}
 
 #stage {
   position: absolute;
@@ -352,7 +359,7 @@ button:focus-visible {
   font-size: 19px;
 }
 #overlay .pay p {
-  margin: 0;
+  margin: 0 0 4px;
   font-size: 15px;
   color: #cfd8ff;
 }
@@ -363,6 +370,7 @@ button:focus-visible {
 }
 #overlay ul {
   margin: 0;
+  white-space: nowrap;
   padding: 0;
   list-style: none;
   line-height: 1.35;
@@ -372,6 +380,17 @@ button:focus-visible {
   text-align: center;
   color: #cfd8ff;
   font-size: 16px;
+}
+
+#overlay .fill-icons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+#overlay .fill-icons .icon {
+  width: 64px;
+  height: 64px;
 }
 
 #rotate {

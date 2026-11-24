@@ -46,6 +46,9 @@ const star = (id: string, light: string, dark: string, ring: string) => `
     <path d="M50 8l11 28 30 2-23 19 8 29-26-17-26 17 8-29-23-19 30-2z" fill="url(#${id}-t)" stroke="${dark}" stroke-width="2.5" stroke-linejoin="round"/>
     <path d="M50 20l6 16-6 6-6-6z" fill="#fff" opacity=".55"/>`
 
+/** A heart outline (100×100), scaled and moved by the Valentine's symbols. */
+const heart = 'M50 86 C20 64 10 46 18 30 C26 14 44 16 50 30 C56 16 74 14 82 30 C90 46 80 64 50 86Z'
+
 const SYMBOLS: Record<string, Draw> = {
   seven: (id) => `
     <defs><linearGradient id="${id}-r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6b5b"/><stop offset=".55" stop-color="#d4141c"/><stop offset="1" stop-color="#7d0610"/></linearGradient>${gloss(id)}</defs>
@@ -138,6 +141,55 @@ const SYMBOLS: Record<string, Draw> = {
   topaz: (id) => gem(id, '#ffd0a0', '#f2801c', '#8a3a02', 'heart'),
   greenstar: (id) => star(id, '#c8ff9a', '#1f9a2a', '#3fe04a'),
   redstar: (id) => star(id, '#ffb0a0', '#c4141c', '#ff4d3d'),
+  apple: (id) => `
+    <defs>${gloss(id)}</defs>
+    <path d="M50 30 C34 18 12 26 14 52 C16 76 34 92 50 84 C66 92 84 76 86 52 C88 26 66 18 50 30Z" fill="#d81e2a" stroke="#6a060c" stroke-width="2"/>
+    <path d="M50 30 C34 18 12 26 14 52 C16 76 34 92 50 84 C66 92 84 76 86 52 C88 26 66 18 50 30Z" fill="url(#${id}-g)"/>
+    <path d="M50 30 Q48 18 54 10" fill="none" stroke="#5a3a1a" stroke-width="4" stroke-linecap="round"/>
+    ${leaf(54, 16, -10)}`,
+  // Valentine's Day set.
+  angel: (id) => `
+    <defs><radialGradient id="${id}-h" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#ff9aa8"/><stop offset="1" stop-color="#c4102a"/></radialGradient>${gloss(id)}</defs>
+    <ellipse cx="50" cy="14" rx="16" ry="5" fill="none" stroke="#ffd35a" stroke-width="4"/>
+    <path d="M30 50 C10 36 4 54 8 66 C16 62 20 70 28 64 C24 72 32 74 38 66Z" fill="#fff" stroke="#9aaac8" stroke-width="2"/>
+    <path d="M70 50 C90 36 96 54 92 66 C84 62 80 70 72 64 C76 72 68 74 62 66Z" fill="#fff" stroke="#9aaac8" stroke-width="2"/>
+    <path d="M50 88 C26 70 18 54 24 40 C30 26 46 28 50 40 C54 28 70 26 76 40 C82 54 74 70 50 88Z" fill="url(#${id}-h)" stroke="#6a0414" stroke-width="2"/>
+    <path d="M50 88 C26 70 18 54 24 40 C30 26 46 28 50 40 C54 28 70 26 76 40 C82 54 74 70 50 88Z" fill="url(#${id}-g)"/>`,
+  nymph: (id) => `
+    <defs><radialGradient id="${id}-r" cx="45%" cy="40%" r="65%"><stop offset="0" stop-color="#ff7a8a"/><stop offset="1" stop-color="#9a0418"/></radialGradient></defs>
+    <path d="M50 52 Q48 72 52 94" fill="none" stroke="#1d6e1c" stroke-width="5" stroke-linecap="round"/>
+    ${leaf(50, 74, 200)}${leaf(52, 68, -20)}
+    <circle cx="50" cy="36" r="26" fill="url(#${id}-r)" stroke="#5a0410" stroke-width="2"/>
+    <path d="M46 32 a6 6 0 1 1 8 8 M40 34 Q42 22 56 24 M60 30 Q66 42 56 48 M34 40 Q40 54 54 52 M30 28 Q36 16 48 14" fill="none" stroke="#5a0410" stroke-width="2.5" stroke-linecap="round"/>`,
+  soul: (id) => `
+    <defs><linearGradient id="${id}-o" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3a8"/><stop offset=".5" stop-color="#f2b81c"/><stop offset="1" stop-color="#9a5a02"/></linearGradient></defs>
+    <circle cx="38" cy="56" r="22" fill="none" stroke="url(#${id}-o)" stroke-width="8"/>
+    <circle cx="62" cy="56" r="22" fill="none" stroke="url(#${id}-o)" stroke-width="8"/>
+    <path d="M62 16 l7 9 -7 9 -7 -9z" fill="#dff6ff" stroke="#5a8ab8" stroke-width="1.5"/>
+    <circle cx="38" cy="56" r="22" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="1"/>`,
+  toy: (id) => `
+    <defs><radialGradient id="${id}-b" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#e0a060"/><stop offset="1" stop-color="#8a4a1a"/></radialGradient></defs>
+    <circle cx="28" cy="20" r="11" fill="url(#${id}-b)" stroke="#5a2a0a" stroke-width="2"/><circle cx="72" cy="20" r="11" fill="url(#${id}-b)" stroke="#5a2a0a" stroke-width="2"/>
+    <ellipse cx="50" cy="72" rx="26" ry="22" fill="url(#${id}-b)" stroke="#5a2a0a" stroke-width="2"/>
+    <circle cx="50" cy="38" r="24" fill="url(#${id}-b)" stroke="#5a2a0a" stroke-width="2"/>
+    <ellipse cx="50" cy="46" rx="11" ry="8" fill="#f2d0a0"/><circle cx="50" cy="43" r="3.5" fill="#2a1406"/>
+    <circle cx="41" cy="34" r="3" fill="#2a1406"/><circle cx="59" cy="34" r="3" fill="#2a1406"/>
+    <path d="${heart}" transform="translate(37 60) scale(.26)" fill="#e0142a" stroke="#6a0414" stroke-width="6"/>`,
+  balloon: (id) => `
+    <defs><radialGradient id="${id}-l" cx="38%" cy="30%" r="70%"><stop offset="0" stop-color="#ffb0c8"/><stop offset="1" stop-color="#d4146a"/></radialGradient>${gloss(id)}</defs>
+    <path d="M50 74 Q44 84 52 90 Q58 96 50 100" fill="none" stroke="#7a7a8a" stroke-width="2"/>
+    <path d="${heart}" transform="translate(5 -8) scale(.9)" fill="url(#${id}-l)" stroke="#7a0434" stroke-width="2.2"/>
+    <path d="${heart}" transform="translate(5 -8) scale(.9)" fill="url(#${id}-g)"/>`,
+  hearts: (id) => `
+    <defs><radialGradient id="${id}-a" cx="38%" cy="30%" r="70%"><stop offset="0" stop-color="#ff8a9a"/><stop offset="1" stop-color="#b0081e"/></radialGradient><radialGradient id="${id}-p" cx="38%" cy="30%" r="70%"><stop offset="0" stop-color="#ffd0e0"/><stop offset="1" stop-color="#e05a8a"/></radialGradient></defs>
+    <path d="${heart}" transform="translate(2 4) scale(.62)" fill="url(#${id}-p)" stroke="#7a1a44" stroke-width="3"/>
+    <path d="${heart}" transform="translate(32 26) scale(.66)" fill="url(#${id}-a)" stroke="#5a0410" stroke-width="3"/>`,
+  medallion: (id) => `
+    <defs><linearGradient id="${id}-m" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3a8"/><stop offset=".5" stop-color="#e2a21c"/><stop offset="1" stop-color="#7a4402"/></linearGradient></defs>
+    <path d="M24 8 Q50 34 76 8" fill="none" stroke="url(#${id}-m)" stroke-width="3" stroke-dasharray="4 3"/>
+    <circle cx="50" cy="24" r="5" fill="none" stroke="url(#${id}-m)" stroke-width="3"/>
+    <path d="${heart}" transform="translate(12 22) scale(.76)" fill="url(#${id}-m)" stroke="#5a3002" stroke-width="2.6"/>
+    <path d="${heart}" transform="translate(24 36) scale(.52)" fill="#c4102a" stroke="#5a3002" stroke-width="3"/>`,
   bar: (id) => `
     <defs><linearGradient id="${id}-b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3a3a"/><stop offset="1" stop-color="#0a0a0a"/></linearGradient></defs>
     <rect x="12" y="32" width="76" height="36" rx="6" fill="url(#${id}-b)" stroke="#ffd35a" stroke-width="4"/>

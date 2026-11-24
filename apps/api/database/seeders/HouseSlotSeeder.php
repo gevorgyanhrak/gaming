@@ -39,6 +39,8 @@ class HouseSlotSeeder extends Seeder
         'jokers' => ['Jokers', 190],
         'jokers-100' => ['100 Jokers', 200],
         'ice-fruits-6' => ['Ice Fruits 6 Reels', 210],
+        'cherry-hot' => ['Cherry Hot', 220],
+        'valentines-day' => ["Valentine's Day", 230],
     ];
 
     public function run(HouseSlots $slots): void

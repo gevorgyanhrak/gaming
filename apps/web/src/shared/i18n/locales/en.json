@@ -18,7 +18,9 @@
       "hot-clover": "Game maths: Slotopol (open source, MIT). Symbols and screen by this platform; every round is dealt on our server.",
       "jokers": "Game maths: Slotopol (open source, MIT). Symbols and screen by this platform; every round is dealt on our server.",
       "jokers-100": "Game maths: Slotopol (open source, MIT). Symbols and screen by this platform; every round is dealt on our server.",
-      "ice-fruits-6": "Game maths: Slotopol (open source, MIT). Symbols and screen by this platform; every round is dealt on our server."
+      "ice-fruits-6": "Game maths: Slotopol (open source, MIT). Symbols and screen by this platform; every round is dealt on our server.",
+      "cherry-hot": "Game maths: Slotopol (open source, MIT). Symbols and screen by this platform; every round is dealt on our server.",
+      "valentines-day": "Game maths: Slotopol (open source, MIT). Symbols and screen by this platform; every round is dealt on our server."
     }
   },
   "nav": {
@@ -1437,6 +1439,9 @@
     "close": "Close",
     "lowBalance": "Not enough Fishkas for this bet.",
     "won": "WIN {{amount}}",
+    "wonTimes": "WIN {{amount}} · ×{{times}}",
+    "fillLeft": "Fill reels 1–3, 1–4 or 1–5 with one of these fruits: every line win ×3, ×4 or ×5.",
+    "fillCenter": "Fill the middle reel and 2 or more next to it with one of these: every line win ×2, ×3 or ×4 (3, 4 or 5 reels).",
     "unavailable": "This game is not available.",
     "lines_one": "{{count}} line",
     "lines_other": "{{count}} lines",

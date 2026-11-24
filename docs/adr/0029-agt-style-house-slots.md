@@ -15,7 +15,8 @@
 2. **Engine:** one data-driven house slot, `House\Agt\AgtSlot` (ADR 0024 contract: dealt on our server through the
    slot wallet). Rules as Slotopol's scanners: lines left to right per line bet; wild `none`, `substitute` (stands
    in, pays its own run if more), `line_wild` (Jokers: the first symbol sets the line, a wild counts as it) or
-   `expanding` (reels 2–4 turn wild); scatter anywhere × total bet. Games with other
+   `expanding` (reels 2–4 turn wild); an optional fill multiplier (`fill`: whole reels of one listed symbol multiply
+   every line win — counted from the left ×3…×5, or around the middle reel ×2…×4); scatter anywhere × total bet. Games with other
    features (free spins, fill multipliers) are added only once their feature is ported and proven.
 3. **Proof:** `AgtSlotsTest` computes each game's exact RTP from its data, independently of `play()`, and must equal
    Slotopol's published figure over the full line table. Expanding-wild games within 0.35 %: their scatter part
@@ -35,5 +36,6 @@
   its tile — if its rules are already supported.
 - First batch: Seven Hot, Ice Fruits, Lucky Slot. Second: Gems, 50 Gems, Hot Clover, Jokers, 100 Jokers, Ice Fruits 6
   Reels (5×4 and 6×3 grids; gem, star and wild-variant symbols — a page picks its wild with `data-wild`: joker, clover,
-  crystal). Waiting for their feature: Cherry Hot and Valentine's Day (fill multiplier), Shining Stars (two
+  crystal). Third: Cherry Hot and Valentine's Day (fill multiplier; the proof adds, per fill symbol and each of the
+  2^5 full/not-full reel patterns, P × (multiplier − 1) × the lines' pay given the pattern). Waiting: Shining Stars (two
   scatters), Egypt (multiplier), AI slot (wild scatter), the 3×3/4×4 and free-spin games.

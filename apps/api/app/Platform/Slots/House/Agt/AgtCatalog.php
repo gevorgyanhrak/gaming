@@ -18,9 +18,11 @@ final class AgtCatalog
         'jokers' => 'Jokers',
         'jokers-100' => '100 Jokers',
         'ice-fruits-6' => 'Ice Fruits 6 Reels',
+        'cherry-hot' => 'Cherry Hot',
+        'valentines-day' => "Valentine's Day",
     ];
 
-    public const SLUGS = ['seven-hot', 'ice-fruits', 'lucky-slot', 'gems', 'gems-50', 'hot-clover', 'jokers', 'jokers-100', 'ice-fruits-6'];
+    public const SLUGS = ['seven-hot', 'ice-fruits', 'lucky-slot', 'gems', 'gems-50', 'hot-clover', 'jokers', 'jokers-100', 'ice-fruits-6', 'cherry-hot', 'valentines-day'];
 
     /** @return list<AgtSlot> */
     public static function slots(): array

@@ -23,8 +23,9 @@ per game), one shared client page, symbols drawn in code in the classic style (n
       scatter, expanding wild; in the casino page and lobby — this commit.
 - [x] 3. Batch 2: Gems, 50 Gems, Hot Clover, Jokers, 100 Jokers, Ice Fruits 6 Reels (wild `line_wild`; gem/star
       symbols; wild variants joker/clover/crystal via `data-wild`); live: 36 real spins, 8 wins, 5×4 and 6×3 grids — 21cc1ff.
-- [ ] 4. Features for the rest: fill multiplier (Cherry Hot, Valentine's Day), two scatters (Shining Stars ×2),
-      Egypt's multiplier, wild scatter (AI slot); then 3×3 / 4×4; then free-spin games.
+- [x] 4. Fill multiplier (`fill` left/center, exact proof) → Cherry Hot, Valentine's Day (own Valentine symbols,
+      `love` theme); pay table shows the fill rule; scatter pays no longer squeezed — this commit.
+- [ ] 5. Two scatters (Shining Stars ×2), Egypt's multiplier, wild scatter (AI slot); then 3×3 / 4×4; then free spins.
 
 **Owner brief 2026-11-20 "Mobile QA" — done (paused by the owner, resumed, finished):** Playwright suite `apps/web/e2e`
 (README there), report `docs/qa/MOBILE_QA_REPORT.md`.

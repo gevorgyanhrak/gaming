@@ -60,6 +60,16 @@ def main(game: str, slug: str, title: str, lnum: int | None = None) -> None:
     else:
         wild_mode = 'none'
 
+    # Fill multiplier: whole reels of one symbol multiply every line win. Cherry Hot counts the full reels from the
+    # left (×3…×5 for 3…5 reels); Valentine's Day counts them around the middle reel (×2…×4 for 3…5 reels).
+    fill = None
+    fm = re.search(r'func \(g \*Game\) FillMult\(\).*?var sym = g\.Grid\[(\d)\]\[(\d)\].*?sym < (\d+) \|\| sym > (\d+)', rule, re.S)
+    if fm:
+        fill = {
+            'from': 'left' if fm.group(1) == '0' else 'center',
+            'symbols': list(range(int(fm.group(3)) - 1, int(fm.group(4)))),
+        }
+
     lines_name = re.search(r'slot\.(BetLines\w+)', rule).group(1)
     sx = int(re.search(r'SX: +(\d+)', link).group(1))
     sy = int(re.search(r'SY: +(\d+)', link).group(1))
@@ -87,6 +97,7 @@ def main(game: str, slug: str, title: str, lnum: int | None = None) -> None:
         'scatter_pay': scat_pay,
         'wild': int(consts['wild']) - 1 if 'wild' in consts else None,
         'wild_mode': wild_mode,
+        'fill': fill,
         'rtp': rtp,
         'reels': sets[rtp],
     }
