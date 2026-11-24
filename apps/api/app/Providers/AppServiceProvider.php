@@ -8,6 +8,7 @@ use App\Platform\Fishka\FishkaWallets;
 use App\Platform\Levels\Levels;
 use App\Platform\Payments\Payments;
 use App\Platform\Settings\Settings;
+use App\Platform\Slots\House\Agt\AgtCatalog;
 use App\Platform\Slots\House\Games\BumperCrop;
 use App\Platform\Slots\House\Games\DiscoveryVoyage;
 use App\Platform\Slots\House\Games\Fairytale;
@@ -53,7 +54,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(SlotAdapters::class, fn ($app) => new SlotAdapters($app->tagged('slot-adapters')));
         // House slots (ADR 0024): open-source games whose rounds our server deals.
         $this->app->tag([StellarSevens::class, NitroHot::class, ScorchingHot::class, TropicEscape::class, PearlReef::class, DiscoveryVoyage::class, GoldenPapyrus::class, HouseOfRa::class, Samurai::class, TheDynasty::class, Fairytale::class, BumperCrop::class, JungleSlot::class], 'house-slots');
-        $this->app->bind(HouseSlots::class, fn ($app) => new HouseSlots($app->tagged('house-slots')));
+        // The APEXSLOTS games and Jungle Slot by class, the AGT-style games from their data files (owner, 2026-11-24).
+        $this->app->bind(HouseSlots::class, fn ($app) => new HouseSlots([...$app->tagged('house-slots'), ...AgtCatalog::slots()]));
         // Payment providers (ADR 0027): none ships; one is tagged 'payment-providers' when the owner connects a bank.
         $this->app->bind(Payments::class, fn ($app) => new Payments($app->make(Settings::class), $app->make(FishkaWallets::class), $app->tagged('payment-providers')));
 

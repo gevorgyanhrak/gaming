@@ -9,7 +9,10 @@
     "unavailable": "This slot isn't available right now.",
     "credit": "Game by {{provider}}: code MIT, art CC BY 4.0 by APEXSLOTS, maths from slotopol (MIT). Every round is dealt by our server.",
     "credits": {
-      "jungle-slot": "Art: \"Jungle Slot Assets\" by danitorres567 (OpenGameArt, CC0). Game and maths by this platform; every round is dealt on our server."
+      "jungle-slot": "Art: \"Jungle Slot Assets\" by danitorres567 (OpenGameArt, CC0). Game and maths by this platform; every round is dealt on our server.",
+      "seven-hot": "Game maths: Slotopol (open source, MIT). Symbols and screen by this platform; every round is dealt on our server.",
+      "ice-fruits": "Game maths: Slotopol (open source, MIT). Symbols and screen by this platform; every round is dealt on our server.",
+      "lucky-slot": "Game maths: Slotopol (open source, MIT). Symbols and screen by this platform; every round is dealt on our server."
     }
   },
   "nav": {
@@ -1413,5 +1416,27 @@
       "variety_one": "Play {{count}} different game",
       "variety_other": "Play {{count}} different games"
     }
+  },
+  "agt": {
+    "credits": "Credits",
+    "bet": "Bet",
+    "win": "Win",
+    "betDown": "Lower the bet",
+    "betUp": "Raise the bet",
+    "info": "Pays",
+    "maxBet": "Max",
+    "auto": "Auto",
+    "start": "Start",
+    "stop": "Stop",
+    "close": "Close",
+    "lowBalance": "Not enough Fishkas for this bet.",
+    "won": "WIN {{amount}}",
+    "unavailable": "This game is not available.",
+    "lines_one": "{{count}} line",
+    "lines_other": "{{count}} lines",
+    "scatterRule": "Scatter: pays anywhere, times the total bet.",
+    "wildExpanding": "Wild on reels 2–4 turns the whole reel wild.",
+    "wildSubstitute": "Wild stands in for every symbol except the scatter.",
+    "rules": "Line wins are paid per line bet, left to right, on {{lines}} lines. Played with Fishkas — free play money."
   }
 }

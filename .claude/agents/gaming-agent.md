@@ -282,6 +282,10 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
   `shared/ui/AiSeatMark` by AI seats from `BoardProps.faces` (names already carry "· AI", ADR 0022).
 - Backgrounds (item 15): every page, tables included, uses the site's night `.club-room`; no `.classic-scope`, no
   `.table-room`, no per-game page backdrop (`games/themes.ts` now only colours the home showcase cards).
+- AGT-style slots (ADR 0029): data `apps/api/app/Platform/Slots/House/Agt/data/<slug>.json` from Slotopol via
+  `apps/web/play/tools/slotopol_agt.py`; engine `House\Agt\AgtSlot`, list `AgtCatalog` (+ HouseSlotSeeder::GAMES);
+  session sends `layout` (`HasClientLayout`); shared client `play/agt/` (symbols in `symbols.ts`); a game page is
+  `play/<slug>/index.html` with `data-game`/`data-theme`; tiles `play/tools/agt_tiles.mjs` (needs `cwebp`).
 - Online: `GET /stats/online` → `online` (real, Reverb presence; null when unknown) and `demo` (owner-chosen
   simulated figure, `DemoActivity`, admin "Demo activity"). Never add `demo` to `online`; anything showing `demo`
   tags it "Demo" and explains it (`useDemoActivity`, HomeHero `DemoStat`).

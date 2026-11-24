@@ -32,15 +32,20 @@ final class HouseSpins
     /**
      * The game as a player opens it: their balance and the bets they can choose.
      *
-     * @return array{balance: int, bets: list<int>}
+     * @return array{balance: int, bets: list<int>, layout?: array<string, mixed>}
      *
      * @throws HouseSpinRefused
      */
     public function open(User $user, SlotGame $game): array
     {
-        $this->engine($game);
+        $engine = $this->engine($game);
 
-        return ['balance' => $this->wallets->wallet($user)->balance, 'bets' => $this->bets($game)];
+        return [
+            'balance' => $this->wallets->wallet($user)->balance,
+            'bets' => $this->bets($game),
+            // A shared client draws the game from this (HasClientLayout); others have their own screens.
+            ...($engine instanceof HasClientLayout ? ['layout' => $engine->layout()] : []),
+        ];
     }
 
     /**

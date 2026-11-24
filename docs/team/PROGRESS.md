@@ -10,6 +10,20 @@ tests and build before pushing; keep `.claude/agents/gaming-agent.md` current.
 
 ## Now
 
+**Owner 2026-11-24 "add casino providers like AGT, free open-source; use the logic, draw symbols like the
+originals":** source = Slotopol (MIT, github.com/slotopol/server; kept in branch backup/before-slotopol-restore-2026-11-18,
+services/slot-engine/game/slot/agt): 31 AGT maths sets ≈ 60 titles; inventory: lines + wild (substitute or expanding
+on reels 2–4) + scatter for most, free spins in 9. Our build: maths ported to a data-driven house slot (exact RTP test
+per game), one shared client page, symbols drawn in code in the classic style (no copied art, logos or brand marks).
+- [x] 1. Engine `House\Agt\AgtSlot` (lines, wild none/substitute/expanding, scatter), converter
+      `play/tools/slotopol_agt.py`, exact-RTP tests (ADR 0029); first games Seven Hot, Ice Fruits, Lucky Slot. Cherry Hot
+      and Valentine's Day need the fill multiplier (whole reels of one fruit multiply line wins) — next.
+- [x] 2. Shared client `play/agt/` (layout from the session, SVG symbol library, spin/lines/expanding wild/paced
+      balance, pay table, upright layout), tiles via `play/tools/agt_tiles.mjs`; live: 27 real spins, wins, lines,
+      scatter, expanding wild; in the casino page and lobby — this commit.
+- [ ] 3. The rest of the no-free-spin group (Gems, 50 Gems, Hot Clover, Shining Stars, 100 Shining Stars, Jokers,
+      100 Jokers, Ice Fruits 6 reels, Egypt, AI…); then 3×3 / 4×4; then free-spin games.
+
 **Owner brief 2026-11-20 "Mobile QA" — done (paused by the owner, resumed, finished):** Playwright suite `apps/web/e2e`
 (README there), report `docs/qa/MOBILE_QA_REPORT.md`.
 - [x] Iteration 1: audit (routes × 11 sizes, 11 games vs AI, 13 slots, admin) + visual review → H-1, V-1…V-19, C-1,

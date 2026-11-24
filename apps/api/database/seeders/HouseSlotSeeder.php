@@ -29,6 +29,10 @@ class HouseSlotSeeder extends Seeder
         'bumper-crop' => ['Bumper Crop', 120],
         // Art: "Jungle Slot Assets" by danitorres567 (OpenGameArt, CC0); maths ours (2026-11-18).
         'jungle-slot' => ['Jungle Slot', 5],
+        // AGT-style games (owner, 2026-11-24): maths from Slotopol (MIT), symbols and screen ours (House\Agt).
+        'seven-hot' => ['Seven Hot', 130],
+        'ice-fruits' => ['Ice Fruits', 140],
+        'lucky-slot' => ['Lucky Slot', 150],
     ];
 
     public function run(HouseSlots $slots): void
