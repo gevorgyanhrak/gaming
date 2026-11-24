@@ -2,6 +2,7 @@
 // reels, without the control panel. Needs the local stack and a signed-in session (the page loads the game's
 // layout from the API).  node play/tools/agt_tiles.mjs seven-hot ice-fruits …
 import { execFileSync } from 'node:child_process'
+import { mkdirSync } from 'node:fs'
 import { chromium } from 'playwright-core'
 
 const CHROME = process.env.PW_CHROMIUM
@@ -35,6 +36,7 @@ for (const slug of slugs) {
   await page.waitForTimeout(600)
   const png = `play/${slug}/tile.png`
   await page.screenshot({ path: png })
+  mkdirSync(`public/play/${slug}`, { recursive: true })
   execFileSync('cwebp', ['-quiet', '-q', '82', png, '-o', `public/play/${slug}/tile.webp`])
   execFileSync('rm', [png])
   console.log(`${slug}: public/play/${slug}/tile.webp`)

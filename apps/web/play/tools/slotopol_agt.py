@@ -51,7 +51,9 @@ def main(game: str, slug: str, title: str, lnum: int | None = None) -> None:
     scat = re.search(r'var ScatPay = \[\d\]float64\{([^}]*)\}', rule)
     scat_pay = [float(x) for x in scat.group(1).split(',')] if scat else []
 
-    if 'reelwild' in rule:
+    if 'sx != syml && sx != wild' in rule:
+        wild_mode = 'line_wild'  # the first symbol sets the line; a wild on the line counts as it and never pays itself
+    elif 'reelwild' in rule:
         wild_mode = 'expanding'  # a wild anywhere on reels 2–4 turns the whole reel wild; the wild itself pays nothing
     elif 'numw' in rule:
         wild_mode = 'substitute'  # stands in for line symbols, and pays its own run when that pays more
@@ -66,7 +68,7 @@ def main(game: str, slug: str, title: str, lnum: int | None = None) -> None:
 
     # Reel sets keyed by their exact RTP; take the one closest to 96 % without going over 96.5 %.
     sets = {}
-    for key, body in re.findall(r'\n([\d.]+):\n((?:  - \[[^\]]*\]\n?)+)', data):
+    for key, body in re.findall(r'\n([\d.]+):\n((?:  - \[[^\]]*\][^\n]*\n?)+)', data):  # a reel may end with '# length'
         sets[float(key)] = [[int(n) - 1 for n in r.split(',')] for r in re.findall(r'\[([^\]]*)\]', body)]
     rtp = min((k for k in sets if k <= 96.5), key=lambda k: abs(k - TARGET_RTP))
 

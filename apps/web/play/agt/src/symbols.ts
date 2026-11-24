@@ -15,6 +15,37 @@ const ball = (id: string, cx: number, cy: number, r: number, light: string, dark
 const leaf = (x: number, y: number, rot: number) =>
   `<path d="M${x} ${y} q10 -14 24 -10 q-6 14 -24 10z" fill="#3fae3a" stroke="#1d5e1c" stroke-width="1.5" transform="rotate(${rot} ${x} ${y})"/>`
 
+/** A cut gem: an outline split into facets, each a shade of the stone's colour, with a white glint. */
+const gem = (id: string, light: string, mid: string, dark: string, shape: 'round' | 'square' | 'oval' | 'heart' | 'drop' | 'brilliant') => {
+  const outline: Record<typeof shape, string> = {
+    brilliant: 'M50 88 L12 40 L28 18 L72 18 L88 40 Z',
+    round: 'M50 10 L78 22 L90 50 L78 78 L50 90 L22 78 L10 50 L22 22 Z',
+    square: 'M24 14 L76 14 L88 26 L88 74 L76 86 L24 86 L12 74 L12 26 Z',
+    oval: 'M50 8 L72 18 L82 50 L72 82 L50 92 L28 82 L18 50 L28 18 Z',
+    heart: 'M50 88 L14 48 L14 28 L30 14 L50 26 L70 14 L86 28 L86 48 Z',
+    drop: 'M50 8 L76 50 L72 76 L50 92 L28 76 L24 50 Z',
+  }
+  const table: Record<typeof shape, string> = {
+    brilliant: 'M34 30 L66 30 L72 40 L50 70 L28 40 Z',
+    round: 'M50 28 L66 34 L72 50 L66 66 L50 72 L34 66 L28 50 L34 34 Z',
+    square: 'M32 30 L68 30 L72 34 L72 66 L68 70 L32 70 L28 66 L28 34 Z',
+    oval: 'M50 26 L62 32 L66 50 L62 68 L50 74 L38 68 L34 50 L38 32 Z',
+    heart: 'M50 70 L30 46 L32 34 L42 30 L50 38 L58 30 L68 34 L70 46 Z',
+    drop: 'M50 30 L64 52 L60 70 L50 76 L40 70 L36 52 Z',
+  }
+  return `<defs><linearGradient id="${id}-a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${light}"/><stop offset=".5" stop-color="${mid}"/><stop offset="1" stop-color="${dark}"/></linearGradient><linearGradient id="${id}-b" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${light}"/><stop offset="1" stop-color="${mid}"/></linearGradient></defs>
+    <path d="${outline[shape]}" fill="url(#${id}-a)" stroke="${dark}" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="${table[shape]}" fill="url(#${id}-b)" stroke="rgba(255,255,255,.55)" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="${outline[shape]}" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1" transform="translate(50 50) scale(.82) translate(-50 -50)"/>
+    <path d="M36 34 l8 -4 l-4 8 z M64 60 l5 -2 l-2 5z" fill="#fff" opacity=".9"/>`
+}
+
+const star = (id: string, light: string, dark: string, ring: string) => `
+    <defs><radialGradient id="${id}-t" cx="40%" cy="32%" r="70%"><stop offset="0" stop-color="${light}"/><stop offset="1" stop-color="${dark}"/></radialGradient></defs>
+    <circle cx="50" cy="50" r="44" fill="${ring}" opacity=".25"/>
+    <path d="M50 8l11 28 30 2-23 19 8 29-26-17-26 17 8-29-23-19 30-2z" fill="url(#${id}-t)" stroke="${dark}" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M50 20l6 16-6 6-6-6z" fill="#fff" opacity=".55"/>`
+
 const SYMBOLS: Record<string, Draw> = {
   seven: (id) => `
     <defs><linearGradient id="${id}-r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6b5b"/><stop offset=".55" stop-color="#d4141c"/><stop offset="1" stop-color="#7d0610"/></linearGradient>${gloss(id)}</defs>
@@ -99,6 +130,14 @@ const SYMBOLS: Record<string, Draw> = {
     <defs><radialGradient id="${id}-l" cx="38%" cy="32%" r="72%"><stop offset="0" stop-color="#fffbb0"/><stop offset="1" stop-color="#d9b60a"/></radialGradient>${gloss(id)}</defs>
     <ellipse cx="50" cy="54" rx="36" ry="27" fill="url(#${id}-l)" stroke="#8a7004" stroke-width="2"/>
     <ellipse cx="50" cy="54" rx="36" ry="27" fill="url(#${id}-g)"/>`,
+  diamond: (id) => gem(id, '#ffffff', '#cfe9ff', '#6a8fb8', 'brilliant'),
+  heliodor: (id) => gem(id, '#fff6a0', '#f2c81c', '#9a6a02', 'oval'),
+  aquamarine: (id) => gem(id, '#d6fbff', '#4fd6e8', '#13708a', 'drop'),
+  sapphire: (id) => gem(id, '#a8c4ff', '#2a56e0', '#0c1a6a', 'round'),
+  emerald: (id) => gem(id, '#b8ffcc', '#18b04a', '#065a22', 'square'),
+  topaz: (id) => gem(id, '#ffd0a0', '#f2801c', '#8a3a02', 'heart'),
+  greenstar: (id) => star(id, '#c8ff9a', '#1f9a2a', '#3fe04a'),
+  redstar: (id) => star(id, '#ffb0a0', '#c4141c', '#ff4d3d'),
   bar: (id) => `
     <defs><linearGradient id="${id}-b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3a3a"/><stop offset="1" stop-color="#0a0a0a"/></linearGradient></defs>
     <rect x="12" y="32" width="76" height="36" rx="6" fill="url(#${id}-b)" stroke="#ffd35a" stroke-width="4"/>
@@ -113,9 +152,31 @@ const SYMBOLS: Record<string, Draw> = {
     <text x="50" y="62" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="30" fill="url(#${id}-w)" stroke="#4a0414" stroke-width="1.5">WILD</text>`,
 }
 
+/** Wild variants, chosen per game page (data-wild): the classic badge, a jester, a four-leaf clover, a crystal. */
+const WILDS: Record<string, Draw> = {
+  joker: (id) => `
+    <defs><linearGradient id="${id}-j" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3a8"/><stop offset="1" stop-color="#c48a02"/></linearGradient></defs>
+    <path d="M18 40 Q20 10 50 30 Q80 10 82 40 L74 44 Q70 26 50 40 Q30 26 26 44 Z" fill="#7a2ad0" stroke="#2a0a50" stroke-width="2"/>
+    <path d="M50 30 Q60 6 82 40" fill="#d4141c" stroke="#5a0408" stroke-width="2"/>
+    <circle cx="18" cy="40" r="6" fill="url(#${id}-j)"/><circle cx="82" cy="40" r="6" fill="url(#${id}-j)"/><circle cx="50" cy="22" r="5" fill="url(#${id}-j)"/>
+    <ellipse cx="50" cy="60" rx="22" ry="24" fill="#ffe2c8" stroke="#8a5a3a" stroke-width="2"/>
+    <circle cx="42" cy="56" r="3" fill="#1a1a1a"/><circle cx="58" cy="56" r="3" fill="#1a1a1a"/>
+    <circle cx="36" cy="66" r="4" fill="#ff7a8a" opacity=".7"/><circle cx="64" cy="66" r="4" fill="#ff7a8a" opacity=".7"/>
+    <path d="M40 70 Q50 80 60 70" fill="none" stroke="#a01020" stroke-width="3" stroke-linecap="round"/>
+    <rect x="22" y="80" width="56" height="16" rx="5" fill="#7a0a2a" stroke="url(#${id}-j)" stroke-width="2"/>
+    <text x="50" y="93" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="12" fill="url(#${id}-j)">WILD</text>`,
+  clover: (id) => `
+    <defs><radialGradient id="${id}-c" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#b8ff8a"/><stop offset="1" stop-color="#127a1c"/></radialGradient></defs>
+    <path d="M50 52 Q58 70 54 92" fill="none" stroke="#0e5a14" stroke-width="5" stroke-linecap="round"/>
+    ${[0, 90, 180, 270].map((r) => `<path d="M50 50 C34 46 24 30 34 20 C42 12 50 22 50 30 C50 22 58 12 66 20 C76 30 66 46 50 50Z" transform="rotate(${r + 45} 50 50) translate(0 -2)" fill="url(#${id}-c)" stroke="#0a4a10" stroke-width="2"/>`).join('')}
+    <circle cx="50" cy="50" r="6" fill="#ffd35a" stroke="#8a5a02" stroke-width="1.5"/>`,
+  crystal: (id) => `${gem(id, '#ffe0ff', '#c43ae0', '#4a0a6a', 'brilliant')}
+    <text x="50" y="50" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="17" fill="#fff" stroke="#4a0a6a" stroke-width="1">WILD</text>`,
+}
+
 /** The picture for a symbol (an unknown one: its name on a tile, so a new game never shows a blank). */
-export function symbolSvg(name: string, id: string): string {
-  const draw = SYMBOLS[name]
+export function symbolSvg(name: string, id: string, wildStyle?: string): string {
+  const draw = (name === 'wild' && wildStyle ? WILDS[wildStyle] : undefined) ?? SYMBOLS[name]
   const body = draw
     ? draw(id)
     : `<rect x="8" y="8" width="84" height="84" rx="14" fill="#1d2a52" stroke="#ffd35a" stroke-width="3"/><text x="50" y="58" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="16" fill="#fff">${name.toUpperCase().slice(0, 8)}</text>`

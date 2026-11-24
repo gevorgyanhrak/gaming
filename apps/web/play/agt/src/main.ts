@@ -18,7 +18,7 @@ type Layout = {
   scatter: string | null
   scatter_pay: number[]
   wild: string | null
-  wild_mode: 'none' | 'substitute' | 'expanding'
+  wild_mode: 'none' | 'substitute' | 'expanding' | 'line_wild'
 }
 type LineWin = { line: number; symbol: string; count: number; amount: number; positions: [number, number][] }
 type Round = {
@@ -31,6 +31,7 @@ type Round = {
 
 const root = document.getElementById('app')!
 const GAME = root.dataset.game ?? ''
+const WILD_STYLE = root.dataset.wild
 const t = (key: string, options?: Record<string, unknown>) => i18n.t(`agt.${key}`, options)
 const still = matchMedia('(prefers-reduced-motion: reduce)').matches
 const LINE_COLOURS = ['#ffe14d', '#ff5c8a', '#4dd2ff', '#7dff6b', '#ff9f43', '#c084fc', '#f87171', '#34d399', '#fbbf24', '#60a5fa']
@@ -91,7 +92,7 @@ function cell(symbol: string): HTMLDivElement {
   const el = document.createElement('div')
   el.className = 'cell'
   el.dataset.symbol = symbol
-  el.innerHTML = symbolSvg(symbol, `s${cellId++}`)
+  el.innerHTML = symbolSvg(symbol, `s${cellId++}`, WILD_STYLE)
   return el
 }
 
@@ -271,7 +272,7 @@ function payTable() {
             : name === layout.wild
               ? `<p>${t(layout.wild_mode === 'expanding' ? 'wildExpanding' : 'wildSubstitute')}</p>${pays.some((p) => p > 0) ? `<ul>${line(pays)}</ul>` : ''}`
               : `<ul>${line(pays)}</ul>`
-        return `<div class="pay"><span class="icon">${symbolSvg(name, `p-${name}`)}</span>${special}</div>`
+        return `<div class="pay"><span class="icon">${symbolSvg(name, `p-${name}`, WILD_STYLE)}</span>${special}</div>`
       })
       .join('')}</div>
     <p class="rules">${t('rules', { lines: layout.lines.length })}</p>`

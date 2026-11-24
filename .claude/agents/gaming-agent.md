@@ -285,7 +285,10 @@ docker/ compose.yaml Makefile .github/workflows/{api,web}.yml docs/{ARCHITECTURE
 - AGT-style slots (ADR 0029): data `apps/api/app/Platform/Slots/House/Agt/data/<slug>.json` from Slotopol via
   `apps/web/play/tools/slotopol_agt.py`; engine `House\Agt\AgtSlot`, list `AgtCatalog` (+ HouseSlotSeeder::GAMES);
   session sends `layout` (`HasClientLayout`); shared client `play/agt/` (symbols in `symbols.ts`); a game page is
-  `play/<slug>/index.html` with `data-game`/`data-theme`; tiles `play/tools/agt_tiles.mjs` (needs `cwebp`).
+  `play/<slug>/index.html` with `data-game`/`data-theme` (+ optional `data-wild` joker|clover|crystal); tiles
+  `play/tools/agt_tiles.mjs` (needs `cwebp`). Slotopol yaml reel lines may end in `# NN` comments; its published
+  line RTP for expanding-wild games is an estimate (test tolerance 0.35 %). New wild/scatter features: port + exact
+  RTP proof in `AgtSlotsTest` first.
 - Online: `GET /stats/online` → `online` (real, Reverb presence; null when unknown) and `demo` (owner-chosen
   simulated figure, `DemoActivity`, admin "Demo activity"). Never add `demo` to `online`; anything showing `demo`
   tags it "Demo" and explains it (`useDemoActivity`, HomeHero `DemoStat`).

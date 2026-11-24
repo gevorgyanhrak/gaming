@@ -15,6 +15,7 @@ use RuntimeException;
  * - lines pay left to right per line bet (here: pay ÷ lines, in total bets);
  * - wild `none`; `substitute` — it stands in for the line's symbol and pays its own leading run if that pays more;
  *   `expanding` — a wild anywhere on reels 2–4 makes that whole reel wild for every line (it pays nothing itself);
+ *   `line_wild` — the first reel's symbol sets the line and a wild on the line counts as it (never pays itself);
  * - the scatter pays anywhere, 3 or more, times the total bet.
  *
  * Rounds: {grid: symbol names [reel][row], lineWins, scatterWin, expanded: reels, totalWin} (amounts in total bets).
@@ -222,8 +223,9 @@ final class AgtSlot implements CreditedHouseSlot, HasClientLayout
 
         $syml = $symbols[0];
         $numl = $reels;
+        $lineWild = $this->game['wild_mode'] === 'line_wild';
         for ($x = 1; $x < $reels; $x++) {
-            if (in_array($x, $expanded, true)) {
+            if (in_array($x, $expanded, true) || ($lineWild && $symbols[$x] === $wild)) {
                 continue;
             }
             if ($symbols[$x] !== $syml) {

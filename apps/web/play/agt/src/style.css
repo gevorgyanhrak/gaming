@@ -37,6 +37,18 @@ body {
   --bg2: #031a0a;
   --accent: #ffd34d;
 }
+#app[data-theme='gem'] {
+  --bg1: #3a0a6a;
+  --bg2: #0c0220;
+  --frame: #e6c8ff;
+  --frame-dark: #6a2a9a;
+  --accent: #c43ae0;
+}
+#app[data-theme='joker'] {
+  --bg1: #4a0a4a;
+  --bg2: #12021a;
+  --accent: #ff3d8a;
+}
 
 #stage {
   position: absolute;
